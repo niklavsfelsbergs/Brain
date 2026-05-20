@@ -6,38 +6,42 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-20 (end of [[S004]]).
+**Last updated.** 2026-05-20 (end of [[S005]]).
 
 ## Where we are
 
-Two sessions ago [[S003]] built the main brain Phase 1 scaffold at `Documents/GitHub/brain/gielinor/`. The session that just ended ([[S004]]) built the audit tool Niklavs asked for and landed four corrections he surfaced after reviewing it. The main brain is now ready for first real use.
+Three sessions ago [[S003]] built the main brain Phase 1 scaffold at `Documents/GitHub/brain/gielinor/`. [[S004]] landed four corrections after Niklavs reviewed the audit. [[S005]] landed three more changes on top: a new per-player ritual (**alching**), a new universal **Understanding/Plan preamble protocol**, and the two missing **CLAUDE.md routers** at brain root and inside the dev brain.
 
-What changed in [[S004]] vs [[S003]]:
+What changed in [[S005]] vs [[S004]]:
 
-1. **Lorebook redefined** — was `{drafts, decisions/, assumptions.md, patch-notes.md}`, now is the identity-pattern `{drafts, confirmed, archive, rejected}`. It is the agent's **self-improvement log** — what changed in how *it* operates, decided by *it* about *itself*. Construction history (main-brain [[D-001]], [[D-002]], the original patch-notes and assumptions placeholder) moved to `developer-braindead/bank/main-brain-construction/`.
-2. **Three session modes** — `meta/modes.md` now leads with player / unscoped / bankstanding as a session-mode axis, orthogonal to the principal/dwarf role axis. Bankstanding is explicitly its own mode with cross-cutting reach.
-3. **Bankstanding rewritten** — adds explicit mode-framing at the top, a new step 3 (cross-player synthesis: promote recurring per-player patterns to the global layer), drops the assumptions/patch-notes steps, replaces them with "log behavioral changes to `lorebook/drafts/`."
-4. **Player invocation gap closed** — `players/_about.md` rewritten to match the address-based model (it was the last file still describing a preemptive prompt). Cross-player dwarf trigger phrases enumerated in both master `CLAUDE.md` and `players/_about.md`.
-5. **Tightenings** — "Rejected drafts are data" section added to the six identity-layer `_about.md` files. Reconciliation prompt in `respawn.md` refined to three explicit options including "reconcile the pending action externally first," with an explicit "do not auto-resume" rule.
-6. **Audit tool** — `gielinor-audit.html` at brain root. Single self-contained HTML, structural audit + linear verbatim contents section. `build_audit.py` is the re-runnable generator; all annotations updated for S004 changes.
+1. **Alching ritual (new).** Per-player tending counterpart to bankstanding. `gielinor/spellbook/rituals/alching.md` documents scope (single active player only), six-step procedure, five recommendation thresholds at respawn, two invocation modes (explicit / threshold-recommended). Each player got a `last-alched.md` placeholder.
+2. **Bankstanding sharpened (rewrite).** Now strictly **global-only writes**. Reads everything for cross-player synthesis, but per-player tending is alching's job. Procedure trimmed 8 → 7 steps; new step 6 reads each player's `last-alched.md` to flag overdue players.
+3. **Four-mode framework (modes.md rewrite).** Session modes expanded three → four: player, unscoped, alching, bankstanding. The orthogonality with the principal-vs-dwarf axis is preserved.
+4. **Write-rules ritual-reach table (new subsection).** `meta/write-rules.md` now documents bankstanding-vs-alching-vs-respawn reach alongside the per-layer write discipline.
+5. **Understanding/Plan preamble protocol (new behavioral rule).** Every response opens with two short bold-labelled lines before the substantive reply. Compresses for trivial asks. Applies in every mode and role; voice adapts, structure does not. Full rule in `meta/communication-protocol.md` (new); prominent summary added near the top of master `CLAUDE.md` (before "What you are"); `@import` added to the meta block. Per-player `persona.md` files each got a brief `**Preamble.**` note acknowledging the protocol applies and how voice adapts. Not restated per persona.
+6. **Brain-root routers (new files outside `gielinor/`).** `brain/CLAUDE.md` is the top-level router: two brain systems, route by working directory, no cross-read by default. `developer-braindead/CLAUDE.md` is the dev-brain entry: read `respawn.md` first, build-assistant scope, one-way cross-read allowance to `gielinor/` on explicit cue.
+7. **Audit refreshed.** `build_audit.py` annotations updated for every S005-touched file; new annotations added for the new files. New `CONTENT_GROUPS` section "Brain-root routers (outside gielinor/)" renders the two external CLAUDE.md files in the linear contents view (they're intentionally not in the sidebar tree, which stays a clean mirror of `gielinor/`). Landing diagram redrawn. `gielinor-audit.html` regenerated: 105 files / 80 dirs / 46 drift flags.
 
-Net main-brain state: 51 substantive files (down 5 from end-of-[[S003]] since 4 moved out; placeholder `.gitkeep`s aren't substantive). The brain has not yet been run on a real task.
+Net main-brain state: +4 files inside `gielinor/` over end-of-[[S004]], plus 2 new files at the brain root and dev-brain root. The brain has still not been run on a real task.
 
 ## Next concrete step — START HERE
 
-**Run the main brain.** Open a Claude Code session in `Documents/GitHub/brain/gielinor/` and exercise it on a real task. The most natural first task is a Jebrim work session — likely against `Documents/bi-analytics-main/NFE/` or `Documents/bi-etl/`, since that's where bank-grounded content can start accumulating. A Zezima reading-reflection session is the other natural option.
+**Run the main brain.** Same as end of [[S004]] — open a Claude Code session in `Documents/GitHub/brain/gielinor/` and exercise the brain on a real task. Most natural first task is still a Jebrim work session against `Documents/bi-analytics-main/NFE/` or `Documents/bi-etl/`, or a Zezima reading-reflection session.
 
-What to watch for during the first real use:
+What to watch for during the first real use (updated from [[S004]] with S005 additions):
 
-1. **Address-based invocation in action.** The first message likely opens with `Hey Jebrim, ...` or `Hey Zezima, ...`. Does the agent route correctly on the first turn (no preemptive "which player?" prompt)? Does sticky behavior hold across subsequent un-addressed turns? Try a mid-session switch (`Hey Zezima, ...` mid-Jebrim) and a cross-player dwarf invocation (`Hey Jebrim, ask Zezima for ...` or `Hey Zezima, have Jebrim look up ...`).
-2. **Does the respawn ritual feel right?** Now that step 6 (read assumptions) is gone, does the load order still feel complete? Are the per-player sub-steps (a-g) in the right order? Where does it drag, what's missing?
-3. **Do the hooks fire as expected?** Test them deliberately — try to write to a `confirmed/` path (including the new `lorebook/confirmed/`), try to delete a file under `gielinor/`. They should block.
-4. **Does Jebrim's persona hold up, or does it drift?** Observation goes in `gielinor/players/jebrim/examine/drafts/`. Same for Zezima if she's exercised.
-5. **When does the agent want to write something it can't?** Each "wanted to write X but couldn't" is an observation about the write rules — a candidate `lorebook/drafts/` entry.
-6. **Per-turn quest-log discipline** — does it actually happen? If not, the discipline rule needs a hook backing it.
-7. **First lorebook entry candidate.** The first real use may itself surface a self-improvement worth recording — that becomes the first `lorebook/drafts/` entry, and the principal's review of it is the first real test of the new lorebook flow.
+1. **Understanding/Plan preamble in practice.** Does the agent open every turn with the two-line preamble? Does it compress correctly on trivial asks? Does the voice adapt to player (Jebrim terse, Zezima reflective) without becoming a robotic recital? Does the preamble actually catch a misunderstanding at any point, or is it dead weight in practice?
+2. **Address-based invocation in action.** First message likely opens with `Hey Jebrim, ...` or `Hey Zezima, ...`. Routes correctly on the first turn (no preemptive "which player?" prompt)? Sticky across un-addressed follow-ups? Mid-session switch (`Hey Zezima, ...` mid-Jebrim) works? Cross-player dwarf invocation (`Hey Jebrim, ask Zezima for ...`) works?
+3. **Respawn ritual feel.** Does the load order still feel complete? Per-player sub-steps (a–g) in the right order? Where does it drag, what's missing?
+4. **Hook enforcement.** Try to write to a `confirmed/` path (including `lorebook/confirmed/`). Try to delete a file under `gielinor/`. Both should block.
+5. **First alching candidate.** After a few sessions on a player, the thresholds may breach and a recommendation should surface at respawn. When it does, run alching deliberately to validate the six-step procedure end-to-end. First real alching round may itself surface adjustments to the ritual.
+6. **Bankstanding vs alching boundary.** When something surfaces during alching that feels system-level rather than per-player, does the agent correctly defer it to next bankstanding rather than promoting to globals from inside alching?
+7. **Persona drift.** Does Jebrim's persona hold up? Same for Zezima if exercised. Observations to `gielinor/players/<name>/examine/drafts/`.
+8. **Write-rule frictions.** "Wanted to write X but couldn't" each becomes an observation about the rules — candidate `lorebook/drafts/` entry.
+9. **Per-turn quest-log discipline.** Does it actually happen? If not, the discipline rule needs a hook backing it.
+10. **First lorebook entry candidate.** First real use may surface a self-improvement worth recording — first `lorebook/drafts/` entry, and the principal's review of it is the first real test of the new lorebook flow.
 
-After the first real use, run a dev-brain session to capture observations and update `[[plan]]` §C-§G with what surfaced.
+After the first real use, run a dev-brain session to capture observations and update `[[plan]]` §C–§G with what surfaced.
 
 ## Open at the start of next session
 
@@ -46,26 +50,30 @@ After the first real use, run a dev-brain session to capture observations and up
 - **§H.3 brain-zone taxonomy** — content for `player/working-agreements.md`. Not blocking but worth landing.
 - **§H.4 identity ↔ main-brain interaction** — how `examine/I-NNN` entries here interact with main-brain `examine/` and per-player `examine/`. Decide when an identity observation from dev work needs to land in the main brain too.
 
-## Carried-over observation
+## Carried-over observations
 
-From [[S003]]: **structure-first, content earns its way in.** Reaffirmed in [[S004]] when Niklavs surfaced corrections within hours rather than letting content accumulate against a drifted base. Worth surfacing in `examine/` as a candidate identity entry at next bankstanding. Currently structural memory only.
+From [[S003]] / reaffirmed [[S004]]: **structure-first, content earns its way in.** Reaffirmed again in [[S005]] — three rounds of corrections against the same scaffold, each landing before content accumulated against the previous shape. Worth surfacing as a candidate `examine/` identity entry at next bankstanding.
 
-From [[S004]]: **build the verification surface alongside the artifact, not after.** The audit HTML earned its weight immediately — drift flags led the eye to the spots that needed adjustment. Also a candidate `examine/` entry.
+From [[S004]] / reaffirmed [[S005]]: **build the verification surface alongside the artifact, not after.** The audit HTML kept earning its weight through both correction rounds — Niklavs sized each batch of changes to the audit's call-out surface. Also a candidate `examine/` entry.
 
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S004_main_brain_corrections_post_s003.md` — most recent session, has the corrections list
-3. `quest-log/S003_main_brain_phase_1_scaffold.md` — previous session (the build)
-4. `bank/plan.md` — current mission state (§B done; §C and beyond open)
-5. **Main brain entry:** `../gielinor/CLAUDE.md` (note the new layer-index lorebook description and the expanded cross-player dwarf triggers)
-6. **Main brain redefined layers:**
-   - `../gielinor/lorebook/_about.md` (the new self-improvement-log framing)
-   - `../gielinor/meta/modes.md` (the new three-session-modes section)
-   - `../gielinor/spellbook/rituals/bankstanding.md` (the mode-aware rewrite)
-   - `../gielinor/spellbook/rituals/respawn.md` (step 6 removed; reconciliation refined)
-   - `../gielinor/players/_about.md` (invocation section rewritten)
-7. **Construction history (relocated):** `bank/main-brain-construction/_about.md` plus the four files there.
-8. **Audit:** `../gielinor-audit.html` (double-click to open; reflects S004 state).
+2. `quest-log/S005_alching_preamble_protocol_brain_routers.md` — most recent session
+3. `quest-log/S004_main_brain_corrections_post_s003.md` — prior session (the four corrections)
+4. `quest-log/S003_main_brain_phase_1_scaffold.md` — original build session
+5. `bank/plan.md` — current mission state (§B done; §C and beyond open)
+6. **Brain-root router:** `../CLAUDE.md` (new in [[S005]])
+7. **Main brain entry:** `../gielinor/CLAUDE.md` (note the new "Communication protocol — read first" section near the top and the new `meta/communication-protocol.md` in the imports)
+8. **New main-brain files in [[S005]]:**
+   - `../gielinor/meta/communication-protocol.md` (the Understanding/Plan rule)
+   - `../gielinor/spellbook/rituals/alching.md` (the new per-player ritual)
+9. **Main-brain files significantly rewritten in [[S005]]:**
+   - `../gielinor/spellbook/rituals/bankstanding.md` (global-only scope; 7-step procedure)
+   - `../gielinor/meta/modes.md` (four-mode framework)
+   - `../gielinor/meta/write-rules.md` (ritual write-reach table)
+   - `../gielinor/players/_about.md` (alching pairing)
+   - `../gielinor/players/jebrim/persona.md` and `../gielinor/players/zezima/persona.md` (preamble notes)
+10. **Audit:** `../gielinor-audit.html` (double-click to open; reflects S005 state).
 
 `bank/decisions/`, `bank/assumptions/`, `bank/open-questions/`, `bank/risks/` are reference material — open as cited.

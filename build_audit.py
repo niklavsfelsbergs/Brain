@@ -34,7 +34,7 @@ META: dict[str, dict] = {
     "CLAUDE.md": {
         "purpose": "Session entry point: the file Claude Code reads first; binds the master rulebook and points to the rituals.",
         "drift": True,
-        "reason": "Builder authored the framing prose, the layer index, and the four-guarantees enumeration. Updated in S004: cross-player dwarf invocation section strengthened to enumerate trigger phrases ('ask {name} to ...', etc.); layer index updated to describe lorebook as the self-improvement log (not the build log). Verify the new lorebook framing in the layer index and the expanded dwarf-trigger list.",
+        "reason": "Builder authored the framing prose, the layer index, and the four-guarantees enumeration. Updated in S004: cross-player dwarf invocation section strengthened to enumerate trigger phrases. Updated in S005: 'Communication protocol — read first' section added at the top with the Understanding/Plan preamble rule (full version lives in meta/communication-protocol.md, now imported alongside the other meta files). Verify the new preamble protocol framing and the updated meta imports.",
     },
     "CLAUDE.local.md": {
         "purpose": "Local-only body file (gitignored); holds machine-specific or personal-secret additions to master CLAUDE.md.",
@@ -84,14 +84,19 @@ META: dict[str, dict] = {
         "reason": "_about.md files are framing documents; the builder chose the metaphor (current-rulebook-vs-history) and the boundary between meta/ and lorebook/. Verify that boundary is exactly what you want — the audit's most likely correction site.",
     },
     "meta/write-rules.md": {
-        "purpose": "The per-layer write discipline table — what auto-writes, what's draft-then-approve, what's user-only — and which lines are hook-enforced vs guidance.",
+        "purpose": "The per-layer write discipline table — what auto-writes, what's draft-then-approve, what's user-only — and which lines are hook-enforced vs guidance. Now also documents ritual write-reach (bankstanding vs alching vs respawn).",
         "drift": True,
-        "reason": "Authored content. Every row in the table is a judgment call. Updated in S004: lorebook collapsed to a single row with the identity-layer pattern (drafts/confirmed/archive/rejected) since the layer was redefined as a self-improvement log. Verify the new lorebook row matches the redefinition.",
+        "reason": "Authored content. Every row in the table is a judgment call. Updated in S005: a 'Ritual write-reach' subsection added — bankstanding writes only to globals (reads everything), alching writes only to the active player's layers (reads only those), respawn is read-only. The table itself unchanged. Verify the new ritual-reach table aligns with the bankstanding/alching split.",
     },
     "meta/modes.md": {
-        "purpose": "Documents the two orthogonal axes of agent behavior — session mode (player/unscoped/bankstanding) and role (principal/dwarf) — with the dwarf write boundary and cross-player invocation rules.",
+        "purpose": "Documents the two orthogonal axes of agent behavior — session mode (player/unscoped/alching/bankstanding) and role (principal/dwarf) — with the dwarf write boundary and cross-player invocation rules.",
         "drift": True,
-        "reason": "Substantially rewritten in S004 to add the three-session-modes axis (player/unscoped/bankstanding) at the top, orthogonal to principal/dwarf. The dwarf write surface was also updated — lorebook/patch-notes.md removed from the allow-list (since patch-notes.md no longer exists), with explicit note that lorebook is principal-only. Confirm the three-session-modes framing matches your intent; particularly that bankstanding is its own mode (not a player-mode or unscoped-mode variant).",
+        "reason": "Updated in S005: session modes expanded from three to four — alching added as a per-player tending mode, paired with bankstanding. The bankstanding entry was sharpened to 'writes only to globals, reads across all players' to make the global-only scope explicit. The 'three modes are orthogonal...' line updated to 'four modes.' Verify the four-mode framing and the explicit bankstanding-cannot-write-per-player rule.",
+    },
+    "meta/communication-protocol.md": {
+        "purpose": "Documents the Understanding/Plan preamble protocol — how every response opens, when to compress, how voice adapts across modes, and why the rule exists.",
+        "drift": True,
+        "reason": "New in S005. Authored content. The two-line preamble format (bold labels, single sentence each), the compression rule for trivial requests, the 'internal rituals stay silent' carve-out, and the threshold-recommendation exception are all builder choices. The 'voice adapts; structure does not' framing is the key load-bearing line — confirm that's the discipline you want across player, alching, bankstanding, dwarf modes.",
     },
     "meta/archive-discipline.md": {
         "purpose": "The never-delete rule — explains why archive/ exists, what archive/ vs rejected/ mean, and how moves preserve relative paths.",
@@ -121,9 +126,14 @@ META: dict[str, dict] = {
         "reason": "Load order is canonical and must be exactly right. Updated in S004: step 6 removed (the old 'read lorebook/assumptions.md' step is gone since assumptions.md was moved out), so the per-player scope is now step 6 (was 7). Reconciliation prompt section was tightened — three explicit options including 'reconcile the pending action externally first' (verifying side-effects on the outside world before resuming), and an explicit 'do not auto-resume' rule. Verify the new reconciliation flow.",
     },
     "spellbook/rituals/bankstanding.md": {
-        "purpose": "Canonical bankstanding-mode procedure — the cross-cutting reorganization ritual where the agent operates as the system tending its own brain, not as a character.",
+        "purpose": "Canonical bankstanding-mode procedure — the system-level cross-cutting reorganization ritual where the agent operates as the system tending its own brain, with read-across-all-players reach but global-only writes.",
         "drift": True,
-        "reason": "Rewritten in S004. Two big changes: (1) bankstanding now framed as a distinct session mode with explicit cross-cutting reach (reads every layer across all players). (2) New step 3 added — cross-player synthesis, where patterns confirmed in multiple per-player layers get proposed for graduation to the global layer. Old steps 7-8 (update assumptions, append to patch-notes) removed since those files no longer exist; replaced with 'if anything in this round changed how the agent operates, log it in lorebook/drafts/.' Verify the 8-step sequence and the explicit mode-framing in the opening sections.",
+        "reason": "Sharpened in S005. Scope is now explicitly global-only for writes; reads everything but per-player tending is alching's job. Steps 4–7 of the prior 8-step sequence collapsed: per-player draft review, quest-log compression, per-player bank staleness, and per-player current.md budgets all moved to alching. New step 6 added: read each player's last-alched.md and flag overdue players (no execution — that's principal's call). Verify the global-only write rule, the alching-cadence check, and the trimmed procedure.",
+    },
+    "spellbook/rituals/alching.md": {
+        "purpose": "Canonical alching-mode procedure — the per-player tending ritual; the active player walks through its own drafts, bank, quest-log, keepsake, and rejection patterns, scoped strictly to that player's namespace.",
+        "drift": True,
+        "reason": "New in S005. Authored content. The scope (single active player only — cannot touch globals or other players), the six-step procedure (drafts → bank staleness → quest-log compression → current.md budgets → rejected-folder patterns → update last-alched.md), the two invocation modes (explicit / recommended at respawn), and the five recommendation thresholds (~10 pending drafts, current.md over budget, bank +20, quest-log +15, 30+ days idle) are all builder choices. The 'flag for next bankstanding' carve-out for cross-player or system-level patterns is the key boundary — verify it.",
     },
 
     # examine/
@@ -168,9 +178,9 @@ META: dict[str, dict] = {
 
     # players/ system
     "players/_about.md": {
-        "purpose": "System card for players/ — defines the player-template, the global-vs-per-player layer split, the initial roster (Zezima, Jebrim), the address-based invocation rule, and the cross-player dwarf flow.",
+        "purpose": "System card for players/ — defines the player-template, the global-vs-per-player layer split, the initial roster (Zezima, Jebrim), the address-based invocation rule, the cross-player dwarf flow, and the per-player alching cadence.",
         "drift": True,
-        "reason": "_about framing AND a system-level operational document. Updated in S004: 'How to invoke a player' section rewritten to match the address-based model (was previously describing a preemptive prompt). The cross-player dwarf section was strengthened to enumerate trigger phrases ('ask {name} to ...', 'have {name} ...', etc.). Verify both sections match how you actually want invocation to work.",
+        "reason": "Updated in S005: new 'Per-player tending — alching' section added, noting each player has its own cadence tracked in `last-alched.md` and that alching pairs with bankstanding (per-player vs system-wide). Prior S004 changes (address-based invocation, cross-player dwarf trigger phrases) retained. Verify the alching mention and the pairing framing.",
     },
     "players/inbox/_about.md": {
         "purpose": "System card for the unscoped-writes holding pen — defines when to write here, the bankstanding triage flow, and the ~4-week age limit.",
@@ -185,9 +195,13 @@ META: dict[str, dict] = {
         "reason": "Character framing is interpretive. The 'Jebrim as the Agility-grinder register' metaphor, the work-vs-Zezima split, and the explicit naming of source repos (bi-analytics-main/NFE/, bi-etl/) are the builder's choices. Confirm those repo paths are still accurate and that the work-vs-personal split matches how you actually delegate.",
     },
     "players/jebrim/persona.md": {
-        "purpose": "Jebrim's voice spec — register, length, voice cues, what he avoids.",
+        "purpose": "Jebrim's voice spec — register, length, voice cues, what he avoids, and the preamble adaptation.",
         "drift": True,
-        "reason": "Character framing is interpretive. The 'analytical, terse, outcome-oriented' register and the specific voice cues (name deliverable first, smallest unblocking question, cite source paths) shape how the agent will sound when scoped to Jebrim. The persona disclaimer ('Develops through use. Don't front-load voice details that haven't been earned.') is itself a judgment call — verify that's the discipline you want.",
+        "reason": "Character framing is interpretive. Updated in S005: new 'Preamble' block notes Jebrim follows the master Understanding/Plan protocol (`meta/communication-protocol.md`), with voice matching his terse register. Confirm the protocol-follows-master-but-voice-adapts framing.",
+    },
+    "players/jebrim/last-alched.md": {
+        "purpose": "One-line file recording the date of Jebrim's most recent alching round; read by alching's threshold checks and by bankstanding's per-player cadence check.",
+        "drift": False,
     },
     "players/jebrim/CLAUDE.md": {
         "purpose": "Per-player session entry for Jebrim — imports _about.md and persona.md, restates in-scope/out-of-scope and register.",
@@ -249,9 +263,13 @@ META: dict[str, dict] = {
         "reason": "Character framing is interpretive. The 'Zezima as the legendary-player register' metaphor (patience, depth, long horizons) and the personal-vs-work split are the builder's choices.",
     },
     "players/zezima/persona.md": {
-        "purpose": "Zezima's voice spec — register, length, voice cues, what he avoids.",
+        "purpose": "Zezima's voice spec — register, length, voice cues, what he avoids, and the preamble adaptation.",
         "drift": True,
-        "reason": "Character framing is interpretive. The 'reflective, unhurried, comfortable with not-knowing' register and the cues (paragraphs over bullets, name ambivalence, don't perform productivity) shape how the agent will sound when scoped to Zezima.",
+        "reason": "Character framing is interpretive. Updated in S005: new 'Preamble' block notes Zezima follows the master Understanding/Plan protocol (`meta/communication-protocol.md`), with voice matching his reflective register (willing to name what's ambiguous in the ask rather than smooth it over). Confirm the protocol-follows-master-but-voice-adapts framing.",
+    },
+    "players/zezima/last-alched.md": {
+        "purpose": "One-line file recording the date of Zezima's most recent alching round; read by alching's threshold checks and by bankstanding's per-player cadence check.",
+        "drift": False,
     },
     "players/zezima/CLAUDE.md": {
         "purpose": "Per-player session entry for Zezima — imports _about.md and persona.md, restates in-scope/out-of-scope and register.",
@@ -332,6 +350,7 @@ CONTENT_GROUPS: list[tuple[str, list[str]]] = [
         "meta/_about.md",
         "meta/write-rules.md",
         "meta/modes.md",
+        "meta/communication-protocol.md",
         "meta/drafts-mechanics.md",
         "meta/archive-discipline.md",
         "meta/death-and-spawn.md",
@@ -355,6 +374,7 @@ CONTENT_GROUPS: list[tuple[str, list[str]]] = [
         "spellbook/_about.md",
         "spellbook/rituals/respawn.md",
         "spellbook/rituals/bankstanding.md",
+        "spellbook/rituals/alching.md",
     ]),
     ("Players — system", [
         "players/_about.md",
@@ -364,6 +384,7 @@ CONTENT_GROUPS: list[tuple[str, list[str]]] = [
         "players/jebrim/CLAUDE.md",
         "players/jebrim/_about.md",
         "players/jebrim/persona.md",
+        "players/jebrim/last-alched.md",
         "players/jebrim/bank/_about.md",
         "players/jebrim/quest-log/_about.md",
         "players/jebrim/spellbook/_about.md",
@@ -379,6 +400,7 @@ CONTENT_GROUPS: list[tuple[str, list[str]]] = [
         "players/zezima/CLAUDE.md",
         "players/zezima/_about.md",
         "players/zezima/persona.md",
+        "players/zezima/last-alched.md",
         "players/zezima/bank/_about.md",
         "players/zezima/quest-log/_about.md",
         "players/zezima/spellbook/_about.md",
@@ -390,7 +412,31 @@ CONTENT_GROUPS: list[tuple[str, list[str]]] = [
         "players/zezima/keepsake/_about.md",
         "players/zezima/keepsake/current.md",
     ]),
+    ("Brain-root routers (outside gielinor/)", [
+        "__external__/brain/CLAUDE.md",
+        "__external__/developer-braindead/CLAUDE.md",
+    ]),
 ]
+
+
+# External files outside gielinor/ that should appear in the audit's linear
+# "File Contents" section, displayed under the synthetic __external__/ prefix
+# in the catalogue but pointing at real paths on disk. They are NOT walked into
+# the sidebar tree (which mirrors gielinor/ only).
+EXTERNAL_FILES: dict[str, dict] = {
+    "__external__/brain/CLAUDE.md": {
+        "source": BRAIN_ROOT / "CLAUDE.md",
+        "purpose": "Brain-root router (sits at `brain/CLAUDE.md`, one level above gielinor/) — tells Claude Code which brain to follow based on working directory; main brain vs dev brain.",
+        "drift": True,
+        "reason": "New in S005. Authored content. The routing rule ('do not cross-read by default'), the cross-reference allowance ('main brain may read dev brain only on explicit principal cue; dev brain has no equivalent reverse access'), and the deliberate minimalism (router only, no rules duplicated from either brain) are all builder choices. Verify the no-default-cross-read rule is the asymmetry you want.",
+    },
+    "__external__/developer-braindead/CLAUDE.md": {
+        "source": BRAIN_ROOT / "developer-braindead" / "CLAUDE.md",
+        "purpose": "Dev brain CLAUDE.md (sits at `developer-braindead/CLAUDE.md`) — tells Claude Code how to operate inside the dev brain: read respawn.md first, no player persona, no alching/bankstanding rituals here.",
+        "drift": True,
+        "reason": "New in S005. Authored content. The scope statement ('build assistant, not character; no players, no alching, no bankstanding'), the read-only-on-cue cross-reference to gielinor/, and the 'main brain changes happen in main brain sessions' rule are all builder choices. Verify the build-assistant framing and the one-way cross-read allowance.",
+    },
+}
 
 
 # ---------------------------------------------------------------------------
@@ -454,6 +500,25 @@ def walk_gielinor() -> tuple[dict[str, dict], dict[str, list[str]]]:
         subfiles = sorted([n for n in names if (d_path / n).is_file()])
         children = subdirs + subfiles
         dir_children[d] = children
+
+    # External files (outside gielinor/) — keyed under __external__/... in the
+    # files dict so the linear contents section can render them, but they are
+    # deliberately NOT added to dir_children so the sidebar tree stays a clean
+    # mirror of gielinor/.
+    for key, spec in EXTERNAL_FILES.items():
+        src: Path = spec["source"]
+        try:
+            content = src.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            content = f"(file not found at {src})"
+        files[key] = {
+            "content": content,
+            "purpose": spec["purpose"],
+            "drift": bool(spec.get("drift")),
+            "reason": spec.get("reason", ""),
+            "ext": src.suffix.lower(),
+            "name": src.name,
+        }
 
     return files, dir_children
 
@@ -1013,8 +1078,11 @@ function renderFile(path) {
     : '';
 
   const main = $('#main');
+  const pathDisplay = path.startsWith('__external__/')
+    ? path.replace('__external__/', '')
+    : 'gielinor/' + path;
   main.innerHTML = `
-    <div class="path-bar"><code>gielinor/${escapeHtml(path)}</code></div>
+    <div class="path-bar"><code>${escapeHtml(pathDisplay)}</code></div>
     <div class="file-head">
       <h1>${escapeHtml(meta.name)}${toggle}</h1>
     </div>
@@ -1307,25 +1375,31 @@ function renderLanding() {
   const driftCount = Object.values(DATA.files).filter(f => f.drift).length;
 
   const diagram = `\
-gielinor/                                    ← the brain root
+brain/                                       ← TWO BRAINS
+├─ CLAUDE.md                                 ← router (gielinor vs dev brain)
+├─ developer-braindead/CLAUDE.md             ← dev brain entry (build assistant)
 │
-├─ CLAUDE.md, CLAUDE.local.md, .mcp.json, ticks.md  ← BODY (loads first)
-├─ .claude/hooks/*.py + settings.json               ← HOOKS (four guarantees)
-│
-├─ meta/                  ← RULEBOOK (imported into CLAUDE.md each session)
-│   write-rules · modes · archive-discipline · drafts-mechanics · death-and-spawn
-│
-├─ examine/   ← agent's self-model (global)
-├─ niksis8/   ← model of Niklavs (global)
-├─ keepsake/  ← always-surface pins (global)
-├─ lorebook/  ← decisions + assumptions + patch-notes (the build log)
-│
-├─ spellbook/rituals/     ← respawn · bankstanding (canonical procedures)
-│
-└─ players/               ← CHARACTERS (Zezima, Jebrim) — each with the full template:
-       bank · quest-log · spellbook · inventory  (per-player only)
-       examine · niksis8_character · keepsake    (also per-player)
-       _about · persona · CLAUDE.md
+└─ gielinor/                                 ← the main brain
+   │
+   ├─ CLAUDE.md, CLAUDE.local.md, .mcp.json, ticks.md  ← BODY (loads first)
+   ├─ .claude/hooks/*.py + settings.json               ← HOOKS (four guarantees)
+   │
+   ├─ meta/                  ← RULEBOOK (imported into CLAUDE.md each session)
+   │   write-rules · modes · communication-protocol · drafts-mechanics
+   │   archive-discipline · death-and-spawn
+   │
+   ├─ examine/   ← agent's self-model (global)
+   ├─ niksis8/   ← model of Niklavs (global)
+   ├─ keepsake/  ← always-surface pins (global)
+   ├─ lorebook/  ← self-improvement log (the agent about itself)
+   │
+   ├─ spellbook/rituals/     ← respawn · bankstanding · alching
+   │                            (system / global-only / per-player)
+   │
+   └─ players/               ← CHARACTERS (Zezima, Jebrim) — full template each:
+          bank · quest-log · spellbook · inventory  (per-player only)
+          examine · niksis8_character · keepsake    (also per-player)
+          _about · persona · CLAUDE.md · last-alched.md
 `;
 
   const startHere = [
@@ -1340,7 +1414,11 @@ gielinor/                                    ← the brain root
     { path: 'meta/drafts-mechanics.md', why: 'Drafts → confirmed flow + observation rule.' },
     { path: 'meta/death-and-spawn.md', why: 'Crash recovery + reset table.' },
     { path: 'spellbook/rituals/respawn.md', why: 'Canonical load order — must be exactly right (S004 removed old step 6 + refined reconciliation).' },
-    { path: 'spellbook/rituals/bankstanding.md', why: 'Cross-cutting reorganization — its own session mode (S004 rewrite).' },
+    { path: 'spellbook/rituals/bankstanding.md', why: 'System-level cross-cutting reorganization — S005 sharpened to global-only writes; per-player tending moved to alching.' },
+    { path: 'spellbook/rituals/alching.md', why: 'New in S005 — per-player tending ritual paired with bankstanding. Scope, thresholds, six-step procedure.' },
+    { path: 'meta/communication-protocol.md', why: 'New in S005 — the Understanding/Plan preamble rule that applies in every mode and role.' },
+    { path: '__external__/brain/CLAUDE.md', why: 'New in S005 — brain-root router. Distinguishes gielinor (main brain) from developer-braindead (dev brain) and sets the no-cross-read default.' },
+    { path: '__external__/developer-braindead/CLAUDE.md', why: 'New in S005 — dev brain entry point. Build-assistant scope, read-respawn-first, no players/alching/bankstanding here.' },
     { path: 'lorebook/_about.md', why: 'Self-improvement log — redefined in S004; verify the new framing.' },
     { path: 'CLAUDE.md', why: 'Master body — voice, four-guarantees, address-based player invocation.' },
     { path: 'players/_about.md', why: 'Roster + invocation; rewritten in S004 to match address-based rule.' },
@@ -1354,8 +1432,8 @@ gielinor/                                    ← the brain root
     <div class="landing">
       <h1>gielinor/ audit</h1>
       <div class="lede">
-        Single-file audit of the gielinor/ scaffold landed in [[S003]] on 2026-05-20.
-        Walk the tree on the left. Files flagged <span class="kbd" style="color:var(--drift)">DRIFT</span> are where the builder made a non-obvious judgment call worth verifying. Everything else is structurally inert (empty placeholders, .gitkeep markers).
+        Single-file audit of the gielinor/ scaffold landed in [[S003]] on 2026-05-20, with corrections through [[S005]] (alching ritual, communication protocol, brain-root routers).
+        Walk the tree on the left. Files flagged <span class="kbd" style="color:var(--drift)">DRIFT</span> are where the builder made a non-obvious judgment call worth verifying. The two brain-root routers (top-level <code>brain/CLAUDE.md</code> and <code>developer-braindead/CLAUDE.md</code>) live outside gielinor/ and appear only in the linear "File Contents" section below.
       </div>
 
       <div class="cards">
@@ -1422,9 +1500,12 @@ function renderContentsSection() {
       const badge = meta.drift ? '<span class="badge contents-badge">DRIFT</span>' : '';
       const driftBlock = meta.drift ? `<div class="drift contents-drift"><span class="label">⚑ Drift flag</span><div>${escapeHtml(meta.reason)}</div></div>` : '';
       const anchorId = 'content-' + slugify(path);
+      const displayPath = path.startsWith('__external__/')
+        ? path.replace('__external__/', '')
+        : 'gielinor/' + path;
       body += `
         <div class="contents-file" id="${anchorId}">
-          <h3>gielinor/${escapeHtml(path)}${badge}</h3>
+          <h3>${escapeHtml(displayPath)}${badge}</h3>
           <div class="contents-purpose"><span class="label">Purpose</span> ${escapeHtml(meta.purpose)}</div>
           ${driftBlock}
           <pre class="raw contents-raw"><code>${highlightCode(meta.content, meta.ext)}</code></pre>
@@ -1502,7 +1583,7 @@ def build_html(files: dict, dirs: dict) -> str:
   <aside class="sidebar">
     <div class="brand">
       <h1>gielinor / audit</h1>
-      <div class="sub">Phase 1 scaffold · 2026-05-20</div>
+      <div class="sub">Phase 1 scaffold · 2026-05-20 (post-S005)</div>
     </div>
     <button class="home-btn" id="home-btn">↩ overview + all contents</button>
     <div class="tree"></div>

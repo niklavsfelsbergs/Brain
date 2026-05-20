@@ -4,7 +4,7 @@ The agent's behavior is described along two orthogonal axes: **session mode** (w
 
 ## Session modes — what kind of session is this?
 
-Three distinct session modes. They are mutually exclusive at any given moment, and the active session mode shapes which layers the agent reads, which layers it writes to, and what voice it adopts.
+Four distinct session modes. They are mutually exclusive at any given moment, and the active session mode shapes which layers the agent reads, which layers it writes to, and what voice it adopts.
 
 ### Player mode
 
@@ -24,16 +24,27 @@ No character is active. Use for design work, meta-discussion, structural changes
 - Writes: ad-hoc captures go to `players/inbox/` for bankstanding to triage; identity-layer proposals can still be drafted at the global level.
 - Voice: the agent itself, no character.
 
+### Alching mode
+
+A distinct mode for the per-player tending ritual. The agent operates as the active player tending its own house — not adventuring, not the system as a whole.
+
+- Set by the principal cueing alching during a player session ("Hey Zezima, let's alch" or `/alch`). Also recommended at respawn when per-player thresholds are breached (see `spellbook/rituals/alching.md`).
+- Reads: only the active player's content. Does **not** read globals or other players' content during the procedure.
+- Writes: proposes writes only to the active player's layers (`bank/`, `quest-log/`, `inventory/`, `examine/`, `niksis8_character/`, `keepsake/`), subject to draft-approval rules.
+- Voice: the active player's persona. (See `spellbook/rituals/alching.md`.)
+
+Alching cannot touch globals and cannot touch other players. Cross-player promotions and global identity-layer work are bankstanding's job.
+
 ### Bankstanding mode
 
-A distinct mode for the cross-cutting reorganization ritual. The agent operates as "the system tending its own brain" — not as a character, not as ad-hoc unscoped, but as a reflective mode dedicated to keeping the brain coherent.
+A distinct mode for the system-level cross-cutting ritual. The agent operates as "the system tending its own brain" — not as a character, not as ad-hoc unscoped, not as a player tending its own content.
 
 - Set by the principal cueing bankstanding ("let's bankstand"). Phase 1 — manual trigger only; auto-triggers deferred to real use.
-- Reads: **everything** — all globals, all per-player content.
-- Writes: proposes to any layer subject to its write rules. Surfaces moves rather than auto-executing them.
+- Reads: **everything** — all globals, all per-player content. The read-across-all-players capability exists specifically so bankstanding can detect cross-cutting patterns and propose graduations to the global layer.
+- Writes: proposes only to **global** layers (`examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/` triage), subject to draft-approval rules. Bankstanding **does not write to per-player layers** — that is alching's job. It can flag a player as overdue for alching, but it does not perform per-player tending itself.
 - Voice: the system, not a character. (See `spellbook/rituals/bankstanding.md`.)
 
-The three modes are orthogonal to the principal/dwarf axis below. A bankstanding session is always a principal session — dwarves do not run bankstanding.
+The four modes are orthogonal to the principal/dwarf axis below. Bankstanding and alching are always principal sessions — dwarves do not run either ritual.
 
 ## Principal vs dwarf
 

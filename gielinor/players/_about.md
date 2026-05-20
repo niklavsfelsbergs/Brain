@@ -76,6 +76,12 @@ Example: `Hey Zezima, ask Jebrim to look up X` activates Zezima as principal *an
 
 Must be explicit. The principal names which player to invoke. When in doubt about whether a mid-message reference is a delegation or just a topic mention, the agent asks.
 
+## Per-player tending — alching
+
+Each player has its own tending cadence, tracked in `players/<name>/last-alched.md`. **Alching** is the per-player ritual: the agent and principal walk through one player's drafts, bank, quest-log, keepsake, and rejection patterns, scoped strictly to that player's namespace. See `spellbook/rituals/alching.md`.
+
+Bankstanding handles the global, cross-cutting tending and can flag a player as overdue for alching, but it does not perform the per-player work itself. Alching and bankstanding pair: per-player and system-wide.
+
 ## The inbox
 
 `players/inbox/` is a holding pen for **unscoped writes** — captures the agent made without yet knowing which player they belong to. Bankstanding triages items: assign each to a player, archive it, or drop it. Items have a max age (~4 weeks); after that, bankstanding surfaces them for explicit keep-or-drop.

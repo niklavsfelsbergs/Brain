@@ -23,6 +23,18 @@ Anything that defines who the agent thinks I am, who the agent (or a player) thi
 
 Knowledge and observations accumulate freely. Identity and core decisions are gated.
 
+## Ritual write-reach
+
+Three principal-only rituals each have a bounded write surface, layered on top of the table above. The table above governs *what discipline applies to a write*; the ritual reach governs *which layers a write can touch at all in that ritual*.
+
+| Ritual | Reads | Writes (proposes to) |
+|---|---|---|
+| Bankstanding | everything (globals + every player) | globals only — `examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/` triage. **Cannot write to per-player layers.** |
+| Alching | only the active player's layers | only the active player's layers — `bank/`, `quest-log/`, `inventory/`, `examine/`, `niksis8_character/`, `keepsake/`. **Cannot write to globals or to other players.** |
+| Respawn | layers per `spellbook/rituals/respawn.md` | reads only (plus per-turn quest-log discipline once the session is live) |
+
+Dwarves can run none of these rituals. See `modes.md`.
+
 ## What's enforced vs guided
 
 **Hooks enforce (architectural):**

@@ -6,21 +6,24 @@ Named for the RuneScape activity of standing in the bank to reorganize inventory
 
 ## Bankstanding is its own mode
 
-Bankstanding is **a distinct session mode**, separate from player mode and unscoped mode. While bankstanding is running, the agent is not Zezima, not Jebrim, not a no-player ad-hoc operator — it is **the system tending its own brain.** The active persona is "gielinor reflecting on itself," not any character.
+Bankstanding is **a distinct session mode**, separate from player mode, unscoped mode, and alching. While bankstanding is running, the agent is not Zezima, not Jebrim, not a no-player ad-hoc operator — it is **the system tending its own brain.** The active persona is "gielinor reflecting on itself," not any character.
 
-Three session modes exist:
+Four session modes exist:
 
 - **Player mode** — a character (Zezima, Jebrim, future) is active, bounded to that character's domain.
 - **Unscoped mode** — no character active; reads globals, writes go to `players/inbox/` for triage.
-- **Bankstanding mode** — cross-cutting; the agent reads every layer (global + all players), proposes writes to any layer subject to draft-approval rules, exercises responsibilities no single player has.
+- **Alching mode** — per-player tending ritual; reach restricted to the active player's content. See `spellbook/rituals/alching.md`.
+- **Bankstanding mode** — system-level cross-cutting ritual; reach is global, with read access across all players. See below.
 
 See `meta/modes.md` for the full picture, including how this axis is orthogonal to principal-vs-dwarf.
 
-## Reach
+## Reach — strictly global
 
-In bankstanding, the agent reads everything: all global layers (`examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/`) and all per-player content (every player's `bank/`, `examine/`, `niksis8_character/`, `keepsake/`, `quest-log/`, `inventory/`).
+Bankstanding is the **strictly global** ritual. Its primary work happens in the global layers; per-player tending is alching's job.
 
-It proposes writes to any layer the standard write rules permit (see `meta/write-rules.md`). Identity-shaped layers go through drafts; auto-write layers are touched only with care.
+- **Writes:** proposes writes only to global layers — `examine/`, `niksis8/`, `keepsake/`, `lorebook/`, and triage of `players/inbox/`. Subject to the standard draft-approval rules in `meta/write-rules.md`.
+- **Reads:** reads everything — all global layers and all per-player content. The read-across-all-players capability exists specifically so bankstanding can detect cross-cutting patterns and propose graduations to the global layer.
+- **Does not write to per-player layers.** If a player's content needs tending, bankstanding flags it (and may recommend alching for that player); it does not perform the per-player work itself.
 
 ## Why this ritual exists
 
@@ -48,68 +51,60 @@ For each file in the inbox:
 - Propose a destination: a specific player's `bank/notes/`, `examine/drafts/`, `keepsake/proposals/`, or `archive/`.
 - **Flag anything older than ~4 weeks** for explicit keep-or-drop. The age limit prevents the inbox from quietly accumulating forgotten items; if a capture has sat unsorted for a month, the principal decides whether it still earns its place.
 
-### 2. Review identity drafts (global + per-player, together)
+### 2. Review identity drafts in the global layers
 
-Surface all pending drafts across all identity layers:
+Surface all pending drafts across the **global** identity layers:
 
 - `examine/drafts/`
 - `niksis8/drafts/`
 - `lorebook/drafts/`
-- per-player `examine/drafts/` (every active player)
-- per-player `niksis8_character/drafts/` (every active player)
+- `keepsake/proposals/`
 
 Group by layer. One-line summary each. The principal decides on each: approve to `confirmed/`, reject to `rejected/`, or edit-and-approve.
 
-This is the same surface as the `/drafts` command — bankstanding is one of the contexts in which drafts are reviewed in bulk.
+This is the same surface as the `/drafts` command, scoped to globals — bankstanding is one of the contexts in which global drafts are reviewed in bulk. **Per-player drafts are alching's job, not bankstanding's.**
 
 ### 3. Cross-player synthesis — promote recurring patterns to the global layer
 
-Walk through what's been confirmed in each player's `examine/` and `niksis8_character/`. Look for **patterns that recur across players**:
+Read across what's been confirmed in each player's `examine/` and `niksis8_character/`. Look for **patterns that recur across players**:
 
 - A self-observation Zezima has confirmed that also shows up confirmed in Jebrim → propose graduating to **global** `examine/drafts/`. The pattern transcends the character; the global layer is where it belongs.
 - A fact about Niklavs that both Zezima and Jebrim have independently arrived at → propose graduating to **global** `niksis8/drafts/`.
 - An item pinned in multiple per-player `keepsake/current.md` → propose adding to **global** `keepsake/proposals/`.
 
-This is bankstanding's *integrative* job: per-player observations that prove cross-cutting belong at the global layer. Without this step, the global layer never accumulates from real per-player operation.
+This is bankstanding's *integrative* job: per-player observations that prove cross-cutting belong at the global layer. The read crosses every player; the write lands in globals. Without this step, the global layer never accumulates from real per-player operation.
 
-### 4. Decay/compression — graduate quest-log episodes to bank
+### 4. Enforce size budgets on the global `current.md` files
 
-Review recent `quest-log/completed/` entries across all players. Look for entries whose insight has **crystallized into a lasting lesson** — a single session whose value should outlive the session itself.
-
-- Propose drafts for the relevant player's `bank/notes/` (or `examine/drafts/` if it's character-self-knowledge, or `niksis8_character/drafts/` if it's about Niklavs).
-- The bias: most session entries do *not* graduate. Only flag ones with reusable cross-session value.
-
-Episodic memory compressing into semantic memory is bankstanding's job. The respawn ritual doesn't preload `quest-log/`; the principal won't go looking through old sessions on demand. If a lesson lives only in an old quest-log file, it's effectively lost.
-
-### 5. Review `bank/notes/` for staleness (per player)
-
-For each player's `bank/notes/`:
-
-- Look for entries no longer relevant — superseded by newer notes, about work that's done and won't come back, contradicted by current state.
-- Propose moves to `bank/archive/notes/<same path>`.
-
-### 6. Enforce size budgets on `current.md` files
-
-For each `current.md` (global `examine/`, `niksis8/`, `keepsake/`; per-player `examine/`, `niksis8_character/`, `keepsake/`):
+For each global `current.md` (`examine/`, `niksis8/`, `keepsake/`):
 
 - Check token count against the placeholder budget (~2k for `keepsake/`, ~3k for identity layers).
 - If over budget, propose rotations:
   - Which entries are still load-bearing every session? Keep.
   - Which can rotate to `archive/` — still preserved, no longer surfaced? Move.
 
-The principal approves rotations.
+The principal approves rotations. **Per-player `current.md` budgets are alching's responsibility.**
 
-### 7. Review patterns in `rejected/` (all identity layers)
+### 5. Review patterns in the global `rejected/` folders
 
-For each identity layer's `rejected/` folder (global `examine/`, `niksis8/`, `lorebook/`; per-player `examine/`, `niksis8_character/`):
+For each global identity layer's `rejected/` folder (`examine/`, `niksis8/`, `lorebook/`):
 
-- Look for repeated patterns in what got rejected. A pattern in rejections means the agent's model of "what's worth proposing" is miscalibrated.
+- Look for repeated patterns in what got rejected. A pattern in rejections means the agent's model of "what's worth proposing" is miscalibrated at the system level.
 - Surface the pattern as an `examine/drafts/` entry — the agent observing its own miscalibration.
 - If the pattern implies a *change in how the agent operates*, also surface a `lorebook/drafts/` entry — that's exactly what the lorebook is for.
 
-This is a feedback loop. Without it, the same rejected drafts get re-proposed.
+This is a feedback loop. Per-player `rejected/` patterns are alching's job.
 
-### 8. If anything in this bankstanding round changed how the agent operates — log it in lorebook
+### 6. Check per-player alching cadence
+
+For each player, read `players/<name>/last-alched.md`. Flag any player that:
+
+- Has been active recently (recent `quest-log/sessions/` entries) **and**
+- Hasn't been alched in 30+ days.
+
+Surface the list as a recommendation: "Zezima and Jebrim are both overdue for alching." Do not perform the alching — that's the principal's choice, and it has to happen in a session scoped to that player.
+
+### 7. If anything in this bankstanding round changed how the agent operates — log it in lorebook
 
 A bankstanding round that just triages inbox items and rotates keepsake doesn't need a lorebook entry. But if the round produced *behavioral changes* — a new working agreement, a refined ritual, a rule the agent will hold itself to going forward — write a `lorebook/drafts/` entry capturing:
 
@@ -131,8 +126,9 @@ No separate `patch-notes.md` is maintained — the lorebook entries themselves a
 
 ## Related
 
-- `respawn.md` for the other primary ritual.
-- `meta/modes.md` for the three-session-modes framing and the principal-vs-dwarf axis.
-- `meta/drafts-mechanics.md` for the drafts-review machinery used in steps 2 and 7.
+- `respawn.md` for the session-start ritual.
+- `alching.md` for the per-player counterpart to bankstanding.
+- `meta/modes.md` for the four-session-modes framing and the principal-vs-dwarf axis.
+- `meta/drafts-mechanics.md` for the drafts-review machinery used in steps 2 and 5.
 - `meta/archive-discipline.md` for the moving-not-deleting rules.
 - `lorebook/_about.md` for what the self-improvement log captures and what it doesn't.

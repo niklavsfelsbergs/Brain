@@ -1,0 +1,28 @@
+# Local-only body files
+gielinor/CLAUDE.local.md
+
+# Claude Code user-local settings
+.claude/settings.local.json
+**/.claude/settings.local.json
+
+# Python bytecode (hooks generate __pycache__/)
+__pycache__/
+*.pyc
+*.pyo
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key

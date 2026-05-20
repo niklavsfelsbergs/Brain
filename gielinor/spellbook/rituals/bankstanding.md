@@ -43,6 +43,29 @@ Auto-triggers (scheduled, on size-budget threshold, on draft-count threshold) ar
 
 The agent works through each item below in order. **Propose, never silently destroy.** Especially in the early phase, surface every move to the principal for confirmation rather than auto-executing.
 
+### 0. Alch each changed player first
+
+Before bankstanding's own work begins, walk the player roster. For each player, compare the most recent change in their namespace against `players/<name>/last-alched.md`.
+
+**"Changes since last alching" — any of:**
+
+- A new or modified file in `quest-log/in-progress/`, `quest-log/completed/`, or `quest-log/sessions/`.
+- A new or modified file in `bank/notes/`.
+- A new or modified file in `examine/drafts/`, `niksis8_character/drafts/`, or `keepsake/proposals/`.
+- A modification to `inventory/` (volatile, but the mtime is the signal).
+
+The comparison is file mtime vs the timestamp in `last-alched.md`. Any file newer than `last-alched.md` qualifies the player as changed.
+
+**Per player:**
+
+- **No changes since last alching** → skip silently. Move to next player.
+- **Has changes, no in-progress quest** → switch to **alching mode** for that player and run the alching procedure (`spellbook/rituals/alching.md`) to completion. Standard alching: per-player scope, principal approves each draft, `last-alched.md` updated at the end.
+- **Has changes but has an in-progress quest** → flag and ask the principal. Alching a player mid-quest is unusual; the in-progress work may not be "settled enough" to tend. Default: skip the player for this bankstanding round, log the skip in the post-check at step 6.
+
+Once Phase 0 completes for the last changed player (or completes empty, if no player had changes), transition back to **bankstanding mode** and proceed to step 1.
+
+**Mode-transition note.** During Phase 0, the agent is in alching mode per the player being alched — per-player writes are permitted, global writes are forbidden. When Phase 0 ends, the agent transitions back to bankstanding mode — global writes permitted, per-player writes forbidden. This is the only sanctioned mid-ritual mode transition; see `meta/modes.md`.
+
 ### 1. Triage `players/inbox/`
 
 For each file in the inbox:
@@ -95,14 +118,9 @@ For each global identity layer's `rejected/` folder (`examine/`, `niksis8/`, `lo
 
 This is a feedback loop. Per-player `rejected/` patterns are alching's job.
 
-### 6. Check per-player alching cadence
+### 6. Final alching-cadence audit
 
-For each player, read `players/<name>/last-alched.md`. Flag any player that:
-
-- Has been active recently (recent `quest-log/sessions/` entries) **and**
-- Hasn't been alched in 30+ days.
-
-Surface the list as a recommendation: "Zezima and Jebrim are both overdue for alching." Do not perform the alching — that's the principal's choice, and it has to happen in a session scoped to that player.
+Phase 0 has already alched players with changes. This step is the **post-check**: list any player skipped during Phase 0 (e.g., mid-quest skip), and any player whose `last-alched.md` is aging despite no recent activity (so the principal can decide whether to alch defensively). For most rounds this is empty.
 
 ### 7. If anything in this bankstanding round changed how the agent operates — log it in lorebook
 

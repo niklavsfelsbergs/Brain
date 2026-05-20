@@ -1,0 +1,19 @@
+# S007 — 2026-05-21 — Bankstanding Phase 0: alch changed players before bankstanding-proper
+
+Same calendar day as [[S006]]. Niklavs asked whether bankstanding should run today; my read was *no, alch first* because bankstanding consumes drafted/tidied per-player material and we don't have that yet. Niklavs converted that observation into a ritual-level change: enhance bankstanding so it begins by alching every player with changes since their last alch, in one user cue.
+
+- **The design choice.** Two options were on the table: a precondition gate (bankstanding refuses to start until the principal has alched each changed player separately) vs. a Phase 0 (bankstanding *invokes* alching internally for each changed player, then proceeds to its own work). Phase 0 wins on UX — single cue, agent handles sequencing — at the cost of a sanctioned mid-ritual mode transition. Architectural purity was preserved by being explicit: during Phase 0 the agent is in alching mode per the player being alched; once Phase 0 completes the agent transitions back to bankstanding mode. This is now documented as the *only* sanctioned mid-ritual mode transition.
+
+- **"Changes since last alching" — defined explicitly.** File mtime vs the timestamp in `players/<name>/last-alched.md`. A player is "changed" if anything in `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/sessions/`, `bank/notes/`, `examine/drafts/`, `niksis8_character/drafts/`, `keepsake/proposals/`, or `inventory/` is newer than `last-alched.md`. Definition chosen narrow-but-mechanical so the comparison is automatable later.
+
+- **Three per-player cases in Phase 0.** No changes → skip silently. Has changes + no in-progress quest → switch to alching mode and run the alching procedure to completion. Has changes + in-progress quest → flag and ask the principal (default: skip and log to step 6's post-check). The third case is the one S006 surfaced indirectly — alching a player mid-quest is conceptually weird and worth a principal decision rather than a default.
+
+- **Step 6 of bankstanding rewritten.** Was "Check per-player alching cadence — flag overdue players." With Phase 0 in place, that work is done upfront. Step 6 is now a *post-check*: list any player skipped during Phase 0 and any player whose `last-alched.md` is aging despite no recent activity. For most rounds it will be empty — but it's the durable place where Phase 0 skips get recorded.
+
+- **No new files this session.** Four files edited in place: `gielinor/spellbook/rituals/bankstanding.md` (Phase 0 section inserted, step 6 rewritten), `gielinor/spellbook/rituals/alching.md` (third invocation mode added — "as Phase 0 of bankstanding"), `gielinor/meta/modes.md` (Phase 0 mid-ritual transition paragraph in the Bankstanding mode block). Plus this dev-brain quest entry + `respawn.md` update.
+
+**Cascade.** Dev-brain files: this quest-log entry; `respawn.md` overwritten with new "where we are" + "next concrete step."
+
+**Main-brain changes.** Edited in place: `gielinor/spellbook/rituals/bankstanding.md`, `gielinor/spellbook/rituals/alching.md`, `gielinor/meta/modes.md`. Net main-brain delta: 0 new files, 3 files edited.
+
+**Discipline observation.** The S006 pattern repeated cleanly: user surfaced a coupling I hadn't seen (alching-before-bankstanding ordering), I named two options, user pointed at the natural one, design landed in a single batched edit pass. Worth re-flagging the candidate `examine/` entry on the main-brain side: *the user does the conceptual coupling work; the agent does the architectural articulation*. Three sessions in a row this shape has held (S004, S005, S006, S007 if you count this one — that's four). Threshold for promoting to a confirmed `examine/` entry is probably hit.

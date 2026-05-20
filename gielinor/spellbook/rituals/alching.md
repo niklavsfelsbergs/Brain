@@ -38,10 +38,11 @@ Alching is the per-player counterpart to bankstanding. Same discipline (propose,
 
 ## When it runs
 
-**Two invocation modes:**
+**Three invocation modes:**
 
 - **Explicit.** The principal cues alching during a player session — `Hey Zezima, let's alch` or `/alch`.
 - **Recommended at respawn** when per-player thresholds are breached (see below). The agent mentions it once and proceeds normally if the principal declines.
+- **As Phase 0 of bankstanding.** When the principal cues bankstanding, the ritual begins with a Phase 0 that runs alching for each player with changes since their last alch. The alching procedure itself is unchanged — only the invoker (the bankstanding ritual) and the sequencing (multiple players in a row, one after another) differ. See `spellbook/rituals/bankstanding.md` for the Phase 0 spec.
 
 The agent never auto-runs alching. As with bankstanding, principal-supervised only.
 

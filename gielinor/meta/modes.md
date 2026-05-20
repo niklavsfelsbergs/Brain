@@ -44,6 +44,8 @@ A distinct mode for the system-level cross-cutting ritual. The agent operates as
 - Writes: proposes only to **global** layers (`examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/` triage), subject to draft-approval rules. Bankstanding **does not write to per-player layers** — that is alching's job. It can flag a player as overdue for alching, but it does not perform per-player tending itself.
 - Voice: the system, not a character. (See `spellbook/rituals/bankstanding.md`.)
 
+**Phase 0 — mid-ritual alching mode transition.** Bankstanding's procedure begins with a Phase 0 that runs alching for each player with changes since last alching. During Phase 0, the agent is in **alching mode** per the player being alched — per-player writes are permitted, global writes are forbidden. When Phase 0 ends, the agent transitions back to **bankstanding mode** — global writes permitted, per-player writes forbidden. This is the **only sanctioned mid-ritual mode transition**. See `spellbook/rituals/bankstanding.md` for the Phase 0 procedure.
+
 The four modes are orthogonal to the principal/dwarf axis below. Bankstanding and alching are always principal sessions — dwarves do not run either ritual.
 
 ## Principal vs dwarf

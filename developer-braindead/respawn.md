@@ -6,7 +6,7 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-21 (end of [[S006]]).
+**Last updated.** 2026-05-21 (end of [[S007]]).
 
 ## Where we are
 
@@ -21,6 +21,8 @@ What [[S006]] landed:
 3. **Dwarf-spawn annotation.** `gielinor/meta/communication-protocol.md` got a subsection mandating that the Plan line lists dwarves inline (manifest) when the heuristic fires — piggybacks on the already-in-force Understanding/Plan preamble.
 
 Net main-brain delta: +1 file, 4 files edited in place. No new dev-brain entries beyond this session's `respawn.md` overwrite and `S006_*.md` quest-log entry.
+
+[[S007]] (same day) added one more ritual-level change: **bankstanding now starts with a Phase 0 that alches each player with changes since last alch.** Coupling spotted by Niklavs after we discussed whether to bankstand today (answer: not yet, because nothing is drafted/tidied). Single-cue UX — user types "let's bankstand" and the ritual handles the per-player alching sequencing before its own work begins. Architectural purity preserved by making the alching↔bankstanding mode transition mid-ritual the *only* sanctioned mid-ritual mode transition. Three files edited: `gielinor/spellbook/rituals/bankstanding.md` (Phase 0 inserted, step 6 rewritten as a post-check), `gielinor/spellbook/rituals/alching.md` (third invocation mode added), `gielinor/meta/modes.md` (mid-ritual transition paragraph).
 
 What changed in [[S005]] vs [[S004]]:
 
@@ -70,18 +72,21 @@ From [[S004]] / reaffirmed [[S005]]: **build the verification surface alongside 
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S006_handoff_precondition_and_dwarf_spawning.md` — most recent session
-3. `quest-log/S005_alching_preamble_protocol_brain_routers.md` — prior session (alching, preamble, routers)
-4. `quest-log/S004_main_brain_corrections_post_s003.md` — the four corrections
-5. `quest-log/S003_main_brain_phase_1_scaffold.md` — original build session
-6. `bank/plan.md` — current mission state (§B done; §C and beyond open)
-7. **Brain-root router:** `../CLAUDE.md` (note the [[S006]] hand-off no-op clause)
-8. **Main brain entry:** `../gielinor/CLAUDE.md` (note the [[S006]] outgoing-player clarification on the mid-session switching paragraph)
-9. **New main-brain file in [[S006]]:**
-   - `../gielinor/spellbook/skills/spawning-dwarves.md` (the new skill)
-10. **Main-brain files edited in [[S006]]:**
-    - `../gielinor/spellbook/rituals/respawn.md` (mini-respawn Precondition + hand-off note shape spec)
-    - `../gielinor/meta/communication-protocol.md` (dwarf-spawn annotation subsection)
-11. **Audit:** `../gielinor-audit.html` (still reflects S005 state — regenerate next dev-brain session if file count or structure shifts justify a refresh; [[S006]]'s +1 file delta may not warrant it).
+2. `quest-log/S007_bankstanding_phase_0_alching.md` — most recent session
+3. `quest-log/S006_handoff_precondition_and_dwarf_spawning.md` — prior session
+4. `quest-log/S005_alching_preamble_protocol_brain_routers.md` — alching, preamble, routers
+5. `quest-log/S004_main_brain_corrections_post_s003.md` — the four corrections
+6. `quest-log/S003_main_brain_phase_1_scaffold.md` — original build session
+7. `bank/plan.md` — current mission state (§B done; §C and beyond open)
+8. **Brain-root router:** `../CLAUDE.md` (note the [[S006]] hand-off no-op clause)
+9. **Main brain entry:** `../gielinor/CLAUDE.md` (note the [[S006]] outgoing-player clarification on the mid-session switching paragraph)
+10. **Main-brain files most recently changed (latest first):**
+    - `../gielinor/spellbook/rituals/bankstanding.md` ([[S007]] Phase 0 + rewritten step 6)
+    - `../gielinor/spellbook/rituals/alching.md` ([[S007]] third invocation mode)
+    - `../gielinor/meta/modes.md` ([[S007]] mid-ritual transition paragraph)
+    - `../gielinor/spellbook/skills/spawning-dwarves.md` ([[S006]] new skill)
+    - `../gielinor/spellbook/rituals/respawn.md` ([[S006]] mini-respawn Precondition + hand-off note shape spec)
+    - `../gielinor/meta/communication-protocol.md` ([[S006]] dwarf-spawn annotation subsection)
+11. **Audit:** `../gielinor-audit.html` (still reflects S005 state — [[S006]] +1 file, [[S007]] 0 new files; regenerate when the next session adds or moves something the audit indexes).
 
 `bank/decisions/`, `bank/assumptions/`, `bank/open-questions/`, `bank/risks/` are reference material — open as cited.

@@ -1,28 +1,26 @@
 # S001 — 2026-05-20 — Repo orientation: NFE + bi-etl
 
-**Status:** in-progress
+**Status:** in-progress (paused; pick #2 elevated to [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis]])
 **Principal:** Niklavs
 **Player:** Jebrim
-**Last close:** 2026-05-20 (S001)
+**Last close:** 2026-05-21 (S002)
 **No pending external actions.**
 
 ## Where we are
 
-EU Tender 2026 landing note is on disk. Shipping Data Mart landing note is drafted in chat but **not yet written** — principal challenged it as docs-only (not status-verified) and we paused for MCP setup, then for the close-session ritual itself. Picks #3, #4, #5 (SHIPPING-COSTS/carriers, dashboards/shipping_costs_monitoring_nextjs, SHIPPING-COSTS/analysis) untouched.
+Pick #1 (EU Tender 2026) landed at `bank/notes/projects/eu_tender_2026.md`. Pick #2 (Shipping Data Mart) **elevated out of this quest** into its own focused quest (S002) under V1-launch pressure — see [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis]]. Picks #3, #4, #5 (US-side: SHIPPING-COSTS/carriers, dashboards/shipping_costs_monitoring_nextjs, SHIPPING-COSTS/analysis) untouched and remain on this quest.
+
+The Shipping Data Mart landing-note draft below (under "Pending drafts") is **superseded** by S002's eventual output (`bank/notes/projects/shipping_data_mart_v1_gap_analysis.md`). Don't write the old draft. Once S002 lands its output, the draft block here can be cleared.
 
 ## Next concrete step
 
-After respawn, do the 15-minute status pass on the Shipping Data Mart before committing the landing note:
+Wait for S002 to complete (post-V1-launch, post-ETL-check-in). Then return to picks #3, #4, #5:
 
-- `git log --since="6 weeks ago"` on `NFE/projects/1_shipping_data_mart/` to see actual recent activity.
-- Scan bi-etl `dags/enterprise_silver/shipping_data_mart/` per-table READMEs — that's the authoritative implementation side (NFE CLAUDE.md says "if design and implementation disagree, trust bi-etl").
-- Skim `investigation/investigation.md` for thread closure rate (T-01 through T-34 — how many resolved?).
-- Read `mart_vs_dw_parity_issues.md`.
-- Eye `from_playground/`, `orwo_audit/`, `sanity_check_2026-05-13/`, `review/`, `lukasz_documentation/` — likely evidence of actual project state the docs don't reflect.
+- Pick #3: `SHIPPING-COSTS/carriers` — US tender side. Future task per S001 notes: compare/contrast vs EU tender 2026 approach.
+- Pick #4: `dashboards/shipping_costs_monitoring_nextjs`.
+- Pick #5: `SHIPPING-COSTS/analysis`.
 
-Then revise the pending draft below (under "Pending drafts") with verified status and write it to `bank/notes/projects/shipping_data_mart.md`.
-
-After that: continue to deep-dives #3, #4, #5.
+Note: SHIPPING-COSTS is the US tender (distinct from the EU tender 2026 covered in pick #1). The "review vs EU tender" deliverable is the natural synthesis once picks #3 + #5 land.
 
 ## Files / paths to read first
 

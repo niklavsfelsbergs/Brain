@@ -3,8 +3,8 @@
 **Status:** in-progress
 **Principal:** Niklavs (BI analyst, lead on Shipping Data Mart by shipping-domain specialty)
 **Player:** Jebrim
-**Born:** 2026-05-20 (this session, scoping only — execution deferred to next spawn)
-**No pending external actions.**
+**Born:** 2026-05-20 (scoping in S001 session); resumed 2026-05-21 for execution.
+**External actions:** 3 dwarf spawns (D1 ClickUp, D2 bi-etl, D3 Redshift) — all **completed** as of T10. Outputs in sibling files `S002_d1_*.md` / `S002_d2_*.md` / `S002_d3_*.md`.
 
 ## The ask
 
@@ -19,18 +19,26 @@ Task list is **not** to be created in ClickUp yet — draft to chat, Niklavs tri
 
 ## Where we are
 
-Scoping is done. Three-dwarf plan agreed. Execution deferred to next spawn per principal's call.
+S003 (this session): All three dwarves ran cleanly in parallel. D1 walked 93 ClickUp tickets; D2 scanned bi-etl at HEAD `c450d24fb`; D3 probed live `enterprise_silver.*`. Synthesis landed as HTML at `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — the V1 gap matrix + 12-area task list with estimated owners, ready for ETL check-in 2026-05-22 AM.
+
+Dwarf sibling files (`S002_d1_*.md`, `S002_d2_*.md`, `S002_d3_*.md`) remain in `quest-log/in-progress/` until this quest completes; they move with this file into `completed/` when we close out.
 
 ## Next concrete step — for next session
 
-**Spawn the three dwarves in a single message (parallel).** Each is Jebrim-inherited, dwarf write boundary applies (hook-enforced). Brief each one tightly per the briefs below. Then synthesize in principal-Jebrim.
+Resume after the ETL check-in. Principal returns with what the team agreed on. Then:
 
-Before spawning, do these reads (they refresh the picture and prime the dwarf briefs):
+1. Update this entry's resume section with the agreed task list + assignments.
+2. Niklavs pushes the agreed tasks to ClickUp himself (not Jebrim's job).
+3. Decide whether V1 ships with the carve-outs Niklavs chose for Rewallution / SLA-breach / PCS timestamps / ORWO known-NULLs (see Area 9 in the HTML).
+4. If V1 ships clean: move this quest to `completed/` (sibling dwarf files move with it). If follow-ups remain after V1 launch, retitle and keep in-progress.
 
-1. **This file** — for resume context.
-2. `players/jebrim/CLAUDE.md` + `_about.md` + `persona.md` — character context if respawn didn't preload.
-3. `players/jebrim/quest-log/in-progress/S001_2026-05-20_repo-orientation.md` — sibling quest. Picks #3/#4/#5 remain on S001; pick #2 (shipping mart) elevated to this quest.
-4. `bank/notes/projects/eu_tender_2026.md` — only if the EU tender comes up as a consumer concern during synthesis.
+## Files / paths to read first — for next session
+
+1. **This file** — resume context.
+2. `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — the canonical synthesis. Open in browser; sticky-nav.
+3. `quest-log/in-progress/S002_d1_clickup_subtree.md` / `S002_d2_bi_etl_state.md` / `S002_d3_redshift_coverage.md` — dwarf detail if a specific finding needs re-checking.
+4. `players/jebrim/CLAUDE.md` + `_about.md` + `persona.md` — character context if respawn didn't preload.
+5. `quest-log/in-progress/S001_2026-05-20_repo-orientation.md` — sibling. Picks #3/#4/#5 unresumed.
 
 ## Constraints (from principal, this session)
 
@@ -160,3 +168,8 @@ Not drafting it this session because (a) close-session is firing, (b) the observ
 - T6: Principal answered the 5 clarifying questions: ORWO required for V1, NGE-6120 is the epic, repo carries the commentary, bi-etl `main`, task list grouped by area + estimated owner. Asked the meta-question: "How will you do this? Its a lot of work. You will have to spawn dwarves. Would you have known that?"
 - T7: Answered honestly — no, I'd have gone serial without the prompt. Proposed the 3-dwarf plan above. Asked for go-ahead.
 - T8: Principal: "lets close the session and do this in a new spawn." Close-session ritual fires.
+- T9 (2026-05-21): New spawn. Principal cues "lets get to the shipping data mart audit." Jebrim active. Read S001 + S002 for resume context. Spawning 3 Jebrim-inherited dwarves in parallel per S002 plan: D1 (ClickUp NGE-6120 subtree), D2 (bi-etl mart-dir scan), D3 (Redshift coverage probe). Each writes to its sibling file under `quest-log/in-progress/S002_dN_*.md`. Pending until dwarves return.
+- T10 (2026-05-21): All three dwarves returned. D1 walked 93 tickets (16 V1-blocking, 18 V1-followup, 4 out-of-scope, 3 unclear). D2 confirmed 7 of 8 mart tables wired in repo; `dim_carrier_sla` absent. D3 confirmed 7 of 8 tables present + fresh in Redshift; SLA-breach not computable; ORWO 100% NULL on destination + delivered_ts + revenue; Rewallution structurally unusable; `fact_shipment_cost_summary` is wired and fresh but main README still calls it "v2 not built." Three dwarf spawns marked completed.
+- T11 (2026-05-21): Synthesized the V1 gap matrix (sections A–F: Done & verified · Tickets vs reality · In progress + owner · Blocked · Open follow-ups · Surprises not ticketed) and the 12-area task list with estimated owners + severity flags. Drafted to chat.
+- T12 (2026-05-21): Principal asked for HTML deliverable instead of `.md`. Wrote `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — self-contained, sticky-nav, color-coded severity. Principal cued close.
+- T13 (2026-05-21, close): Close-session ritual. Tightened resume sections. Surfaced one self-observation as `examine/drafts/` (dwarf-spawn heuristic; observation-backed by S002 scoping turn + this session's execution). SNNN = S003. Commit pending.

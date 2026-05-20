@@ -42,18 +42,39 @@ players/<name>/
 
 ## How to invoke a player
 
-At respawn the principal is asked which player to embody. Options:
+Players are invoked by **direct address at the start of a message**. There is no preemptive "which player?" prompt at session start.
 
-- **A specific player** — the active player's per-player layers are scoped in; the respawn ritual reads their `CLAUDE.md`, `_about.md`, `persona.md`, `keepsake/current.md`, `examine/confirmed/current.md`, and `niksis8_character/confirmed/current.md`. Then checks `quest-log/in-progress/` for unfinished business.
-- **Unscoped** — no player is active; the session reads only global layers. Use for design work, meta-discussion, structural changes to the system.
+- `Hey Zezima, ...` → activate Zezima.
+- `Hey Jebrim, ...` → activate Jebrim.
+- `Hey unscoped, ...` → drop to no-player mode.
+- **No address** on a subsequent message → continue in whatever player is currently active. **Sticky.**
 
-Mid-session player switch triggers a **mini-respawn** for the new player. See `spellbook/rituals/respawn.md`.
+### First message of a session
+
+- **First message has an address** → the named player is active from the start. The respawn ritual loads their context fully before responding (the agent reads their `CLAUDE.md`, `_about.md`, `persona.md`, `keepsake/current.md`, `examine/confirmed/current.md`, `niksis8_character/confirmed/current.md`, then checks `quest-log/in-progress/`).
+- **First message has no address** → start in **unscoped** mode. No per-player loads run. Use for design work, meta-discussion, ad-hoc captures, or system-level conversation.
+
+### Strict matching rules
+
+- The address must be at the very start of the message. A player mentioned mid-sentence does **not** trigger a switch.
+- Pattern: `Hey {name}` followed by a comma, whitespace, or end-of-message. Case-insensitive on the name.
+- Exact match against the roster only (currently: Zezima, Jebrim, unscoped). No fuzzy matching. A typo is treated as no address — the current player stays active.
+
+### Mid-session player switch
+
+A later message addressing a *different* player than the currently active one (or addressing `unscoped` when scoped, or naming a player when unscoped) triggers a **mini-respawn** for the new player. See `spellbook/rituals/respawn.md` for the procedure.
+
+### Unscoped mode
+
+`Hey unscoped, ...` is a first-class addressable state. Use it when you want to operate outside any character — design work, meta-discussion, structural changes to the system. Captures made in unscoped mode go to `players/inbox/` for bankstanding to triage. The session reads only global layers.
 
 ## Cross-player invocation (dwarf)
 
-A principal of one player can spawn a dwarf in *another* player's namespace. Example: Zezima (principal) spawns a Jebrim-dwarf to handle a work task on the side. The Jebrim-dwarf reads Jebrim's layers, writes to Jebrim's quest-log, and returns a summary to the Zezima-principal. Zezima then notes in her own quest-log that she delegated.
+The address at message start sets the **principal**. Mid-message phrases delegate to another player as a dwarf without changing the principal. Trigger patterns include `ask {name} to ...`, `have {name} ...`, `get {name} to ...`, `let {name} ...`, `{name} should ...` (when used as a delegation).
 
-Must be explicit. The principal names which player to invoke.
+Example: `Hey Zezima, ask Jebrim to look up X` activates Zezima as principal *and* spawns Jebrim as a dwarf for that sub-task. The Jebrim-dwarf reads Jebrim's layers, writes to Jebrim's `quest-log/in-progress/`, and returns a summary to the Zezima-principal. Zezima then notes in *her* quest-log that she delegated.
+
+Must be explicit. The principal names which player to invoke. When in doubt about whether a mid-message reference is a delegation or just a topic mention, the agent asks.
 
 ## The inbox
 

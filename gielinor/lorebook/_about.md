@@ -1,50 +1,60 @@
-# lorebook/ — build log (global)
+# lorebook/ — the agent's self-improvement log
 
-**Cognitive role.** The history of how the agent came to be the way it is. Decisions, assumptions, and a factual record of changes.
+**Cognitive role.** The log of changes the agent decides to make to **how it operates** — the rules it follows, the rituals it runs, the discipline it holds itself to. Decided by the agent, about itself, during bankstanding or reflection.
 
-**Metaphor.** In-game lore plus patch notes. The lore explains the world; the patch notes track what changed.
+**Metaphor.** A wizard's spellbook of *rule-changes* — not the rules themselves (those live in `meta/`), but the record of when and why each rule changed.
 
-This layer is **global only.** Players don't have their own lorebooks — the build history is a property of the system, not of any character.
+## Scope — what this layer is for
 
-## What goes here
+The lorebook is the agent's record of **its own evolution.** When the agent notices that the way it currently operates is wrong, outdated, or could be tightened — and the principal approves the change — that decision lands here.
 
-- **Decisions.** Numbered `D-NNN` entries — the choices that shaped the system. Each entry records the question, the ruling, the alternatives considered, and the reasoning. Wiki-linked from other layers.
-- **Assumptions.** A single file (`assumptions.md`) listing the working assumptions the system is built on. These are explicitly invalidatable — if an assumption is broken by observation, bankstanding flags it.
-- **Patch notes.** A factual change log (`patch-notes.md`). Auto-appended whenever the agent makes a substantive structural or content change. Distinct from quest-log: this is "what changed in the system" rather than "what we did in a session."
+Each entry is a single self-improvement: what was changed, why it was changed, when, and what triggered the change (a specific observation, a failure, a piece of user feedback, a pattern noticed in rejected drafts).
 
-## What does not go here
+**Append-only.** Past entries are not rewritten. When a later entry supersedes an earlier one, the new entry references the old; the old entry remains in `confirmed/` as historical record. When an entry no longer reflects current operation at all, it moves to `archive/`.
 
-- Active rules. The current state of the rulebook lives in `meta/`. Lorebook records the *decision* that produced a rule; meta holds the *rule itself*.
-- Quest narratives. Episodic session content goes in the active player's `quest-log/`.
-- Knowledge about content domains. That's `bank/`.
+## Scope — what this layer is NOT for
+
+- **Construction history** — decisions made while *building* the brain (founding shape, scaffolding choices, initial roster, hook design). That lives in the dev brain (`developer-braindead/bank/`), not here. The dev brain is the place that records *how the agent came to exist*; the lorebook is the place that records *how the agent changes itself once it exists*.
+- **Working assumptions** — those belong in master `CLAUDE.md` (load-bearing always-in-context assumptions) or in `examine/` (self-observed patterns).
+- **Per-session narrative** — that's `quest-log/`. A session might *produce* a lorebook draft, but the session log itself is not a lorebook entry.
+- **Factual change records** ("what files moved during bankstanding") — subsumed by entries read chronologically. Bankstanding produces a lorebook draft only when it changed *how the agent operates*, not for routine triage.
 
 ## Structure
 
 ```
 lorebook/
   _about.md            # this file
-  decisions/           # D-NNN_<slug>.md files, principal-approved
-  drafts/              # proposed decisions and assumption changes
-  assumptions.md       # working assumptions, user-edited
-  patch-notes.md       # auto-appended factual record of changes
+  drafts/              # proposed self-improvements awaiting principal review
+  confirmed/           # approved self-improvements; each entry is its own file
+  archive/             # confirmed entries that no longer reflect current operation
+  rejected/            # drafts the principal turned down (kept; patterns matter)
 ```
+
+Same drafts/confirmed/archive/rejected pattern as the other identity-shaped layers (`examine/`, `niksis8/`, per-player `examine/`, per-player `niksis8_character/`).
+
+## Entry shape
+
+Each entry is a markdown file in `confirmed/`. Filename: `YYYY-MM-DD-<slug>.md`. Date is when the change was approved, not when the trigger happened.
+
+Each entry should answer:
+
+- **What changed** — which rule, ritual, or discipline now operates differently.
+- **Why** — the reasoning. Why this change instead of leaving things alone.
+- **What triggered it** — the specific observation, failure, feedback, or pattern that surfaced the need.
+- **What was affected** — which `meta/` files, rituals, or layer `_about.md` files changed in lockstep.
+- **Supersedes / superseded by** — links to other lorebook entries if any.
 
 ## Write rules
 
-- `decisions/` and `assumptions.md` are user-only for confirmed content; the agent proposes via `lorebook/drafts/`.
-- `patch-notes.md` is auto-write — the agent appends factual change records as they happen.
+Identity-pattern. Drafts auto-write; promotions to `confirmed/` and edits there are user-only and hook-enforced. See `meta/write-rules.md` and `meta/drafts-mechanics.md`.
 
-See `meta/write-rules.md` for the full picture.
+## Rejected drafts are data
 
-## Decision numbering
-
-Decisions are numbered globally and never renumbered. `D-001` is the founding decision (Phase 1 scaffold) and stays `D-001` forever. Archived/superseded decisions get a `superseded-by: D-NNN` field in their frontmatter; they aren't renumbered or removed.
-
-## Brain birthdate
-
-The brain was born **2026-05-20** — the day Phase 1 scaffolding landed. See `patch-notes.md` for the Day 0 entry and `decisions/D-001_phase-1-scaffold.md` for the founding decision.
+`rejected/` is kept on purpose. A pattern in what gets rejected — the same kind of self-improvement proposed and turned down repeatedly — is itself a signal that the agent's model of "what's worth changing" is miscalibrated. Bankstanding reviews these patterns and may surface them as working-agreement updates.
 
 ## Related
 
-- `meta/` for the current rulebook these decisions produced.
-- Every other layer's `_about.md` for cross-links into the decisions that shaped them.
+- `meta/` — the *current* rulebook. Lorebook entries describe how `meta/` came to be the way it is.
+- `spellbook/rituals/bankstanding.md` — the ritual that surfaces opportunities for lorebook drafts.
+- `examine/` — the agent's self-model. Observations in `examine/` may eventually produce a lorebook entry (if the observation implies a behavioral change).
+- `developer-braindead/bank/main-brain-construction/` — where the original founding decisions (D-001, D-002, the day-0 patch notes) now live.

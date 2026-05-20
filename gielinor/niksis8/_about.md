@@ -40,6 +40,10 @@ niksis8/
 
 Drafts auto-write. Promotions and edits to `confirmed/` are user-only and hook-enforced. See `meta/write-rules.md`.
 
+## Rejected drafts are data
+
+`rejected/` is kept on purpose. A repeated pattern in what gets rejected — the same kind of claim about Niklavs proposed and turned down again — means the agent is mis-modelling him in a specific way. Bankstanding surfaces these patterns; a recurring rejection may itself be an observation worth confirming ("the agent keeps inferring X about me from work context; the truth is closer to Y").
+
 ## Related
 
 - `players/<name>/niksis8_character/` for what each player knows about Niklavs through their specific relationship.

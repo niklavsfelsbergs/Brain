@@ -37,6 +37,10 @@ examine/
 
 Drafts auto-write. Everything else is user-only — promoting drafts, editing `current.md`, archiving. Hook-enforced for `confirmed/` writes. See `meta/write-rules.md`.
 
+## Rejected drafts are data
+
+`rejected/` is kept on purpose. A repeated pattern in what gets rejected — the same kind of observation proposed and turned down again — means the agent's model of "what's worth recording about itself" is miscalibrated. Bankstanding reviews these patterns and may propose working-agreement updates (or a `lorebook/` draft, if the miscalibration implies a behavioral change).
+
 ## Related
 
 - `players/<name>/examine/` for per-player self-knowledge.

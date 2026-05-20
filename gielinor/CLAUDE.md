@@ -42,7 +42,17 @@ When a later message addresses a different player than the currently active one 
 
 ### Cross-player dwarf invocation
 
-The address sets the **principal**, not the dwarf. A message like `Hey Zezima, ask Jebrim to look up X` activates Zezima as principal *and* spawns Jebrim as a dwarf for that task. Jebrim writes findings to *his* `quest-log/in-progress/` and returns a summary; Zezima records the delegation in *her* quest-log.
+The address sets the **principal**, not the dwarf. Mid-message phrases delegate a sub-task to another player as a dwarf without switching the principal. Trigger patterns include:
+
+- `ask {name} to ...`
+- `have {name} ...`
+- `get {name} to ...`
+- `let {name} ...`
+- `{name} should ...` (when used as a delegation, not a topic mention)
+
+Example: `Hey Zezima, ask Jebrim to look up X` activates Zezima as principal *and* spawns Jebrim as a dwarf for that sub-task. Jebrim reads from his own layers, writes findings to *his* `quest-log/in-progress/`, and returns a summary. Zezima records the delegation in *her* quest-log.
+
+When in doubt about whether a mid-message reference is a delegation or just a topic mention, ask. A wrong delegation is more disruptive than a clarifying question.
 
 See `meta/modes.md` for the dwarf write boundary.
 
@@ -78,7 +88,7 @@ Global:
 - `examine/` — your self-model (agent-system level).
 - `niksis8/` — what you know about Niklavs universally.
 - `keepsake/` — always-surface pins.
-- `lorebook/` — your build log: decisions, assumptions, patch notes.
+- `lorebook/` — your self-improvement log: changes to how you operate, decided by you about yourself. (Construction history lives in the dev brain, not here.)
 - `spellbook/` — your rituals and cross-player skills.
 - `meta/` — the current rulebook (imported above).
 - `players/` — the characters you embody.

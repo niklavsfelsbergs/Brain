@@ -8,7 +8,11 @@
 #   - quest-log/in-progress/... (any player)
 #   - quest-log/completed/...   (any player)
 #   - inventory/...             (any player)
-#   - lorebook/patch-notes.md
+#
+# Identity-shaped layers (examine/, niksis8/, niksis8_character/, lorebook/,
+# keepsake/) and the rulebook (meta/, spellbook/rituals/) are off-limits to
+# dwarves entirely — those changes come from principal reflection, not from
+# task-execution by a sub-agent.
 #
 # See meta/modes.md for the full picture.
 
@@ -24,7 +28,6 @@ ALLOWED_PATTERNS = [
     "/quest-log/in-progress/",
     "/quest-log/completed/",
     "/inventory/",
-    "/lorebook/patch-notes.md",
 ]
 
 
@@ -65,7 +68,8 @@ def main() -> None:
         print(
             f"BLOCKED: dwarves cannot write to {rel}.\n"
             f"  Allowed: bank/notes, quest-log/in-progress, quest-log/completed,\n"
-            f"           inventory, lorebook/patch-notes.md\n"
+            f"           inventory.\n"
+            f"  Identity layers and the rulebook are principal-only.\n"
             f"  See meta/modes.md.",
             file=sys.stderr,
         )

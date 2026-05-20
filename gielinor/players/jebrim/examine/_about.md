@@ -31,6 +31,10 @@ examine/
 
 Drafts auto-write. Promotions to `confirmed/` and edits to `current.md` are user-only and hook-enforced. See `gielinor/meta/write-rules.md` and `gielinor/meta/drafts-mechanics.md`.
 
+## Rejected drafts are data
+
+`rejected/` is kept on purpose. A repeated pattern in Jebrim's rejections means the agent's model of what's worth recording *about Jebrim* is miscalibrated. Bankstanding surfaces these patterns and may propose updates to Jebrim's working agreements, or graduate the pattern to the global `examine/` if it turns out to be system-level rather than character-specific.
+
 ## Related
 
 - `gielinor/examine/` for the system-level self-model.

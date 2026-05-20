@@ -31,6 +31,10 @@ niksis8_character/
 
 Drafts auto-write. Promotions are user-only and hook-enforced. See `gielinor/meta/write-rules.md`.
 
+## Rejected drafts are data
+
+`rejected/` is kept on purpose. A repeated pattern in what Zezima's model-of-Niklavs gets wrong — the same kind of reflective-register inference proposed and turned down again — means Zezima is mis-reading Niklavs in a specific way. Bankstanding surfaces these patterns; a recurring rejection may itself be the observation worth confirming (e.g., "Zezima keeps assuming Niklavs is unresolved on X when he's actually just sitting with it on purpose").
+
 ## Related
 
 - `gielinor/niksis8/` for the universal model.

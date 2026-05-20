@@ -6,80 +6,66 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-20 (end of [[S003]]).
+**Last updated.** 2026-05-20 (end of [[S004]]).
 
 ## Where we are
 
-Phase 1 complete on the main-brain side. [[S001]] bootstrapped the dev brain. [[S002]] restructured it around RuneScape layers ([[D-006]]). [[S003]] built the main brain Phase 1 scaffold at `Documents/GitHub/brain/gielinor/` ([[D-007]] referencing main-brain [[D-001]]), then added the address-based player invocation rule (main-brain [[D-002]], same session).
+Two sessions ago [[S003]] built the main brain Phase 1 scaffold at `Documents/GitHub/brain/gielinor/`. The session that just ended ([[S004]]) built the audit tool Niklavs asked for and landed four corrections he surfaced after reviewing it. The main brain is now ready for first real use.
 
-The main brain exists. Its founding decision is recorded; its rulebook is in `gielinor/meta/`; its rituals are defined; its four hooks are wired; Zezima and Jebrim are scaffolded as players with minimal `_about.md`, `persona.md`, and `CLAUDE.md`. Player invocation is by address at message start (`Hey Zezima, ...` etc., sticky, strict matching) — no preemptive prompt. Most folders are empty by design — content lands through real use.
+What changed in [[S004]] vs [[S003]]:
 
-The dev brain's job has shifted from **designing** the main brain to **observing and refining** it.
+1. **Lorebook redefined** — was `{drafts, decisions/, assumptions.md, patch-notes.md}`, now is the identity-pattern `{drafts, confirmed, archive, rejected}`. It is the agent's **self-improvement log** — what changed in how *it* operates, decided by *it* about *itself*. Construction history (main-brain [[D-001]], [[D-002]], the original patch-notes and assumptions placeholder) moved to `developer-braindead/bank/main-brain-construction/`.
+2. **Three session modes** — `meta/modes.md` now leads with player / unscoped / bankstanding as a session-mode axis, orthogonal to the principal/dwarf role axis. Bankstanding is explicitly its own mode with cross-cutting reach.
+3. **Bankstanding rewritten** — adds explicit mode-framing at the top, a new step 3 (cross-player synthesis: promote recurring per-player patterns to the global layer), drops the assumptions/patch-notes steps, replaces them with "log behavioral changes to `lorebook/drafts/`."
+4. **Player invocation gap closed** — `players/_about.md` rewritten to match the address-based model (it was the last file still describing a preemptive prompt). Cross-player dwarf trigger phrases enumerated in both master `CLAUDE.md` and `players/_about.md`.
+5. **Tightenings** — "Rejected drafts are data" section added to the six identity-layer `_about.md` files. Reconciliation prompt in `respawn.md` refined to three explicit options including "reconcile the pending action externally first," with an explicit "do not auto-resume" rule.
+6. **Audit tool** — `gielinor-audit.html` at brain root. Single self-contained HTML, structural audit + linear verbatim contents section. `build_audit.py` is the re-runnable generator; all annotations updated for S004 changes.
+
+Net main-brain state: 51 substantive files (down 5 from end-of-[[S003]] since 4 moved out; placeholder `.gitkeep`s aren't substantive). The brain has not yet been run on a real task.
 
 ## Next concrete step — START HERE
 
-**Build an audit HTML for `gielinor/`.** Niklavs built a large system in ~3 hours and explicitly asked, end-of-[[S003]]: *"I need to understand what I've built so I can correct it before it's too late."* He needs to verify what was actually written against what he intended, before running the main brain on real work and accumulating content on top of a possibly-drifted base.
-
-Specified shape (all three points confirmed by Niklavs at end of [[S003]]):
-
-- **Scope:** just `gielinor/`. Not the dev-brain updates.
-- **Format:** one self-contained `.html` file. Double-click to open. No JS dependencies, no external assets.
-- **Contents:** full file contents inlined (not summaries).
-
-Required structure:
-
-- **Left nav.** Collapsible tree mirroring `gielinor/`. Click a file → it loads in the right pane.
-- **Landing view (right pane, default).** Architecture diagram showing the layer model (body / hooks / rulebook / global layers / rituals / players). Summary counts (directories, files). A "start auditing here" list — hooks first, since they bind hardest; then the rulebook in `meta/`; then the rituals; then the founding decisions [[D-001]] and [[D-002]]; then per-player content.
-- **File view (right pane, per file).**
-  - One-sentence **purpose** (what role this file plays).
-  - **Drift flags** callout — a visible badge on any file where the builder (me, in [[S003]]) made a non-obvious judgment call Niklavs should double-check. Examples to flag: every `_about.md` (judgment in framing the metaphor and rules), `D-001` and `D-002` (full content authored, not just structured), all `persona.md` and player `_about.md` files (character framing is interpretive), the four hook scripts (security boundary; verify the regexes and the env-var assumption are right), `CLAUDE.md` (master + per-player; tone choices), the rituals (load order is canonical, must be exactly right).
-  - **Full file contents**, syntax-highlighted by extension (markdown rendered or raw-toggleable; Python highlighted; JSON highlighted).
-  - **Cross-links** to related decisions and other files (clicking a `[[D-001]]` style link or a `gielinor/meta/...` path opens that file in the same pane).
-
-**Styling:** functional and dense. Monospace headings, tight spacing, dark mode. Audit tool, not a pitch deck. He's scanning for "did the builder write what I asked," not reading for pleasure.
-
-**Self-imposed constraints for the build:**
-
-- Embed file contents as JSON inline in the HTML — don't reference external files. The audit must work standalone.
-- No external CSS/JS — inline everything. Single file, double-click open.
-- Don't paraphrase file contents in the "purpose" line — that defeats the audit. Purpose describes the role of the file in the architecture; the contents view shows what's actually in it.
-- Be honest in drift flags. Where the builder extended Niklavs's sketches, say so. Where the builder authored content from scratch (e.g., the design rationale paragraphs in `_about.md` files), say so. Niklavs's whole reason for asking is to catch this.
-
-When the audit HTML lands, save it as `gielinor-audit.html` at the brain root (`Documents/GitHub/brain/gielinor-audit.html`) so it sits next to both brains without being inside either.
-
-## After the audit
-
-Once Niklavs has reviewed the audit and made any corrections to `gielinor/`, the next concrete step is **run the main brain.** Open a Claude Code session in `Documents/GitHub/brain/gielinor/` and exercise it on a real task — likely a Jebrim work session against `Documents/bi-analytics-main/NFE/` or `Documents/bi-etl/`, since that's where bank-grounded content can start accumulating.
+**Run the main brain.** Open a Claude Code session in `Documents/GitHub/brain/gielinor/` and exercise it on a real task. The most natural first task is a Jebrim work session — likely against `Documents/bi-analytics-main/NFE/` or `Documents/bi-etl/`, since that's where bank-grounded content can start accumulating. A Zezima reading-reflection session is the other natural option.
 
 What to watch for during the first real use:
 
-1. **Address-based invocation in action.** First message likely opens with `Hey Jebrim, ...`. Does the agent route correctly on the first turn (no preemptive "which player?" prompt)? Does sticky behavior hold across subsequent un-addressed turns? Try a mid-session switch (`Hey Zezima, ...`) and a cross-player dwarf (`Hey Jebrim, ask Zezima for ...`).
-2. Does the rest of the respawn ritual feel right? Where does it drag, what's missing?
-3. Do the hooks fire as expected? Test them deliberately — try to write to a `confirmed/` path, try to delete a file under `gielinor/`. They should block.
-4. Does Jebrim's persona hold up, or does it drift? Observation goes in `gielinor/players/jebrim/examine/drafts/`.
-5. When does the agent want to write something it can't? Each "wanted to write X but couldn't" is an observation about the write rules.
-6. Per-turn quest-log discipline — does it actually happen? If not, the discipline rule needs a hook backing it.
+1. **Address-based invocation in action.** The first message likely opens with `Hey Jebrim, ...` or `Hey Zezima, ...`. Does the agent route correctly on the first turn (no preemptive "which player?" prompt)? Does sticky behavior hold across subsequent un-addressed turns? Try a mid-session switch (`Hey Zezima, ...` mid-Jebrim) and a cross-player dwarf invocation (`Hey Jebrim, ask Zezima for ...` or `Hey Zezima, have Jebrim look up ...`).
+2. **Does the respawn ritual feel right?** Now that step 6 (read assumptions) is gone, does the load order still feel complete? Are the per-player sub-steps (a-g) in the right order? Where does it drag, what's missing?
+3. **Do the hooks fire as expected?** Test them deliberately — try to write to a `confirmed/` path (including the new `lorebook/confirmed/`), try to delete a file under `gielinor/`. They should block.
+4. **Does Jebrim's persona hold up, or does it drift?** Observation goes in `gielinor/players/jebrim/examine/drafts/`. Same for Zezima if she's exercised.
+5. **When does the agent want to write something it can't?** Each "wanted to write X but couldn't" is an observation about the write rules — a candidate `lorebook/drafts/` entry.
+6. **Per-turn quest-log discipline** — does it actually happen? If not, the discipline rule needs a hook backing it.
+7. **First lorebook entry candidate.** The first real use may itself surface a self-improvement worth recording — that becomes the first `lorebook/drafts/` entry, and the principal's review of it is the first real test of the new lorebook flow.
 
-After first real use, run a dev-brain session to capture observations and update [[plan]] §C-§G with what surfaced.
+After the first real use, run a dev-brain session to capture observations and update `[[plan]]` §C-§G with what surfaced.
 
 ## Open at the start of next session
 
-- **§C Pilot definition** — data source, "concerning" definition, output channel. Now decoupled from §B (which is done). Drives §B-class architecture refinements through real use.
+- **§C Pilot definition** — data source, "concerning" definition, output channel. Drives §B-class architecture refinements through real use.
 - **§E Gates layer** — blocked on [[Q-002]] (async gates). Pick up when a real workflow surfaces the need.
 - **§H.3 brain-zone taxonomy** — content for `player/working-agreements.md`. Not blocking but worth landing.
 - **§H.4 identity ↔ main-brain interaction** — how `examine/I-NNN` entries here interact with main-brain `examine/` and per-player `examine/`. Decide when an identity observation from dev work needs to land in the main brain too.
 
-## Carried-over observation from [[S003]]
+## Carried-over observation
 
-Niklavs has been consistent across [[S001]]→[[S002]]→[[S003]] about **structure-first, content earns its way in.** Worth surfacing in `examine/` as a candidate identity entry at next bankstanding. Currently structural memory only — risks fading if not captured.
+From [[S003]]: **structure-first, content earns its way in.** Reaffirmed in [[S004]] when Niklavs surfaced corrections within hours rather than letting content accumulate against a drifted base. Worth surfacing in `examine/` as a candidate identity entry at next bankstanding. Currently structural memory only.
+
+From [[S004]]: **build the verification surface alongside the artifact, not after.** The audit HTML earned its weight immediately — drift flags led the eye to the spots that needed adjustment. Also a candidate `examine/` entry.
 
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S003_main_brain_phase_1_scaffold.md` — most recent session
-3. `bank/plan.md` — current mission state
-4. `bank/decisions/D-007_main_brain_phase_1_scaffold_landed.md` — meta-decisions that shaped the build
-5. **Main brain entry:** `../gielinor/CLAUDE.md` and `../gielinor/lorebook/patch-notes.md` (Day 0 + the player-invocation entry)
-6. **Main brain decisions:** `../gielinor/lorebook/decisions/D-001_phase-1-scaffold.md` and `../gielinor/lorebook/decisions/D-002_player_invocation_by_address.md`
+2. `quest-log/S004_main_brain_corrections_post_s003.md` — most recent session, has the corrections list
+3. `quest-log/S003_main_brain_phase_1_scaffold.md` — previous session (the build)
+4. `bank/plan.md` — current mission state (§B done; §C and beyond open)
+5. **Main brain entry:** `../gielinor/CLAUDE.md` (note the new layer-index lorebook description and the expanded cross-player dwarf triggers)
+6. **Main brain redefined layers:**
+   - `../gielinor/lorebook/_about.md` (the new self-improvement-log framing)
+   - `../gielinor/meta/modes.md` (the new three-session-modes section)
+   - `../gielinor/spellbook/rituals/bankstanding.md` (the mode-aware rewrite)
+   - `../gielinor/spellbook/rituals/respawn.md` (step 6 removed; reconciliation refined)
+   - `../gielinor/players/_about.md` (invocation section rewritten)
+7. **Construction history (relocated):** `bank/main-brain-construction/_about.md` plus the four files there.
+8. **Audit:** `../gielinor-audit.html` (double-click to open; reflects S004 state).
 
 `bank/decisions/`, `bank/assumptions/`, `bank/open-questions/`, `bank/risks/` are reference material — open as cited.

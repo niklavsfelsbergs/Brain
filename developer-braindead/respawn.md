@@ -6,11 +6,21 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-20 (end of [[S005]]).
+**Last updated.** 2026-05-21 (end of [[S006]]).
 
 ## Where we are
 
-Three sessions ago [[S003]] built the main brain Phase 1 scaffold at `Documents/GitHub/brain/gielinor/`. [[S004]] landed four corrections after Niklavs reviewed the audit. [[S005]] landed three more changes on top: a new per-player ritual (**alching**), a new universal **Understanding/Plan preamble protocol**, and the two missing **CLAUDE.md routers** at brain root and inside the dev brain.
+Main brain has been exercised on real work — Jebrim ran two player-side sessions today: S001 (repo orientation + close-session ritual adoption) and S002 (Shipping Data Mart V1 gap-analysis scoping). Both produced quest-log entries and bank notes; S002 is mid-execution with three dwarves planned but not yet spawned.
+
+[[S006]] (this dev-brain session) was triggered by a failure mode surfaced *during* the brain-root → dev-brain transition: I attempted to bulk-read Jebrim's in-progress S002 quest file to "write a hand-off note" when no player had been active in the current session at all. Two pushes from Niklavs got the conceptual error named: the brain-root and master `CLAUDE.md` both said "previously active player's `quest-log/in-progress/` (if any) gets a hand-off note" — which I read as "any in-progress file on disk" rather than "outgoing player in *this session*."
+
+What [[S006]] landed:
+
+1. **Hand-off note precondition (3 files).** `gielinor/spellbook/rituals/respawn.md` mini-respawn step 1 now leads with an explicit **Precondition** — skipped when no outgoing player exists this session — and the step itself defines the note's shape (one-line marker, "do not re-read or summarize the quest's existing content"). `gielinor/CLAUDE.md` and `brain/CLAUDE.md` both got matching clarifications.
+2. **Spawning-dwarves skill (new).** `gielinor/spellbook/skills/spawning-dwarves.md` codifies the dwarf workflow end-to-end: trigger heuristic (≥2 independent paths + amplifier), pre-flight check, briefing template, **background-by-default** channel, status-on-ping, completion-weave, dwarf quest-log streaming discipline, anti-patterns. Heuristic seeded from Jebrim's own S002 self-observation.
+3. **Dwarf-spawn annotation.** `gielinor/meta/communication-protocol.md` got a subsection mandating that the Plan line lists dwarves inline (manifest) when the heuristic fires — piggybacks on the already-in-force Understanding/Plan preamble.
+
+Net main-brain delta: +1 file, 4 files edited in place. No new dev-brain entries beyond this session's `respawn.md` overwrite and `S006_*.md` quest-log entry.
 
 What changed in [[S005]] vs [[S004]]:
 
@@ -26,22 +36,23 @@ Net main-brain state: +4 files inside `gielinor/` over end-of-[[S004]], plus 2 n
 
 ## Next concrete step — START HERE
 
-**Run the main brain.** Same as end of [[S004]] — open a Claude Code session in `Documents/GitHub/brain/gielinor/` and exercise the brain on a real task. Most natural first task is still a Jebrim work session against `Documents/bi-analytics-main/NFE/` or `Documents/bi-etl/`, or a Zezima reading-reflection session.
+**Resume Jebrim S002 and exercise the new spawning-dwarves skill.** Jebrim's S002 quest is mid-execution with three dwarves planned (D1 ClickUp subtree, D2 bi-etl scan, D3 Redshift coverage). That spawn wave will be the **first real test** of the [[S006]] skill — specifically the background-by-default channel, the Plan-line manifest annotation, and the status-on-ping behavior. Watch for friction during real use; that's the design feedback we're after.
 
-What to watch for during the first real use (updated from [[S004]] with S005 additions):
+Secondary follow-ups, in priority order:
 
-1. **Understanding/Plan preamble in practice.** Does the agent open every turn with the two-line preamble? Does it compress correctly on trivial asks? Does the voice adapt to player (Jebrim terse, Zezima reflective) without becoming a robotic recital? Does the preamble actually catch a misunderstanding at any point, or is it dead weight in practice?
-2. **Address-based invocation in action.** First message likely opens with `Hey Jebrim, ...` or `Hey Zezima, ...`. Routes correctly on the first turn (no preemptive "which player?" prompt)? Sticky across un-addressed follow-ups? Mid-session switch (`Hey Zezima, ...` mid-Jebrim) works? Cross-player dwarf invocation (`Hey Jebrim, ask Zezima for ...`) works?
-3. **Respawn ritual feel.** Does the load order still feel complete? Per-player sub-steps (a–g) in the right order? Where does it drag, what's missing?
-4. **Hook enforcement.** Try to write to a `confirmed/` path (including `lorebook/confirmed/`). Try to delete a file under `gielinor/`. Both should block.
-5. **First alching candidate.** After a few sessions on a player, the thresholds may breach and a recommendation should surface at respawn. When it does, run alching deliberately to validate the six-step procedure end-to-end. First real alching round may itself surface adjustments to the ritual.
-6. **Bankstanding vs alching boundary.** When something surfaces during alching that feels system-level rather than per-player, does the agent correctly defer it to next bankstanding rather than promoting to globals from inside alching?
-7. **Persona drift.** Does Jebrim's persona hold up? Same for Zezima if exercised. Observations to `gielinor/players/<name>/examine/drafts/`.
-8. **Write-rule frictions.** "Wanted to write X but couldn't" each becomes an observation about the rules — candidate `lorebook/drafts/` entry.
-9. **Per-turn quest-log discipline.** Does it actually happen? If not, the discipline rule needs a hook backing it.
-10. **First lorebook entry candidate.** First real use may surface a self-improvement worth recording — first `lorebook/drafts/` entry, and the principal's review of it is the first real test of the new lorebook flow.
+1. **Draft the deferred dev-brain records.** A `D-NNN` decision capturing the hand-off wording fix (context → decision → alternatives → consequences). An `I-NNN` examine draft on the failure mode itself — *conflating disk-state with session-state, and the bulk-read-to-write-a-marker reflex.* Both were proposed at the end of [[S006]] but user cued close before they landed.
+2. **Watch for the third occurrence pattern.** [[S004]] / [[S005]] / [[S006]] all surfaced via pushback after the agent committed to a wrong-shaped action. If a fourth occurrence lands, that's the threshold for promoting "principal pushback is the primary ambiguity signal" to a confirmed `examine/` entry in the main brain.
 
-After the first real use, run a dev-brain session to capture observations and update `[[plan]]` §C–§G with what surfaced.
+What to watch for during the dwarf spawn (specific to [[S006]] additions):
+
+1. **Dwarf-spawn heuristic firing correctly.** When the principal hits the three-dwarf wave for S002, does the Plan-line manifest annotation actually appear? Does the principal go background-by-default, or fall back to foreground blocking spawn?
+2. **Status-on-ping behavior.** When the user asks "status?" mid-wave, does the principal tail siblings since last check (cheap) or re-read the whole file (expensive)? Friction here gets flagged for the hook-vs-discipline call.
+3. **Completion-weave timing.** Does each dwarf's completion get surfaced in the next response, or batched silently until all return? The skill says next response; verify.
+4. **Synthesis gate.** Principal must wait for *all* dwarves before synthesizing unless user cues otherwise. Watch for premature synthesis on partial returns.
+5. **Hand-off note shape — verified by absence.** Next mid-session player switch (or player→unscoped switch) should produce a one-line marker, not a bulk-read prelude. If the agent still bulk-reads, the fix didn't land at the behavior level — only at the rule level.
+6. **Carry-over from prior watch-list:** Understanding/Plan preamble in practice (compress correctly? voice adapts?); address-based invocation (sticky? mid-session switch?); hook enforcement (`confirmed/` writes, file deletes — both should block); per-turn quest-log discipline.
+
+After the dwarf wave completes, run a dev-brain session to capture observations and write the deferred `D-NNN` + `I-NNN` drafts.
 
 ## Open at the start of next session
 
@@ -59,21 +70,18 @@ From [[S004]] / reaffirmed [[S005]]: **build the verification surface alongside 
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S005_alching_preamble_protocol_brain_routers.md` — most recent session
-3. `quest-log/S004_main_brain_corrections_post_s003.md` — prior session (the four corrections)
-4. `quest-log/S003_main_brain_phase_1_scaffold.md` — original build session
-5. `bank/plan.md` — current mission state (§B done; §C and beyond open)
-6. **Brain-root router:** `../CLAUDE.md` (new in [[S005]])
-7. **Main brain entry:** `../gielinor/CLAUDE.md` (note the new "Communication protocol — read first" section near the top and the new `meta/communication-protocol.md` in the imports)
-8. **New main-brain files in [[S005]]:**
-   - `../gielinor/meta/communication-protocol.md` (the Understanding/Plan rule)
-   - `../gielinor/spellbook/rituals/alching.md` (the new per-player ritual)
-9. **Main-brain files significantly rewritten in [[S005]]:**
-   - `../gielinor/spellbook/rituals/bankstanding.md` (global-only scope; 7-step procedure)
-   - `../gielinor/meta/modes.md` (four-mode framework)
-   - `../gielinor/meta/write-rules.md` (ritual write-reach table)
-   - `../gielinor/players/_about.md` (alching pairing)
-   - `../gielinor/players/jebrim/persona.md` and `../gielinor/players/zezima/persona.md` (preamble notes)
-10. **Audit:** `../gielinor-audit.html` (double-click to open; reflects S005 state).
+2. `quest-log/S006_handoff_precondition_and_dwarf_spawning.md` — most recent session
+3. `quest-log/S005_alching_preamble_protocol_brain_routers.md` — prior session (alching, preamble, routers)
+4. `quest-log/S004_main_brain_corrections_post_s003.md` — the four corrections
+5. `quest-log/S003_main_brain_phase_1_scaffold.md` — original build session
+6. `bank/plan.md` — current mission state (§B done; §C and beyond open)
+7. **Brain-root router:** `../CLAUDE.md` (note the [[S006]] hand-off no-op clause)
+8. **Main brain entry:** `../gielinor/CLAUDE.md` (note the [[S006]] outgoing-player clarification on the mid-session switching paragraph)
+9. **New main-brain file in [[S006]]:**
+   - `../gielinor/spellbook/skills/spawning-dwarves.md` (the new skill)
+10. **Main-brain files edited in [[S006]]:**
+    - `../gielinor/spellbook/rituals/respawn.md` (mini-respawn Precondition + hand-off note shape spec)
+    - `../gielinor/meta/communication-protocol.md` (dwarf-spawn annotation subsection)
+11. **Audit:** `../gielinor-audit.html` (still reflects S005 state — regenerate next dev-brain session if file count or structure shifts justify a refresh; [[S006]]'s +1 file delta may not warrant it).
 
 `bank/decisions/`, `bank/assumptions/`, `bank/open-questions/`, `bank/risks/` are reference material — open as cited.

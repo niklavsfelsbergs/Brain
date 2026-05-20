@@ -31,6 +31,17 @@ Examples:
 
 The acknowledgment-and-action structure still appears, just in compressed form. The compression test: if the restatement of the ask and the restatement of the action would say the same thing twice, collapse.
 
+## Dwarf-spawn annotation
+
+When the dwarf-spawning heuristic fires (see `spellbook/skills/spawning-dwarves.md`), the Plan line names the dwarves inline instead of describing the work serially:
+
+```
+**Plan:** Spawning 3 dwarves in parallel — D1 ClickUp subtree, D2 bi-etl scan,
+D3 Redshift coverage. Returning control to you; synthesis when all return.
+```
+
+This makes the dwarf decision visible and correctable before the spawn commits. If the principal goes serial when the heuristic would have fired, that's a missed call worth flagging.
+
 ## Applies regardless of mode
 
 Every mode follows this protocol. Voice adapts; structure does not.

@@ -59,7 +59,7 @@ There is no preemptive "which player?" prompt. The session starts when the first
 
 ### Mid-session switching
 
-When a later message addresses a different player than the currently active one (or addresses `unscoped` when scoped, or addresses a player when unscoped), run the **mini-respawn** described in `spellbook/rituals/respawn.md`. The previous player's `quest-log/in-progress/` gets a hand-off note before the switch.
+When a later message addresses a different player than the currently active one (or addresses `unscoped` when scoped, or addresses a player when unscoped), run the **mini-respawn** described in `spellbook/rituals/respawn.md`. The outgoing player's `quest-log/in-progress/` gets a hand-off note before the switch — *outgoing* meaning the player active in this session, not any player with stale in-progress files on disk.
 
 ### Cross-player dwarf invocation
 

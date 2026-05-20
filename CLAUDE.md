@@ -19,7 +19,7 @@ Dev-brain mode is entered only when a message **starts with** `Lets develop giel
 - Case-insensitive on the phrase. Followed by a comma, whitespace, punctuation, or end-of-message.
 - A typo or near-miss ("Lets dev gielinor", "Let us develop gielinor") is treated as no cue — stay in current state.
 
-On entry, run the dev-brain entry sequence per `developer-braindead/CLAUDE.md`: read `developer-braindead/respawn.md` first, then operate under dev-brain conventions (`developer-braindead/_about.md`, dev-brain `spellbook/`, `quest-log/`, etc.). This is a mini-respawn — symmetric to mid-session player switching in gielinor. The previously active player's `quest-log/in-progress/` (if any) gets a hand-off note before the switch, same as a player-to-player switch.
+On entry, run the dev-brain entry sequence per `developer-braindead/CLAUDE.md`: read `developer-braindead/respawn.md` first, then operate under dev-brain conventions (`developer-braindead/_about.md`, dev-brain `spellbook/`, `quest-log/`, etc.). This is a mini-respawn — symmetric to mid-session player switching in gielinor. If a player was activated in this session, their `quest-log/in-progress/` gets a hand-off note per the mini-respawn procedure in `gielinor/spellbook/rituals/respawn.md`. If no player was active this session, nothing is handed off — prior-session in-progress quests are not this session's to mark.
 
 ## Returning to the main brain from dev-brain mode
 

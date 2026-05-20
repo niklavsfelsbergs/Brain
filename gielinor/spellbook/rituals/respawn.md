@@ -70,7 +70,12 @@ See `meta/death-and-spawn.md` for the full crash-recovery model.
 
 Triggered when a later message addresses a **different** player than the currently active one (or addresses `unscoped` when scoped, or names a player when unscoped). The address rules in `CLAUDE.md` (*Player invocation by address*) govern detection.
 
-1. Note in the *outgoing* player's `quest-log/in-progress/` that the session is handing off — record what's in flight, who's incoming, and the message that triggered the switch.
+**Precondition.** A hand-off note is only written if a player was activated *in this session*. If the session opened unscoped (or in dev-brain mode) and no player has been addressed since, there is no outgoing player and step 1 is skipped. Prior sessions' in-progress quests on disk are not this session's to mark — the reconciliation prompt (above) handles those at respawn.
+
+1. **If an outgoing player exists this session**, append a brief hand-off note to their `quest-log/in-progress/` entry:
+   - One line: today's date, the trigger message, the incoming mode/player.
+   - Optionally, one line for any pending action this session put in flight.
+   - **Do not re-read or summarize the quest's existing content.** The hand-off note is a marker, not a recap. The quest's own "Next concrete step" section carries resume context for the next session that lands on it.
 2. Re-run step 6 of the load order for the new player (read their `CLAUDE.md`, `_about.md`, `persona.md`, `keepsake/current.md`, `examine/confirmed/current.md`, `niksis8_character/confirmed/current.md`).
 3. Check the new player's `quest-log/in-progress/`. If unfinished business → reconciliation prompt. If dwarf mode → task brief from principal.
 4. Acknowledge briefly and continue with the new player as active.

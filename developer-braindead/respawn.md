@@ -45,6 +45,12 @@ Secondary follow-ups, in priority order:
 1. **Draft the deferred dev-brain records.** A `D-NNN` decision capturing the hand-off wording fix (context → decision → alternatives → consequences). An `I-NNN` examine draft on the failure mode itself — *conflating disk-state with session-state, and the bulk-read-to-write-a-marker reflex.* Both were proposed at the end of [[S006]] but user cued close before they landed.
 2. **Watch for the third occurrence pattern.** [[S004]] / [[S005]] / [[S006]] all surfaced via pushback after the agent committed to a wrong-shaped action. If a fourth occurrence lands, that's the threshold for promoting "principal pushback is the primary ambiguity signal" to a confirmed `examine/` entry in the main brain.
 
+## Parallel track — visualizer design
+
+[[Q-007]] (`bank/open-questions/Q-007_gielinor_visualizer.md`) captures a proposal for a real-time Gielinor visualizer — top-down map with buildings per brain layer, character sprites for players, smaller sprites for dwarves, animated as the agent reads / writes / spawns. Architecture sketched (watchdog + hooks + HTML/CSS-transitions). Trigger condition for building: real dwarf wave runs *and* first bankstanding produces real motion to render. Don't start before then.
+
+Next-session option (if deferred-build trigger has fired): read [[Q-007]], decide build/defer/scope-down, start with a **replay-from-git-log v0** before committing to real-time infrastructure.
+
 What to watch for during the dwarf spawn (specific to [[S006]] additions):
 
 1. **Dwarf-spawn heuristic firing correctly.** When the principal hits the three-dwarf wave for S002, does the Plan-line manifest annotation actually appear? Does the principal go background-by-default, or fall back to foreground blocking spawn?

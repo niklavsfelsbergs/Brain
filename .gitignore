@@ -1,6 +1,10 @@
 # Local-only body files
 gielinor/CLAUDE.local.md
 
+# MCP server config (contains credentials)
+.mcp.json
+**/.mcp.json
+
 # Claude Code user-local settings
 .claude/settings.local.json
 **/.claude/settings.local.json

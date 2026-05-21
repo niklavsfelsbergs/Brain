@@ -16,6 +16,8 @@ __pycache__/
 
 # Visualizer live-mode runtime state (D-009)
 developer-braindead/experiments/visualizer/state.ndjson
+developer-braindead/experiments/visualizer/state-actors.json
+developer-braindead/experiments/visualizer/state-dwarves.json
 
 # OS noise
 .DS_Store

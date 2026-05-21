@@ -229,6 +229,8 @@
   .log-scroll::-webkit-scrollbar-track { background: #0e0a06; }
   .log-scroll::-webkit-scrollbar-thumb { background: var(--gold-dk); }
   .log-entry { padding: 1px 0; opacity: 0.95; }
+  .log-entry.read { opacity: 0.45; font-size: 14px; font-style: italic; }
+  .log-entry.write { color: #e8d8a8; }
   .log-entry.commit { color: var(--gold); border-top: 1px dashed rgba(216,173,54,0.25); margin-top: 4px; padding-top: 4px; }
   .log-entry.session-start { color: var(--wisp-core); font-weight: bold; margin-top: 6px; }
   .log-entry .t { color: #7a6a48; margin-right: 8px; }
@@ -1958,7 +1960,7 @@ function applyEvent(ev, instant=false) {
       updateFocalLabel();
       break;
     case 'log':
-      logLine(ev.msg, ev.cls || '', deriveSpeaker(ev.msg));
+      logLine(ev.msg, ev.cls || '', ev.speaker || deriveSpeaker(ev.msg));
       tkLineEl.textContent = ev.msg;
       break;
     case 'move':
@@ -2101,10 +2103,9 @@ setTimeout(() => {
 }, 1200);
 
 if (LIVE) {
-  // Step-3 scope: incremental poll only. Bootstrap-from-tail (instant replay
-  // of pre-existing events) lands in step 6.
   let liveBytes = 0;
   let livePolling = false;
+  let liveBootstrapped = false;   // first poll snaps to current state (no animation)
 
   async function pollLive() {
     if (livePolling) return;
@@ -2113,14 +2114,28 @@ if (LIVE) {
       const res = await fetch('state.ndjson?_=' + Date.now(), {cache: 'no-store'});
       if (!res.ok) return;
       const text = await res.text();
-      if (text.length <= liveBytes) return;
+      if (text.length <= liveBytes) {
+        liveBootstrapped = true;
+        return;
+      }
       const chunk = text.slice(liveBytes);
       liveBytes = text.length;
+      const instant = !liveBootstrapped;   // bootstrap = first poll's chunk only
+      let applied = 0;
       for (const line of chunk.split('\n')) {
         if (!line.trim()) continue;
         let ev;
         try { ev = JSON.parse(line); } catch { continue; }
-        applyEvent(ev, false);
+        applyEvent(ev, instant);
+        applied++;
+      }
+      if (!liveBootstrapped) {
+        liveBootstrapped = true;
+        if (sessionMetaEl) {
+          sessionMetaEl.textContent = applied > 0
+            ? `live mode · bootstrapped ${applied} events`
+            : 'live mode · polling state.ndjson';
+        }
       }
     } catch (_) {
       // swallow — state.ndjson may not exist yet, or fetch may race the writer
@@ -2129,9 +2144,8 @@ if (LIVE) {
     }
   }
 
-  // Mark the ticker so the principal can see live-mode is active
   if (tkLineEl) tkLineEl.textContent = 'live · awaiting events';
-  if (sessionMetaEl) sessionMetaEl.textContent = 'live mode · polling state.ndjson';
+  if (sessionMetaEl) sessionMetaEl.textContent = 'live mode · bootstrapping…';
 
   pollLive();
   setInterval(pollLive, 500);

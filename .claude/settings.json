@@ -1,9 +1,20 @@
 {
   "_comment": "Brain-root hooks. Loaded for any session opened at brain/ or below. The gielinor/.claude/settings.json holds architectural guarantees scoped to gielinor sessions; this file holds cross-brain instrumentation.",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PROJECT_DIR}/developer-braindead/.claude/hooks/emit-event.py\""
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Read|Glob|Grep|Task",
         "hooks": [
           {
             "type": "command",

@@ -56,6 +56,17 @@ Respawn, mini-respawn on player switch, threshold checks for alching and banksta
 
 **Exception.** If a threshold check produces a recommendation (e.g., "Alching for Zezima is overdue — 14 pending drafts and the bank's grown by 25 since last time"), that surfaces *after* the plan but *before* the substantive response, as a separate brief note. One line, then the work.
 
+## Intent narration (visualizer sidecar)
+
+After stating the Plan, write a short phrase (2–6 words, ≤60 chars) to `.claude/intent/<actor>.txt` at the brain root. The visualizer reads this and renders a speech bubble near the actor.
+
+- **Active actor by mode.** Player session → `<player>.txt` (e.g., `jebrim.txt`, `zezima.txt`). Unscoped or dev-brain session → `wisp.txt`.
+- **Tone is functional, not narrative.** "Wrapping up S002", "Drafting D-009", "Bankstanding — phase 0", "Designing intent narration". Verb + noun, present tense. Not "I will now…" or "About to…".
+- **Update when intent meaningfully changes**, not every micro-action. A turn that's mostly reads with one edit gets one intent line. A turn that pivots — finish one thing, start another — gets two writes in sequence.
+- **Dwarves don't write intent files.** The hook attaches the Task call's `description` field as the dwarf's bubble at spawn time; that bubble persists for the dwarf's lifetime.
+- **No file → no bubble.** Skipping intent narration in turns that don't run the visualizer is fine; the file is a hint, not a contract. If a turn doesn't write, the previous intent stays up until the actor moves buildings (then it clears).
+- **Don't narrate the intent line itself in the visible response.** It's a sidecar — the agent doesn't say "I'm setting my intent to X"; it just writes the file.
+
 ## Why this rule exists
 
 Two reasons:

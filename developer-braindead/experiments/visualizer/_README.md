@@ -24,6 +24,7 @@ For a hook event to fire, the Claude Code session must be opened at the brain ro
 - `index.html` — single-file renderer. Engine is asset-agnostic; live + replay share `applyEvent`.
 - `path-map.json` — shared lookup (hook + renderer): path → building, path → actor.
 - `state.ndjson` — append-only live event log. Gitignored. The hook appends; the renderer tails.
+- `brain/.claude/intent/<actor>.txt` — intent narration sidecars (D-010). The agent writes a 2–6 word phrase after stating its Plan; the hook reads the file on write and emits an `intent` event. The renderer hangs a speech bubble over the actor, clearing it when they walk to a new building. Dwarves don't write here — their bubble comes from the Task call's `description` field at spawn time.
 
 ## Steps still pending (per [[D-009]])
 

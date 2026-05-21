@@ -29,6 +29,9 @@ DWARVES_PATH = VIZ_DIR / "state-dwarves.json"
 WRITE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 READ_TOOLS = {"Read", "Glob", "Grep"}
 
+INTENT_FRAGMENT = "/.claude/intent/"
+INTENT_MAX_LEN = 60
+
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
@@ -127,9 +130,42 @@ def infer_dwarf_parent() -> tuple[str, str]:
     return ("wisp", actors.get("wisp") or "quest-hall")
 
 
+def handle_intent_write(needle: str) -> bool:
+    """If needle is .claude/intent/<actor>.txt, emit an intent event and
+    return True. Otherwise return False so the normal path-classify flow
+    runs. Intent writes skip building-move + log noise on purpose."""
+    s = needle.replace("\\", "/")
+    key = "/" + s if not s.startswith("/") else s
+    if INTENT_FRAGMENT not in key:
+        return False
+    name = Path(s).name
+    if not name.endswith(".txt"):
+        return True   # consume — unknown intent file shape, but don't fall through
+    actor = name[:-4].strip().lower()
+    if not actor:
+        return True
+    text = ""
+    try:
+        intent_path = REPO_ROOT / s
+        text = intent_path.read_text(encoding="utf-8").strip().splitlines()[0] if intent_path.exists() else ""
+    except Exception:
+        text = ""
+    text = text[:INTENT_MAX_LEN]
+    append({
+        "wallTime": now_iso(), "source": "hook",
+        "type": "intent",
+        "actor": actor,
+        "text": text,
+    })
+    return True
+
+
 def handle_write_or_read(tool_name: str, tool_input: dict, m: dict) -> None:
     needle = needle_from_payload(tool_name, tool_input)
     if not needle:
+        return
+    # Intent files get special handling — no building move, no log noise.
+    if tool_name in WRITE_TOOLS and handle_intent_write(needle):
         return
     building, actor = classify(needle, m)
     if not building:
@@ -176,6 +212,7 @@ def handle_task_pre(payload: dict) -> None:
         "wallTime": wall, "source": "hook",
         "type": "spawn-dwarf",
         "id": dwarf_id, "color": color, "parent": parent, "at": at,
+        "intent": description[:INTENT_MAX_LEN],
     })
     append({
         "wallTime": wall, "source": "hook",

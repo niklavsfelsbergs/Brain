@@ -6,17 +6,21 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-21 (end of [[S010]]).
+**Last updated.** 2026-05-21 (end of [[S011]], pre-commit).
 
 ## Where we are
 
-[[S010]] shipped the visualizer live-mode v0 end-to-end. [[D-009]] captured the five-knob decision (polling, replay-kept-as-default, coalesced reads, wisp default actor, manual launch). All six implementation steps from D-009 landed across two commits (`8df30c5` substrate + `59b920d` coverage/lifecycle) plus a mid-session visual fix that hides replay UI when `?live=1` is set. The live loop is verified end-to-end via synthetic hook payloads — characters walk, dwarves spawn/despawn, log lines stream, bootstrap-from-tail snaps the scene to current state when the page opens mid-session.
+[[S011]] added **intent narration** on top of [[S010]]'s live-mode v0 — agents self-narrate a 2–6 word phrase into `brain/.claude/intent/<actor>.txt` after stating Plan; the hook emits an `intent` event; the renderer hangs a speech bubble over the actor that clears when they walk to a new building. Dwarves narrate via the `Task` description at spawn time. Soft enforcement — protocol guidance in `gielinor/meta/communication-protocol.md`, not a validating hook. Decision in [[D-010]].
 
-The visualizer can now do both things it was scoped to do: replay the git log (default URL, the demo case) and self-observe in real time (`?live=1`, requires `python -m http.server` from `experiments/visualizer/` and a Claude Code session opened with `brain/.claude/settings.json` loaded so the hook fires).
+Not yet exercised end-to-end. Hook + renderer wiring landed but no live test this session. First test: open `?live=1`, write to `brain/.claude/intent/wisp.txt`, watch bubble appear.
+
+[[S010]] background: live-mode v0 shipped via [[D-009]]'s five knobs (polling, replay-kept-as-default, coalesced reads, wisp default actor, manual launch). All six implementation steps landed across commits `8df30c5` + `59b920d` plus the mid-session visual mode switch. The visualizer can replay git log (default URL) and self-observe in real time (`?live=1`).
 
 ## Next concrete step — START HERE
 
-**Continue iterating on the visualizer.** The principal's call. The live-mode v0 is feature-complete per D-009; subsequent work is polish + the deferred follow-ups. Menu of directions, no priority assigned:
+**Test intent narration end-to-end.** Open `developer-braindead/experiments/visualizer/index.html?live=1` in a browser (after `python -m http.server 8765` from the visualizer folder); have an agent write to `brain/.claude/intent/wisp.txt` and confirm the bubble appears within ~500ms. If it works, commit S011's changes. If it doesn't, the hook branch in `emit-event.py:handle_intent_write` is the most likely culprit.
+
+Then continue iterating on the visualizer. The live-mode + intent v0 is feature-complete per D-009 + D-010; subsequent work is polish + deferred follow-ups. Menu of directions, no priority assigned:
 
 - **Idle indicator.** D-009 deferred. When no events arrive for N seconds, fade the actors slightly or add a breathing aura. Cosmetic but signals "the agent is quiet right now" vs "the page is broken."
 - **Watchdog for non-Claude writes.** D-009 deferred. Manual edits + git-commit landings don't fire Claude Code hooks. A `watchdog` filesystem listener feeding the same NDJSON would close that gap. Only worth doing if those events turn out to matter visually.
@@ -47,16 +51,17 @@ From [[S003]]–[[S007]] (carried, reaffirmed): **structure-first, content earns
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S010_visualizer_live_mode_v0.md` — most recent session
-3. `quest-log/S009_visualizer_six_deltas_and_frame.md` — aesthetic pass before live-mode
-4. `bank/decisions/D-009_visualizer_live_mode_v0.md` — the live-mode decision
-5. `bank/decisions/D-008_iso_replay_v0_over_three_js.md` — the iso-vs-3D decision (still load-bearing for the engine principle)
-6. `experiments/visualizer/index.html` — the artifact being iterated
-7. `experiments/visualizer/_README.md` — how to run both modes
-8. `experiments/visualizer/path-map.json` — shared lookup (hook + renderer)
-9. `.claude/hooks/emit-event.py` (under `developer-braindead/`) — the live-mode hook
-10. `bank/open-questions/Q-007_gielinor_visualizer.md` — points at D-009; covers the deferred follow-ups
-11. `bank/plan.md` — current mission state. Visualizer is parallel to plan items.
+2. `quest-log/S011_visualizer_intent_narration.md` — most recent session
+3. `quest-log/S010_visualizer_live_mode_v0.md` — live-mode substrate
+4. `bank/decisions/D-010_visualizer_intent_narration.md` — the intent decision
+5. `bank/decisions/D-009_visualizer_live_mode_v0.md` — the live-mode decision
+6. `bank/decisions/D-008_iso_replay_v0_over_three_js.md` — the iso-vs-3D decision (still load-bearing for the engine principle)
+7. `experiments/visualizer/index.html` — the artifact being iterated
+8. `experiments/visualizer/_README.md` — how to run both modes
+9. `experiments/visualizer/path-map.json` — shared lookup (hook + renderer)
+10. `.claude/hooks/emit-event.py` (under `developer-braindead/`) — the live-mode + intent hook
+11. `bank/open-questions/Q-007_gielinor_visualizer.md` — points at D-009; covers the deferred follow-ups
+12. `bank/plan.md` — current mission state. Visualizer is parallel to plan items.
 
 `bank/decisions/`, `bank/assumptions/`, `bank/open-questions/`, `bank/risks/` are reference material — open as cited.
 

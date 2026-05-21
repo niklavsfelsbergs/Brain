@@ -2,47 +2,48 @@
 
 **Status:** in-progress
 **Quest file:** `players/jebrim/quest-log/in-progress/S015_2026-05-21_ttyd-review-and-dry-run.md`
+**Demo:** 2026-05-22 — Shipping Data Mart with the shipping-agent as the TTYD showcase.
 
 ## Where we are
 
-S014 (TTYD Shipping Data Mart how-to) shipped and closed in S019. S015 is the review/dogfood quest. The S020 session made two infrastructure landings *before* any dogfood ran — to make the dogfood actually meaningful when it runs:
+The "TTYD review" reframed mid-session into a **full revamp of the shipping-agent's setup**, driven by tomorrow's demo (a logistics manager will use the agent live). Two dogfood runs happened this session; the first failed (paranoid 5-question gating, jargon leaks, 2 min runtime); the second succeeded (Mode 1 direct answer with translated plain English). The §0 rewrite + restructure + safety perimeter all landed.
 
-1. **Keepsake routing card pinned** for Jebrim (`players/jebrim/keepsake/current.md`). TTYD `how_to.md` as primary, `.claude/reference/shipping-data-mart/` as navigation map, bi-etl per-folder READMEs as ground truth. First standing pin Jebrim has.
-2. **NFE/CLAUDE.md patched** (`bi-analytics-main/NFE/CLAUDE.md`) — new top callout in the Shipping Data Mart section points at `projects/3_shipping_data_mart_TTYD/how_to.md`. Closes the discoverability gap surfaced in S015 investigation: the root chain previously didn't point at TTYD at all (only at the lighter reference docs).
+**What's in place for the demo:**
 
-Together: a cold-spawned agent now has a working chain into TTYD without specialist scaffolding.
+- **Restructure:** `bi-analytics-main/NFE/projects/3_shipping_data_mart_TTYD/` → `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/`. Generic TTYD-template moved to `NFE/projects/_TTYD-template/` (out of the way).
+- **§0 Answering Questions** — three-mode structure (Direct / Decompose / Clarify) + seven cross-cutting rules + translation table + chat-default output mode. Replaced the original defensive seven-behavior draft after the first dogfood failed. Rule 7 (Coverage questions get a time slice and a source axis) added by principal mid-session.
+- **§10 Scope and Safety** — agent operates inside `shipping-agent/` only; no walk-up, no external reads/writes/bash.
+- **Single-perimeter credentials** — local `.env` in `shipping-agent/` with working creds. Python harness (`db.py`, `connect_redshift.py`) had its NFE/.env walk-up fallback ripped out — credentials only come from the local `.env`, no fallback.
+- **`.claude/settings.json`** (checked-in) — allow rules for Read/Edit/Write/Glob/Grep/Bash/PowerShell inside the folder; deny rules for relative path traversal, sensitive locations (`~/.ssh`, `~/.aws`, `/etc`), and dangerous bash/PowerShell commands (cd outside, env enumeration, curl, ssh, git push/config). The over-broad `Read(/**)` / `Read(C:/**)` denies were attempted then rolled back — they blocked legitimate in-folder reads because Claude Code resolves paths to absolute before pattern-matching.
+- **Four AI-config files** (CLAUDE.md / AGENTS.md / GEMINI.md / GROK.md) — slimmed to ~10 lines each, point at §0 + §10 explicitly.
+- **`reference/tables.md` and `reference/sources.md`** — folded from NFE-side reference docs, TTYD-folder-self-contained.
+- **Brain keepsake card** (Jebrim) — re-pathed to new shipping-agent location; mentions the credential setup.
+- **NFE/CLAUDE.md** callout — updated to point at the new path.
 
-**Specialist-agent question deferred.** Principal proposed a dedicated shipping-data-mart agent. Recommended deferring until the dogfood produces evidence justifying it — the specialist might solve the wrong problem (discoverability vs expertise). Principal accepted.
+**Demo readiness:** The harness needs one smoke test from inside the folder (`python connect_redshift.py`) to confirm the local `.env` loads cleanly. The second dogfood produced the right answer (~502K April packages, translated to plain English, sub-second response). Permission prompts on `dir` and `Get-Location; Get-ChildItem` surfaced and were patched into the allow list.
 
 ## Next concrete step
 
-Run the dogfood test.
+**Tomorrow (2026-05-22) — present the demo.** Two follow-ups owe attention before then:
 
-- **Altitude:** drop at `bi-analytics-main/NFE/` (NFE repo root). Tests the realistic case — "Jebrim spawned a dwarf for NFE work, dwarf needs shipping mart context."
-- **Cold framing:** no mention of TTYD, S014, this session, or anything we built. Just the question + repo path.
-- **Question:** TBD with principal. Open candidates (in S015 turn log T2-area):
-  - **NULL classification probe** — "Why is shipment X's `delivered_date` NULL?" Directly tests §7/§8 of how_to.md, the most novel work S014 shipped. Recommended.
-  - **Aggregation** — "Total shipped revenue for January 2026 broken down by carrier."
-  - **Use-case mapping** — "Which Power BI report uses this mart?"
-- **Grade against:** Does the dwarf find TTYD via the patched chain? Does `how_to.md` let it answer? Where does it stumble?
+1. **One smoke test of the harness** from inside `shipping-agent/`. Run `python connect_redshift.py` to confirm the seven-table row-count default returns. If it errors, the local `.env` copy or the credential name expectations didn't survive cleanly.
+2. **`reference/coverage-audit.md` is referenced in §0 rule 7 but doesn't exist** — either write the file before demo (a quick coverage matrix of current cost/revenue % by source × month), or remove the reference from rule 7.
 
-Branch logic:
-- **Dogfood passes** → no specialist needed; routing card + NFE patch sufficient. Move to angle 3 (critique pass) or 4 (use-case mapping) per quest brief, or close S015.
-- **Dogfood fails** → failure mode shapes whether the fix is a specialist agent, more routing patches in NFE, or a deeper TTYD edit.
+After the demo: run more of the proposed test questions (the 10+10 list in the S022 turn block of the quest log) to stress-test Mode 2 decompose, Mode 3 clarify, sanity-check, and facts-vs-guesses behaviors which haven't been live-tested yet.
 
 ## Files to read first
 
-1. `gielinor/players/jebrim/quest-log/in-progress/S015_2026-05-21_ttyd-review-and-dry-run.md` — full turn log including the four review angles in T1 and the specialist-agent discussion in T3–T5.
-2. `bi-analytics-main/NFE/CLAUDE.md` — verify the TTYD-pointer callout is in place (top of Shipping Data Mart section). If the NFE commit didn't land in S020 close, this edit is uncommitted local-only.
-3. `bi-analytics-main/NFE/projects/3_shipping_data_mart_TTYD/how_to.md` — what the dwarf will read.
+1. `gielinor/players/jebrim/quest-log/in-progress/S015_2026-05-21_ttyd-review-and-dry-run.md` — full turn log including S022 narrative.
+2. `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/how_to.md` — §0 + §10 are the load-bearing sections.
+3. `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/.claude/settings.json` — the perimeter backstop.
+4. Jebrim's keepsake routing card (auto-loads at respawn).
 
-(Keepsake routing card auto-loads at respawn — paths already in working context.)
+## Open meta-questions
 
-## Open meta-questions for next session
-
-- Whether the NFE/CLAUDE.md patch was committed in the bi-analytics-main repo (the brain close commits only touch the brain). Confirm with principal before relying on the patched routing for the dogfood.
-- Whether to use one of the three suggested questions or a fresh one principal has in mind.
+- Whether bi-analytics-main needs a commit before tomorrow (the brain close commits only touch gielinor). Many uncommitted files in shipping-agent/ — `how_to.md`, `reference/`, `.claude/settings.json`, `db.py`, `connect_redshift.py`, `.gitignore`, AI-config files. Some are renames from the restructure; some are content changes.
+- Whether `ship_mart_ro` (the broken read-only user) should be granted proper access post-demo so a future demo can use the original "scoped demo user" story.
+- Whether `_TTYD-template/` should be archived further or kept as a sibling for future TTYD-style projects.
 
 ## Pending drafts
 
-None — all drafts from this session were written to disk and surfaced at close.
+One examine draft surfaced at close (defensive-rules-create-paranoid-agents — see surface block in the S022 close summary).

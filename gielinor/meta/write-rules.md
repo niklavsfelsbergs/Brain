@@ -8,7 +8,7 @@ Per-layer write discipline. Hooks enforce the most critical lines (see `.claude/
 |---|---|---|---|
 | `bank/` (per-player) | drafts only (`bank/drafts/notes/`) | all promotions to `bank/notes/` | — |
 | `quest-log/` (per-player) | yes (sessions log themselves turn-by-turn) | — | — |
-| `spellbook/skills/` | — | new skills, modified procedures | — |
+| `spellbook/skills/` (per-player) | drafts only (`spellbook/drafts/skills/`) | all promotions to `spellbook/skills/` | — |
 | `spellbook/rituals/` (global and per-player) | — | — | yes — core rituals are user-edited |
 | `inventory/` (per-player) | yes (volatile) | — | — |
 | `examine/` (global and per-player) | drafts only | all promotions to `confirmed/` | direct edits to confirmed entries |
@@ -47,11 +47,13 @@ Dwarves can run none of these rituals. See `modes.md`.
 
 - The "draft-then-approve" rows above. Hooks don't distinguish a proposed promotion from a routine edit, so the agent has to follow the draft flow on its own.
 - The bank drafts gate. `bank/notes/` is not hook-enforced; the agent has to write only to `bank/drafts/notes/` on its own and let alching promote. Pattern parallel to identity-layer drafts but without the hook. Reopen if discipline slips.
+- The skills drafts gate (added 2026-05-21 via S018 audit). `spellbook/skills/` is not hook-enforced; the agent writes to `spellbook/drafts/skills/` and alching promotes. Replaces the earlier "skills go through `gielinor/lorebook/drafts/`" routing, which was heavyweight for per-player methodology.
 - The "overturning existing knowledge" path in `bank/`. A new draft that contradicts an existing `bank/notes/` entry surfaces the contradiction during alching review — either the new draft wins (old note archives) or the new draft is rejected. Major shifts in how the agent operates still warrant a `lorebook/drafts/` entry.
 - Treating `meta/` as user-controlled. Hooks could enforce this; for now it's discipline.
 
 ## Related
 
+- `layer-routing.md` for *which* layer a given piece of content belongs in.
 - `drafts-mechanics.md` for how the drafts flow actually works.
 - `archive-discipline.md` for what "archive only" means structurally.
 - `modes.md` for the dwarf-mode subset.

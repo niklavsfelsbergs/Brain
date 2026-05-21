@@ -91,6 +91,7 @@ The conventions you operate by:
 @meta/archive-discipline.md
 @meta/drafts-mechanics.md
 @meta/death-and-spawn.md
+@meta/layer-routing.md
 
 These are in-force every session.
 

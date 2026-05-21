@@ -50,15 +50,17 @@ The agent never auto-runs alching. As with bankstanding, principal-supervised on
 
 Surface a recommendation when **any** of these is true for the active player at respawn:
 
-- More than ~10 pending drafts across the player's `examine/drafts/`, `niksis8_character/drafts/`, `keepsake/proposals/`.
+- **`last-alched.md` reads "Never" AND the player is > 0 days old.** (Catches first-life pile-up — Jebrim hitting day 2 with three sessions of work and no alching is the proof case.)
+- More than **5** pending drafts across the player's `examine/drafts/`, `niksis8_character/drafts/`, `bank/drafts/notes/`, `spellbook/drafts/skills/`, `keepsake/proposals/`.
 - Any of the player's `current.md` files exceeds its budget (~2k for `keepsake/`, ~3k for identity layers).
-- The player's `bank/` has grown by ~20+ entries since last alching.
-- The player's `quest-log/sessions/` has accumulated ~15+ entries since last alching.
-- The player hasn't been alched in 30+ days of activity (read from `last-alched.md`).
+- The player's `quest-log/in-progress/` turn count has grown by **20+** turns since `last-alched.md`. (Proxy for "harvest backlog accumulating.")
+- The player hasn't been alched in **7+** days of activity (read from `last-alched.md`).
 
-Recommendation shape — one line:
+These are the load-bearing thresholds as of 2026-05-21 (S018 audit). Tune later if too noisy or too sleepy.
 
-> "Alching for Zezima is overdue — 14 pending drafts and the bank's grown by 25 since last time. Want to handle that now?"
+Recommendation shape — one line, surfaced after the Plan per `meta/communication-protocol.md`:
+
+> "Alching for Jebrim is overdue — 1 day old, never alched, 3 pending drafts and 16 quest-log turns since spawn."
 
 If the principal declines, proceed normally. Do not nag again that session.
 
@@ -88,13 +90,27 @@ A draft that contradicts an existing `bank/notes/` entry triggers the "overturni
 
 **Then, review `bank/notes/` for staleness.** Walk the player's existing notes. Look for entries that are no longer relevant — superseded by newer notes, about work that's done and won't come back, contradicted by current state. Propose moves to `bank/archive/notes/<same path>`.
 
-### 3. Quest-log compression — graduate episodes to bank
+### 3. Quest-log compression — graduate **completed** episodes to bank
 
-Walk the player's `quest-log/completed/` (and `quest-log/sessions/` if that's where session entries live in this player's structure). Look for entries whose value has **crystallized into a lasting lesson** — a single session whose insight should outlive the session itself.
+Walk the player's `quest-log/completed/` **only** (per principal rule: harvest from finished quests, not in-flight). Look for entries whose value has **crystallized into a lasting lesson** — a single quest whose insight should outlive the quest itself.
 
-- Propose drafts to the player's `bank/notes/` (or `examine/drafts/` if it's character-self-knowledge, or `niksis8_character/drafts/` if it's about Niklavs).
-- Bias: most session entries do *not* graduate. Only flag ones with reusable cross-session value.
+- Propose drafts to the player's `bank/drafts/notes/` (not directly to `bank/notes/` — bank is drafts-gated).
+- Bias: most quest entries do *not* graduate. Only flag ones with reusable cross-quest value.
 - This is alching's *integrative* job, scoped within one player: episodic → semantic compression.
+- **Self-observation harvest is a separate step** — see step 3a below. Quest-log compression is for domain knowledge; self-observations have a different cadence.
+
+### 3a. Self-observation sweep — scan in-flight turns since last-alched
+
+Self-observations are *about the player*, not about the work — so they don't depend on the underlying quest being closed. Walk the player's `quest-log/in-progress/` entries and read **turns added since `last-alched.md` date** (use turn timestamps or position to bound the scan). For each turn, look for sentences that read like observations about how this player works:
+
+- Bias the player exhibited that helped or hurt.
+- Pattern in how the player decomposed work, asked questions, or framed responses.
+- Correction the principal landed on the player's behavior (verbatim corrections are gold).
+- Mistake the player made and the lesson named in the next turn.
+
+For each candidate observation, propose a draft to `players/<active>/examine/drafts/<YYYY-MM-DD>-<slug>.md`. The draft must cite the specific turn (e.g., "S014 T11, 2026-05-21") and the observation-rule from `meta/drafts-mechanics.md` applies — observation-backed, not aspirational.
+
+**Cap.** 0–3 self-observation drafts per alching pass. Bias to less; not every correction earns a confirmed entry, but every confirmed entry must come from a real correction.
 
 ### 4. Enforce size budgets on the player's `current.md` files
 
@@ -116,7 +132,9 @@ Per [[D-012]] (dev brain), Pump 3 extends to skill-graduation. Walk these layers
 
 **Threshold.** A pattern earns a skill draft when it has repeated **≥2 times** and the agent can name it concisely. One-off patterns are not skill candidates — they may be examine drafts instead.
 
-**Output.** Draft to `players/<active>/spellbook/skills/drafts/<slug>.md`. Skill drafts follow the same observation-rule as identity drafts: cite the specific repetitions that justified naming the pattern.
+**Output.** Draft to `players/<active>/spellbook/drafts/skills/<slug>.md` (per the drafts-gated path established 2026-05-21). Skill drafts follow the same observation-rule as identity drafts: cite the specific repetitions that justified naming the pattern.
+
+**Promote existing skill drafts.** Before drafting new ones, triage what's already in `spellbook/drafts/skills/`. Per draft: approve into `spellbook/skills/`, reject into `spellbook/rejected/skills/`, or edit-and-approve. Pattern parallel to bank-drafts triage in step 2.
 
 **Cap.** 0–2 skill candidates per alching pass. Skills are rare; this step is for genuine pattern-recognition, not for manufacturing skill drafts.
 

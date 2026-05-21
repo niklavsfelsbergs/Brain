@@ -6,76 +6,88 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-21 (end of [[S017]], pre-commit).
+**Last updated.** 2026-05-21 (end of [[S018]], pre-commit).
 
 ## Where we are
 
-[[S017]] shipped [[D-014]] end-to-end across hook, renderer, protocol, and gitignore — chat panel built by evolving the existing COMMS logbox (rather than adding a parallel surface as the design doc literally said), action events on Edit/Write/MultiEdit/NotebookEdit/Bash/Glob/Grep, narration channel via `.claude/narration.txt`, two-line bubble at cap-100, intent + action both pushed into chat with per-actor color cascade. Main-brain `gielinor/meta/communication-protocol.md` updated with the new cap, narration channel, intent-vs-action discipline rule, and the `wisp.txt` → `braindead.txt` drift fix. Chatbox restyled to classic OSRS look — light tan panel with black body text, dark wood header, darker per-actor username tints, Trebuchet MS bold at 14px for smooth-but-period-correct feel, box height doubled to 340px.
+[[S018]] shipped the Jebrim layer-utilization audit end-to-end. Eight findings; dominant pattern was `quest-log/in-progress/` absorbing content that belonged in five other layers. Bundle decision: [[D-015]] + gielinor lorebook draft.
 
-S015 dwarf attribution is **still untested in the wild** — same status as the start of this session. D-014 was implemented assuming it works; if the assumption is wrong, the dwarf chat path needs a fix on top.
+Concrete structural changes:
+
+- New `gielinor/meta/layer-routing.md` (content-shape → layer mapping), `@import`ed from `gielinor/CLAUDE.md`.
+- Resume state moves from quest-log top to `inventory/<quest-slug>-resume.md`. Close-session step 3 writes it; respawn step 6.h reads it.
+- Quest-vs-session split — `completed/` triggers on quest close, not session close. Multi-session quests stay in `in-progress/` across many closes.
+- Skills now drafts-gated per-player (`spellbook/drafts/skills/`), parallel to bank. Replaces the old lorebook-routing for skills.
+- New alching step 3a — self-observation sweep through `in-progress/` turns since last-alched.
+- Alching thresholds tightened: never-alched + day-1+, >5 drafts, >20 turns, >7 days.
+- Pre-commit soft-block in close-session: in-progress quest without inventory resume file surfaces gap before commit.
+- Per-player `_about.md` parity applied to both Jebrim and Zezima.
+- One file move: `bank/drafts/notes/workflow/moving-target-work-decomposition.md` → `spellbook/drafts/skills/moving-target-decomposition.md`.
+
+S015 dwarf attribution is **still untested in the wild** — unchanged status. D-014 chat panel verification (S017 outstanding) also still pending.
 
 ## Next concrete step — START HERE
 
-**Step 1 — layer-utilization audit.** Niklavs queued this as the explicit handover topic. The brain has many layers per player + global (`bank/`, `quest-log/`, `inventory/`, `examine/`, `niksis8_character/`, `keepsake/`, `spellbook/`, plus per-player `bank/drafts/`, `bank/notes/`, etc.), and **some are not getting used proportional to the work flowing through them**. Concrete example he flagged: Jebrim has done a lot of work but his `inventory/` is empty. For each apparently-underused layer, the question is binary: *do we not need it*, or *are we just not utilizing it*?
+**Step 1 — surface drafts for principal triage.** Several drafts await ruling:
 
-Suggested approach (deferred to the session for refinement):
+- `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — promote to `lorebook/decisions/D-NNN_*.md` to canonicalize the audit's structural decisions.
+- `gielinor/players/jebrim/keepsake/proposals/2026-05-21_eu-tender-2026.md` and `2026-05-21_shipping-data-mart-ttyd.md` — principal pins (or doesn't).
+- `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md` — re-routed by S018 file move; awaits skills-promotion at first Jebrim alching.
+- Pre-existing `gielinor/players/jebrim/niksis8_character/drafts/` (2 from S017-era) — also await Jebrim alching.
 
-1. **Inventory the layers** — both per-player and global, across `gielinor/` and `developer-braindead/`. List the layers, current contents, last-touched date.
-2. **Crosswalk against actual session work** — for each player, did their last N sessions produce material that *should* have landed in each layer but didn't? Where did it land instead (chat-only? quest-log? bank/drafts?)?
-3. **Per-layer disposition** — one of:
-   - **Used as designed** — leave alone.
-   - **Under-used because we forgot it exists** — fix discipline (likely surface in respawn ritual, or in alching).
-   - **Under-used because it's the wrong shape** — redesign the layer or its trigger.
-   - **Not needed** — archive (per archive-discipline.md, not delete).
-4. **Surface findings to Niklavs** — recommend changes; let him decide. The audit itself is read-only across players (bankstanding-style reach), but any *changes* to per-player layers would have to happen in each player's alching session, not in this audit pass.
+**Step 2 — first Jebrim alching pass under new spec.** Jebrim has never been alched (1+ days old, drafts pending). New respawn step 6.i should fire the threshold recommendation. This pass will exercise: step 3 walks `completed/` (currently empty — should produce zero bank drafts), step 3a walks `in-progress/` turns since spawn (rich substrate — S014's 16 turns + S002 + S001), step 6 skill-graduation triages the migrated draft. Cap discipline matters here — the first sweep will be tempted to over-produce.
 
-The audit crosses both brains (gielinor's per-player layers + dev-brain's `bank/`, `examine/`, etc.). Probably warrants its own session; might generate multiple `I-NNN`-style observations and possibly a `D-NNN` if a layer's shape changes structurally.
+**Step 3 — D-014 browser verification (outstanding from S017).** Spawn a real Jebrim Task while live mode is open. Watch for the full chat-event taxonomy. Subsumes S015 attribution verification.
 
-**Step 2 — verify D-014 end-to-end in browser.** Outstanding from S017 close. Spawn a real Jebrim Task while live mode is open. Watch for: spawn-dwarf chat line, `* D1 spawned by jebrim — desc` muted-italic, intent bubble appearing on the dwarf sprite, intent + action chat lines from the dwarf in the right color (dwarves amber), `* D1 walks to <building>` on building changes, `* D1 returns to jebrim` on completion. This subsumes the S015 verification that's been pending since that session — D-014's chat path will surface any S015 attribution bug visibly.
-
-**Step 3 — narration channel real-world shakedown.** Once the audit is in-flight, try writing `.claude/narration.txt` at session boundaries / phase transitions and see if the chat line reads well. If it doesn't, iterate the cap (currently 200) or styling.
+**Step 4 — narration channel shakedown.** Try writing `.claude/narration.txt` at session boundaries / phase transitions and see if the chat line reads well. If it doesn't, iterate cap (currently 200) or styling.
 
 Other live threads:
 
-- **Thread A from S013 — verify visualizer feature set end-to-end.** Still outstanding. Worth re-running once D-014 lands and Step 2 above passes.
+- **Migration of S014's resume sections.** Per S018 D-015's deferred items: next close-session pass that touches S014 will lift S014's resume sections from the quest-log file into `inventory/S014-ttyd-resume.md`. One-time per quest.
+- **Soft-block tuning.** S018's pre-commit soft-block offers three options (write resume / commit anyway / abandon). "Abandon" may be too aggressive for missing-file case — re-evaluate after first fire.
+- **Self-observation sweep tuning.** Cap 0–3. Watch first alching pass output; tighten or loosen cap if needed.
+- **Cross-player parity for future players.** Jebrim + Zezima are aligned. No template system yet for new players — principal scaffolds future players against the post-S018 spec.
+- **Possible `I-NNN` from S018.** The quest-log-as-vacuum pattern is candidate for an examine entry but wasn't drafted in S018 itself. Next bankstanding can surface it.
+- **Thread A from S013 — verify visualizer feature set end-to-end.** Still outstanding. Worth re-running once D-014 lands and Step 3 above passes.
 - **Thread B — observe the harvest pump.** No code; watch what the next sessions' harvests produce, drift to aspirational drafts, bank drafts-gate friction.
 
 Iteration menu (deferred, no priority assigned):
 
-- **D-014 follow-ups from the decision doc.** Read narration / rollup if reads ever feel invisible. Action target prettification (common-prefix shortening). Chat scroll-lock UX (scroll-up locks auto-scroll). Actor color taxonomy tightening. Bubble two-line edge cases (single-word overruns, dwarf-bubble during slide).
+- **D-014 follow-ups from the decision doc.** Read narration / rollup if reads ever feel invisible. Action target prettification. Chat scroll-lock UX. Actor color taxonomy tightening. Bubble two-line edge cases.
 - **Idle indicator / watchdog for non-Claude writes / smarter active-player inference / SSE upgrade.** D-009 deferred.
 - **Aesthetic backlog from [[S009]].** Per-building character.
 
 ## Open at the start of next session
 
-- **Layer-utilization audit — first priority** (Niklavs' explicit handover topic).
-- **D-014 browser verification** — second priority. Subsumes the long-outstanding S015 verification.
+- **Drafts triage** — first priority. The audit produced several pending decisions.
+- **Jebrim alching pass** — second priority. First-ever, will validate new spec end-to-end.
+- **D-014 browser verification** — third priority. Subsumes S015 verification.
 - **Narration channel shakedown** — once chat-flow is verified.
-- Visualizer Round 3 iteration (S014 candidates).
-- Harvest pump observation (Thread B).
-- **§C Pilot definition** — data source, "concerning" definition, output channel. Unchanged.
-- **§H.3 brain-zone taxonomy** — content for `player/working-agreements.md`. Not blocking.
-- **§H.4 identity ↔ main-brain interaction** — how `examine/I-NNN` entries here interact with main-brain `examine/`. [[I-002]] is a candidate for export.
+- §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations
 
-From [[S017]] (new): **spec docs that prescribe DOM/structure without inventorying what already exists will ship suboptimal designs.** [[D-014]] called for a "new `#chat-panel` div" when the COMMS panel already provided that surface. Pattern: when designing renderer-side changes, the design phase should include a "what's already there" scan.
+From [[S018]] (new): **the quest log is the gravitational center; other layers starve without explicit routing.** Eight-finding audit showed five layers near-empty while quest-log absorbed working memory, self-observations, harvest-pending domain knowledge, and methodology drafts. Fix has to make other layers cheap to land in (drafts-gates everywhere) AND make routing explicit (`layer-routing.md`). Candidate for an `I-NNN` next bankstanding.
 
-From [[S017]] (new): **heuristics that walk back through `state.ndjson` need to remember the stream is cross-session.** `infer_dwarf_parent`'s 600s recency window picked up a stale Jebrim intent from a prior gielinor session and attributed a dev-brain Bash to it. Fixed by hard-preferring Braindead when `active-mode.txt == dev-brain`, but the broader bias is worth holding: any future code that reads `state.ndjson` for "who's active" should consult the mode marker first.
+From [[S018]] (new): **bundle big structural decisions; resist piecemeal landing.** Q1–Q5 were five separate questions but interlocked (routing requires routing-doc; resume-out requires inventory-in; inventory-in requires close-session writes and respawn reads). Trying to land any one without the others would have produced inconsistent state. The phased execution (A→E with ratification gates) kept the bundle coherent.
 
-From [[S017]] (new): **emulating a specific UI's look means font and palette must change together.** Half-measures (dark bg + smooth font, or pixel font + non-OSRS palette) read as uncanny. Required two restyle iterations after first ship. Cheap if caught early — render a reference screenshot mentally before shipping (companion to [[I-002]]).
+From [[S017]] (still relevant): **spec docs that prescribe DOM/structure without inventorying what already exists will ship suboptimal designs.** Companion to S018's pattern — both surface the same bias: design-time without enough audit-time.
 
-From [[S016]]: **"players communicate" in dev-brain mode probably means the visualizer, not the chat preamble.** First read landed on the comm-protocol meta-doc; principal corrected to the on-screen surface. Cheap correction this time; worth holding the bias next time someone says "communication" while the visualizer is the active artifact.
+From [[S017]] (still relevant): **heuristics that walk back through `state.ndjson` need to remember the stream is cross-session.** Any future code that reads `state.ndjson` for "who's active" should consult the mode marker first.
+
+From [[S017]] (still relevant): **emulating a specific UI's look means font and palette must change together.** Render a reference screenshot mentally before shipping (companion to [[I-002]]).
+
+From [[S016]]: **"players communicate" in dev-brain mode probably means the visualizer, not the chat preamble.**
 
 From [[S015]]: **shipping behind "the docs say X" is risky in this codebase because the docs are right but the integration is novel.** Smoke test ≠ live test.
 
-From [[S015]] (separate): **delete discipline isn't enforced for dev-brain infrastructure.** Used `rm -f` on a probe script without thinking; block-deletes hook is gielinor-scoped. Even for ephemeral infrastructure code, discipline is "no deletes".
+From [[S015]] (separate): **delete discipline isn't enforced for dev-brain infrastructure.** Even for ephemeral code, discipline is "no deletes".
 
-From [[S014]] (two-incident pattern strengthening): **the renderer needs to be self-healing because the hook stream is a lossy substrate.** Pattern: **don't assume the upstream emitted what you'd render against — defend in the renderer too.** Companion to [[I-002]] — runtime version: render assuming partial data.
+From [[S014]] (now five-incident pattern with S018): **the procedure was right; the procedure assumed a state that didn't exist.** Strong enough to draft an `I-NNN` next bankstanding.
 
-From [[S014]] (one incident): **tool renames upstream are silent regressions.** `Task → Agent` broke the brain-root hook with no error message.
+From [[S014]]: **the renderer needs to be self-healing because the hook stream is a lossy substrate.** Companion to [[I-002]] runtime version.
 
-From [[S013]] (still candidate, four incidents now): **the procedure was right; the procedure assumed a state that didn't exist.** Four-incident pattern — strong enough to draft an `I-NNN` if/when bankstanding next runs.
+From [[S014]]: **tool renames upstream are silent regressions.**
 
 From [[S013]]: **uncommitted work occupies the ID space.** Confirmed pattern.
 
@@ -90,19 +102,18 @@ From [[S003]]–[[S007]]: **structure-first, content earns its way in.** **Build
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S017_d014_chat_panel_implementation.md` — most recent session
-3. `bank/decisions/D-014_visualizer_chat_panel.md` — implemented this session
-4. **For the audit (Step 1):** start with `gielinor/CLAUDE.md` § Layer index and walk each player's folder; cross-reference `developer-braindead/_about.md` for the dev-brain layer table.
-5. `quest-log/S016_visualizer_chat_panel_design.md`
-6. `quest-log/S015_dwarf_attribution_via_agent_id.md`
-7. `bank/decisions/D-010_visualizer_intent_narration.md` — the contract D-014 extends
-8. `bank/decisions/D-009_visualizer_live_mode_v0.md`
-9. `bank/decisions/D-008_iso_replay_v0_over_three_js.md`
-10. `experiments/visualizer/index.html` — the artifact
-11. `experiments/visualizer/_README.md`
-12. `.claude/hooks/emit-event.py` (under `developer-braindead/`) — now emits intent + action + narrate alongside move + spawn-dwarf
-13. `.claude/hooks/emit-commit-event.py` — post-commit emitter for COMMITS lane
-14. `bank/plan.md` — current mission state
+2. `quest-log/S018_jebrim_layer_utilization_audit.md` — most recent session, the audit.
+3. `bank/decisions/D-015_jebrim_layer_audit_outcomes.md` — the bundle decision.
+4. `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — the gielinor-side decision draft (awaits canonicalization).
+5. `gielinor/meta/layer-routing.md` — the canonical routing table the audit produced.
+6. **For the alching pass (Step 2):** `gielinor/spellbook/rituals/alching.md` — updated thresholds + step 3a sweep + skills-drafts path.
+7. `quest-log/S017_d014_chat_panel_implementation.md` — for Step 3 verification.
+8. `bank/decisions/D-014_visualizer_chat_panel.md`, `D-010_visualizer_intent_narration.md`, `D-009_visualizer_live_mode_v0.md`, `D-008_iso_replay_v0_over_three_js.md`.
+9. `experiments/visualizer/index.html` — the artifact.
+10. `experiments/visualizer/_README.md`.
+11. `.claude/hooks/emit-event.py` (under `developer-braindead/`).
+12. `.claude/hooks/emit-commit-event.py`.
+13. `bank/plan.md` — current mission state.
 
 ## Note on the visualizer's engine
 

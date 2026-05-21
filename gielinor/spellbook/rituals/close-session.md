@@ -50,9 +50,9 @@ Anything that was drafted in conversation this session but isn't yet on disk:
 
 This closes the "chat-only state is volatile" gap. Drafts that exist only in conversation are lost on session close otherwise.
 
-### 3. Tighten the quest-log entry
+### 3. Write resume state to `inventory/<quest-slug>-resume.md`
 
-The in-progress entry is the rolling next-session prompt. Compact it so the next session can resume without rereading the full turn log:
+**Per `gielinor/meta/layer-routing.md`, resume state lives in inventory, not in the quest log.** For each in-progress quest this player owns, write (or overwrite) `players/<active>/inventory/<quest-slug>-resume.md` with the next-session prompt:
 
 - **Status:** explicit (`in-progress` or `done`).
 - **Where we are:** one sentence on current state.
@@ -60,20 +60,30 @@ The in-progress entry is the rolling next-session prompt. Compact it so the next
 - **Files / paths to read first:** bulleted, ordered by load priority.
 - **Pending drafts:** populated by step 2 if any.
 
-These sections are what `respawn.md`'s reconciliation prompt reads to surface the next move. If they're not populated, the next respawn has nothing to surface beyond the turn log.
+These sections are what `respawn.md`'s reconciliation prompt reads to surface the next move. The respawn ritual reads `inventory/*-resume.md` as the resume foreground; without this file, the next respawn has nothing to surface beyond the turn log.
 
-Existing per-turn narrative stays in the entry as history but moves below the resume sections — it's reference, not foreground.
+**Compact the quest log itself.** Strip any resume-state sections that historically lived at the top of the quest-log file (`Status`, `Where we are`, `Next concrete step`, `Files to read first`) — they belong in inventory now. The quest log keeps narrative + decisions + turn-by-turn log + Pending drafts (if any). Per-turn history is reference; the inventory file is foreground.
 
-### 4. Decide: continue or complete?
+**Migration note (sessions opened before 2026-05-21).** Existing in-progress quest files may carry the resume sections at the top. On the first close-session pass after 2026-05-21, lift those sections into a new `inventory/<quest-slug>-resume.md` file, then trim them from the quest log. One-time per quest.
 
-- **Continue** → leave the file in `quest-log/in-progress/`. Apply SNNN prefix per the SNNN rule above if not already present.
-- **Complete** → move the file to `quest-log/completed/`. Apply SNNN prefix in the move if not already present.
+### 4. Decide: continue or complete the **quest** (not the session)
 
-A quest is done when its "Next concrete step" is "none — quest closed." Multi-session quests stay in `in-progress/` across many closes.
+The trigger for moving to `completed/` is **quest close**, not session close. Session close is the moment this ritual runs; quest close is whether the deliverable is shipped or the thread has reached its resting point.
+
+- **Continue (default for multi-session quests)** → leave the file in `quest-log/in-progress/`. Apply SNNN prefix per the SNNN rule above if not already present. Inventory resume file (step 3) stays.
+- **Complete** → move the file to `quest-log/completed/`. Apply SNNN prefix in the move if not already present. **Also move the corresponding `inventory/<quest-slug>-resume.md` to `inventory/archive/<quest-slug>-resume.md`** (or just remove if the quest is fully closed and the resume info is no longer needed — the quest-log entry in `completed/` is the durable record).
+
+A quest is done when its "Next concrete step" is "none — quest closed." Multi-session quests stay in `in-progress/` across many closes; the existence of an inventory resume file is the cheap signal that more work is queued.
 
 ### 5. Inventory hygiene
 
-The player's `inventory/` is volatile by design. If it holds stale items from work that's already landed (or been abandoned), flush them. If it holds items still actively carried, leave them. Inventory is *what's carried now*, not *what was used this session*.
+The player's `inventory/` is volatile by design — but as of 2026-05-21 it's also the **primary resume surface**. The hygiene rule splits accordingly:
+
+- **`<quest-slug>-resume.md` files for in-flight quests** — must remain populated and current. These are what respawn reads. Do not flush; step 3 just wrote/updated them.
+- **Resume files for closed quests** — moved to `inventory/archive/` (or removed) in step 4 above.
+- **Other inventory items (free-form working memory)** — if stale (work landed or was abandoned), flush them. If actively carried across sessions and not quest-specific, consider promoting to `bank/drafts/notes/` instead.
+
+Soft check: if `quest-log/in-progress/` has files but `inventory/` has no `*-resume.md` files for them, that's a step-3 failure — surface the gap and fix before continuing.
 
 ### 6. Observation harvest
 
@@ -112,6 +122,8 @@ This is an additional surface event beyond what `meta/drafts-mechanics.md` alrea
 ### 8. Commit
 
 Always commit at session close (unless the working tree is genuinely clean — in which case skip and note it).
+
+**Pre-commit soft-block.** Before staging, run one more check: for each player with files in `quest-log/in-progress/`, confirm a matching `inventory/<quest-slug>-resume.md` exists and is non-empty. If any quest is missing its resume file, **do not auto-commit** — surface the gap, ask the principal whether to (a) write the missing resume file before commit, (b) commit anyway and flag it as deliberate, or (c) abandon the quest into `quest-log/archive/in-progress/`. This is the inventory-empty enforcement clause; it's a proposal-not-a-block (principal can override).
 
 - **Stage scoped.** Prefer `git add gielinor/players/<name>/quest-log/ ...specific paths` over `git add -A`. Verify with `git status` before committing.
 - **Subject:** `S{NNN}: <one-line summary>`. Under 70 chars.

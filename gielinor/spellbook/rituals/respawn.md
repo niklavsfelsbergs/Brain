@@ -41,29 +41,33 @@ The load order below front-loads only the durable, in-force, identity-shaped mat
 
    f. Read `players/<name>/niksis8_character/confirmed/current.md`.
 
-   g. Check `players/<name>/quest-log/in-progress/`. If any file is present, run the **reconciliation prompt** (below) before accepting new input.
+   g. Check `players/<name>/quest-log/in-progress/`. If any file is present, the player has in-flight quests. Run the **reconciliation prompt** (below) before accepting new input.
+
+   h. **Read `players/<name>/inventory/*-resume.md`** — the resume foreground. Each file corresponds to one in-flight quest and carries the `Where we are` / `Next concrete step` / `Files to read first` state populated by close-session step 3. **This is what the reconciliation prompt surfaces** — not the quest-log file's body, which is the turn-by-turn history. If inventory has no `*-resume.md` files but `quest-log/in-progress/` is non-empty, surface the gap (close-session step 3 didn't populate inventory) and read the quest log directly as a fallback. Note the gap for the next close-session pass.
+
+   i. **Alching threshold check.** Read `players/<name>/last-alched.md` and count drafts across the player's `examine/drafts/`, `niksis8_character/drafts/`, `bank/drafts/notes/`, `spellbook/drafts/skills/`, `keepsake/proposals/`. If any threshold in `spellbook/rituals/alching.md` § *Recommendation thresholds* is breached, surface a one-line recommendation per `meta/communication-protocol.md` § *Internal rituals stay silent* (the threshold-recommendation exception). The principal decides whether to alch now or later.
 
 7. **If dwarf mode:** skip the unfinished-business check. Read the task brief from the principal. Operate within the dwarf write boundary (`meta/modes.md`). Write findings to the inherited player's `quest-log/in-progress/`; return a summary to the principal.
 
 8. **Cued retrieval during the session.** Other layers are not preloaded — `bank/`, `spellbook/skills/`, `lorebook/`. The agent reads them as the task requires.
 
-9. **Acknowledge readiness. Await input.** Briefly — name the active player and confirm any in-progress state. Don't recite the whole load.
+9. **Acknowledge readiness. Await input.** Briefly — name the active player, confirm any in-progress state, surface the alching recommendation if step 6.i fired. Don't recite the whole load.
 
 ## Reconciliation prompt
 
-When `quest-log/in-progress/` contains a file at session start, an in-flight session was interrupted. Procedure:
+When `quest-log/in-progress/` contains a file at session start, an in-flight quest exists. Procedure:
 
-The entry's resume sections — **Where we are**, **Next concrete step**, **Files / paths to read first** — are populated by `close-session.md` step 3 and are the canonical hand-off surface. This prompt reads them; it does not regenerate them.
+The resume foreground for each in-flight quest lives in `inventory/<quest-slug>-resume.md` — populated by `close-session.md` step 3. **This prompt reads from inventory, not the quest log.** The quest log carries history; the inventory resume file carries foreground.
 
-1. Read the most recent in-progress entry.
+1. Read each `inventory/*-resume.md` for the active player. (If none exist but `quest-log/in-progress/` is non-empty, fall back to reading the quest log itself — and surface that the resume state is missing, so the next close-session pass fixes it.)
 2. **Surface to the principal — the resume foreground, not the history:**
-   - The **quest title** (from the file's heading or filename slug).
+   - The **quest title** (from the resume file's heading or the matching quest-log filename slug).
    - The **Where we are** section verbatim — current state across open threads.
    - The **Next concrete step** section verbatim — what next session is meant to do.
    - The **Files / paths to read first** list — so the principal sees the load plan.
-   - The **last logged `pending` action**, if any — separate from the above; this is the crash-recovery signal.
+   - The **last logged `pending` action**, if any — separate from the above; this is the crash-recovery signal. (This is still pulled from the quest log itself, where per-turn pending markers live.)
 
-   Do not surface the per-turn narrative log. That's history; the resume sections are foreground. If the resume sections are missing or empty, surface that explicitly — it means the last close didn't tighten the entry, and the principal needs to know.
+   Do not surface the per-turn narrative log. That's history; the inventory resume file is foreground. If multiple in-flight quests exist for the player, surface each in order — most-recently-touched first.
 3. **Ask explicitly** — present the three options:
    - **Resume** — continue from where the session left off; assume the pending action did not complete.
    - **Abandon** — move the file to `quest-log/archive/in-progress/` (never delete) and start fresh.

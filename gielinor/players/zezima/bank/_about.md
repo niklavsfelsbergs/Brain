@@ -17,6 +17,7 @@
 - Session narrative. That's `quest-log/`.
 - Self-observations. That's `examine/`.
 - Observations about Niklavs as a person. That's `niksis8_character/`.
+- **Procedures / methodology / how-to.** That's `spellbook/drafts/skills/`. Bank holds knowledge *about* what's been read or considered; skills hold *how* Zezima approaches a class of reflection (e.g., a "reading-with-resistance" method, a "compare-across-three-readings" workflow). See `gielinor/meta/layer-routing.md`.
 
 ## Structure
 

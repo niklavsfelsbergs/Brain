@@ -17,15 +17,15 @@ A note about a query, for example, summarizes the query's purpose, inputs, outpu
 
 ## What goes here
 
-- Knowledge about specific reports, queries, models, ETL pipelines, BI artifacts.
-- Cross-cutting work knowledge: data sources, naming conventions, common pitfalls, recurring stakeholder asks.
-- Procedures that are too specific to be `spellbook/` skills but too durable to be `inventory/`.
+- Knowledge **about** specific reports, queries, models, ETL pipelines, BI artifacts, stakeholders, data sources.
+- Cross-cutting work knowledge: naming conventions, common pitfalls, recurring stakeholder asks, system architectures.
 
 ## What does not go here
 
-- Today-only working state. That's `inventory/`.
-- Session narrative. That's `quest-log/`.
-- The code itself — that stays in the source repos. Bank holds notes *about* the code.
+- Today-only working state — that's `inventory/`.
+- Session narrative — that's `quest-log/`.
+- The code itself — stays in the source repos. Bank holds notes *about* the code.
+- **Procedures / methodology / how-to** — that's `spellbook/drafts/skills/`. Bank notes are *about* the work; skills are *how to do* the work. A note titled "the EU Tender 2026 architecture" is a bank note; a note titled "how to decompose moving-target work" is a skill. See `gielinor/meta/layer-routing.md` for the full mapping.
 
 ## Structure
 

@@ -940,21 +940,71 @@ function buildGround() {
 }
 
 // ─────────────────────────────────────────────────────────────
-//   Cobblestone paths between buildings
+//   Cobblestone paths between buildings — gentle bezier curves
 // ─────────────────────────────────────────────────────────────
+
+// Deterministic hash → -1/+1 sign + magnitude for the path's bow direction.
+function pathHash(key) {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = ((h<<5) - h + key.charCodeAt(i)) | 0;
+  return h;
+}
+
+// Quadratic bezier between A and B with a perpendicular-offset control point.
+// Curve magnitude is ~14-22% of segment length, sign deterministic per pair.
+function pathControl(A, B, key) {
+  const dx = B.x - A.x, dy = B.y - A.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len, ny = dx / len;       // CCW perpendicular unit vector
+  const h = pathHash(key);
+  const sign = (h & 1) ? 1 : -1;
+  const mag = len * (0.14 + ((Math.abs(h) % 5) * 0.02));   // 14-22%
+  return { x: (A.x + B.x) / 2 + nx * sign * mag,
+           y: (A.y + B.y) / 2 + ny * sign * mag };
+}
+
+function bezierSample(A, B, C, n) {
+  const pts = new Array(n + 1);
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    pts[i] = { x: u*u*A.x + 2*u*t*C.x + t*t*B.x,
+               y: u*u*A.y + 2*u*t*C.y + t*t*B.y };
+  }
+  return pts;
+}
+
+// Pre-computed curve sample arrays, keyed by path-pair string — shared by
+// renderer (stone placement) and flora (clearance check) so they agree.
+const PATH_SAMPLES = PATHS.map(([a, b]) => {
+  const A = STAND[a], B = STAND[b];
+  const dx = B.x - A.x, dy = B.y - A.y;
+  const len = Math.hypot(dx, dy);
+  const C = pathControl(A, B, a + '|' + b);
+  const n = Math.max(6, Math.floor(len / 12));
+  return { key: a + '|' + b, A, B, C, n, pts: bezierSample(A, B, C, n) };
+});
 
 function buildPaths() {
   const paths = document.getElementById('paths');
-  PATHS.forEach(([a, b]) => {
-    const A = STAND[a], B = STAND[b];
-    const dx = B.x - A.x, dy = B.y - A.y;
-    const len = Math.hypot(dx, dy);
-    const stones = Math.floor(len / 14);
-    for (let i = 1; i < stones; i++) {
-      const t = i / stones;
-      const cx = A.x + dx * t + (((i * 17) % 5) - 2);
-      const cy = A.y + dy * t + (((i * 13) % 3) - 1);
-      // small iso diamond stone
+  PATH_SAMPLES.forEach(({A, B, C, pts}) => {
+    // Soft worn-grass underlayer along the curve, slightly translucent
+    const d = `M${A.x},${A.y} Q${C.x},${C.y} ${B.x},${B.y}`;
+    const under = document.createElementNS(svgNS, 'path');
+    under.setAttribute('d', d);
+    under.setAttribute('fill', 'none');
+    under.setAttribute('stroke', 'rgba(140,112,68,0.32)');
+    under.setAttribute('stroke-width', '14');
+    under.setAttribute('stroke-linecap', 'round');
+    paths.appendChild(under);
+
+    // Stone diamonds laid along the sampled curve. Skip a few near each end
+    // so the path slips under the building plinth rather than colliding.
+    const skip = 1;
+    for (let i = skip; i < pts.length - skip; i++) {
+      const p = pts[i];
+      const jitterX = ((i * 17) % 5) - 2;
+      const jitterY = ((i * 13) % 3) - 1;
+      const cx = p.x + jitterX, cy = p.y + jitterY;
       const w = 12 + ((i * 7) % 3);
       const h = 6;
       const fill = (i % 3 === 0) ? '#9a8060' : (i % 3 === 1) ? '#b6975f' : '#a08560';
@@ -1027,17 +1077,16 @@ function buildFlora() {
   }
   // pond removed — keep stub so existing placement calls still work
   function clearOfPond(x, y, pad) { return true; }
+  // Curve-aware: min distance to any sampled point on any path.
   function clearOfPaths(x, y, pad=22) {
-    return !PATHS.some(([a, b]) => {
-      const A = STAND[a], B = STAND[b];
-      const dx = B.x - A.x, dy = B.y - A.y;
-      const len2 = dx * dx + dy * dy;
-      if (len2 < 1) return Math.hypot(A.x - x, A.y - y) < pad;
-      let t = ((x - A.x) * dx + (y - A.y) * dy) / len2;
-      t = Math.max(0, Math.min(1, t));
-      const px = A.x + t * dx, py = A.y + t * dy;
-      return Math.hypot(px - x, py - y) < pad;
-    });
+    const p2 = pad * pad;
+    for (const seg of PATH_SAMPLES) {
+      for (const p of seg.pts) {
+        const dx = p.x - x, dy = p.y - y;
+        if (dx * dx + dy * dy < p2) return false;
+      }
+    }
+    return true;
   }
 
   function placeTree(x, y, layerHint) {
@@ -1048,30 +1097,39 @@ function buildFlora() {
     addUse(layer, 'tree', x, y);
   }
 
-  // ── Edge-frame of trees: thick on all four sides ──
-  // Top edge — across just below the horizon (sky band ends at y=170)
-  for (let x = 24; x <= 1176; x += 46) {
-    placeTree(x + ((x * 7) % 14) - 7,  178 + ((x * 11) % 14), back);
-    if ((x % 92) === 0) placeTree(x + 22, 200 + ((x * 5) % 12), back);
+  // ── Wild scatter, weighted toward the perimeter ──
+  // Deterministic pseudo-random so the forest looks the same every load.
+  // Falsy seed = no tree; otherwise pick a 0..1 pair from (x*A + y*B).
+  function rand2(seed) {
+    let h = (seed * 2654435761) >>> 0;
+    h ^= h >>> 13; h = Math.imul(h, 0x85ebca6b);
+    h ^= h >>> 16;
+    const a = (h & 0xffff) / 0xffff;
+    const b = ((h >>> 16) & 0xffff) / 0xffff;
+    return [a, b];
   }
-  // a slight second row of top trees, staggered, for depth
-  for (let x = 50; x <= 1150; x += 58) {
-    placeTree(x + ((x * 13) % 18) - 9, 210 + ((x * 7) % 16), back);
+  // Distance to nearest viewport edge, normalized 0 (edge) .. 1 (center).
+  function edgeDistNorm(x, y) {
+    const ex = Math.min(x, 1200 - x) / 600;
+    const ey = Math.min(y - 170, 820 - y) / 325;
+    return Math.max(0, Math.min(1, Math.min(ex, ey)));
   }
-  // Bottom edge — front layer (these stand in front of bottom buildings)
-  for (let x = 14; x <= 1186; x += 44) {
-    placeTree(x + ((x * 11) % 16) - 8, 776 + ((x * 9) % 18), front);
-    if ((x % 88) === 22) placeTree(x + 18, 760 + ((x * 5) % 12), front);
-  }
-  // Left edge
-  for (let y = 210; y <= 770; y += 40) {
-    placeTree(20 + ((y * 7) % 18),   y + ((y * 5) % 16), y > 560 ? front : back);
-    if ((y % 80) === 0) placeTree(58 + ((y * 11) % 14), y + 12, y > 560 ? front : back);
-  }
-  // Right edge
-  for (let y = 210; y <= 770; y += 40) {
-    placeTree(1180 - ((y * 7) % 18),  y + ((y * 5) % 16), y > 560 ? front : back);
-    if ((y % 80) === 0) placeTree(1140 - ((y * 11) % 14), y + 12, y > 560 ? front : back);
+  // Reservoir of candidate positions across the open ground (skips sky band).
+  // Density biased to ~6-8x higher near edges than the middle.
+  const TREE_CANDIDATES = 130;
+  for (let i = 0; i < TREE_CANDIDATES; i++) {
+    const [u, v] = rand2(i + 1);
+    const x = 8 + u * 1184;
+    const y = 178 + v * 626;
+    const edge = edgeDistNorm(x, y);
+    // Acceptance probability: high near edges, low in the middle. Add a touch
+    // of texture so it doesn't read as a smooth gradient.
+    const [w] = rand2(i * 7 + 3);
+    const accept = (1 - edge) * 0.85 + 0.06;
+    if (w > accept) continue;
+    // Sub-tile jitter, then place. placeTree filters buildings/edges.
+    const [jx, jy] = rand2(i * 13 + 11);
+    placeTree(x + (jx - 0.5) * 8, y + (jy - 0.5) * 6, y > 560 ? front : back);
   }
 
   // ── Small details scattered through the open map (with clearance) ──
@@ -1126,8 +1184,82 @@ function addUse(parent, href, x, y, cls='') {
 //   - details:   inline SVG string drawn after walls but before roof? we draw all walls, then roof, then details.
 //
 
+// Wall seams — horizontal courses + staggered vertical joints. Stone =
+// brick-like coursing; wood = vertical plank seams. Drawn underneath the
+// per-building `details`, so doors/windows/banners overpaint correctly.
+function wallTexture(w, d, h, type) {
+  if (!type || type === 'none') return '';
+  const seamSE = 'rgba(0,0,0,0.22)';
+  const seamSW = 'rgba(0,0,0,0.30)';
+  const hiSE  = 'rgba(255,255,255,0.06)';
+
+  if (type === 'stone') {
+    const courses = Math.max(3, Math.round(h / 14));
+    let svg = '';
+    for (let i = 1; i < courses; i++) {
+      const f = i / courses;
+      const ySE = -f * h;                // y at top of SE wall slice
+      const ySW = -f * h;
+      // Horizontal course seam on each wall (S corner → E/W corner at f)
+      svg += `<line x1="0" y1="${d - f * h}" x2="${w}"  y2="${ySE}" stroke="${seamSE}" stroke-width="0.5"/>`;
+      svg += `<line x1="0" y1="${d - f * h}" x2="${-w}" y2="${ySW}" stroke="${seamSW}" stroke-width="0.5"/>`;
+      // Thin highlight just above each course on SE (lit) face
+      svg += `<line x1="0" y1="${d - f * h - 0.6}" x2="${w}" y2="${ySE - 0.6}" stroke="${hiSE}" stroke-width="0.4"/>`;
+      // Staggered vertical joints between course i-1 and i
+      const fLow = (i - 1) / courses;
+      const offsets = (i % 2) ? [0.25, 0.55, 0.85] : [0.15, 0.45, 0.75];
+      for (const t of offsets) {
+        const yLo = d * (1 - t) - fLow * h;
+        const yHi = d * (1 - t) - f * h;
+        svg += `<line x1="${-w*t}" y1="${yLo}" x2="${-w*t}" y2="${yHi}" stroke="${seamSW}" stroke-width="0.4"/>`;
+        svg += `<line x1="${ w*t}" y1="${yLo}" x2="${ w*t}" y2="${yHi}" stroke="${seamSE}" stroke-width="0.4"/>`;
+      }
+    }
+    return svg;
+  }
+
+  if (type === 'wood') {
+    // Vertical plank seams running full wall height + two horizontal beams.
+    const planks = 6;
+    let svg = '';
+    for (let i = 1; i < planks; i++) {
+      const t = i / planks;
+      // SW vertical seam
+      svg += `<line x1="${-w*t}" y1="${d*(1-t)}" x2="${-w*t}" y2="${d*(1-t) - h}" stroke="${seamSW}" stroke-width="0.5"/>`;
+      // SE vertical seam
+      svg += `<line x1="${ w*t}" y1="${d*(1-t)}" x2="${ w*t}" y2="${d*(1-t) - h}" stroke="${seamSE}" stroke-width="0.5"/>`;
+      // Lit-side highlight on SE
+      svg += `<line x1="${w*t + 0.5}" y1="${d*(1-t)}" x2="${w*t + 0.5}" y2="${d*(1-t) - h}" stroke="${hiSE}" stroke-width="0.4"/>`;
+    }
+    // Horizontal beams: belt + top plate
+    [0.55, 0.92].forEach(f => {
+      svg += `<line x1="0" y1="${d - f * h}" x2="${ w}" y2="${-f * h}" stroke="${seamSE}" stroke-width="0.7"/>`;
+      svg += `<line x1="0" y1="${d - f * h}" x2="${-w}" y2="${-f * h}" stroke="${seamSW}" stroke-width="0.7"/>`;
+    });
+    return svg;
+  }
+
+  return '';
+}
+
+// Roof shingles — small staggered tick marks down each slope for tile texture.
+function roofTexture(w, d, h, r) {
+  const apexY = -h - r;
+  const Stop_y = d - h;
+  // Lit slope (SE) and shadow slope (SW). Two diagonal "rows" per slope.
+  let svg = '';
+  const rows = Math.max(2, Math.round(r / 14));
+  for (let i = 1; i < rows; i++) {
+    const f = i / rows;
+    // SE slope: top edge from (0, apexY) to (w, -h); we draw a faint line on it.
+    svg += `<line x1="${f * 0}" y1="${apexY + f * (Stop_y - apexY)}" x2="${f * w}" y2="${apexY + f * (-h - apexY)}" stroke="rgba(0,0,0,0.25)" stroke-width="0.4"/>`;
+    svg += `<line x1="${f * 0}" y1="${apexY + f * (Stop_y - apexY)}" x2="${-f * w}" y2="${apexY + f * (-h - apexY)}" stroke="rgba(0,0,0,0.32)" stroke-width="0.4"/>`;
+  }
+  return svg;
+}
+
 function isoBuilding(opts) {
-  const {id, label, cx, cy, w, d, h, r, walls, roof, details = ''} = opts;
+  const {id, label, cx, cy, w, d, h, r, walls, roof, details = '', texture = null, roofTex = false} = opts;
   // corners
   const Sx = 0, Sy = d;
   const Ex = w, Ey = 0;
@@ -1179,8 +1311,11 @@ function isoBuilding(opts) {
     <line x1="${Ex}" y1="${Etop_y}" x2="0" y2="${apexY}" stroke="${roof.ridge || 'rgba(0,0,0,0.4)'}" stroke-width="1"/>
   `;
 
+  const wallTex = wallTexture(w, d, h, texture);
+  const rfTex   = roofTex ? roofTexture(w, d, h, r) : '';
+
   return `<g class="building" data-id="${id}" transform="translate(${cx},${cy})">
-    ${shadow}${plinth}${base}${swWall}${seWall}${frame}${swRoof}${seRoof}${roofRidge}${details}
+    ${shadow}${plinth}${base}${swWall}${seWall}${wallTex}${frame}${swRoof}${seRoof}${rfTex}${roofRidge}${details}
   </g>`;
 }
 
@@ -1312,6 +1447,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--stone-mid)', left: 'var(--stone-dark)', frame: 'rgba(0,0,0,0.35)', base: 'var(--stone-shadow)' },
       roof:  { right: 'var(--roof-blue)', left: 'var(--roof-blue-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      texture: 'stone', roofTex: true,
       details,
     });
   }
@@ -1357,6 +1493,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.3)', base: 'var(--stone-shadow)' },
       roof:  { right: 'var(--roof-red)', left: 'var(--roof-red-dk)', ridge: 'rgba(0,0,0,0.45)' },
+      texture: 'stone', roofTex: true,
       details,
     });
   }
@@ -1397,6 +1534,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--stone-dark)', left: '#2a241e', frame: 'rgba(0,0,0,0.55)', base: '#1c1812' },
       roof:  { right: 'var(--roof-red-dk)', left: '#4d1d13', ridge: '#1a0e04' },
+      texture: 'stone', roofTex: true,
       details,
     });
   }
@@ -1427,6 +1565,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.3)', base: 'var(--stone-shadow)' },
       roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      texture: 'stone', roofTex: true,
       details,
     });
   }
@@ -1484,6 +1623,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--wood-mid)', left: 'var(--wood-dark)', frame: 'rgba(0,0,0,0.5)', base: 'var(--wood-shadow)' },
       roof:  { right: 'var(--roof-green)', left: 'var(--roof-green-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      texture: 'wood', roofTex: true,
       details,
     });
   }
@@ -1540,6 +1680,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.35)', base: 'var(--stone-shadow)' },
       roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: '#2a1a3a' },
+      texture: 'stone', roofTex: true,
       details,
     });
   }
@@ -1573,6 +1714,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--stone-dark)', left: '#2a241e', frame: 'rgba(0,0,0,0.5)', base: '#1c1812' },
       roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: '#2a1a3a' },
+      texture: 'stone', roofTex: true,
       details,
     });
   }
@@ -1619,6 +1761,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--wood-light)', left: 'var(--wood-mid)', frame: 'rgba(0,0,0,0.45)', base: 'var(--wood-shadow)' },
       roof:  { right: 'var(--roof-red)', left: 'var(--roof-red-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      texture: 'wood', roofTex: true,
       details,
     });
   }
@@ -1678,6 +1821,7 @@ function buildBuildings() {
       cx: b.x, cy: b.y, w, d, h, r,
       walls: { right: 'var(--wood-light)', left: 'var(--wood-mid)', frame: 'rgba(0,0,0,0.45)', base: 'var(--wood-shadow)' },
       roof:  { right: 'var(--braindead-robe)', left: 'var(--braindead-robe-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      texture: 'wood', roofTex: true,
       details,
     });
   }

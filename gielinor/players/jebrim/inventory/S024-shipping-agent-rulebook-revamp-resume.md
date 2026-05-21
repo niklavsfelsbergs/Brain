@@ -1,36 +1,58 @@
-# S024 resume — shipping-agent rulebook revamp
+# S024 resume — shipping-agent rulebook + structure iteration
 
-**Status:** in-progress. **Iterations on the shipping-agent are still ongoing** — this session shipped a Phase 1 batch of rule changes but more friction will surface as real shipping-agent sessions run against the new wording.
+**Status:** in-progress. The shipping-agent iteration thread is **still ongoing** — more friction will surface as real shipping-agent sessions run against the new structure.
 
 ## Where we are
 
-Phase 1 of the shipping-agent rulebook revamp landed clean:
+Two iteration tranches landed in S025 (2026-05-22) under this quest slug:
 
-- **Mode 2 (inline HTML) is the new default visual.** `build_inline_chart.py` writes a single bare HTML file (title + description + chart) to `visualization-studio/content/charts/claude/YYYYMMDD-HHMMSS--<slug>.html`. Bundle and Next.js modes are now confirm-before-build escalations.
-- **§10 scope tightened.** Bans `cat/ls/find/grep/cd` regardless of path; bans the "reach for parent project's reference folder" pattern explicitly; calls out the Windows trailing-backslash parse trap.
-- **Three new cross-cutting rules** in §0 (total nine): rule #3 strengthened ("breakdowns are an offer, not a default"); rule #7 ("opening line restates the scoping; then silent"); rule #8 ("don't over-research canonical questions").
-- **Translation table swap.** Picturator → "B2C"; PicaAPI → "MerchOne". `reference/sources.md` section headers and §2 source-systems table updated to match.
+**Tranche A — documentation split** (T13–T14). Pushed 3 commits to `bi-analytics-main`:
 
-Real-world test pass came back clean in T9 — a "how much to ship a 20×30 canvas to Germany" + follow-up bundle-economics chart ran end-to-end with the new rules visibly working (one-line scoping ack, silent tool calls, Mode 2 single-file artifact, business-insight answer).
+- `0532678` — added a thin human-onboarding `README.md`.
+- `e15777a` — split `how_to.md` from 793 → 313 lines (−60%). Extracted `reference/mart-contract.md` (§1 + §3 + §4), `reference/known-dq.md` (§9), expanded `reference/sources.md` (source-maturity table), `reference/_about.md`, `skills/query-patterns.md` (§5), `skills/_about.md`. Folded §6 connection details into `README.md` § Connecting. Audience tags + per-entry `last-verified` stamps on LIVE files.
+- `d0d8386` — moved 5 `.py` scripts + `sample_queries.sql` into `harness/`. Updated `BASE_DIR` to `.parent.parent` so folder-root anchoring still resolves `.env` + `visualization-studio/content/...`. Doc references updated; `.claude/settings.json` unchanged.
+
+**Tranche B — Phase 1 from earlier in S024** (T1–T12). Mode 2 inline charts as default, §0 at nine cross-cutting rules, §10 tightened three times (T4 shell-explore ban, T8 parent-folder reach ban, T12 local-first reach + recovery rule).
+
+The shipping-agent's structure today:
+
+```
+shipping-agent/
+  README.md  how_to.md
+  CLAUDE.md  AGENTS.md  GEMINI.md  GROK.md
+  requirements.txt  .env  .gitignore
+  harness/    db.py, connect_redshift.py, build_*.py, create_*.py, sample_queries.sql
+  reference/  _about.md, mart-contract.md, sources.md, tables.md, coverage-audit.md, known-dq.md
+  skills/     _about.md, query-patterns.md
+  visualization-studio/  STANDARDS.md, app/, content/, lib/
+  .claude/    settings.json (allow/deny patterns unchanged)
+```
+
+Each file declares audience (AI / AI + analyst / human) and stability (STABLE / LIVE). LIVE files carry `last-verified` stamps + re-verify probes.
 
 ## Next concrete step
 
-Watch for residual friction in the next few shipping-agent sessions. Specifically the regressions worth scanning for:
+Watch for residual friction in real shipping-agent sessions against the new structure. Specific regressions to scan for:
 
-- **Pre-action narration creeping back.** Rule #7 says one scoping-restating line; check that the agent doesn't drift into "I'll do A, then B, then C" multi-sentence plans.
-- **Auto-breakout by sub-platform.** Rule #3 says breakdowns are an offer, not a default. If the agent splits "how much" answers by B2C / MerchOne / source without the user asking, rule #3 isn't biting hard enough.
-- **Latency creep.** Rule #8 (don't over-research) and Mode 2 step 1 (check for same-day reusable charts) target a 30–60s saving on canonical asks. Time the first few "show me a chart" turns; if they're still 90s+, something's not landing.
-- **Scope-perimeter reaches.** §10 was tightened **three times** this session: T4 banned in-folder shell exploration; T8 banned the parent-project reference-folder reach; T12 (post-close follow-up) banned reaching for non-stdlib helpers without inventorying the local folder first, and forbade the "reach further out on failure" recovery move. If a fourth out-of-perimeter incident shows up, the behavioral rule is insufficient — the next move is rewriting `settings.json` deny patterns to handle absolute paths without denying the working dir (currently the deny rules only cover `../**` relative patterns).
+1. **Routing failures** (the load-bearing risk). When a new gotcha surfaces mid-session, does the agent (or you, when editing later) put it in the right file? Or does it default back to `how_to.md`? If `how_to.md` starts growing past ~400 lines again, the discipline didn't hold.
+2. **Live-vs-stable contamination.** `mart-contract.md` is STABLE — if dated observations start landing in it, the separation is collapsing.
+3. **Stamp drift.** LIVE entries without `last-verified` stamps. Or stamps that aren't refreshed when the entry is updated.
+4. **Path anchoring failures in harness scripts.** Smoke test passed locally; any subsequent script that gets added needs `BASE_DIR = Path(__file__).resolve().parent.parent` (one parent more than the old root-level convention).
+5. **Phase 1 watch-list (still live).** Pre-action narration creeping back, auto-breakouts by sub-platform, latency creep, scope-perimeter reaches (currently 3 incidents; a 4th means rewriting `.claude/settings.json` deny patterns to handle absolute paths).
 
-When new friction surfaces, the move is the same as this session: principal flags via screenshot, Jebrim diagnoses the root cause in the rulebook, proposes targeted wording, edits.
+When new friction surfaces, the move is the same: principal flags via screenshot, Jebrim diagnoses the root cause, proposes the targeted fix, edits.
 
 ## Files / paths to read first
 
-- `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/how_to.md` — §0 (cross-cutting rules + translation table), §7 (four modes), §8 (artifact carve-out), §10 (scope).
-- `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/build_inline_chart.py` — the new Mode 2 builder.
-- `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/.claude/settings.json` — current deny patterns (relative-path `../**` only; absolute-path absent — would need rewriting if §10 behavioral rule doesn't hold).
-- `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/reference/sources.md` — section headers carry the new B2C / MerchOne naming.
+- `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/how_to.md` — the always-loaded rules + the §1 "Where to find things" index.
+- `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/reference/_about.md` — orientation + routing for new reference content.
+- `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/skills/_about.md` — orientation + routing for new skills.
+- `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/.claude/settings.json` — current deny patterns (relative-path `../**` only; would need rewriting for absolute-path catches if §10 behavioral rule fails again).
 
 ## Pending drafts
 
-None pending; one observation about quest-log open discipline written to `examine/drafts/` this session — see step 7 of close.
+- `gielinor/players/jebrim/spellbook/drafts/skills/structural-restructure-mechanism-over-shape.md` (S025 harvest) — methodology: when restructuring, lead with mechanisms (routing, budgets, live-vs-stable, stamps, harvest) before shape. Anchor: S024 T14. Surface at next alching.
+
+## Parked items from earlier S023 alching walk
+
+Still untriaged from before this session. The 7-item alching proposal from post-S023 lives in [[S023-shipping-mart-coverage-audit-resume]] — re-surface when next alching runs.

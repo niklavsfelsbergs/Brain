@@ -96,12 +96,55 @@ Added two rules to §10:
 
 Together these target the specific gap that the two earlier §10 tightenings (T4: ban shell exploration regardless of path; T8: reference-folder reach) didn't cover. The earlier rules covered *file reads* and *shell exploration*; this one covers *Python imports / script invocations* via cwd-and-PATH side effects.
 
+### T13 — README addition (S025, 2026-05-22)
+
+Principal asked whether the shipping-agent has a README. Confirmed it didn't — only agent-facing entry shims (`CLAUDE.md` / `AGENTS.md` / `GEMINI.md` / `GROK.md`) and `how_to.md`. Wrote a thin human-onboarding `README.md` pointing at `how_to.md` + `reference/` + `visualization-studio/`. Committed `0532678` and pushed.
+
+### T14 — how_to.md split (S025, 2026-05-22)
+
+Principal: *"how_to is a bit too large, brain has patterns we could borrow."* First proposal was mechanical — split by content shape (rules / knowledge / skills). Principal pushed back: *"we're on a good path. But can we do better?"* Forced a deeper read.
+
+The deeper insight: **the brain's structure holds because of mechanisms, not shape.** Routing rule + size budgets + live-vs-stable + harvest discipline + stamps are what prevent reaccretion. Without them, any split rots to monolith in 3 months because new gotchas default to the path-of-least-resistance file.
+
+Principal vetted six proposed points; four survived:
+
+- **Live vs stable** — separate dated observations (coverage, DQ, source-maturity) from contract knowledge (pipeline, columns).
+- **Always-loaded vs on-cue** — the actual splitting axis. `how_to.md` is the keepsake-equivalent; `reference/` + `skills/` are bank/spellbook-equivalents.
+- **Audience tags** — each file declares AI / AI + analyst / human.
+- **Stamps on live entries** — `last-verified: YYYY-MM-DD` + re-verify probe pointer (cheap, kept).
+
+Dropped: **routing rule + size budgets** (agent doesn't self-modify, so the discipline lives in maintainer sessions, not in the agent's docs). **Harvest mechanism** reframed as Jebrim's responsibility, not the agent's.
+
+Split landed:
+
+- `how_to.md` 793 → 313 lines (−60%). Kept §0 + §7 + §8 + §10 + new §1 "Where to find things" index.
+- `reference/mart-contract.md` (new) — §1 pipeline + §3 structure + §4 silver reference. STABLE.
+- `reference/known-dq.md` (new) — §9. LIVE, per-entry stamps.
+- `reference/sources.md` — extended with source-maturity table (LIVE) at top.
+- `reference/_about.md` (new) — orientation.
+- `skills/query-patterns.md` (new) — §5 join rule + example. STABLE.
+- `skills/_about.md` (new) — orientation.
+- `README.md` extended with §6 connection setup.
+
+Committed `e15777a`, pushed.
+
+### T15 — harness/ restructure (S025, 2026-05-22)
+
+Principal: *"small restructure needed — python scripts mainly."* Moved the five `.py` files + `sample_queries.sql` into a new `harness/` folder. Updated `BASE_DIR = Path(__file__).resolve().parent.parent` in each script so folder-root anchoring still works (`.env` lookup at root, `visualization-studio/content/...` output paths). Updated doc references in `how_to.md`, `README.md`, and `visualization-studio/STANDARDS.md`. `.claude/settings.json` unchanged — its `./` / `../` patterns still match the new layout.
+
+Smoke test: `python harness/connect_redshift.py --query "SELECT 1 AS smoke;"` returned a row from the new location. `from db import …` resolves via Python's script-local `sys.path[0]` (the `harness/` directory) — no `__init__.py` or `PYTHONPATH` needed.
+
+Committed `d0d8386`, pushed.
+
 ## Decisions
 
 - **Inline HTML as the new visual default** — confirmed with principal in T2. Bundle modes shift to "ask before building."
 - **Translation table replaces long phrases with single business names** — `B2C` / `MerchOne` instead of "our main EU shop platform" / "our newer customer-facing platform." Shorter, more aligned with how Niklavs actually refers to them.
 - **Behavioral fix > settings.json deny tightening** for out-of-perimeter reads — settings.json deny rules use relative-path patterns and can't catch absolute paths without also denying the working dir. The behavioral rule in §10 is the load-bearing fix; deny patterns are backstop only.
 - **Did not backfill old generated artifacts** (`visualization-studio/content/generated/claude/20260521-120000--tcg-2025-shipments-by-country/`) that still carry the pre-swap "main EU shop platform" phrasing. Those are historical bundles; not worth touching.
+- **`harness/` over `bin/` or `scripts/`** (T15) — docs already call them "the harness"; naming alignment is cheap.
+- **Stamps + audience tags adopted as doc-quality discipline** (T14). LIVE files carry per-entry `last-verified` stamps + re-verify probes; STABLE files don't need them. Every file declares its audience at the top.
+- **Mechanism > shape** (T14, load-bearing). When proposing a structural restructure, the visible split is the easy part; the underlying mechanisms determine whether it holds. First-pass instinct was to optimize for shape; principal push forced the mechanism-first reading. Recorded as a skill draft below.
 
 ## Discipline note — quest-log open lapse
 
@@ -115,4 +158,4 @@ This entry is the retroactive open. The turn log above is reconstructed from in-
 
 ## Pending drafts
 
-None at close.
+- `spellbook/drafts/skills/structural-restructure-mechanism-over-shape.md` — methodology: when restructuring an information architecture, lead with mechanisms (routing, budgets, live-vs-stable, stamps, harvest) before shape (where files live). Anchor: T14 how_to.md split. Surface at next alching.

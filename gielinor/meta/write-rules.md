@@ -6,7 +6,7 @@ Per-layer write discipline. Hooks enforce the most critical lines (see `.claude/
 
 | Layer | Auto-write | Draft-then-approve | User-only |
 |---|---|---|---|
-| `bank/` (per-player) | yes, freely | when overturning existing knowledge | — |
+| `bank/` (per-player) | drafts only (`bank/drafts/notes/`) | all promotions to `bank/notes/` | — |
 | `quest-log/` (per-player) | yes (sessions log themselves turn-by-turn) | — | — |
 | `spellbook/skills/` | — | new skills, modified procedures | — |
 | `spellbook/rituals/` (global and per-player) | — | — | yes — core rituals are user-edited |
@@ -19,9 +19,9 @@ Per-layer write discipline. Hooks enforce the most critical lines (see `.claude/
 
 ## The principle
 
-Anything that defines who the agent thinks I am, who the agent (or a player) thinks it is, or what has been decided about the system requires my sign-off.
+Anything that defines who the agent thinks I am, who the agent (or a player) thinks it is, or what has been decided about the system requires my sign-off. Knowledge accumulates via drafts that I review during alching.
 
-Knowledge and observations accumulate freely. Identity and core decisions are gated.
+Observations enter the brain freely as drafts. Promotion to canonical knowledge — identity, character, decisions, and per-player bank — is gated.
 
 ## Ritual write-reach
 
@@ -46,7 +46,8 @@ Dwarves can run none of these rituals. See `modes.md`.
 **CLAUDE.md guides (discipline):**
 
 - The "draft-then-approve" rows above. Hooks don't distinguish a proposed promotion from a routine edit, so the agent has to follow the draft flow on its own.
-- The "overturning existing knowledge" exception in `bank/`. New facts merge freely; contradicting existing facts means surfacing the contradiction (typically via a `lorebook/drafts/` entry if it changes how the agent operates, or by archiving the old note if it's just stale).
+- The bank drafts gate. `bank/notes/` is not hook-enforced; the agent has to write only to `bank/drafts/notes/` on its own and let alching promote. Pattern parallel to identity-layer drafts but without the hook. Reopen if discipline slips.
+- The "overturning existing knowledge" path in `bank/`. A new draft that contradicts an existing `bank/notes/` entry surfaces the contradiction during alching review — either the new draft wins (old note archives) or the new draft is rejected. Major shifts in how the agent operates still warrant a `lorebook/drafts/` entry.
 - Treating `meta/` as user-controlled. Hooks could enforce this; for now it's discipline.
 
 ## Related

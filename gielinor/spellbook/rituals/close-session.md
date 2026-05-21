@@ -33,7 +33,7 @@ Each session that runs close-session gets a sequential ID: `S001`, `S002`, etc. 
 
 ## Steps
 
-For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-5 in that player's namespace. Then run global steps 6-9.
+For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-10.
 
 ### 1. Reconcile pending actions
 
@@ -75,13 +75,41 @@ A quest is done when its "Next concrete step" is "none — quest closed." Multi-
 
 The player's `inventory/` is volatile by design. If it holds stale items from work that's already landed (or been abandoned), flush them. If it holds items still actively carried, leave them. Inventory is *what's carried now*, not *what was used this session*.
 
-### 6. Surface drafts across global + per-player layers
+### 6. Observation harvest
 
-If this session created any `examine/drafts/`, `niksis8/drafts/`, `niksis8_character/drafts/`, `lorebook/drafts/`, or `keepsake/proposals/` entries, **surface them now** — one line per draft, grouped by layer. The principal triages on the spot or defers to `/drafts`.
+After the entry is tightened (step 3), skim what happened this session and convert anything durable into draft form. This is **Pump 2** — the per-close population pump that keeps identity layers and bank growing. See [[D-012]] (dev brain) for the rationale.
+
+**Skim surface.**
+
+- Fresh turns added to in-progress quest-log entries this session.
+- The resume sections (**Where we are**, **Next concrete step**) of all in-progress quests touched this session.
+
+The agent judges per-item stability — "is this observation likely to still be true next session, or is it still shifting?" Stable findings become drafts; shifting content stays in the turn log.
+
+**The four harvest questions.**
+
+1. *"Did any work crystallize into a reusable concept this session?"* → write to `players/<active>/bank/drafts/notes/<topic>/<slug>.md`.
+2. *"Did I notice something about myself or how I operate?"* → write to `players/<active>/examine/drafts/<YYYY-MM-DD>-<slug>.md`. Global (`gielinor/examine/drafts/`) only if the observation is clearly cross-player and the principal cues it.
+3. *"Did I notice something about Niklavs through this work?"* → write to `players/<active>/niksis8_character/drafts/<YYYY-MM-DD>-<slug>.md`. Global routing handled by bankstanding, not here.
+4. *"Did anything earn a pin?"* → write to `players/<active>/keepsake/proposals/<YYYY-MM-DD>-<slug>.md`. Almost always no.
+
+**Discipline.**
+
+- **Cap 1–5 drafts per session.** Bias to less. Empty-set is a valid and common answer. A session where nothing earned its way produces zero drafts; this is healthy.
+- **Observation-backed only.** Drafts must cite the specific turn or moment that produced them, per `gielinor/meta/drafts-mechanics.md`. Aspirational drafts ("I should be more careful about X" with no anchor) fail the discipline.
+- **Player-scope first.** Per [[D-012]] (D2=B), drafts land in the active player's namespace by default. Cross-player promotion is bankstanding's job.
+
+**Unscoped sessions.** If the session was unscoped (no player ever activated), harvest writes to `gielinor/examine/drafts/`, `gielinor/niksis8/drafts/`, `gielinor/lorebook/drafts/`, and `gielinor/keepsake/proposals/` directly. Bank-note candidates have no global home — write them to `players/inbox/<YYYY-MM-DD>-<slug>.md` for bankstanding to triage.
+
+**Skill graduation is NOT done here.** That's a Pump 3 (alching/bankstanding) job. Close-session harvest captures observations; alching converts patterns into named skills.
+
+### 7. Surface drafts across global + per-player layers
+
+If this session created any `examine/drafts/`, `niksis8/drafts/`, `niksis8_character/drafts/`, `lorebook/drafts/`, `keepsake/proposals/`, or `bank/drafts/notes/` entries (including this session's harvest output from step 6), **surface them now** — one line per draft, grouped by layer. The principal triages on the spot or defers to `/drafts`.
 
 This is an additional surface event beyond what `meta/drafts-mechanics.md` already specs (`/drafts`, bankstanding, blocking action). Close-session is now a fourth.
 
-### 7. Commit
+### 8. Commit
 
 Always commit at session close (unless the working tree is genuinely clean — in which case skip and note it).
 
@@ -96,7 +124,7 @@ The principal has authorised the close-session commit by making it part of this 
 
 If the tree is clean — read-only session, audit, discussion — skip the commit silently and note "no commit; tree clean" in the close.
 
-### 8. State the close
+### 9. State the close
 
 One or two sentences back to the principal. Include:
 
@@ -106,7 +134,7 @@ One or two sentences back to the principal. Include:
 
 Then wait. The principal closes the conversation.
 
-### 9. Special case: unscoped session
+### 10. Special case: unscoped session
 
 If the session was unscoped (no player ever activated), there is no per-player quest-log to close. The agent writes a single entry to `players/inbox/S{NNN}_{YYYY-MM-DD}_unscoped.md` capturing what happened. Same SNNN rule. Bankstanding triages the inbox later.
 

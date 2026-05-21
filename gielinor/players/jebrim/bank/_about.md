@@ -32,20 +32,22 @@ A note about a query, for example, summarizes the query's purpose, inputs, outpu
 ```
 bank/
   _about.md
-  notes/                # the active knowledge graph
+  drafts/notes/         # harvest candidates + chat-initiated drafts; promoted by alching
+  notes/                # the active knowledge graph (post-promotion)
     <free subfolders by domain — reports/, queries/, pipelines/, etc.>
-  archive/              # mirrors notes/
+  rejected/notes/       # drafts the principal turned down (kept; patterns matter)
+  archive/              # mirrors notes/ — superseded entries
 ```
 
 ## Write rules
 
-Auto-write. Jebrim writes to `bank/notes/` freely as he works. Overturning existing knowledge requires a draft in `gielinor/lorebook/drafts/`. See `gielinor/meta/write-rules.md`.
+Drafts-gated as of [[D-012]] (dev brain) / 2026-05-21. Jebrim writes to `bank/drafts/notes/`; alching promotes to `bank/notes/` or rejects to `bank/rejected/notes/`. Overturning existing knowledge surfaces as a contradiction during alching review. See `gielinor/meta/write-rules.md`.
 
 ## Discipline
 
 - Every note that's about a repo artifact should include the **absolute or repo-relative path** to the source.
 - When you can't find an existing note for something you're learning, write one. Bias toward capture.
-- When you find a note that's contradicted by what you just learned, don't silently update — surface the contradiction as a lorebook draft if it's load-bearing, or just archive the old note if it's stale.
+- When you find a note that's contradicted by what you just learned, write the new understanding as a fresh draft in `bank/drafts/notes/`. Alching surfaces the contradiction with the existing `bank/notes/` entry, and the principal decides whether to archive the old note or reject the draft.
 
 ## Related
 

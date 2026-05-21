@@ -30,7 +30,7 @@ A distinct mode for the per-player tending ritual. The agent operates as the act
 
 - Set by the principal cueing alching during a player session ("Hey Zezima, let's alch" or `/alch`). Also recommended at respawn when per-player thresholds are breached (see `spellbook/rituals/alching.md`).
 - Reads: only the active player's content. Does **not** read globals or other players' content during the procedure.
-- Writes: proposes writes only to the active player's layers (`bank/`, `quest-log/`, `inventory/`, `examine/`, `niksis8_character/`, `keepsake/`), subject to draft-approval rules.
+- Writes: proposes writes only to the active player's layers (`bank/`, `quest-log/`, `inventory/`, `examine/`, `niksis8_character/`, `keepsake/`, `spellbook/skills/`), subject to draft-approval rules.
 - Voice: the active player's persona. (See `spellbook/rituals/alching.md`.)
 
 Alching cannot touch globals and cannot touch other players. Cross-player promotions and global identity-layer work are bankstanding's job.

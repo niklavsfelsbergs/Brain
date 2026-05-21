@@ -23,15 +23,17 @@
 ```
 bank/
   _about.md
+  drafts/notes/         # harvest candidates + chat-initiated drafts; promoted by alching
   notes/                # the active knowledge graph (markdown, freely wiki-linked)
-  archive/              # mirrors notes/ — superseded notes preserved here
+  rejected/notes/       # drafts the principal turned down (kept; patterns matter)
+  archive/              # mirrors notes/ — superseded entries
 ```
 
-Free to subfolder `notes/` by topic as it grows. No pre-imposed taxonomy.
+Free to subfolder `notes/` (and `drafts/notes/`) by topic as it grows. No pre-imposed taxonomy.
 
 ## Write rules
 
-Auto-write. Zezima writes to `bank/notes/` freely as he works. Overturning existing knowledge requires a draft in `lorebook/drafts/` (because changing a confirmed fact is a decision, not just a note). See `gielinor/meta/write-rules.md`.
+Drafts-gated as of [[D-012]] (dev brain) / 2026-05-21. Zezima writes to `bank/drafts/notes/`; alching promotes to `bank/notes/` or rejects to `bank/rejected/notes/`. Overturning existing knowledge surfaces as a contradiction during alching review. Major shifts in how the agent operates still warrant a `gielinor/lorebook/drafts/` entry. See `gielinor/meta/write-rules.md`.
 
 ## Related
 

@@ -76,9 +76,17 @@ Surface all pending drafts inside this player's scope:
 
 Group by layer. One-line summary each. Per draft: approve into `confirmed/` (or `current.md` for keepsake), reject into `rejected/`, or edit-and-approve.
 
-### 2. Review the active player's `bank/` for staleness
+### 2. Promote bank drafts, then review `bank/notes/` for staleness
 
-Walk the player's `bank/notes/`. Look for entries that are no longer relevant — superseded by newer notes, about work that's done and won't come back, contradicted by current state. Propose moves to `bank/archive/notes/<same path>`.
+**First, triage `bank/drafts/notes/`.** This holds harvest candidates from session closes (see [[D-012]] in dev brain) and any direct drafts the agent or principal landed mid-session. Per draft:
+
+- **Promote** → move to `bank/notes/<same path>` (preserve folder structure).
+- **Reject** → move to `bank/rejected/notes/<same path>`. Kept, not deleted.
+- **Edit and promote** → the principal rewrites, then moves.
+
+A draft that contradicts an existing `bank/notes/` entry triggers the "overturning existing knowledge" path: the contradiction surfaces, and either (a) the new draft wins and the old note archives, or (b) the new draft is rejected.
+
+**Then, review `bank/notes/` for staleness.** Walk the player's existing notes. Look for entries that are no longer relevant — superseded by newer notes, about work that's done and won't come back, contradicted by current state. Propose moves to `bank/archive/notes/<same path>`.
 
 ### 3. Quest-log compression — graduate episodes to bank
 
@@ -98,7 +106,21 @@ For this player's `examine/rejected/` and `niksis8_character/rejected/`: look fo
 
 Alching does not write to the global `lorebook/`. If the pattern implies a system-level behavioral change (not player-specific), note it and surface it next bankstanding instead.
 
-### 6. Update `last-alched.md`
+### 6. Skill graduation — walk confirmed layers for named-pattern candidates
+
+Per [[D-012]] (dev brain), Pump 3 extends to skill-graduation. Walk these layers looking for patterns that have repeated and earned a name:
+
+- `players/<active>/examine/confirmed/` — patterns in how this character operates that have stabilized.
+- `players/<active>/niksis8_character/confirmed/` — patterns in how Niklavs interacts with this character that have stabilized.
+- `players/<active>/quest-log/completed/` — repeated procedures across multiple completed quests.
+
+**Threshold.** A pattern earns a skill draft when it has repeated **≥2 times** and the agent can name it concisely. One-off patterns are not skill candidates — they may be examine drafts instead.
+
+**Output.** Draft to `players/<active>/spellbook/skills/drafts/<slug>.md`. Skill drafts follow the same observation-rule as identity drafts: cite the specific repetitions that justified naming the pattern.
+
+**Cap.** 0–2 skill candidates per alching pass. Skills are rare; this step is for genuine pattern-recognition, not for manufacturing skill drafts.
+
+### 7. Update `last-alched.md`
 
 Write today's date into `players/<active>/last-alched.md`. This is what the threshold checks read; without the update, the next respawn will keep flagging the player as overdue.
 

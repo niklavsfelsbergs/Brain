@@ -2671,7 +2671,12 @@ function formatWall(iso) {
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
 }
 function updateTicker() {
-  const timeStr = (LIVE && currentEventWallTime) ? formatWall(currentEventWallTime) : formatTime(t);
+  // Live mode: show browser wall clock (Date.now()) so the time ticks every
+  // second whether events are landing or not. Replay mode: show session-time
+  // (t, ms since session start) — same as before.
+  const timeStr = LIVE
+    ? formatWall(new Date().toISOString())
+    : formatTime(t);
   const subStats = gnomeCount > 0
     ? `dwarves: ${dwarfCount} · gnomes: ${gnomeCount}`
     : `dwarves: ${dwarfCount}`;
@@ -2929,6 +2934,11 @@ if (LIVE) {
         applyEvent(ev, instant);
         applied++;
       }
+      // Refresh the ticker DOM. applyEvent updates currentEventWallTime on
+      // every event, but the tick-loop call to updateTicker is gated on
+      // `playing` which never goes true in live mode — so without this,
+      // the displayed time only refreshes on dwarf/gnome spawn/despawn.
+      if (applied > 0) updateTicker();
       if (!liveBootstrapped) {
         liveBootstrapped = true;
         if (sessionMetaEl) {
@@ -2957,6 +2967,9 @@ if (LIVE) {
 
   pollLive();
   setInterval(pollLive, 500);
+  // Keep the wall clock advancing between events so the ticker doesn't look
+  // frozen during idle periods. updateTicker is cheap (one DOM textContent set).
+  setInterval(updateTicker, 1000);
 }
 
 </script>

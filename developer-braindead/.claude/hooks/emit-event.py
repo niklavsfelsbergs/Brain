@@ -84,6 +84,14 @@ ACTIVE_MODE_FRAGMENT = "/.claude/active-mode.txt"
 ACTIVE_MODE_PATH = REPO_ROOT / ".claude" / "active-mode.txt"
 DEV_BRAIN_MODE = "dev-brain"
 
+# Claude Code passes a stable UUID per top-level session in every hook payload.
+# We stamp it onto each emitted event so the recency walk can distinguish
+# parallel sessions sharing this state.ndjson — without this, Bash attribution
+# leaks across sessions (whichever session wrote intent most recently wins,
+# regardless of which session's tool call is actually firing the hook).
+# Set in main(); read by append() and current_main_actor().
+_SESSION_ID: str | None = None
+
 # Sidecar writes from Bash (`echo X > .claude/<sidecar>`) need the same special
 # handling as Edit/Write tool calls — otherwise the active-mode marker doesn't
 # trigger spawn-braindead, intent files don't emit intent events, and the
@@ -142,6 +150,8 @@ def save_json(path: Path, obj) -> None:
 
 def append(event: dict) -> None:
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if _SESSION_ID and "sessionId" not in event:
+        event["sessionId"] = _SESSION_ID
     with STATE_PATH.open("a", encoding="utf-8") as f:
         f.write(json.dumps(event, separators=(",", ":")) + "\n")
 
@@ -192,12 +202,19 @@ def needle_from_payload(tool_name: str, tool_input: dict) -> str | None:
     return None
 
 
-def _walk_recent_actor() -> tuple[str | None, str | None]:
+def _walk_recent_actor(session_id: str | None = None) -> tuple[str | None, str | None]:
     """Pure recency walk over state.ndjson. Returns (actor, building) for the
     most recent non-wisp intent or move within RECENCY_SEC, or (None, None)
     if nothing fresh. No dev-brain override — callers layer that on top per
     their own needs (spawn-parent inference vs. Bash attribution have
-    different priorities; see infer_dwarf_parent and current_main_actor)."""
+    different priorities; see infer_dwarf_parent and current_main_actor).
+
+    When session_id is given, only events stamped with the same sessionId are
+    considered — needed for Bash attribution when parallel sessions share this
+    state stream. Events written before session_id stamping was added (i.e.
+    legacy events without a sessionId field) are ignored under the filter, so
+    a session whose events all predate stamping will return (None, None) and
+    fall through to the caller's fallback."""
     RECENCY_SEC = 600   # 10 minutes
     try:
         if not STATE_PATH.exists():
@@ -217,6 +234,8 @@ def _walk_recent_actor() -> tuple[str | None, str | None]:
         try:
             ev = json.loads(line)
         except Exception:
+            continue
+        if session_id and ev.get("sessionId") != session_id:
             continue
         wt = _parse_iso(ev.get("wallTime", ""))
         if wt is None:
@@ -247,10 +266,14 @@ def infer_dwarf_parent() -> tuple[str, str]:
     """Parent inference for Task spawn events. Dev-brain short-circuit fires
     FIRST because a dev-brain session spawning a dwarf should always attribute
     parent=Braindead, even if a stale player intent sits inside the recency
-    window from a prior gielinor session."""
-    if read_active_mode() == DEV_BRAIN_MODE:
+    window from a prior gielinor session.
+
+    Session-scoped recency walk avoids cross-session bleed: a Task spawned
+    here inherits this hook invocation's sessionId, so the parent must also
+    be this session's recent actor."""
+    if is_dev_brain_session():
         return ("braindead", "braindead-workshop")
-    actor, at = _walk_recent_actor()
+    actor, at = _walk_recent_actor(session_id=_SESSION_ID)
     if actor:
         return (actor, at or "quest-hall")
     actors = load_json(ACTORS_PATH, {})
@@ -366,6 +389,20 @@ def read_active_mode() -> str:
         return ""
 
 
+def is_dev_brain_session() -> bool:
+    """True only when active-mode.txt says dev-brain AND the session that set
+    the marker is this hook invocation's session. Without the session_id gate,
+    a parallel non-dev-brain session would see the shared marker and fire the
+    dev-brain override on its own events — re-attributing them to braindead.
+    See [[S023 visualizer attribution]] for the failure mode."""
+    if read_active_mode() != DEV_BRAIN_MODE:
+        return False
+    if not _SESSION_ID:
+        return False
+    actors = load_json(ACTORS_PATH, {})
+    return actors.get("_mode_session_id") == _SESSION_ID
+
+
 def handle_active_mode_write(needle: str) -> bool:
     """If needle is .claude/active-mode.txt, detect mode transition and emit
     spawn-braindead / despawn-braindead as needed. Returns True if handled."""
@@ -377,6 +414,14 @@ def handle_active_mode_write(needle: str) -> bool:
     actors = load_json(ACTORS_PATH, {})
     prev_mode = (actors.get("_mode") or "").lower()
     if new_mode == prev_mode:
+        # No mode transition, but stamp _mode_session_id if missing or stale
+        # so the dev-brain override knows whose marker this is. Without this,
+        # a session whose mode was set under the pre-session-id code would
+        # never get its own override to fire.
+        if new_mode == DEV_BRAIN_MODE and _SESSION_ID \
+                and actors.get("_mode_session_id") != _SESSION_ID:
+            actors["_mode_session_id"] = _SESSION_ID
+            save_json(ACTORS_PATH, actors)
         return True
     wall = now_iso()
     # B14: append spawn/despawn events BEFORE persisting _mode. If append
@@ -421,6 +466,10 @@ def handle_active_mode_write(needle: str) -> bool:
                 "speaker": "braindead",
             })
     actors["_mode"] = new_mode
+    if new_mode == DEV_BRAIN_MODE and _SESSION_ID:
+        actors["_mode_session_id"] = _SESSION_ID
+    elif new_mode != DEV_BRAIN_MODE:
+        actors.pop("_mode_session_id", None)
     save_json(ACTORS_PATH, actors)
     return True
 
@@ -482,21 +531,25 @@ def action_verb_and_target(tool_name: str, tool_input: dict) -> tuple[str, str]:
 
 def current_main_actor() -> str:
     """Best-effort main-thread actor for events without a path (e.g., Bash).
-    Prefers the recency walk over the dev-brain marker because active-mode.txt
-    is a SINGLE FILE at the brain root, shared across all Claude sessions; if
-    one session sets it to dev-brain, every parallel session's Bash inherits
-    the marker. The recency walk is a tighter signal — whichever session just
-    wrote an intent is the one firing this hook. Falls back to Braindead only
-    when nothing fresh is on the stream AND dev-brain mode is active (the
-    initial-state case before the first intent of a session).
+
+    Walks events stamped with this hook invocation's sessionId — the only
+    session-local signal we have, since state.ndjson and active-mode.txt are
+    both shared across parallel Claude sessions. When the session has at
+    least one prior intent/move stamped, that's the answer.
+
+    Falls back to active-mode.txt only when the recency walk finds nothing
+    session-tagged — covers the genuinely-first-event-of-session case where
+    a dev-brain session's opening Bash fires before any intent has landed.
+    Even then, accept that this can be wrong if a parallel non-dev-brain
+    session set the marker last; the fallback is best-effort.
 
     Requires intent narration to be written regularly (per
-    `meta/communication-protocol.md`) — without that, the recency walk has
-    nothing to lock onto and the fallback fires."""
-    actor, _ = _walk_recent_actor()
+    `meta/communication-protocol.md`) so the session-filtered walk has
+    something to lock onto early in a session."""
+    actor, _ = _walk_recent_actor(session_id=_SESSION_ID)
     if actor:
         return actor
-    if read_active_mode() == DEV_BRAIN_MODE:
+    if is_dev_brain_session():
         return "braindead"
     return "wisp"
 
@@ -636,9 +689,20 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
 
     # Main-thread path — attribute to the active player as before.
     # Mode-marker override: if no path actor rule matched (actor == defaultActor),
-    # and the session is dev-brain, the default actor is Braindead, not wisp.
-    if actor == m.get("defaultActor", "wisp") and read_active_mode() == DEV_BRAIN_MODE:
-        actor = "braindead"
+    # and THIS session is the dev-brain session that set the marker, default to
+    # Braindead instead of wisp. Session-gated so a parallel non-dev-brain
+    # session doesn't see the shared marker and mis-flip its own events.
+    if actor == m.get("defaultActor", "wisp"):
+        if is_dev_brain_session():
+            actor = "braindead"
+        else:
+            # Path didn't identify a player (wildcard glob like
+            # `players/*/quest-log/*`, or a path outside any player root).
+            # Fall back to whatever actor THIS session has been operating
+            # as — same recency trick current_main_actor uses for Bash.
+            recent, _ = _walk_recent_actor(session_id=_SESSION_ID)
+            if recent:
+                actor = recent
     actors = load_json(ACTORS_PATH, {})
     if actors.get(actor) != building:
         append({
@@ -843,10 +907,15 @@ def attribute_to_subagent(payload: dict):
 
 
 def main() -> None:
+    global _SESSION_ID
     try:
         payload = json.load(sys.stdin)
     except Exception:
         sys.exit(0)
+
+    sid = payload.get("session_id")
+    if isinstance(sid, str) and sid:
+        _SESSION_ID = sid
 
     tool_name = payload.get("tool_name", "")
     hook_event = payload.get("hook_event_name", "")

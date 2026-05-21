@@ -48,11 +48,13 @@
   "defaultActor": "wisp",
 
   "_notes": [
+    "Matching: paths are POSIX-normalized (forward slashes) and a trailing '/' is appended before matching, so directory-shaped needles like 'gielinor/meta' and globs like '**/meta' match rules ending with '/'. File-shaped needles still match because the building name is mid-path, not terminal.",
     "buildingRules: first match wins; order from most-specific to least-specific.",
     "/developer-braindead/experiments/ comes before /developer-braindead/ so visualizer work routes to spellbook-tower (it's procedural work on a spell) instead of the workshop. Everything else under dev-brain routes to the workshop.",
     "Removed individual dev-brain root-file rules (CLAUDE.md, _about.md, respawn.md) — they now fall through to braindead-workshop, which is more correct.",
     "completed/ comes before in-progress/ because both contain '/quest-log/'.",
-    "actorRules: /developer-braindead/ → braindead (he lives there regardless of session). The hook layers session-mode on top of these rules — when active-mode.txt is 'dev-brain', the defaultActor flips from wisp to braindead.",
+    "actorRules: first match wins, same as buildings. Order matters when a path could match more than one player rule (none today, but adding a third player needs care).",
+    "actorRules: /developer-braindead/ → braindead (he lives there regardless of session). The hook layers session-mode on top of these rules — when active-mode.txt is 'dev-brain' AND no explicit actorRule matched, the defaultActor flips from wisp to braindead. The override does NOT fire when an actorRule already matched (e.g., a dev-brain session editing a Jebrim bank file still attributes to Jebrim — this is C7 in the S021 audit, design choice, not a bug).",
     "A path with no buildingRule match returns null — the hook drops the event rather than guessing."
   ]
 }

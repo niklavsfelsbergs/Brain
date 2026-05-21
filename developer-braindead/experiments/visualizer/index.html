@@ -68,6 +68,18 @@
     --gnome-1: #6b7da6;   /* slate blue */
     --gnome-2: #8b6caf;   /* lavender  */
     --gnome-3: #5d8a7e;   /* sage teal */
+    /* C1 (S022): per-actor chat tints. `-text` reads on the light tan COMMS
+       panel; `-dot` reads on the dark frame. Used by chat user-prefix,
+       speaker-bullet, tab-dot, and legend so changing the canonical color in
+       one place propagates everywhere. Sprite vars above are kept separate —
+       they're the actual sprite color, not derived from the tint family. */
+    --jebrim-text: #1f4b8a;      --jebrim-dot: #9bc4ff;
+    --zezima-text: #a44a14;      --zezima-dot: #ffb56b;
+    --dwarves-text: #8a5a10;     --dwarves-dot: #ffd24a;     --dwarves-swatch: #cf9a2c;
+    --gnomes-text: #5b3d6e;      --gnomes-dot: #c8a8e0;      --gnomes-swatch: #8b6caf;
+    --wisp-text: #8a7020;        --wisp-dot: #fff4c8;
+    --braindead-text: #1a6660;   --braindead-dot: #7fa6a0;
+    --commits-text: #6e2c14;     --commits-dot: #ff9344;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -343,17 +355,16 @@
     margin-right: 2px;
   }
   .log-entry .user::after { content: ":"; }
-  /* Per-actor username tint, darker variants so they read on the light panel */
-  .log-entry[data-speaker="jebrim"]    .user { color: #1f4b8a; }
-  .log-entry[data-speaker="zezima"]    .user { color: #a44a14; }
-  .log-entry[data-speaker="dwarves"]   .user { color: #8a5a10; }
-  .log-entry[data-speaker="wisp"]      .user { color: #8a7020; }
-  .log-entry[data-speaker="braindead"] .user { color: #1a6660; }
-  .log-entry[data-speaker="gnomes"]    .user { color: #5b3d6e; }
+  /* Per-actor username tint — derived from --<actor>-text CSS vars (C1). */
+  .log-entry[data-speaker="jebrim"]    .user { color: var(--jebrim-text); }
+  .log-entry[data-speaker="zezima"]    .user { color: var(--zezima-text); }
+  .log-entry[data-speaker="dwarves"]   .user { color: var(--dwarves-text); }
+  .log-entry[data-speaker="wisp"]      .user { color: var(--wisp-text); }
+  .log-entry[data-speaker="braindead"] .user { color: var(--braindead-text); }
+  .log-entry[data-speaker="gnomes"]    .user { color: var(--gnomes-text); }
   /* Body text stays black for all chat lines */
   .log-entry.intent,
-  .log-entry.action,
-  .log-entry.write { color: #0a0604; }
+  .log-entry.action { color: #0a0604; }
   /* Narration / system: muted dark italic */
   .log-entry.narrate,
   .log-entry.system,
@@ -420,30 +431,34 @@
     width: 7px; height: 7px; border-radius: 50%;
     box-shadow: 0 0 4px currentColor, 1px 1px 0 #1a0f06;
   }
-  .log-tab[data-tab="all"]     .dot { background: #ffffff; color: #c8c8c8; }
-  .log-tab[data-tab="jebrim"]  .dot { background: #9bc4ff; color: #5a8ed8; }
-  .log-tab[data-tab="zezima"]  .dot { background: #ffb56b; color: #c9783a; }
-  .log-tab[data-tab="dwarves"] .dot { background: #ffd24a; color: #cf9a2c; }
-  .log-tab[data-tab="gnomes"]  .dot { background: #c8a8e0; color: #8b6caf; }
-  .log-tab[data-tab="wisp"]    .dot { background: #fff4c8; color: #d8c694; }
-  .log-tab[data-tab="commits"] .dot { background: #ff9344; color: #c66828; }
+  /* Tab dots — C1: background = light dot tint, glow color = dark text tint. */
+  .log-tab[data-tab="all"]       .dot { background: #ffffff; color: #c8c8c8; }
+  .log-tab[data-tab="jebrim"]    .dot { background: var(--jebrim-dot);    color: var(--jebrim-text); }
+  .log-tab[data-tab="zezima"]    .dot { background: var(--zezima-dot);    color: var(--zezima-text); }
+  .log-tab[data-tab="dwarves"]   .dot { background: var(--dwarves-dot);   color: var(--dwarves-text); }
+  .log-tab[data-tab="gnomes"]    .dot { background: var(--gnomes-dot);    color: var(--gnomes-text); }
+  .log-tab[data-tab="wisp"]      .dot { background: var(--wisp-dot);      color: var(--wisp-text); }
+  .log-tab[data-tab="braindead"] .dot { background: var(--braindead-dot); color: var(--braindead-text); }
+  .log-tab[data-tab="commits"]   .dot { background: var(--commits-dot);   color: var(--commits-text); }
   .log-tab.active .dot { box-shadow: 0 0 5px currentColor, inset 1px 1px 0 rgba(0,0,0,0.4); }
 
   /* filter — hide non-matching entries when a filter is active */
-  .log-scroll[data-filter="jebrim"]  .log-entry:not([data-speaker="jebrim"])  { display: none; }
-  .log-scroll[data-filter="zezima"]  .log-entry:not([data-speaker="zezima"])  { display: none; }
-  .log-scroll[data-filter="dwarves"] .log-entry:not([data-speaker="dwarves"]) { display: none; }
-  .log-scroll[data-filter="wisp"]    .log-entry:not([data-speaker="wisp"])    { display: none; }
-  .log-scroll[data-filter="commits"] .log-entry:not([data-speaker="commits"]) { display: none; }
-  .log-scroll[data-filter="gnomes"]  .log-entry:not([data-speaker="gnomes"])  { display: none; }
+  .log-scroll[data-filter="jebrim"]    .log-entry:not([data-speaker="jebrim"])    { display: none; }
+  .log-scroll[data-filter="zezima"]    .log-entry:not([data-speaker="zezima"])    { display: none; }
+  .log-scroll[data-filter="dwarves"]   .log-entry:not([data-speaker="dwarves"])   { display: none; }
+  .log-scroll[data-filter="wisp"]      .log-entry:not([data-speaker="wisp"])      { display: none; }
+  .log-scroll[data-filter="braindead"] .log-entry:not([data-speaker="braindead"]) { display: none; }
+  .log-scroll[data-filter="commits"]   .log-entry:not([data-speaker="commits"])   { display: none; }
+  .log-scroll[data-filter="gnomes"]    .log-entry:not([data-speaker="gnomes"])    { display: none; }
 
-  .log-entry[data-speaker="jebrim"]    .t::before { content: "● "; color: #1f4b8a; }
-  .log-entry[data-speaker="zezima"]    .t::before { content: "● "; color: #a44a14; }
-  .log-entry[data-speaker="dwarves"]   .t::before { content: "● "; color: #8a5a10; }
-  .log-entry[data-speaker="wisp"]      .t::before { content: "● "; color: #8a7020; }
-  .log-entry[data-speaker="braindead"] .t::before { content: "● "; color: #1a6660; }
-  .log-entry[data-speaker="gnomes"]    .t::before { content: "● "; color: #5b3d6e; }
-  .log-entry[data-speaker="commits"]   .t::before { content: "● "; color: #6e2c14; }
+  /* Speaker bullets — derived from --<actor>-text vars (C1). */
+  .log-entry[data-speaker="jebrim"]    .t::before { content: "● "; color: var(--jebrim-text); }
+  .log-entry[data-speaker="zezima"]    .t::before { content: "● "; color: var(--zezima-text); }
+  .log-entry[data-speaker="dwarves"]   .t::before { content: "● "; color: var(--dwarves-text); }
+  .log-entry[data-speaker="wisp"]      .t::before { content: "● "; color: var(--wisp-text); }
+  .log-entry[data-speaker="braindead"] .t::before { content: "● "; color: var(--braindead-text); }
+  .log-entry[data-speaker="gnomes"]    .t::before { content: "● "; color: var(--gnomes-text); }
+  .log-entry[data-speaker="commits"]   .t::before { content: "● "; color: var(--commits-text); }
 
   @media (max-width: 900px) {
     .topbar { grid-template-columns: 1fr; gap: 12px; }
@@ -826,9 +841,10 @@
       <div class="legend">
         <div class="row"><span class="swatch" style="background:var(--jebrim-robe)"></span> Jebrim — analyst-player</div>
         <div class="row"><span class="swatch" style="background:var(--zezima-robe)"></span> Zezima — reflective-player <span style="opacity:0.5">(idle)</span></div>
-        <div class="row"><span class="swatch" style="background:#cf9a2c"></span> Dwarves — task-local sub-agents</div>
-        <div class="row"><span class="swatch" style="background:#8b6caf"></span> Gnomes — housekeeping sub-agents</div>
+        <div class="row"><span class="swatch" style="background:var(--dwarves-swatch)"></span> Dwarves — task-local sub-agents</div>
+        <div class="row"><span class="swatch" style="background:var(--gnomes-swatch)"></span> Gnomes — housekeeping sub-agents</div>
         <div class="row"><span class="swatch" style="background:var(--wisp-core)"></span> Wisp — unscoped/system</div>
+        <div class="row"><span class="swatch" style="background:var(--braindead-robe)"></span> Braindead — dev-brain construction crew</div>
       </div>
 
       <div class="bldg-tooltip" id="bldgTooltip"></div>
@@ -861,8 +877,9 @@
         <span class="log-tab"        data-tab="zezima"  role="tab"><span class="dot"></span>ZEZIMA</span>
         <span class="log-tab"        data-tab="dwarves" role="tab"><span class="dot"></span>DWARVES</span>
         <span class="log-tab"        data-tab="gnomes"  role="tab"><span class="dot"></span>GNOMES</span>
-        <span class="log-tab"        data-tab="wisp"    role="tab"><span class="dot"></span>WISP</span>
-        <span class="log-tab"        data-tab="commits" role="tab"><span class="dot"></span>COMMITS</span>
+        <span class="log-tab"        data-tab="wisp"      role="tab"><span class="dot"></span>WISP</span>
+        <span class="log-tab"        data-tab="braindead" role="tab"><span class="dot"></span>BRAINDEAD</span>
+        <span class="log-tab"        data-tab="commits"   role="tab"><span class="dot"></span>COMMITS</span>
       </div>
     </header>
     <div class="log-scroll" id="logScroll"></div>
@@ -2364,6 +2381,11 @@ function ensureActorExists(actor, atKey) {
   } else if (actor === 'wisp') {
     wispActive = true;
     spawnWisp({at: atKey || 'quest-hall'});
+  } else {
+    // B10: unknown actor with no spawn path — bubbles/moves would otherwise
+    // be dropped silently. Surface so adding a third player surfaces here
+    // rather than as a mysterious missing sprite.
+    console.warn('visualizer: ensureActorExists has no spawn path for actor', actor);
   }
 }
 
@@ -2623,8 +2645,10 @@ function speakerFor(id) {
 }
 
 function deriveSpeaker(msg) {
-  if (/\bD[1-3]\b|dwarves?|\bspawning D/i.test(msg)) return 'dwarves';
-  if (/\bG[1-3]\b|gnomes?|\bspawning G/i.test(msg)) return 'gnomes';
+  // B13: regex bound matches speakerFor (unbounded D\d+/G\d+) — was D[1-3]/G[1-3]
+  // and silently drifted once nextId rolled past 3.
+  if (/\bD\d+\b|dwarves?|\bspawning D/i.test(msg)) return 'dwarves';
+  if (/\bG\d+\b|gnomes?|\bspawning G/i.test(msg)) return 'gnomes';
   if (activePlayer) return activePlayer;
   if (braindeadActive) return 'braindead';
   if (wispActive) return 'wisp';
@@ -2757,12 +2781,19 @@ function resetWorld() {
   });
   if (wispNode) { wispNode.remove(); wispNode = null; delete actorPositions['wisp']; }
   wispActive = false;
-  if (braindeadNode) { braindeadNode.remove(); braindeadNode = null; delete actorPositions['braindead']; delete currentBuilding['braindead']; }
+  if (braindeadNode) { braindeadNode.remove(); braindeadNode = null; delete actorPositions['braindead']; }
   braindeadActive = false;
   Object.keys(intents).forEach(a => {
     intents[a].node.remove();
     delete intents[a];
   });
+  // B11: clear ALL currentBuilding entries — previously left dwarf/gnome/wisp
+  // keys in place, so scrub-back retained stale building tracking for actors
+  // no longer present. Re-seed jebrim/zezima below.
+  Object.keys(currentBuilding).forEach(k => delete currentBuilding[k]);
+  // B12: clear currentEventWallTime — survived reset and tinted timestamps
+  // in live mode with the last-seen wall clock until a new event arrived.
+  currentEventWallTime = null;
   dwarfCount = 0;
   gnomeCount = 0;
   const j = document.getElementById('actor-jebrim');

@@ -13,6 +13,8 @@
 # Never fails the tool call — any error is swallowed to stderr.
 
 import json
+import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,6 +32,18 @@ GNOMES_PATH = VIZ_DIR / "state-gnomes.json"
 # Sub-agent kinds. spawn-time selection from tool_input.subagent_type; tool-call
 # attribution from payload.agent_type. Both reach into the same per-kind state
 # (id prefix, color palette, event names, chat speaker).
+#
+# Adding a new kind:
+#   - Add an entry below with all six keys; pick a unique id_prefix letter and
+#     a fresh state file under VIZ_DIR.
+#   - Add matching CSS vars (--<color_prefix>-1..N) in index.html and a sprite
+#     spawner (parallel to spawnDwarf / spawnGnome).
+#   - Update spawn_kind_from_tool_input to route subagent_type strings to the
+#     new kind.
+#   - Update attribute_to_subagent's agent_type dispatch (currently a binary
+#     gnome/else split — generalize to a mapping if a third kind lands).
+#   - Add a COMMS tab + filter + dot CSS for the new speaker (parallel to
+#     dwarves/gnomes blocks in index.html).
 ROLE_CONFIG = {
     "dwarf": {
         "id_prefix": "D",
@@ -70,6 +84,29 @@ ACTIVE_MODE_FRAGMENT = "/.claude/active-mode.txt"
 ACTIVE_MODE_PATH = REPO_ROOT / ".claude" / "active-mode.txt"
 DEV_BRAIN_MODE = "dev-brain"
 
+# Sidecar writes from Bash (`echo X > .claude/<sidecar>`) need the same special
+# handling as Edit/Write tool calls — otherwise the active-mode marker doesn't
+# trigger spawn-braindead, intent files don't emit intent events, and the
+# narration channel stays silent. Bash isn't a WRITE_TOOL, so handle_write_or_read
+# never runs for these; we detect the embedded redirects in the command string
+# and dispatch from handle_bash. Patterns are permissive — a false positive
+# (e.g., echoing a path string without actually redirecting) at worst fires a
+# handler that re-reads the file and finds nothing new. The regex looks for one
+# or more '>' followed by optional whitespace + an optional quote + a relative
+# or absolute path ending in the sidecar suffix.
+BASH_ACTIVE_MODE_RE = re.compile(
+    r'>+\s*[\'"]?(?:[\w./\\-]*[\\/])?\.claude[\\/]active-mode\.txt[\'"]?',
+    re.IGNORECASE,
+)
+BASH_NARRATION_RE = re.compile(
+    r'>+\s*[\'"]?(?:[\w./\\-]*[\\/])?\.claude[\\/]narration\.txt[\'"]?',
+    re.IGNORECASE,
+)
+BASH_INTENT_RE = re.compile(
+    r'>+\s*[\'"]?(?P<path>(?:[\w./\\-]*[\\/])?\.claude[\\/]intent[\\/][\w-]+\.txt)[\'"]?',
+    re.IGNORECASE,
+)
+
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
@@ -85,8 +122,20 @@ def load_json(path: Path, default):
 
 
 def save_json(path: Path, obj) -> None:
+    """B8: atomic write — temp file in the same dir + os.replace. A crash
+    mid-write leaves either the old file intact or the new file complete,
+    never a truncated middle state. os.replace is atomic on both POSIX and
+    Windows (NTFS), unlike rename which fails on Windows if dst exists.
+
+    Note: state.ndjson (append-only via `append`) cannot be made atomic this
+    way without rewriting the whole file each tick. Documented as B9 in the
+    S021 audit — concurrent appends from parallel tool calls can interleave;
+    self-heals on the next non-racing event."""
     try:
-        path.write_text(json.dumps(obj), encoding="utf-8")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(path.suffix + f".tmp.{os.getpid()}")
+        tmp.write_text(json.dumps(obj), encoding="utf-8")
+        os.replace(tmp, path)
     except Exception as e:
         print(f"emit-event: cannot write {path.name}: {e}", file=sys.stderr)
 
@@ -143,27 +192,21 @@ def needle_from_payload(tool_name: str, tool_input: dict) -> str | None:
     return None
 
 
-def infer_dwarf_parent() -> tuple[str, str]:
-    # The stream is global across all Claude sessions; the hook can't tell
-    # which conversation fired the Task. Prefer the most recent `intent`
-    # event over `move` because every turn writes intent for its active
-    # actor — that's the cleanest per-session anchor. Fall back to `move`
-    # only if no recent intent exists, and ignore stale events past the
-    # window so a long-dormant actor doesn't keep claiming new spawns.
+def _walk_recent_actor() -> tuple[str | None, str | None]:
+    """Pure recency walk over state.ndjson. Returns (actor, building) for the
+    most recent non-wisp intent or move within RECENCY_SEC, or (None, None)
+    if nothing fresh. No dev-brain override — callers layer that on top per
+    their own needs (spawn-parent inference vs. Bash attribution have
+    different priorities; see infer_dwarf_parent and current_main_actor)."""
     RECENCY_SEC = 600   # 10 minutes
     try:
         if not STATE_PATH.exists():
-            return ("wisp", "quest-hall")
+            return (None, None)
         lines = STATE_PATH.read_text(encoding="utf-8").splitlines()
     except Exception:
-        return ("wisp", "quest-hall")
+        return (None, None)
 
     now = datetime.now(timezone.utc)
-
-    def parse_wall(s):
-        try: return datetime.fromisoformat(s)
-        except Exception: return None
-
     intent_actor = None
     move_actor = None
     actors = load_json(ACTORS_PATH, {})
@@ -175,8 +218,11 @@ def infer_dwarf_parent() -> tuple[str, str]:
             ev = json.loads(line)
         except Exception:
             continue
-        wt = parse_wall(ev.get("wallTime", ""))
-        if wt is None or (now - wt).total_seconds() > RECENCY_SEC:
+        wt = _parse_iso(ev.get("wallTime", ""))
+        if wt is None:
+            # Malformed event — skip it; older events may still be in-window.
+            continue
+        if (now - wt).total_seconds() > RECENCY_SEC:
             # Past the recency window — stop walking; older events are stale.
             break
         t = ev.get("type")
@@ -191,11 +237,123 @@ def infer_dwarf_parent() -> tuple[str, str]:
                 move_actor = (a, ev.get("to") or actors.get(a) or "quest-hall")
 
     if intent_actor:
-        at = actors.get(intent_actor) or "quest-hall"
-        return (intent_actor, at)
+        return (intent_actor, actors.get(intent_actor) or "quest-hall")
     if move_actor:
         return move_actor
+    return (None, None)
+
+
+def infer_dwarf_parent() -> tuple[str, str]:
+    """Parent inference for Task spawn events. Dev-brain short-circuit fires
+    FIRST because a dev-brain session spawning a dwarf should always attribute
+    parent=Braindead, even if a stale player intent sits inside the recency
+    window from a prior gielinor session."""
+    if read_active_mode() == DEV_BRAIN_MODE:
+        return ("braindead", "braindead-workshop")
+    actor, at = _walk_recent_actor()
+    if actor:
+        return (actor, at or "quest-hall")
+    actors = load_json(ACTORS_PATH, {})
     return ("wisp", actors.get("wisp") or "quest-hall")
+
+
+def _parse_iso(s: str):
+    try:
+        return datetime.fromisoformat(s)
+    except Exception:
+        return None
+
+
+def _is_stale_braindead_marker() -> bool:
+    """B4: detect when state-actors.json._mode='dev-brain' is leftover from a
+    prior session that never wrote 'unscoped' to active-mode.txt on close.
+    Walks state.ndjson backward; returns True if the latest spawn-braindead
+    is older than FRESH_SEC (i.e., no fresh activity to balance against).
+    Used to suppress misleading 'Braindead packs up and leaves' chat lines
+    when the despawn is actually closing out a stale prior-session spawn."""
+    FRESH_SEC = 300  # 5 minutes — sessions don't pause that long mid-flow.
+    try:
+        if not STATE_PATH.exists():
+            return True
+        now = datetime.now(timezone.utc)
+        # Bound the walk: stop scanning past STALE_SEC ago (1h) to keep cost
+        # bounded on long-lived stream files.
+        STALE_SEC = 3600
+        for line in reversed(STATE_PATH.read_text(encoding="utf-8").splitlines()):
+            if not line.strip():
+                continue
+            try:
+                ev = json.loads(line)
+            except Exception:
+                continue
+            wt = _parse_iso(ev.get("wallTime", ""))
+            if wt is None:
+                continue
+            age = (now - wt).total_seconds()
+            if age > STALE_SEC:
+                break
+            t = ev.get("type")
+            if t == "spawn-braindead":
+                return age > FRESH_SEC
+            if t == "despawn-braindead":
+                # Latest braindead event is a despawn — anything before it is
+                # already balanced. The current _mode=dev-brain must be stale.
+                return True
+        return True
+    except Exception:
+        return True
+
+
+def gc_stale_subagents(kind: str) -> None:
+    """B7: walk role-state file; emit despawn events for spawns whose
+    PreToolUse landed but PostToolUse never did (Claude Code crash, network
+    error, parent kill). Threshold STALE_SEC ago. Called from handle_task_pre
+    / handle_task_post so live sub-agent activity is the trigger; bounds
+    overhead without needing a session-boundary signal."""
+    STALE_SEC = 3600  # 1 hour
+    cfg = ROLE_CONFIG[kind]
+    st = load_json(cfg["state_path"], _subagent_default())
+    by_tui = st.get("byToolUseId", {})
+    if not by_tui:
+        return
+    now = datetime.now(timezone.utc)
+    stale = []
+    for tui, entry in list(by_tui.items()):
+        wt = _parse_iso(entry.get("spawnedAt", ""))
+        # Entries without spawnedAt predate the B7 fix; treat them as fresh on
+        # this pass (they'll be cleaned up next time once a fresh spawn updates
+        # the file format, or by hand). Avoids a one-time GC storm.
+        if wt and (now - wt).total_seconds() > STALE_SEC:
+            stale.append((tui, entry))
+    if not stale:
+        return
+    by_agent = st.setdefault("byAgentId", {})
+    pending = st.setdefault("pendingAgentBind", [])
+    wall = now_iso()
+    for tui, entry in stale:
+        by_tui.pop(tui, None)
+        for aid, t in list(by_agent.items()):
+            if t == tui:
+                by_agent.pop(aid, None)
+        if tui in pending:
+            pending.remove(tui)
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": cfg["despawn_event"],
+            "id": entry["id"],
+        })
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "log",
+            "msg": f"* {entry['id']} timed out (no PostToolUse, GC after {STALE_SEC // 60}m)",
+            "cls": "system",
+            "speaker": cfg["speaker"],
+        })
+        print(
+            f"emit-event: GC stale {kind} {entry['id']} (tool_use_id={tui})",
+            file=sys.stderr,
+        )
+    save_json(cfg["state_path"], st)
 
 
 def read_active_mode() -> str:
@@ -220,10 +378,11 @@ def handle_active_mode_write(needle: str) -> bool:
     prev_mode = (actors.get("_mode") or "").lower()
     if new_mode == prev_mode:
         return True
-    actors["_mode"] = new_mode
-    save_json(ACTORS_PATH, actors)
     wall = now_iso()
-    # Transitioned INTO dev-brain — Braindead arrives at the workshop.
+    # B14: append spawn/despawn events BEFORE persisting _mode. If append
+    # fails, _mode hasn't been recorded, so the next active-mode write will
+    # retry rather than silently leaving Braindead un-spawned for the rest
+    # of the session (the `_mode == new_mode` short-circuit above).
     if new_mode == DEV_BRAIN_MODE and prev_mode != DEV_BRAIN_MODE:
         append({
             "wallTime": wall, "source": "hook",
@@ -237,19 +396,32 @@ def handle_active_mode_write(needle: str) -> bool:
             "cls": "session-start",
             "speaker": "braindead",
         })
-    # Transitioned OUT of dev-brain — Braindead leaves.
     elif prev_mode == DEV_BRAIN_MODE and new_mode != DEV_BRAIN_MODE:
+        stale = _is_stale_braindead_marker()
         append({
             "wallTime": wall, "source": "hook",
             "type": "despawn-braindead",
         })
-        append({
-            "wallTime": wall, "source": "hook",
-            "type": "log",
-            "msg": "Braindead packs up and leaves",
-            "cls": "session-start",
-            "speaker": "braindead",
-        })
+        if stale:
+            # B4: this despawn is closing out a stale _mode marker from a
+            # prior session, not a current Braindead presence. Emit a
+            # system-voice narrate instead of the Braindead chat line so the
+            # new session's COMMS isn't polluted with a misleading farewell.
+            append({
+                "wallTime": wall, "source": "hook",
+                "type": "narrate",
+                "text": "Cleared stale dev-brain marker from prior session",
+            })
+        else:
+            append({
+                "wallTime": wall, "source": "hook",
+                "type": "log",
+                "msg": "Braindead packs up and leaves",
+                "cls": "session-start",
+                "speaker": "braindead",
+            })
+    actors["_mode"] = new_mode
+    save_json(ACTORS_PATH, actors)
     return True
 
 
@@ -310,21 +482,69 @@ def action_verb_and_target(tool_name: str, tool_input: dict) -> tuple[str, str]:
 
 def current_main_actor() -> str:
     """Best-effort main-thread actor for events without a path (e.g., Bash).
-    Dev-brain mode always attributes to Braindead — the recency walk would
-    otherwise lock onto stale player intents from the prior gielinor session.
-    Outside dev-brain, use the same recency heuristic as dwarf parent
-    inference, falling back to Wisp."""
+    Prefers the recency walk over the dev-brain marker because active-mode.txt
+    is a SINGLE FILE at the brain root, shared across all Claude sessions; if
+    one session sets it to dev-brain, every parallel session's Bash inherits
+    the marker. The recency walk is a tighter signal — whichever session just
+    wrote an intent is the one firing this hook. Falls back to Braindead only
+    when nothing fresh is on the stream AND dev-brain mode is active (the
+    initial-state case before the first intent of a session).
+
+    Requires intent narration to be written regularly (per
+    `meta/communication-protocol.md`) — without that, the recency walk has
+    nothing to lock onto and the fallback fires."""
+    actor, _ = _walk_recent_actor()
+    if actor:
+        return actor
     if read_active_mode() == DEV_BRAIN_MODE:
         return "braindead"
-    actor, _ = infer_dwarf_parent()
-    return actor if actor != "wisp" else "wisp"
+    return "wisp"
 
 
 def handle_bash(payload: dict) -> None:
     """D-014: emit an `action` event for Bash (no path → no move).
     Attributes to sub-agent (dwarf or gnome) via agent_id when present, else
-    to the current main-thread actor."""
+    to the current main-thread actor.
+
+    S022 follow-up: also detect sidecar writes embedded in the command
+    (`echo X > .claude/active-mode.txt`, intent files, narration) and route
+    them through the same handlers Edit/Write would have hit. Without this,
+    a respawn ritual that uses Bash echo to set the active-mode marker
+    leaves _mode stale in state-actors.json — no spawn-braindead event is
+    emitted, narration goes silent, and intent bubbles never appear."""
     tool_input = payload.get("tool_input") or {}
+    cmd = tool_input.get("command") or ""
+
+    # Sidecar dispatch runs BEFORE the action event so the resulting
+    # spawn-braindead / intent / narrate events appear in the stream in the
+    # right order — the Bash action is the "what just happened," and the
+    # sidecar events are the consequences the user sees on the map.
+    if cmd:
+        if BASH_ACTIVE_MODE_RE.search(cmd):
+            try:
+                handle_active_mode_write(".claude/active-mode.txt")
+            except Exception as e:
+                print(f"emit-event: bash active-mode dispatch failed: {e}", file=sys.stderr)
+        if BASH_NARRATION_RE.search(cmd):
+            try:
+                handle_narration_write(".claude/narration.txt")
+            except Exception as e:
+                print(f"emit-event: bash narration dispatch failed: {e}", file=sys.stderr)
+        # Dedupe by path — a single command can name the same intent file
+        # multiple times (test strings, multi-line scripts); we want one
+        # dispatch per path, not one per textual mention.
+        intent_paths = {
+            m.group("path").replace("\\", "/")
+            for m in BASH_INTENT_RE.finditer(cmd)
+        }
+        for path in intent_paths:
+            try:
+                # handle_intent_write parses the actor name from the trailing
+                # filename, not the leading path.
+                handle_intent_write(path)
+            except Exception as e:
+                print(f"emit-event: bash intent dispatch failed: {e}", file=sys.stderr)
+
     verb, target = action_verb_and_target("Bash", tool_input)
     if not target:
         return
@@ -440,10 +660,15 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
 def _subagent_default() -> dict:
     # Stable shape for a per-role state file (dwarves, gnomes). Keys:
     #   nextId          — next sub-agent number to assign (D1, D2, … or G1, G2, …)
-    #   byToolUseId     — { tool_use_id: { id, color, at } } until despawn
+    #   byToolUseId     — { tool_use_id: { id, color, at, spawnedAt } } until despawn
+    #                     (spawnedAt added in S022 / B7 — entries from before
+    #                     are tolerated by gc_stale_subagents.)
     #   pendingQueue    — FIFO of sub-agents whose spawn Pre lacked tool_use_id
     #   byAgentId       — { agent_id: tool_use_id } bound on first sub-call
-    #   pendingAgentBind — FIFO of tool_use_ids awaiting agent_id binding
+    #   pendingAgentBind — list of tool_use_ids awaiting agent_id binding;
+    #                     popped LIFO (most-recent-first) in attribute_to_subagent
+    #                     to bias toward the newer spawn under concurrent races
+    #                     (S022 / B1).
     return {
         "nextId": 1,
         "byToolUseId": {},
@@ -466,6 +691,9 @@ def handle_task_pre(payload: dict) -> None:
     tool_input = payload.get("tool_input") or {}
     kind = spawn_kind_from_tool_input(tool_input)
     cfg = ROLE_CONFIG[kind]
+    # B7: GC stale entries before adding new ones. Bounded; only fires when
+    # an entry is older than STALE_SEC (1h).
+    gc_stale_subagents(kind)
     parent, at = infer_dwarf_parent()
 
     st = load_json(cfg["state_path"], _subagent_default())
@@ -473,7 +701,9 @@ def handle_task_pre(payload: dict) -> None:
     sub_id = f"{cfg['id_prefix']}{n}"
     color = f"{cfg['color_prefix']}-{((n - 1) % cfg['color_count']) + 1}"
     st["nextId"] = n + 1
-    entry = {"id": sub_id, "color": color, "at": at}
+    # B7: spawnedAt is the GC anchor; used by gc_stale_subagents to find
+    # entries whose PostToolUse never landed.
+    entry = {"id": sub_id, "color": color, "at": at, "spawnedAt": now_iso()}
     if tool_use_id:
         st.setdefault("byToolUseId", {})[tool_use_id] = entry
         # Queue this spawn so the first sub-call carrying `agent_id` can claim
@@ -506,6 +736,9 @@ def handle_task_post(payload: dict) -> None:
     tool_input = payload.get("tool_input") or {}
     kind = spawn_kind_from_tool_input(tool_input)
     cfg = ROLE_CONFIG[kind]
+    # B7: GC pass alongside Post so long-lived sessions self-clean even if no
+    # new spawns are firing.
+    gc_stale_subagents(kind)
     st = load_json(cfg["state_path"], _subagent_default())
 
     entry = None
@@ -547,11 +780,12 @@ def handle_task_post(payload: dict) -> None:
 
 def attribute_to_subagent(payload: dict):
     """If the hook payload carries `agent_id` (sub-agent tool call), return
-    the sub-agent entry { id, color, at } that owns it, plus the state dict
-    and the kind ('dwarf' or 'gnome'). Dispatches on `payload.agent_type`;
-    falls back to dwarf state when agent_type is absent (older Claude Code
-    versions or general-purpose tasks where the field may not be populated).
-    Binds agent_id → spawn tool_use_id on first sighting via FIFO match.
+    the sub-agent entry { id, color, at, spawnedAt } that owns it, plus the
+    state dict and the kind ('dwarf' or 'gnome'). Dispatches on
+    `payload.agent_type`; falls back to dwarf state when agent_type is absent
+    (older Claude Code versions or general-purpose tasks where the field may
+    not be populated). Binds agent_id → spawn tool_use_id on first sighting
+    via LIFO match (S022 / B1 — most-recent spawn wins when ambiguous).
     Returns (entry, state, kind) on success, (None, None, None) otherwise —
     caller is responsible for saving `state` if it mutates `entry["at"]`."""
     agent_id = payload.get("agent_id")
@@ -567,12 +801,43 @@ def attribute_to_subagent(payload: dict):
     if tool_use_id is None:
         pending = st.setdefault("pendingAgentBind", [])
         if not pending:
+            # B6: silent fallthrough — agent_id present but no pending spawn
+            # to bind it to. Caller will attribute to main actor; live-mode
+            # operators need a breadcrumb to debug.
+            print(
+                f"emit-event: cannot attribute agent_id={agent_id} ({kind}) — "
+                f"no pending spawn binding",
+                file=sys.stderr,
+            )
             return None, None, None
-        tool_use_id = pending.pop(0)
+        # B1: LIFO instead of FIFO. The original FIFO misattributes when two
+        # spawns fire close in time and the older one returns instantly
+        # without sub-calls — the newer spawn's first sub-call popped the
+        # older's tool_use_id. LIFO biases toward the most recent spawn,
+        # which matches the typical pattern ("I just spawned a dwarf, it
+        # immediately did stuff"). Concurrent same-kind spawns that both do
+        # work remain inherently ambiguous from the hook's vantage point
+        # (Claude Code doesn't pass parent_tool_use_id on sub-calls); the
+        # warning below makes the ambiguity visible.
+        if len(pending) > 1:
+            print(
+                f"emit-event: ambiguous binding for agent_id={agent_id} "
+                f"({kind}) — {len(pending)} pending spawns; binding to most "
+                f"recent (LIFO)",
+                file=sys.stderr,
+            )
+        tool_use_id = pending.pop()
         by_agent[agent_id] = tool_use_id
         save_json(cfg["state_path"], st)
     entry = by_tui.get(tool_use_id)
     if not entry:
+        # tool_use_id was bound but the spawn entry has vanished (e.g., despawn
+        # race, manual state cleanup). Same fallthrough story as above.
+        print(
+            f"emit-event: agent_id={agent_id} ({kind}) bound to "
+            f"tool_use_id={tool_use_id} but no spawn entry found",
+            file=sys.stderr,
+        )
         return None, None, None
     return entry, st, kind
 

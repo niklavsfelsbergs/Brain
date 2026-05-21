@@ -6,80 +6,79 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-21 (end of [[S021]] — visualizer audit).
+**Last updated.** 2026-05-21 (end of [[S022]] — visualizer audit fixes).
 
 ## Where we are
 
-[[S021]] delivered the deliberate sweep called for at the end of [[S020]]: a full read-through of `developer-braindead/experiments/visualizer/index.html` (~2933 lines), `developer-braindead/.claude/hooks/emit-event.py` (630 lines), and the state files, producing **[[visualizer-audit-S021]]** at `developer-braindead/bank/research/visualizer-audit-S021.md`. No fixes landed in the audit pass — discipline held: just findings, file:line cited.
+[[S022]] landed the full audit-fix pass [[S021]] queued: **15 bugs**, **7 consistency findings**, **4 doc gaps** addressed across 4 files. Three findings deferred with documented reasons (B5 design tradeoff, B9 race with self-heal, B15 working-as-designed per [[D-014]]); three confirmed as non-findings (C5/C6/C7). Plus two real bugs the audit didn't catch but the validation pass exposed: **Bash writes to sidecar files** were bypassing the active-mode / intent / narration handlers, and **`active-mode.txt` is shared across parallel Claude sessions**, so a dev-brain marker set here bled into a parallel Jebrim session's Bash attribution. Both fixed in-session.
 
-The visualizer's accreted state across S008–S020 is now catalogued. **15 bugs, 7 consistency issues, 18 improvements, 4 doc gaps.** The audit is the input to next session's work — pick fixes, build them.
+The S020 cascade (gnomes ratification + visualizer integration) is **finally validated in part** — the active-mode marker, intent sidecar, and narration channel were live-exercised when the Bash-dispatch fix landed and replayed the missing `spawn-braindead` event for this session. The first **live gnome spawn** is still deferred.
 
-The S020 cascade (gnomes ratification + visualizer integration) remains on disk but still **untested in the wild**. First live gnome spawn is the validation event; it's also the natural pre-work for several audit-flagged dynamics (FIFO race in B1, dev-brain parent inference in B3, attribution fallthrough in B6) that a static read can't fully exercise.
+Future visualizer "aliveness" work captured as [[Q-008]] (idle sprite breath, per-building ambient particles, day/night cycle, NPC wanderers, trail echoes). Parked, not started.
 
 ## Next concrete step — START HERE
 
-**Step 1 — pick fixes from the audit, build them.** Read [[visualizer-audit-S021]] first; the triage section near the bottom suggests:
+**Step 1 — first live gnome spawn (deferred from S020 and S021).** Still the natural validation event for the boundary hook (S020's env→payload-field fix, untested in the wild), the visualizer's gnome render path, and the audit fixes that only fire under sub-agent activity (B1 LIFO under multi-spawn, B3 dev-brain parent override, B6 stderr trail, B7 GC threshold, B8 atomic writes under crash). Combined-test candidate: a Jebrim alching gnome. One spawn exercises a wide cross-section.
 
-- **Most likely to bite:** B1 (FIFO `pendingAgentBind` misattribution) — first parallel-dwarf-spawn surfaces it.
-- **Most easily fixed:** B2 (parse-failure vs window-past sharing one `break` — 2-line change), B13 (`deriveSpeaker` regex `D[1-3]`/`G[1-3]` → `D\d+`/`G\d+` — already relevant: state-dwarves.json at nextId 8), C2 (Braindead missing from COMMS tab/filter/dot/legend — mechanical CSS/HTML).
-- **Most architectural:** B7+B8+I4+I5 (despawn-on-crash leak + non-atomic state writes; temp-file-rename pattern + startup GC).
-- **Highest-leverage doc:** D1 — `_README.md` rewrite covering D-014, S012, D-016, narration, active-mode marker, sub-agent attribution.
-
-Principal's call which to land first. Suggested approach: bundle B2 + B13 + C2 + D1 in one tight pass (small, low-risk, finishes-the-thought items), then take B1/B7/B8 as a more deliberate second cut. The architectural items deserve their own session — they involve state-file invariants that are worth thinking through, not racing through.
-
-**Step 2 — first live gnome spawn (still deferred from S020).** Combined-test candidate: a Jebrim alching gnome. Single spawn exercises the boundary hook (env→payload fix from S020), the visualizer pipeline (sprite, GNOMES tab, walk, despawn), and surfaces audit-flagged dynamics — B1's preconditions, B3's recency window, B6's silent fallthrough. Order with Step 1 is principal's call:
-
-- **Fixes-then-spawn:** fix the static reads first, then validate live (cleaner; the live test has less noise).
-- **Spawn-then-fixes:** let the live run dictate which fixes matter most (more empirical; risks the spawn surfacing issues you have to fix mid-session anyway).
-
-**Step 3 — drafts triage (carried from S018 → S019 → S020).** Several drafts still await ruling:
+**Step 2 — drafts triage** (carried from S018 → S019 → S020 → S021). Several drafts still await ruling:
 
 - `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — promote to `lorebook/decisions/D-NNN_*.md` to canonicalize the S018 audit's structural decisions.
 - `gielinor/players/jebrim/keepsake/proposals/2026-05-21_eu-tender-2026.md` (still untouched).
-- `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md` — awaits Jebrim skills-promotion at first Jebrim alching (covered by Step 2 if the gnome runs).
-- `gielinor/players/jebrim/niksis8_character/drafts/` (S017-era + `2026-05-21-prefers-evidence-over-premature-infrastructure.md`) — also covered by Step 2 if the gnome runs.
+- `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md` — awaits Jebrim skills-promotion at first Jebrim alching (covered by Step 1 if the gnome runs).
+- `gielinor/players/jebrim/niksis8_character/drafts/` (S017-era + `2026-05-21-prefers-evidence-over-premature-infrastructure.md`) — also covered by Step 1 if the gnome runs.
 
-Note: git status at S021 close shows substantial *un-committed* Jebrim work (drafts moved/created, completed/in-progress quest-log files, `keepsake/current.md` modified, `S014_*.md` completed file edited). Those are from gielinor sessions that ran between S020 and S021; the principal will reconcile them at next gielinor open per the in-progress reconciliation prompt convention.
+Note: git status at S022 close shows substantial **un-committed Jebrim work** from a parallel gielinor session (`S023_shipping-mart-coverage-audit` in-progress, modified `keepsake/current.md`, new drafts folders). The principal reconciles those at next gielinor open per the in-progress reconciliation prompt convention.
 
-**Step 4 — D-014 browser verification (carried from S017).** Subsumed by Step 2's combined test if the principal opens the visualizer in live mode while the gnome runs. Also exercised by Step 1's UI items (C2 Braindead COMMS surfaces).
+**Step 3 — D-014 + S015 browser verification** (carried from S017). Subsumed by Step 1's combined test if the visualizer is open in live mode while the gnome runs.
 
-**Step 5 — narration channel shakedown.** Used briefly at S019/S020/S021 opens. Audit I18 recommends a deliberate stress test — multiple narration events at session boundaries, phase transitions, mode switches. Couples naturally with Step 1's COMMS work.
+**Step 4 — narration channel shakedown** (carried from S021's audit I18). Used heavily across S019–S022 opens and at S022's Bash-dispatch repair. A deliberate stress test still warrants its own session — multiple narration events at boundaries, phase transitions, mode switches.
+
+**Step 5 — pick from [[Q-008]]** when ready to make the world feel alive. Recommendation in the entry: idle sprite breath + per-building ambient particles first, gated behind `prefers-reduced-motion`. Don't start until Step 1 lands.
 
 Other live threads (carried, lower priority):
 
-- **Untracked Jebrim files at S019/S020/S021 close.** Inventory files, niksis8_character drafts/confirmeds/rejecteds, spellbook drafts/confirmeds, quest-log in-progress + completed, modifications to keepsake/current.md and S014 completed quest-log, keepsake/archive/proposals. Pickup at next Jebrim respawn via reconciliation prompt.
+- **Untracked Jebrim files at S019/S020/S021/S022 close.** Inventory files, niksis8_character drafts/confirmeds/rejecteds, spellbook drafts/confirmeds, quest-log in-progress + completed, modifications to keepsake/current.md and S014 completed quest-log, keepsake/archive/proposals, new S023 in-progress entry. Pickup at next Jebrim respawn.
 - **Soft-block tuning** (S018 close-session pre-commit) — three options offered; re-evaluate "abandon" after first fire.
-- **Self-observation sweep tuning** (S018 alching step 3a) — cap 0–3; watch first alching pass output (Step 2).
+- **Self-observation sweep tuning** (S018 alching step 3a) — cap 0–3; watch first alching pass output (Step 1).
 - **Cross-player parity for future players.** Jebrim + Zezima aligned. No template system yet.
 - **Possible `I-NNN` from S018** — quest-log-as-vacuum pattern. Candidate for next bankstanding.
-- **Possible `lorebook/drafts/` from S020** — *architectural guarantees need a live failure test, not just code review.* Three boundary hooks shipped over multiple sessions all gated on a wrong predicate that "read right." Pattern worth canonicalizing at next bankstanding. Cite [[S020]].
-- **Possible `bank/decisions/` from S021** — *cross-file invariants need an explicit list when ≥3 surfaces enumerate the same set.* The audit found 6 surfaces enumerating the same 10 buildings. Adding an 11th touches 6 places. Worth thinking about a single config that radiates. Lower priority than the fixes themselves.
+- **Possible `lorebook/drafts/` from S020** — *architectural guarantees need a live failure test, not just code review.* S022 reinforces this twice over: the audit was itself a "test by reading," and two of its biggest fixes (Bash sidecar dispatch, cross-session attribution) only surfaced once the audit fixes were *running*. Pattern worth canonicalizing.
+- **Possible `bank/decisions/` from S021** — *cross-file invariants need an explicit list when ≥3 surfaces enumerate the same set.* Lower priority than the fixes themselves.
+- **Possible `bank/decisions/` from S022** — *audit-then-validate finds different bugs than either alone.* See S022's bullet 5. Worth a note at next bankstanding.
 
 Iteration menu (deferred, no priority assigned):
 
-- **D-014 follow-ups.** Action target prettification (I12). Chat scroll-lock UX (I13). Actor color taxonomy rationalization (I1, ties to C1). Bubble two-line edge cases (I14).
-- **Idle indicator / watchdog for non-Claude writes / smarter active-player inference / SSE upgrade.** D-009 deferred (I9–I11).
-- **Aesthetic backlog from [[S009]].** Per-building character (I15).
-- **Tighten gnome hook allowlist** from `/spellbook/drafts/` to `/spellbook/drafts/skills/` for symmetry with D-016 (I17). Phantom risk today.
-- **Gnome workshop building (I16).** Defer until the gnome has been used a few times.
+- **[[Q-008]] visualizer aliveness picks.** Idle breath, ambient particles, day/night, wanderers, trail echoes.
+- **Action target prettification** (audit I12). Bash commands show raw command text; could pattern-match common verbs (mv, cp, git, python -m http.server) and prettify.
+- **Chat scroll-lock UX** (audit I13). `logEl.scrollTop = logEl.scrollHeight` defeats user read-history intent. Only auto-scroll when already at bottom.
+- **Bubble two-line edge cases** (audit I14). `wrapBubbleText` hard-slices single long tokens at 50 chars; multi-word edge cases unverified.
+- **Idle indicator / watchdog for non-Claude writes / smarter active-player inference / SSE upgrade.** D-009 deferred (audit I9–I11).
+- **Tighten gnome hook allowlist** from `/spellbook/drafts/` to `/spellbook/drafts/skills/` for symmetry with [[D-016]] (audit I17). Phantom risk today.
+- **Gnome workshop building** (audit I16). Defer until the gnome has been used a few times.
+- **Path-based dev-brain override narrowing.** S022 narrowed only the Bash side of the cross-session bleed. The path-based override in `handle_write_or_read` still fires for any in-brain path without a player rule match — a parallel non-dev-brain session editing `gielinor/meta/*` would still attribute to Braindead. Lower-volume than the Bash leak; revisit if it surfaces in practice.
 
 ## Open at the start of next session
 
-- **Pick + build audit fixes** — Step 1. Triage from `bank/research/visualizer-audit-S021.md`. Suggested bundle: B2 + B13 + C2 + D1 for a tight finishing pass; B1/B7/B8 for a deliberate cut after.
-- **First live gnome spawn** — Step 2. Validates the whole S020 cascade. Natural pre-work for Step 1 *or* cross-check after; principal's call.
-- **Drafts triage** — Step 3. Largely subsumed if the Jebrim alching gnome runs in Step 2.
-- **D-014 + S015 browser verification** — Step 4. Same combined-test candidate as Step 2.
+- **First live gnome spawn** — Step 1. Validates the whole S020 cascade plus the S022 audit fixes that only fire under sub-agent activity.
+- **Drafts triage** — Step 2. Largely subsumed if a Jebrim alching gnome runs in Step 1.
+- **D-014 + S015 browser verification** — Step 3. Same combined-test candidate as Step 1.
+- **Narration shakedown** — Step 4. Deliberate stress test, separate session.
+- **[[Q-008]] pick** — Step 5. After Step 1 lands.
 - §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations
 
-From [[S021]] (new): **the audit-then-validate pattern works for accreted infrastructure.** Static read first, live test second. The audit surfaced things (FIFO race in B1, regex-bound drift in B13) that no live test would have hit yet because the preconditions hadn't fired. The respawn before S021 had it right: do the deliberate sweep first, then validate. Worth canonicalizing for any future "this layer has accreted, time to look" moment.
+From [[S022]] (new): **audit-then-validate finds different bugs than either alone.** Two of the highest-impact fixes (Bash sidecar bypass, cross-session active-mode bleed) only surfaced once the audit fixes were running and the stream behavior could be observed live. Static reads found 15 bugs; running validation surfaced 2 more that no static read could have caught. Worth canonicalizing as a pattern next bankstanding.
 
-From [[S021]] (new): **cross-file invariants need an explicit list when ≥3 surfaces enumerate the same set.** Six surfaces enumerate the same 10 buildings in the visualizer; all in sync today, but adding an 11th building means touching 6 places. Pattern worth a `bank/decisions/` note at lower priority.
+From [[S022]] (new): **shared global state is hostile to parallel Claude sessions.** `active-mode.txt` at the brain root was designed for one session at a time; with parallel sessions the marker leaks. The cheap fix (prefer recency over the marker for Bash attribution) shifts the load-bearing convention to "every turn writes intent regularly." Architectural fix would need a per-session signal (PID, payload `session_id`) that wasn't worth the lift now.
 
-From [[S020]] (still relevant): **architectural guarantees need a live failure test, not just code review.** Three sub-agent boundary hooks (gnome, dwarf, sub-spawn) all gated on env vars Claude Code doesn't propagate. The dwarf hook went undetected for the longest — never tested in the wild. Code review can't catch a wrong predicate when the predicate "reads right." Pattern worth a `gielinor/lorebook/drafts/` entry at next bankstanding. S021 reinforces this — the audit is *also* a "test by reading," and several of its findings (B1, B3, B6) won't *actually* be confirmed until a live spawn fires.
+From [[S021]] (still relevant): **the audit-then-validate pattern works for accreted infrastructure.** Static read first, live test second. S022 reinforces — the audit's findings were correct AND incomplete; running the fixes was the second pass that closed the loop.
 
-From [[S020]] (still relevant): **the claude-code-guide agent earned its spawn.** Direct domain question, concrete-needed-answer, one-shot. Confirms [[D-014]]'s dwarf-spawn heuristic: scoped, domain-specific lookups are where sub-agent invocation pays off.
+From [[S021]] (still relevant): **cross-file invariants need an explicit list when ≥3 surfaces enumerate the same set.** Six surfaces enumerate the same 10 buildings in the visualizer. C1 color taxonomy was the first to consolidate (CSS vars across chat/tab/legend); building list could be next. Pattern worth a `bank/decisions/` note at lower priority.
+
+From [[S020]] (still relevant): **architectural guarantees need a live failure test, not just code review.** S022 makes this a three-incident pattern (sub-agent boundary hooks, Bash sidecar dispatch, cross-session attribution).
+
+From [[S020]] (still relevant): **the claude-code-guide agent earned its spawn.** Direct domain question, concrete-needed-answer, one-shot. Confirms [[D-014]]'s dwarf-spawn heuristic.
 
 From [[S019]] (still relevant): **a new role's blocklist is easier to get right than its allow-list.** Gnome write-boundary uses both — allow-list for housekeeping surface, explicit blocklist for principal-only paths.
 
@@ -87,11 +86,11 @@ From [[S019]] (still relevant): **single source of truth for tunable numbers is 
 
 From [[S018]] (still relevant): **the quest log is the gravitational center; other layers starve without explicit routing.** Layer-routing.md + drafts-gates + inventory promotion fixed this. Candidate for an `I-NNN` next bankstanding.
 
-From [[S018]] (still relevant): **bundle big structural decisions; resist piecemeal landing.** S019 + S020 follow this; S021 deliberately *splits* — audit lands, fixes wait. The pattern flips when "what to fix" is the open question rather than "how to land it."
+From [[S018]] (still relevant): **bundle big structural decisions; resist piecemeal landing.** S022 follows this — six bundles + two follow-up fixes shipped in one pass rather than chained over multiple sessions.
 
 From [[S017]] (still relevant): **spec docs that prescribe DOM/structure without inventorying what already exists will ship suboptimal designs.**
 
-From [[S017]] (still relevant): **heuristics that walk back through `state.ndjson` need to remember the stream is cross-session.** Reinforced by S021 B3 — `infer_dwarf_parent` doesn't have the dev-brain override that `current_main_actor` does, so it can walk into the previous gielinor session's intents.
+From [[S017]] (still relevant): **heuristics that walk back through `state.ndjson` need to remember the stream is cross-session.** Reinforced by S022's cross-session attribution work — the same root cause (single global state, multiple sessions) shows up in active-mode.txt sharing too.
 
 From [[S017]] (still relevant): **emulating a specific UI's look means font and palette must change together.**
 
@@ -101,9 +100,9 @@ From [[S015]]: **shipping behind "the docs say X" is risky in this codebase beca
 
 From [[S015]] (separate): **delete discipline isn't enforced for dev-brain infrastructure.**
 
-From [[S014]] (now six-incident pattern with S018, S020): **the procedure was right; the procedure assumed a state that didn't exist.** S021 audit reinforces — several findings (B3, B4, B14) are "the code works under expected conditions; the conditions aren't always what the code assumes."
+From [[S014]] (now seven-incident pattern with S018, S020, S022): **the procedure was right; the procedure assumed a state that didn't exist.** S022's Bash sidecar fix is the canonical case: the active-mode handler worked correctly when invoked from WRITE_TOOLS, the respawn ritual just never invoked it via WRITE_TOOLS.
 
-From [[S014]]: **the renderer needs to be self-healing because the hook stream is a lossy substrate.** S021 found `ensureActorExists` and `setIntent`'s position-guard already embody this; the audit reveals where the self-healing is incomplete (B10, B11, B12).
+From [[S014]]: **the renderer needs to be self-healing because the hook stream is a lossy substrate.** S022 added more self-healing surfaces (B7 GC, B4 stale-marker detection, B1 LIFO+warning, atomic state writes) — incomplete-but-improving.
 
 From [[S014]]: **tool renames upstream are silent regressions.**
 
@@ -120,23 +119,23 @@ From [[S003]]–[[S007]]: **structure-first, content earns its way in.** **Build
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `bank/research/visualizer-audit-S021.md` — the audit. **Most load-bearing read for next session.**
-3. `quest-log/S021_visualizer_audit.md` — the session that produced it.
-4. `quest-log/S020_gnomes_ratification_and_visualizer.md` — prior session; context for why the audit was queued.
-5. `developer-braindead/.claude/hooks/emit-event.py` + `experiments/visualizer/index.html` — the audit targets. Read on demand by finding rather than cold.
-6. `gielinor/.claude/hooks/gnome-write-boundary.py` + `dwarf-write-boundary.py` + `block-sub-spawn.py` — the patched enforcement, still untested in the wild.
-7. `gielinor/spellbook/skills/spawning-gnomes.md` — operating spec.
+2. `quest-log/S022_visualizer_audit_fixes.md` — the session that just closed.
+3. `bank/research/visualizer-audit-S021.md` — the audit that drove S022. Status changes per bug noted by the S022 quest-log; the file itself is left as a historical record.
+4. `bank/open-questions/Q-008_visualizer_aliveness.md` — newly parked. Read before picking aliveness work.
+5. `developer-braindead/.claude/hooks/emit-event.py` + `experiments/visualizer/index.html` — the patched targets. Read on demand by finding rather than cold.
+6. `gielinor/.claude/hooks/gnome-write-boundary.py` + `dwarf-write-boundary.py` + `block-sub-spawn.py` — boundary hooks, still untested in the wild.
+7. `gielinor/spellbook/skills/spawning-gnomes.md` — gnome operating spec.
 8. `gielinor/.claude/agents/gnome.md` — agent config.
-9. `gielinor/meta/modes.md` — principal/dwarf/gnome axis with S020 corrections.
-10. `gielinor/spellbook/rituals/close-session.md` + `alching.md` — step 0 spawn-decisions for the Step 2 spawn.
-11. `bank/decisions/D-014_visualizer_chat_panel.md`, `D-015_jebrim_layer_audit_outcomes.md`, `D-016_gnomes_subagent.md` — prior decisions the audited code builds on.
+9. `gielinor/meta/modes.md` — principal/dwarf/gnome axis.
+10. `gielinor/spellbook/rituals/close-session.md` + `alching.md` — step 0 spawn-decisions for the Step 1 spawn.
+11. `bank/decisions/D-014_visualizer_chat_panel.md`, `D-015_jebrim_layer_audit_outcomes.md`, `D-016_gnomes_subagent.md` — prior decisions the patched code builds on.
 12. `bank/plan.md` — current mission state.
 
 ## Note on the visualizer's engine
 
-The engine (event timeline, `applyEvent` dispatch, CSS-transition movement, RAF tick loop, scrub-seek with `instant` flag) is **asset-agnostic and should not be touched during fix iteration**. State additions across S009–S020 are layered on top of the dispatch surface, not changes to it. Keep extending; don't rewrite.
+The engine (event timeline, `applyEvent` dispatch, CSS-transition movement, RAF tick loop, scrub-seek with `instant` flag) is **asset-agnostic and should not be touched during fix iteration**. S022 followed this discipline — every fix layered on top of the dispatch surface, never reshaped it. Keep extending; don't rewrite. [[Q-008]] aliveness ideas all preserve this discipline (additive CSS/SVG, no engine touch).
 
-D-014 added `narrate` and `action` events alongside `intent` / `move` / `spawn-dwarf` / `despawn-dwarf`. S020 added `spawn-gnome` / `despawn-gnome` to the same dispatch surface — additive. The renderer's sub-agent surface is parameterized: `dwarfNodes` / `gnomeNodes`, `spawnDwarf` / `spawnGnome`, parallel state files, shared `isSubAgentActor` for cross-cutting checks. Audit fixes should preserve this shape — modify within, don't reshape the surface.
+D-014 added `narrate` and `action` events alongside `intent` / `move` / `spawn-dwarf` / `despawn-dwarf`. S020 added `spawn-gnome` / `despawn-gnome` to the same dispatch surface — additive. S022 added nothing new to the event vocabulary; only refined existing handlers.
 
 ## How to run
 

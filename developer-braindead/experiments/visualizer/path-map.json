@@ -1,0 +1,54 @@
+{
+  "_comment": "Shared lookup for live-mode (D-009). Consumers: hook script (Python) and renderer (JS, ?live=1). Rules evaluated top-down; first substring match wins. Substrings are matched against POSIX-normalized paths relative to the repo root (forward slashes, no leading slash).",
+
+  "buildings": [
+    "inbox-square",
+    "meta-town-hall",
+    "lorebook-library",
+    "bank",
+    "examine-hall",
+    "quest-hall",
+    "spellbook-tower",
+    "keepsake-vault",
+    "inn"
+  ],
+
+  "buildingRules": [
+    { "contains": "/quest-log/completed/",   "building": "inn" },
+    { "contains": "/quest-log/archive/",     "building": "inn" },
+    { "contains": "/quest-log/in-progress/", "building": "quest-hall" },
+    { "contains": "/quest-log/",             "building": "quest-hall" },
+    { "contains": "/spellbook/",             "building": "spellbook-tower" },
+    { "contains": "/examine/",               "building": "examine-hall" },
+    { "contains": "/keepsake/",              "building": "keepsake-vault" },
+    { "contains": "/lorebook/",              "building": "lorebook-library" },
+    { "contains": "/niksis8/",               "building": "examine-hall" },
+    { "contains": "/niksis8_character/",     "building": "examine-hall" },
+    { "contains": "/bank/",                  "building": "bank" },
+    { "contains": "/inventory/",             "building": "bank" },
+    { "contains": "/players/inbox/",         "building": "inbox-square" },
+
+    { "contains": "/meta/",                       "building": "meta-town-hall" },
+    { "contains": "gielinor/CLAUDE.md",           "building": "meta-town-hall" },
+    { "contains": "developer-braindead/CLAUDE.md","building": "meta-town-hall" },
+    { "contains": "developer-braindead/_about.md","building": "meta-town-hall" },
+    { "contains": "developer-braindead/respawn.md","building": "meta-town-hall" },
+    { "contains": "brain/CLAUDE.md",              "building": "meta-town-hall" },
+
+    { "contains": "experiments/",            "building": "spellbook-tower" }
+  ],
+
+  "actorRules": [
+    { "contains": "/players/jebrim/", "actor": "jebrim" },
+    { "contains": "/players/zezima/", "actor": "zezima" }
+  ],
+
+  "defaultActor": "wisp",
+
+  "_notes": [
+    "buildingRules: first match wins; order from most-specific to least-specific.",
+    "completed/ comes before in-progress/ because both contain '/quest-log/'.",
+    "actorRules: if no rule matches, defaultActor (wisp) is used. The hook has no view into the message-level address-routing cue, so unscoped-as-wisp is the honest fallback (D-009).",
+    "A path with no buildingRule match returns null — the hook drops the event rather than guessing."
+  ]
+}

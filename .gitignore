@@ -14,6 +14,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Visualizer live-mode runtime state (D-009)
+developer-braindead/experiments/visualizer/state.ndjson
+
 # OS noise
 .DS_Store
 Thumbs.db

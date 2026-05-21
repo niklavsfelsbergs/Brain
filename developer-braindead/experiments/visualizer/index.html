@@ -2085,12 +2085,57 @@ buildLabels();
 resetWorld();
 requestAnimationFrame(tick);
 
+// ─────────────────────────────────────────────────────────────
+//   LIVE MODE (?live=1) — D-009
+//   Swaps the event source from the baked EVENTS array to a poll
+//   of state.ndjson. Engine surface (applyEvent + assets) untouched.
+// ─────────────────────────────────────────────────────────────
+const LIVE = new URLSearchParams(location.search).has('live');
+
 setTimeout(() => {
+  if (LIVE) return;            // replay autoplay is silenced in live mode
   if (!playing) {
     playing = true; playBtn.textContent = '⏸';
     lastFrame = performance.now();
   }
 }, 1200);
+
+if (LIVE) {
+  // Step-3 scope: incremental poll only. Bootstrap-from-tail (instant replay
+  // of pre-existing events) lands in step 6.
+  let liveBytes = 0;
+  let livePolling = false;
+
+  async function pollLive() {
+    if (livePolling) return;
+    livePolling = true;
+    try {
+      const res = await fetch('state.ndjson?_=' + Date.now(), {cache: 'no-store'});
+      if (!res.ok) return;
+      const text = await res.text();
+      if (text.length <= liveBytes) return;
+      const chunk = text.slice(liveBytes);
+      liveBytes = text.length;
+      for (const line of chunk.split('\n')) {
+        if (!line.trim()) continue;
+        let ev;
+        try { ev = JSON.parse(line); } catch { continue; }
+        applyEvent(ev, false);
+      }
+    } catch (_) {
+      // swallow — state.ndjson may not exist yet, or fetch may race the writer
+    } finally {
+      livePolling = false;
+    }
+  }
+
+  // Mark the ticker so the principal can see live-mode is active
+  if (tkLineEl) tkLineEl.textContent = 'live · awaiting events';
+  if (sessionMetaEl) sessionMetaEl.textContent = 'live mode · polling state.ndjson';
+
+  pollLive();
+  setInterval(pollLive, 500);
+}
 
 </script>
 </body>

@@ -231,6 +231,22 @@
   .log-entry { padding: 1px 0; opacity: 0.95; }
   .log-entry.read { opacity: 0.45; font-size: 14px; font-style: italic; }
   .log-entry.write { color: #e8d8a8; }
+
+  /* ─── Live mode adjustments (D-009) ─── */
+  body[data-mode="live"] .controls { display: none; }
+  body[data-mode="live"] .brand-text .sub {
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(216,173,54,0.45);
+    letter-spacing: 0.12em;
+  }
+  body[data-mode="live"] .brand-text .sub::before {
+    content: "● ";
+    color: #ff6c4a;
+    text-shadow: 0 0 8px rgba(255,108,74,0.7);
+    animation: live-pulse 1400ms ease-in-out infinite;
+  }
+  @keyframes live-pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
+  body[data-mode="live"] .topbar { grid-template-columns: auto 1fr auto; }
   .log-entry.commit { color: var(--gold); border-top: 1px dashed rgba(216,173,54,0.25); margin-top: 4px; padding-top: 4px; }
   .log-entry.session-start { color: var(--wisp-core); font-weight: bold; margin-top: 6px; }
   .log-entry .t { color: #7a6a48; margin-right: 8px; }
@@ -2143,6 +2159,14 @@ if (LIVE) {
       livePolling = false;
     }
   }
+
+  // Visual mode switch — CSS hides replay controls and restyles the subtitle
+  document.body.dataset.mode = 'live';
+  const subEl = document.querySelector('.brand-text .sub');
+  if (subEl) subEl.textContent = 'LIVE · self-observation · ndjson stream';
+  const crumbEl = document.querySelector('.crumb');
+  if (crumbEl) crumbEl.innerHTML = 'live mode · polling <span>state.ndjson</span> · hooks at <span>developer-braindead/.claude/hooks/emit-event.py</span>';
+  if (sessionIdEl) sessionIdEl.textContent = 'LIVE';
 
   if (tkLineEl) tkLineEl.textContent = 'live · awaiting events';
   if (sessionMetaEl) sessionMetaEl.textContent = 'live mode · bootstrapping…';

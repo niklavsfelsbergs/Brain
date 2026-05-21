@@ -11,6 +11,10 @@
           {
             "type": "command",
             "command": "python \"${CLAUDE_PROJECT_DIR}/.claude/hooks/dwarf-write-boundary.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PROJECT_DIR}/.claude/hooks/gnome-write-boundary.py\""
           }
         ]
       },
@@ -28,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PROJECT_DIR}/.claude/hooks/block-sub-dwarf-spawn.py\""
+            "command": "python \"${CLAUDE_PROJECT_DIR}/.claude/hooks/block-sub-spawn.py\""
           }
         ]
       }

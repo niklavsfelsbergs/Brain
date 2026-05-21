@@ -35,6 +35,26 @@ Each session that runs close-session gets a sequential ID: `S001`, `S002`, etc. 
 
 For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-10.
 
+### 0. Spawn-decision — principal-self or gnome?
+
+Before walking the steps, evaluate the gnome spawn heuristic for session-close (per `spellbook/skills/gnomes.md`):
+
+- **> 15 turns** in the active session, OR
+- **≥ 2 players touched** in the session, OR
+- **> 5 pending drafts** to triage at close-time.
+
+If any fires, spawn a **gnome** with the session-close brief:
+
+- Ritual: `session-close`.
+- Players in scope: all players with non-empty `quest-log/in-progress/`.
+- Inputs: which threshold(s) fired (turn count, players touched, drafts pending).
+
+The gnome runs steps 1–9 and returns the structured report (per `spellbook/skills/gnomes.md`). The principal reviews the report and approves any proposals before the session actually ends.
+
+If no threshold fires (light session — typically **< 10 turns AND read-only**), run steps 1–9 personally. Light closes stay with the principal so the procedure doesn't drift.
+
+Skip the special-case unscoped step 10 if a gnome ran the close — the gnome handles inbox writes via its own step coverage. If principal-self ran, step 10 below applies.
+
 ### 1. Reconcile pending actions
 
 Every external action logged as `pending` in the quest-log entry must be marked `completed` or `failed` before close. If unclear what actually happened, ask the principal before marking. Never close with a dangling `pending` — that's the crash-recovery signal and will fire reconciliation on next session start unnecessarily.

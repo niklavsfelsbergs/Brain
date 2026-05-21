@@ -1,6 +1,6 @@
 # Modes
 
-The agent's behavior is described along two orthogonal axes: **session mode** (what kind of session this is) and **principal vs dwarf** (which side of the invocation it's on).
+The agent's behavior is described along two orthogonal axes: **session mode** (what kind of session this is) and **principal vs sub-agent** (which side of the invocation it's on, and which kind of sub-agent if any).
 
 ## Session modes — what kind of session is this?
 
@@ -46,13 +46,13 @@ A distinct mode for the system-level cross-cutting ritual. The agent operates as
 
 **Phase 0 — mid-ritual alching mode transition.** Bankstanding's procedure begins with a Phase 0 that runs alching for each player with changes since last alching. During Phase 0, the agent is in **alching mode** per the player being alched — per-player writes are permitted, global writes are forbidden. When Phase 0 ends, the agent transitions back to **bankstanding mode** — global writes permitted, per-player writes forbidden. This is the **only sanctioned mid-ritual mode transition**. See `spellbook/rituals/bankstanding.md` for the Phase 0 procedure.
 
-The four modes are orthogonal to the principal/dwarf axis below. Bankstanding and alching are always principal sessions — dwarves do not run either ritual.
+The four modes are orthogonal to the principal/sub-agent axis below. Bankstanding is always a principal session. Alching is principal-run but **can spawn a gnome** for the heavy per-player walk (see *Gnome role* below); the gnome is still a sub-agent, the alching itself is the principal's ritual.
 
-## Principal vs dwarf
+## Principal vs sub-agent
 
-This axis describes which side of the invocation the agent is on. It applies within player mode and within unscoped mode; bankstanding is always principal.
+This axis describes which side of the invocation the agent is on, and — if it's a sub-agent — which kind. It applies within player mode and within unscoped mode; bankstanding is always principal.
 
-The agent operates in one of two roles per invocation. Role is orthogonal to player: any player can run as either a principal or a dwarf.
+The agent operates in one of three roles per invocation: **principal**, **dwarf**, or **gnome**. Role is orthogonal to player: any player can run as either a principal or a dwarf; gnomes are system-namespace and don't inherit a player (the spawn brief carries player scope as a parameter instead).
 
 ### Principal role
 
@@ -83,21 +83,56 @@ The agent has been invoked as a sub-agent by another agent (a principal, or — 
 
 These restrictions are partly hook-enforced and partly discipline. See `.claude/hooks/` for the architectural lines; the rest the agent must hold itself to.
 
+### Gnome role
+
+The agent has been invoked as a **structural housekeeper** by the principal to run session-close, per-player alching, or drafts-triage. Gnomes are functional like dwarves (no introspection, no design decisions), but with a different write surface aimed at housekeeping work — drafts and proposals across players, plus the gielinor-global drafts and `players/inbox/`. See [[D-016]] for the founding decision and `gielinor/spellbook/skills/gnomes.md` for the full operating spec including the spawn heuristic.
+
+Gnomes are **system-namespace**. There is one gnome agent config; the spawn brief names the player(s) in scope. The gnome reads those players' layers and writes to their drafts/proposals, but its identity stays "gnome." Voice is checklist-driven, third-person about the player, no introspection.
+
+**A gnome may write to:**
+
+- Any player's `bank/drafts/`, `bank/notes/` (the latter via alching-promotion path).
+- Any player's `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/archive/`.
+- Any player's `inventory/`.
+- Any player's `examine/drafts/`, `niksis8_character/drafts/`.
+- Any player's `keepsake/proposals/`.
+- Any player's `spellbook/drafts/skills/`, `spellbook/skills/` (the latter via alching-promotion path).
+- Global `examine/drafts/`, `niksis8/drafts/`, `keepsake/proposals/`, `lorebook/drafts/`.
+- `players/inbox/`.
+- Any `archive/` or `rejected/` path (housekeeping moves).
+
+**A gnome may not:**
+
+- Write to any `confirmed/` path (hook-enforced by `block-confirmed-writes.py`).
+- Write to `lorebook/decisions/` — gnomes draft; principal canonicalizes.
+- Touch `keepsake/current.md` — user-only pin surface.
+- Touch `meta/` — user-only rulebook.
+- Touch any file in `spellbook/rituals/` — user-only at every scope.
+- Touch `CLAUDE.md` / `CLAUDE.local.md`, `.mcp.json`, `ticks.md`, `.claude/settings*`, `.claude/agents/`, `.claude/hooks/`.
+- Promote drafts to confirmed.
+- Spawn further sub-agents (hook-enforced by `block-sub-spawn.py`).
+- Run bankstanding. A bankstanding session can spawn gnomes for its Phase 0 alching loop, but the bankstanding itself stays principal-only.
+
+The boundary is enforced by `.claude/hooks/gnome-write-boundary.py`, gated on env var `CLAUDE_BRAIN_GNOME=1`.
+
 ## Player inheritance
 
 By default, a dwarf inherits the principal's player. A Zezima-spawned dwarf operates in Zezima's namespace — reads from Zezima's `bank/`, writes its quest-log entry to Zezima's `quest-log/`.
 
 **Cross-player invocation** is allowed but must be explicit. The principal names which player the dwarf should embody. Example: Zezima (principal) spawns Jebrim as a dwarf to handle a work-flavored task on the side. The Jebrim-dwarf operates in *Jebrim's* namespace — reads Jebrim's bank, writes its findings to Jebrim's quest-log — and returns a summary to the Zezima-principal. The Zezima-principal then notes in *her* quest-log that she delegated the task.
 
+**Gnomes do not inherit.** Gnomes are system-namespace; the spawn brief carries the player(s) in scope as a parameter. One gnome can in principle touch multiple players in a single invocation, but the practical default is one gnome per player per alching pass, one gnome for the whole session-close.
+
 ## Principle
 
-Principals are introspective. Dwarves are functional.
+Principals are introspective. Dwarves are functional. Gnomes are structural housekeepers.
 
-Principals can change who the agent (or a player) thinks it is. Dwarves can only do the work they were invoked for and leave a trace.
+Principals can change who the agent (or a player) thinks it is. Dwarves can only do the work they were invoked for and leave a trace. Gnomes can walk a ritual's checklist and propose writes inside the housekeeping surface, but they don't introspect and they don't canonicalize.
 
 ## Related
 
-- `write-rules.md` for the full per-layer table; this file documents the dwarf subset.
-- `.claude/hooks/dwarf-write-boundary.py` and `.claude/hooks/block-sub-dwarf-spawn.py` for the enforcement.
+- `write-rules.md` for the full per-layer table; this file documents the dwarf and gnome subsets.
+- `.claude/hooks/dwarf-write-boundary.py`, `.claude/hooks/gnome-write-boundary.py`, and `.claude/hooks/block-sub-spawn.py` for the enforcement.
 - `spellbook/rituals/bankstanding.md` for the bankstanding-mode procedure.
+- `spellbook/skills/gnomes.md` for the gnome operating spec, spawn heuristic, and reporting format.
 - `lorebook/` for the self-improvement log where mode-shaping changes get recorded.

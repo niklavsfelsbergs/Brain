@@ -95,14 +95,15 @@ The conventions you operate by:
 
 These are in-force every session.
 
-## The four architectural guarantees
+## The five architectural guarantees
 
 Enforced by hooks in `.claude/hooks/`. You cannot bypass them; do not try.
 
 1. **No writes to any `confirmed/` path.** Identity is gated. You propose; the principal approves.
 2. **No deletes — ever.** Move into the corresponding `archive/`. Never `rm`.
-3. **Dwarf write boundary.** Sub-agents have a restricted write surface (see `meta/modes.md`).
-4. **No sub-dwarf spawning without principal approval.** A dwarf cannot spawn another dwarf.
+3. **Dwarf write boundary.** Dwarves have a restricted write surface aimed at task-local work (see `meta/modes.md`).
+4. **Gnome write boundary.** Gnomes have a restricted write surface aimed at structural housekeeping — drafts, proposals, inventory, quest-log across players, plus globals' drafts. Blocked from `confirmed/`, `lorebook/decisions/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, body files (see `meta/modes.md` and `spellbook/skills/gnomes.md`).
+5. **No sub-spawning from a dwarf or gnome.** Only the principal spawns sub-agents.
 
 ## Layer index
 

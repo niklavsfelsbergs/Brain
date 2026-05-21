@@ -68,6 +68,26 @@ If the principal declines, proceed normally. Do not nag again that session.
 
 The agent works through each item below in order, restricted to the active player's namespace. **Propose, never silently destroy.** Surface every move to the principal for confirmation rather than auto-executing.
 
+### 0. Spawn-decision — principal-self or gnome?
+
+Before walking the steps, evaluate the gnome spawn heuristic for alching (per `spellbook/skills/gnomes.md`):
+
+- **> 20 harvest-target turns** in the player's `quest-log/in-progress/` since `last-alched.md`, OR
+- **> 10 pending drafts** across this player's `examine/drafts/`, `niksis8_character/drafts/`, `bank/drafts/notes/`, `spellbook/drafts/skills/`, `keepsake/proposals/`, OR
+- **Never-alched AND the player is day-1+.**
+
+If any fires, spawn a **gnome** with the alching brief:
+
+- Ritual: `alching`.
+- Player in scope: the active player.
+- Inputs: which threshold(s) fired (turn count since alch, drafts pending, never-alched flag).
+
+The gnome runs steps 1–7 in the active player's namespace and returns the structured report. The principal reviews the report and approves/rejects proposals before they canonicalize.
+
+If no threshold fires (e.g., regular ongoing alching with modest pending drafts), run steps 1–7 personally. Routine alching stays with the principal so the procedure doesn't drift.
+
+When alching is **Phase 0 of bankstanding**, the bankstanding ritual spawns one gnome per player needing alching by default — see `spellbook/rituals/bankstanding.md`. The per-player heuristic still applies; a player below all thresholds is alched principal-self even inside Phase 0.
+
 ### 1. Review the active player's identity drafts
 
 Surface all pending drafts inside this player's scope:

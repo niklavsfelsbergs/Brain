@@ -326,7 +326,7 @@ def main() -> None:
     tool_name = payload.get("tool_name", "")
     hook_event = payload.get("hook_event_name", "")
 
-    if tool_name == "Task":
+    if tool_name in ("Task", "Agent"):
         if hook_event == "PreToolUse":
             try:
                 handle_task_pre(payload)

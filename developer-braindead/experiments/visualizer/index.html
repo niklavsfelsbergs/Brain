@@ -147,9 +147,38 @@
   svg.map { display: block; width: 100%; height: auto; background: #1a140e; shape-rendering: crispEdges; image-rendering: pixelated; }
 
   /* Building hover */
-  .building { cursor: default; transition: filter 200ms; }
+  .building { cursor: help; transition: filter 200ms; }
   .building:hover { filter: brightness(1.15) drop-shadow(0 0 8px rgba(216,173,54,0.4)); }
   .bldg-label { pointer-events: none; }
+
+  /* Building hover description (parchment scroll) */
+  .bldg-tooltip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 6;
+    max-width: 260px;
+    background: linear-gradient(180deg, var(--parchment) 0%, var(--parchment-dk) 100%);
+    color: var(--ink);
+    border: 2px solid var(--frame-edge);
+    box-shadow: 0 0 0 1px var(--gold-dk) inset, 0 6px 18px rgba(0,0,0,0.55);
+    padding: 6px 10px 8px;
+    font-family: 'VT323', monospace;
+    font-size: 15px;
+    line-height: 1.25;
+    opacity: 0;
+    transform: translateY(2px);
+    transition: opacity 120ms, transform 120ms;
+  }
+  .bldg-tooltip.visible { opacity: 1; transform: translateY(0); }
+  .bldg-tooltip .name {
+    display: block;
+    font-family: 'Jacquard 12', serif;
+    font-size: 18px;
+    color: var(--gold-dk);
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+  }
 
   /* Character motion */
   .actor { transition: transform 1800ms cubic-bezier(0.45, 0.05, 0.55, 0.95); }
@@ -684,12 +713,12 @@
         <g id="particles"></g>
         <g id="characters">
           <g class="actor player" id="actor-jebrim" data-actor="jebrim" transform="translate(260, 240)">
-            <ellipse class="glow" cx="0" cy="0" rx="22" ry="22" fill="url(#activeGlow)"/>
-            <g class="bob"><use href="#jebrim"/></g>
+            <ellipse class="glow" cx="0" cy="0" rx="26" ry="26" fill="url(#activeGlow)"/>
+            <g class="bob"><use href="#jebrim" transform="scale(1.4)"/></g>
           </g>
-          <g class="actor player" id="actor-zezima" data-actor="zezima" transform="translate(850, 620)" style="opacity:0.55">
-            <ellipse class="glow" cx="0" cy="0" rx="22" ry="22" fill="url(#activeGlow)"/>
-            <g class="bob"><use href="#zezima"/></g>
+          <g class="actor player" id="actor-zezima" data-actor="zezima" transform="translate(850, 620)">
+            <ellipse class="glow" cx="0" cy="0" rx="26" ry="26" fill="url(#activeGlow)"/>
+            <g class="bob"><use href="#zezima" transform="scale(1.4)"/></g>
           </g>
           <g id="focal-label" pointer-events="none" opacity="0"></g>
         </g>
@@ -716,6 +745,8 @@
         <div class="row"><span class="swatch" style="background:#cf9a2c"></span> Dwarves — sub-agent workers</div>
         <div class="row"><span class="swatch" style="background:var(--wisp-core)"></span> Wisp — unscoped/system</div>
       </div>
+
+      <div class="bldg-tooltip" id="bldgTooltip"></div>
 
       <div class="compass">
         <svg viewBox="-32 -32 64 64" width="64" height="64">
@@ -759,6 +790,7 @@
 "use strict";
 
 const svgNS = 'http://www.w3.org/2000/svg';
+const LIVE = new URLSearchParams(location.search).has('live');
 
 // ─────────────────────────────────────────────────────────────
 //   World data
@@ -990,14 +1022,11 @@ function buildFlora() {
   const back = document.getElementById('flora-back');
   const front = document.getElementById('flora-front');
 
-  const POND_CX = 740, POND_CY = 620, POND_PAD = 110;
-
   function clearOfBuildings(x, y, pad=80) {
     return !Object.values(BUILDINGS).some(b => Math.hypot(b.x - x, b.y - y) < pad);
   }
-  function clearOfPond(x, y, pad=POND_PAD) {
-    return Math.hypot(POND_CX - x, POND_CY - y) > pad;
-  }
+  // pond removed — keep stub so existing placement calls still work
+  function clearOfPond(x, y, pad) { return true; }
   function clearOfPaths(x, y, pad=22) {
     return !PATHS.some(([a, b]) => {
       const A = STAND[a], B = STAND[b];
@@ -1661,17 +1690,18 @@ function buildBuildings() {
 //   over vignette and actors)
 // ─────────────────────────────────────────────────────────────
 
+// Negative = label sits above the building's roof apex (with a little clearance).
 const LABEL_Y_OFFSET = {
-  'inbox-square':     64,   // d=28
-  'meta-town-hall':   75,   // d=39
-  'lorebook-library': 69,   // d=33
-  'bank':             72,   // d=36
-  'examine-hall':     63,   // d=27
-  'quest-hall':       80,   // d=44
-  'spellbook-tower':  58,   // d=22
-  'keepsake-vault':   61,   // d=25
-  'inn':              72,   // d=36
-  'braindead-workshop': 58, // d=22
+  'inbox-square':     -50,   // flat platform; sits above bulletin board
+  'meta-town-hall':   -160,  // h+r=146, spire clipped by canvas top
+  'lorebook-library': -132,  // h+r=116
+  'bank':             -146,  // h+r=126
+  'examine-hall':     -78,   // h+r=60
+  'quest-hall':       -154,  // h+r=134
+  'spellbook-tower':  -250,  // h+r=240 (tall tower)
+  'keepsake-vault':   -118,  // h+r=102
+  'inn':              -132,  // h+r=114
+  'braindead-workshop': -65, // h+r=52
 };
 
 function buildLabels() {
@@ -1682,6 +1712,60 @@ function buildLabels() {
     html += `<g transform="translate(${b.x},${b.y + yoff})">${ornateLabel(b.label, 0)}</g>`;
   });
   layer.innerHTML = html;
+}
+
+// What each building represents — surfaced on hover.
+const BUILDING_DESC = {
+  'inbox-square':     "Open square where loose captures land before triage. Bankstanding sorts them into the right layer.",
+  'meta-town-hall':   "Houses the rulebook — write-rules, modes, communication protocol, archive discipline, drafts mechanics.",
+  'lorebook-library': "The agent's self-improvement log. Numbered decisions about how it operates, decided by itself.",
+  'bank':             "Semantic memory. Per-player notes — the long-term store of what each character knows. Gated by drafts.",
+  'examine-hall':     "Hall of Mirrors. Self-knowledge: global agent identity + per-player identity. Gated by drafts.",
+  'quest-hall':       "Episodic memory. Session quest-logs — what happened, in-progress and completed.",
+  'spellbook-tower':  "Procedural memory. Rituals (respawn, alching, bankstanding, close-session) and cross-player skills.",
+  'keepsake-vault':   "Always-surface pins. The small set of things the agent keeps in working sight every session.",
+  'inn':              "Where sessions end. The close-session ritual reconciles drafts and hands off to the next spawn.",
+  'braindead-workshop': "Braindead's workshop. The construction crew that builds and maintains gielinor from the dev brain.",
+};
+
+function wireBuildingTooltips() {
+  const tip = document.getElementById('bldgTooltip');
+  const wrap = document.querySelector('.map-wrap');
+  if (!tip || !wrap) return;
+  const buildingsLayer = document.getElementById('buildings');
+  if (!buildingsLayer) return;
+
+  function show(id, clientX, clientY) {
+    const desc = BUILDING_DESC[id];
+    const name = (BUILDINGS[id] && BUILDINGS[id].label) || id;
+    if (!desc) return;
+    tip.innerHTML = `<span class="name">${name}</span>${desc}`;
+    const rect = wrap.getBoundingClientRect();
+    // Position bottom-right of cursor, but flip if near right edge.
+    const padX = 14, padY = 14;
+    let x = clientX - rect.left + padX;
+    let y = clientY - rect.top + padY;
+    // measure after content is in
+    tip.classList.add('visible');
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    if (x + tw > rect.width - 6) x = clientX - rect.left - tw - padX;
+    if (y + th > rect.height - 6) y = clientY - rect.top - th - padY;
+    tip.style.left = x + 'px';
+    tip.style.top  = y + 'px';
+  }
+  function hide() { tip.classList.remove('visible'); }
+
+  buildingsLayer.addEventListener('mouseover', (e) => {
+    const g = e.target.closest('.building');
+    if (!g) return;
+    show(g.dataset.id, e.clientX, e.clientY);
+  });
+  buildingsLayer.addEventListener('mousemove', (e) => {
+    const g = e.target.closest('.building');
+    if (!g) { hide(); return; }
+    show(g.dataset.id, e.clientX, e.clientY);
+  });
+  buildingsLayer.addEventListener('mouseleave', hide);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1973,6 +2057,22 @@ function despawnDwarf(id) {
   updateTicker();
 }
 
+// Self-heal when a dynamic actor receives a move/intent before its spawn event.
+// Spawns braindead/wisp at the inferred building so the bubble has a sprite under it.
+function ensureActorExists(actor, atKey) {
+  if (!actor) return;
+  if (actor === 'jebrim' || actor === 'zezima') return;          // baked in
+  if (actor.startsWith('dwarf-')) return;                          // dwarf-N have their own spawn protocol
+  if (document.getElementById('actor-' + actor)) return;           // already present
+  if (actor === 'braindead') {
+    braindeadActive = true;
+    spawnBraindead({at: atKey || 'braindead-workshop'});
+  } else if (actor === 'wisp') {
+    wispActive = true;
+    spawnWisp({at: atKey || 'quest-hall'});
+  }
+}
+
 function spawnBraindead(ev) {
   const at = ev.at || 'braindead-workshop';
   const b = STAND[at] || STAND['braindead-workshop'];
@@ -1987,7 +2087,7 @@ function spawnBraindead(ev) {
   g.setAttribute('data-actor', 'braindead');
   g.setAttribute('transform', `translate(${x},${y})`);
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
-  g.innerHTML = `<g class="bob"><use href="#braindead"/></g>`;
+  g.innerHTML = `<g class="bob"><use href="#braindead" transform="scale(1.4)"/></g>`;
   charactersLayer.appendChild(g);
   braindeadNode = g;
 }
@@ -2028,8 +2128,9 @@ function setActivePlayer(p) {
   const z = document.getElementById('actor-zezima');
   j.classList.toggle('active', p === 'jebrim');
   z.classList.toggle('active', p === 'zezima');
-  j.style.opacity = (p === 'jebrim') ? '1' : '0.5';
-  z.style.opacity = (p === 'zezima') ? '1' : '0.5';
+  // Both players stay fully solid; the active-glow ring (.active .glow) signals who's active.
+  j.style.opacity = '1';
+  z.style.opacity = '1';
 }
 
 function updateFocalLabel(dur) {
@@ -2150,7 +2251,9 @@ function logLine(msg, cls='', speaker='system') {
   const li = document.createElement('div');
   li.className = 'log-entry ' + cls;
   li.setAttribute('data-speaker', speaker);
-  const tStr = formatTime(t);
+  // Replay mode shows playhead time; live mode shows wall-clock of the event itself
+  // (replay's `t` never advances in live mode, so it would always read 00:00).
+  const tStr = (LIVE && currentEventWallTime) ? formatWall(currentEventWallTime) : formatTime(t);
   li.innerHTML = `<span class="t">[${tStr}]</span>${escapeHtml(msg)}`;
   logEl.appendChild(li);
   logEl.scrollTop = logEl.scrollHeight;
@@ -2174,12 +2277,21 @@ function formatTime(ms) {
   const m = Math.floor(sec / 60); const s = sec % 60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
+// Live-mode wall clock from ISO timestamp on event → HH:MM:SS in local time.
+let currentEventWallTime = null;
+function formatWall(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return '--:--:--';
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
 function updateTicker() {
-  tkStatsEl.textContent = `dwarves: ${dwarfCount} · time ${formatTime(t)}`;
+  const timeStr = (LIVE && currentEventWallTime) ? formatWall(currentEventWallTime) : formatTime(t);
+  tkStatsEl.textContent = `dwarves: ${dwarfCount} · time ${timeStr}`;
 }
 
 function applyEvent(ev, instant=false) {
   const dur = instant ? 0 : (1800 / Math.max(0.5, speed));
+  if (ev.wallTime) currentEventWallTime = ev.wallTime;
   switch (ev.type) {
     case 'session-start':
       currentSession = ev;
@@ -2196,6 +2308,10 @@ function applyEvent(ev, instant=false) {
       tkLineEl.textContent = ev.msg;
       break;
     case 'move':
+      // Self-heal: if a dynamic actor receives a move without ever being spawned
+      // (e.g. state-actors.json had _mode=dev-brain from a prior session so the
+      // hook skipped the spawn-braindead event), conjure the sprite now.
+      ensureActorExists(ev.actor, ev.to);
       currentBuilding[ev.actor] = ev.to;
       clearIntent(ev.actor, instant);   // intent expires on building change
       if (instant) {
@@ -2213,6 +2329,7 @@ function applyEvent(ev, instant=false) {
       }
       break;
     case 'intent':
+      ensureActorExists(ev.actor, currentBuilding[ev.actor]);
       setIntent(ev.actor, ev.text, instant);
       break;
     case 'spawn-dwarf':
@@ -2327,11 +2444,12 @@ document.querySelectorAll('.log-tab').forEach(tab => {
 
 // build world
 buildGround();
-buildPond();
+// buildPond();  // removed — pond was visually noisy; flora fills the gap
 buildPaths();
 buildFlora();
 buildBuildings();
 buildLabels();
+wireBuildingTooltips();
 
 // init engine
 resetWorld();
@@ -2342,8 +2460,6 @@ requestAnimationFrame(tick);
 //   Swaps the event source from the baked EVENTS array to a poll
 //   of state.ndjson. Engine surface (applyEvent + assets) untouched.
 // ─────────────────────────────────────────────────────────────
-const LIVE = new URLSearchParams(location.search).has('live');
-
 setTimeout(() => {
   if (LIVE) return;            // replay autoplay is silenced in live mode
   if (!playing) {

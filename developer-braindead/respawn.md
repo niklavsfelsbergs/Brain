@@ -28,18 +28,38 @@ S015 dwarf attribution is **still untested in the wild** — unchanged status. D
 
 ## Next concrete step — START HERE
 
-**Step 1 — surface drafts for principal triage.** Several drafts await ruling:
+**Step 1 — implement gnomes** (decided in S018 post-close discussion, 2026-05-21). Niklavs cued: "we should define a subagent specifically for closing sessions and organizing, we could call them gnomes." Decisions locked in chat:
+
+- **Scope:** session-close, per-player alching, drafts-triage proposals. NOT bankstanding (stays principal-only).
+- **Write boundary (a):** gnomes write to drafts/proposals/inventory freely; hook-blocked from `confirmed/`, `lorebook/decisions/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`. New hook needed.
+- **Spawn trigger:** heuristic auto-spawn — heavy rituals (>20 harvest-turns, ≥2 players touched, or >10 drafts pending) delegate to a gnome. Light rituals stay with the principal so the procedure doesn't drift.
+- **Implementation:** full, multi-phase, in the next dev-brain session.
+
+Concrete deliverables for the implementation session:
+
+1. **`D-016` (dev brain)** — gnome design decision: scope, write boundary, spawn trigger, alternatives considered, gielinor mode-table update.
+2. **`.claude/agents/gnome.md`** — Claude Code agent config with appropriate `tools` frontmatter (Read/Edit/Write/Glob/Grep/Bash for ritual work; no `Agent` tool — gnomes don't spawn sub-agents).
+3. **New hook `.claude/hooks/gnome-write-boundary.py`** — enforces gnome allow-list, parallel to `dwarf-write-boundary.py`.
+4. **Ritual updates:**
+   - `gielinor/spellbook/rituals/close-session.md` — add heuristic spawn step + gnome handoff brief.
+   - `gielinor/spellbook/rituals/alching.md` — same pattern, per-player gnome.
+   - Possibly a new `gielinor/spellbook/rituals/drafts-triage.md` if it earns its way in.
+5. **Gnome persona file** — short doc, organizing voice (checklist-driven, terse status updates). Distinct from any player.
+6. **`gielinor/meta/modes.md` update** — add gnome as a new axis alongside principal/dwarf, with explicit spawn-rules and write-reach.
+7. **Visualizer integration** (optional, defer if heavy) — gnome sprite, possibly a workshop building.
+
+**Step 2 — first Jebrim alching pass** (now blocked on Step 1 if we want gnomes running it; otherwise run as principal-self). Jebrim has never been alched (1+ days old, drafts pending). Step 6.i should fire the threshold recommendation. This pass will exercise: step 3 walks `completed/` (currently empty — should produce zero bank drafts), step 3a walks `in-progress/` turns since spawn (rich substrate — S014's 16 turns + S002 + S001), step 6 skill-graduation triages the migrated draft. **If gnomes are live, this is a gnome's first job — good live test.**
+
+**Step 3 — surface drafts for principal triage.** Several drafts await ruling:
 
 - `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — promote to `lorebook/decisions/D-NNN_*.md` to canonicalize the audit's structural decisions.
 - `gielinor/players/jebrim/keepsake/proposals/2026-05-21_eu-tender-2026.md` and `2026-05-21_shipping-data-mart-ttyd.md` — principal pins (or doesn't).
 - `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md` — re-routed by S018 file move; awaits skills-promotion at first Jebrim alching.
 - Pre-existing `gielinor/players/jebrim/niksis8_character/drafts/` (2 from S017-era) — also await Jebrim alching.
 
-**Step 2 — first Jebrim alching pass under new spec.** Jebrim has never been alched (1+ days old, drafts pending). New respawn step 6.i should fire the threshold recommendation. This pass will exercise: step 3 walks `completed/` (currently empty — should produce zero bank drafts), step 3a walks `in-progress/` turns since spawn (rich substrate — S014's 16 turns + S002 + S001), step 6 skill-graduation triages the migrated draft. Cap discipline matters here — the first sweep will be tempted to over-produce.
+**Step 4 — D-014 browser verification (outstanding from S017).** Spawn a real Jebrim Task while live mode is open. Watch for the full chat-event taxonomy. Subsumes S015 attribution verification.
 
-**Step 3 — D-014 browser verification (outstanding from S017).** Spawn a real Jebrim Task while live mode is open. Watch for the full chat-event taxonomy. Subsumes S015 attribution verification.
-
-**Step 4 — narration channel shakedown.** Try writing `.claude/narration.txt` at session boundaries / phase transitions and see if the chat line reads well. If it doesn't, iterate cap (currently 200) or styling.
+**Step 5 — narration channel shakedown.** Try writing `.claude/narration.txt` at session boundaries / phase transitions and see if the chat line reads well. If it doesn't, iterate cap (currently 200) or styling.
 
 Other live threads:
 

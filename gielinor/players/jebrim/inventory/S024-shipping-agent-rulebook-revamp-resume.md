@@ -41,6 +41,11 @@ Drafted doc-edit proposal at `bank/drafts/notes/projects/shipping_mart_cost_voca
 
 After applying, archive the proposal section from the draft (column model remains durable). Promote the bank note during next alching.
 
+## Parked ideas
+
+- **Local-files channel for shipping-agent consumers (T17, 2026-05-22).** Multi-consumer problem: BI team pulls updates from GitHub but also needs personal rules / preferences / scratch surviving reclones. Recommended shape: `.local.md` sidecars next to each shipped `.md` (`CLAUDE.local.md` auto-loaded by directory walk; `how_to.local.md` / `notes.local.md` reference-on-demand) + `.gitignore` for `*.local.md`, `local/`, `.env`. Two undecided: ship a `CLAUDE.local.md.example` template (yes/no), and personal-rule override status (silent / agent-flagged / append-only). Working recommendation: scaffolded + silent override. Unpark when consumers signal friction from missing local channel.
+- **`scope-perimeter.py` PreToolUse hook for shipping-agent (T17 discussion).** Diagnosed mid-T17: the bi-analytics-main session opens at the repo root, so default-CWD Grep calls reach outside `shipping-agent/` and trip `settings.json` allow-list prompts (`cost.*month|cost.*variation|...` screenshot). A PreToolUse hook would catch absolute-path reaches and default-CWD reaches that the relative-path deny patterns miss. Principal said "forget it" — not building now. Unpark if the prompt-fatigue from §10 / settings.json deny patterns recurs at meaningful frequency.
+
 ## Next concrete step
 
 Watch for residual friction in real shipping-agent sessions against the new structure. Specific regressions to scan for:

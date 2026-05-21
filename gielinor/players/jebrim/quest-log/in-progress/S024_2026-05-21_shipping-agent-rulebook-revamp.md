@@ -157,6 +157,20 @@ Output: `gielinor/players/jebrim/bank/drafts/notes/projects/shipping_mart_cost_v
 
 **Addendum (T16b):** Principal added — cost-bucket grain rule. Buckets (11 `bkt_*` cols on `fact_shipment_cost_summary`) exist only on invoiced rows; expected/avg are single shipment-level totals with no breakdown. Therefore `final_shipping_cost_eur` carries bucket detail only when `cost_source = 'real'`, and an order's final cost is shipment-level only — no order-level column, no sub-shipment grain unless every shipment in scope is invoiced. Added as a separate section in the bank draft and folded into the §0 rule wording ("If the answer includes a bucket breakdown, state that the breakdown reflects only the invoiced subset").
 
+### T17 — local-files channel (discussed + parked, 2026-05-22)
+
+Principal raised the multi-consumer problem: shipping-agent ships via GitHub, BI team pulls updates, but each user also needs a place for personal rules / preferences / scratch that survives reclones and doesn't get clobbered by pulls.
+
+Discussed shape (recommendation, not decided):
+
+- `.local.md` **sidecar pattern** next to each shipped `.md` — `CLAUDE.local.md`, `how_to.local.md`, `notes.local.md`, etc. Claude Code's directory walk auto-loads `CLAUDE.local.md` after canonical; the rest are reference-on-demand. Wins over a `local/` folder for shipping-agent's small surface (~6 shipped docs).
+- `.gitignore` covers `*.local.md`, `local/`, `.env`.
+- Two open decisions for next time: (1) ship a `CLAUDE.local.md.example` template vs minimal README-only documentation; (2) personal-rule override status — silent override, agent-flagged override, or append-only.
+
+Working recommendation: scaffolded (1b) + silent override (2a) — lightest thing that works.
+
+Status: **parked**. Picks up when shipping-agent has enough users feeling friction from the lack of a local channel. No code/doc changes made. Pointer added to S024 inventory under "Parked ideas."
+
 ## Decisions
 
 - **Inline HTML as the new visual default** — confirmed with principal in T2. Bundle modes shift to "ask before building."

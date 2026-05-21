@@ -6,49 +6,43 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-21 (end of [[S013]], pre-commit).
+**Last updated.** 2026-05-21 (end of [[S014]], pre-commit).
 
 ## Where we are
 
-[[S013]] installed the **observation harvest pump** at close-session and flipped `bank/` to drafts-gated. The first Jebrim alching pass (gielinor S012, earlier this session) surfaced empty rooms across every layer except quest-log — diagnosis: Pump 2 (per-close harvest) didn't exist, so identity layers and bank had nothing to graduate. Decision in [[D-012]]. Applied to gielinor this session: six edit groups (write-rules, close-session, alching, modes, per-player bank/_about, per-player scaffolds, lorebook draft). First harvest exercise = this session's own close; produced 1 draft (`gielinor/players/jebrim/niksis8_character/drafts/2026-05-21-escalates-symptom-to-system.md`).
+[[S014]] was two visualizer rounds plus a hook fix. **Round 1 — polish:** players solid + 1.4×, building labels above roofs, pond gone, hover descriptions per building, live-mode timestamps fixed, renderer self-heals when a dynamic actor receives a move/intent without a prior spawn event. **Round 2 — aesthetics:** paths are quadratic-bezier curves, trees are a deterministic perimeter-weighted scatter (130 candidates after the 4× reduction), stone/wood wall textures + roof shingle rows on all 9 buildings.
 
-Side cleanup: `developer-braindead/CLAUDE.md` had a stale "does not modify gielinor" line; the principal's parallel S012 commit (`ff0ce2c`) already shipped my correction alongside the Braindead work. Asymmetry is now explicit — dev brain → gielinor: full read+write; gielinor → dev brain: read-only on explicit cue.
+**Hook fix.** Brain-root `.claude/settings.json` only matched `Task`; upstream renamed the tool to `Agent`. Jebrim's S014 dwarf spawns went unhooked and the dwarves' writes leaked onto Jebrim. Widened matchers to `Agent|Task` and updated `emit-event.py`'s dispatch. `gielinor/.claude/settings.json` was already correct.
 
-**ID note.** Mid-session, today's harvest-pump decision and the Braindead decision both collided on D-011 (uncommitted). Final assignments: D-011 retired (never assigned to a landed file), [[D-012]] = harvest pump (this session), [[D-013]] = Braindead character + workshop (S012). The retired ID is not reused.
+**Post-commit emitter.** `developer-braindead/.claude/hooks/emit-commit-event.py` + `.git/hooks/post-commit` (per-clone). COMMITS lane now surfaces every git commit, not just baked replay events.
 
-[[S012]] background: Braindead the construction crew + the Workshop building. Sprite + isoBuilding + active-mode marker. Decision in [[D-013]]. Browser-side rendering not yet eyeballed.
-
-[[S011]] background: intent narration via per-actor sidecars. Decision in [[D-010]]. Browser-side rendering not yet eyeballed in a tab.
-
-[[S010]] background: live-mode v0 via [[D-009]]'s five knobs. Replay + live both work.
+Two commits this session: `4585a12` (round 1 + hook fix) and `15c8de8` (round 2 aesthetics + emitter helper).
 
 ## Next concrete step — START HERE
 
-Two parallel threads available — pick by mood:
+**Visualizer iteration continues.** Round 2 just landed; eyeball it (`python -m http.server 8765` from `developer-braindead/experiments/visualizer/`, then `?live=1`) and pick what bothers you. Likely candidates from the screenshots so far:
 
-**Thread A: Verify the visualizer feature set end-to-end.** `python -m http.server 8765` from `developer-braindead/experiments/visualizer/`, open `http://localhost:8765/?live=1`. Confirm: (a) Braindead spawned at the workshop (top-left), (b) speech bubble visible when an agent writes intent, (c) live-mode events render as expected. Same outstanding test from S011+S012. If anything looks off, adjust — workshop position, sprite proportions, bubble styling are all in scope.
+- **Curve magnitude.** 14–22% of segment length might over- or under-bow some pairs. Single-line knob in `pathControl()`.
+- **Tree distribution.** 130 candidates, perimeter-weighted. If middle still reads bare or edges still read thick, tune `TREE_CANDIDATES` and the `accept = (1 - edge) * 0.85 + 0.06` mix.
+- **Wall texture density.** `wallTexture()` derives course count from `h / 14` for stone, and uses 6 planks for wood. Tower and small workshop may want different counts.
+- **Roof shingle rows.** `roofTexture()` derives from `r / 14`. The tall Spellbook Tower has r=84 → 6 rows, might be too busy; the workshop has r=14 → 1 row, might be too sparse.
+- **Per-building polish backlog from [[S009]].** The Inn, Bank, Hall of Mirrors, Keepsake Vault, Inbox Square could still use idiosyncratic character beyond the generic stone-vs-wood split.
 
-**Thread B: Observe the harvest pump in the wild.** The pump fired for the first time this session. Next few sessions are the real calibration window — watch what the harvest produces, what gets promoted at next alch, what gets rejected. Specifically:
+Other live threads:
 
-- Does the cap of 1–5 hold up? Bias-to-less feels right but only the next 3–5 sessions will tell.
-- Are observations actually observation-backed, or am I drifting to aspirational drafts? Patterns in `examine/rejected/` will tell.
-- Does the bank drafts-gate add useful friction or annoying friction? Watch the chat-first pattern under the new rule (`bank/drafts/notes/` → alching promotes).
-- Does skill graduation surface any candidates? Probably not for several sessions — Jebrim's `examine/confirmed/` is empty and Zezima hasn't had activity.
+- **Thread A from S013 — verify visualizer feature set end-to-end.** Still outstanding from S011/S012/S013. Especially worth re-running now that ensureActorExists self-heals the braindead/wisp sprite case.
+- **Thread B — observe the harvest pump.** No code; watch what the next 3–5 sessions' harvests produce, drift to aspirational drafts, bank drafts-gate friction.
 
-No code changes needed for Thread B — it's a live experiment. Carry observations into `quest-log/` and let bankstanding evaluate later.
+Iteration menu (deferred from earlier, no priority assigned):
 
-Iteration menu (same as prior respawn, no priority assigned):
-
-- **Idle indicator.** D-009 deferred.
-- **Watchdog for non-Claude writes.** D-009 deferred.
-- **Smarter active-player inference.** D-009 deferred.
-- **SSE upgrade.** D-009 deferred.
-- **Aesthetic backlog from [[S009]].** Per-building character for The Inn, Bank, Hall of Mirrors, Keepsake Vault, Inbox Square.
+- **Idle indicator / watchdog for non-Claude writes / smarter active-player inference / SSE upgrade.** D-009 deferred.
+- **Aesthetic backlog from [[S009]].** Per-building character (see above).
 - **Read-event noise tuning.**
 
 ## Open at the start of next session
 
-- Visualizer browser-side verification (Thread A).
+- Visualizer Round 3 iteration (whatever bothers you when you look at the new map).
+- Browser-side verification (Thread A — outstanding since S011).
 - Harvest pump observation (Thread B).
 - **§C Pilot definition** — data source, "concerning" definition, output channel. Unchanged.
 - **§H.3 brain-zone taxonomy** — content for `player/working-agreements.md`. Not blocking.
@@ -56,43 +50,47 @@ Iteration menu (same as prior respawn, no priority assigned):
 
 ## Carried-over observations
 
-From [[S013]] (new candidate, one incident): **the procedure was right; the procedure assumed a state that didn't exist.** First Jebrim alching ran the alching ritual cleanly and produced near-empty output — because Pump 2 (per-close harvest) hadn't been installed yet. Procedure didn't fail; its substrate did. Pattern-of-incident similar to [[S010]]'s live-vs-replay miss ([[I-002]] cluster). Worth promoting to an I-NNN if a third incident confirms — currently 2 (S010 + S013).
+From [[S014]] (new, two-incident pattern strengthening): **the renderer needs to be self-healing because the hook stream is a lossy substrate.** Two distinct bugs this session boiled down to "the event the renderer needed was never emitted" — Braindead's `spawn-braindead` skipped because `state-actors.json _mode` was stale, and Jebrim's `spawn-dwarf` skipped because the brain-root matcher was on the old tool name. The first I fixed in the renderer (auto-spawn on first move/intent); the second I fixed at the hook layer. Pattern: **don't assume the upstream emitted what you'd render against — defend in the renderer too.** Companion to [[I-002]] (render in your head before shipping it) — this is the runtime version: render assuming partial data, because the upstream is allowed to be imperfect.
 
-From [[S013]] (separate observation): **uncommitted work occupies the ID space.** D-011 was free in `git log` but occupied on disk by an uncommitted Braindead draft. Today's harvest-pump decision blindly claimed D-011 → had to renumber twice (D-011 → D-012 → finally landed at D-012 once the Braindead branch claimed D-013). Lesson: before claiming a stable ID, check both `git log` *and* the working tree.
+From [[S014]] (one incident): **tool renames upstream are silent regressions.** `Task → Agent` broke the brain-root hook with no error message — just zero events on a path that used to fire. Worth checking the other side: are there places where the renderer or other hooks key off a tool name that may have already moved?
 
-From [[S010]]: **the visual sameness between live and replay was an [[I-002]] miss** — I declared step 3 done without mentally rendering what `?live=1` would actually look like next to the default URL.
+From [[S013]] (still candidate, two incidents now): **the procedure was right; the procedure assumed a state that didn't exist.** First Jebrim alching (S012/S013) found near-empty layers because Pump 2 wasn't installed yet — the same shape as S010's live-vs-replay miss ([[I-002]]). Today's two renderer/hook bugs are the same shape: the *renderer* assumed `spawn-*` would arrive; the *hook* assumed the tool was still named `Task`. Pattern now at 4 incidents — strong enough to draft an `I-NNN` if/when bankstanding next runs.
 
-From [[S009]] (extension of [[I-002]], still candidate): **mental UI preview must include z-order and all collision targets**, not just the static layout. Two incidents support it now.
+From [[S013]] (separate observation): **uncommitted work occupies the ID space.** Confirmed pattern; nothing new here.
+
+From [[S010]]: **the visual sameness between live and replay was an [[I-002]] miss.**
+
+From [[S009]]: **mental UI preview must include z-order and all collision targets.**
 
 From [[S008]] (codified as [[I-002]]): **render UI in your head before shipping it.**
 
-From [[S003]]–[[S007]] (carried, reaffirmed): **structure-first, content earns its way in.** **Build the verification surface alongside the artifact, not after.** Both still candidate `examine/` entries on the main-brain side.
+From [[S003]]–[[S007]]: **structure-first, content earns its way in.** **Build the verification surface alongside the artifact, not after.**
 
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S013_close_session_harvest_pump.md` — most recent session
-3. `bank/decisions/D-012_close_session_harvest_pump.md` — the harvest pump decision
-4. `bank/drafts/D-012_main_brain_implementation_spec.md` — the diff packet that was applied this session
-5. `quest-log/S012_braindead_character_and_workshop.md` — Braindead session
-6. `quest-log/S011_visualizer_intent_narration.md` — intent narration
-7. `quest-log/S010_visualizer_live_mode_v0.md` — live-mode substrate
-8. `bank/decisions/D-013_braindead_character_and_workshop.md` — Braindead decision
-9. `bank/decisions/D-010_visualizer_intent_narration.md` — intent decision
-10. `bank/decisions/D-009_visualizer_live_mode_v0.md` — live-mode decision
-11. `bank/decisions/D-008_iso_replay_v0_over_three_js.md` — iso-vs-3D (still load-bearing)
-12. `experiments/visualizer/index.html` — the artifact being iterated
-13. `experiments/visualizer/_README.md` — how to run both modes
-14. `experiments/visualizer/path-map.json` — shared lookup (hook + renderer)
-15. `.claude/hooks/emit-event.py` (under `developer-braindead/`) — the live-mode + intent + mode-marker hook
-16. `bank/open-questions/Q-007_gielinor_visualizer.md` — points at D-009; deferred follow-ups
-17. `bank/plan.md` — current mission state
+2. `quest-log/S014_visualizer_polish_and_aesthetics_pass.md` — most recent session
+3. `quest-log/S013_close_session_harvest_pump.md` — harvest pump
+4. `bank/decisions/D-012_close_session_harvest_pump.md`
+5. `bank/decisions/D-013_braindead_character_and_workshop.md`
+6. `bank/decisions/D-010_visualizer_intent_narration.md`
+7. `bank/decisions/D-009_visualizer_live_mode_v0.md`
+8. `bank/decisions/D-008_iso_replay_v0_over_three_js.md` — iso-vs-3D (still load-bearing)
+9. `experiments/visualizer/index.html` — the artifact being iterated
+10. `experiments/visualizer/_README.md` — how to run both modes
+11. `experiments/visualizer/path-map.json` — shared lookup (hook + renderer)
+12. `.claude/hooks/emit-event.py` (under `developer-braindead/`) — live-mode + intent + mode-marker hook; now Agent|Task aware
+13. `.claude/hooks/emit-commit-event.py` (under `developer-braindead/`) — post-commit emitter for the COMMITS lane
+14. `bank/open-questions/Q-007_gielinor_visualizer.md` — points at D-009; deferred follow-ups
+15. `bank/plan.md` — current mission state
 
 `bank/decisions/`, `bank/assumptions/`, `bank/open-questions/`, `bank/risks/` are reference material — open as cited.
 
 ## Note on the visualizer's engine
 
-The engine (event timeline, `applyEvent` dispatch, CSS-transition movement, RAF tick loop, scrub-seek with `instant` flag) is **asset-agnostic and should not be touched during aesthetic iteration**. State additions across S009/S010/S011/S012 are layered on top of the dispatch surface, not changes to it. Keep extending, don't rewrite.
+The engine (event timeline, `applyEvent` dispatch, CSS-transition movement, RAF tick loop, scrub-seek with `instant` flag) is **asset-agnostic and should not be touched during aesthetic iteration**. State additions across S009–S014 are layered on top of the dispatch surface, not changes to it. Keep extending, don't rewrite.
+
+S014 added one minor protocol extension: `applyEvent` now reads `ev.wallTime` to support live-mode timestamps, and `ensureActorExists()` runs at the head of `move` + `intent`. Both are additive; the dispatch surface is unchanged.
 
 ## How to run
 

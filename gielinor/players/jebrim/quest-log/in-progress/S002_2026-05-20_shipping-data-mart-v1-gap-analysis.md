@@ -3,8 +3,8 @@
 **Status:** in-progress
 **Principal:** Niklavs (BI analyst, lead on Shipping Data Mart by shipping-domain specialty)
 **Player:** Jebrim
-**Born:** 2026-05-20 (scoping in S001 session); resumed 2026-05-21 for execution.
-**External actions:** 3 dwarf spawns (D1 ClickUp, D2 bi-etl, D3 Redshift) — all **completed** as of T10. Outputs in sibling files `S002_d1_*.md` / `S002_d2_*.md` / `S002_d3_*.md`.
+**Born:** 2026-05-20 (scoping in S001 session); resumed 2026-05-21 for execution (S003 audit + synthesis); resumed again 2026-05-21 PM (S008) for principal-driven design challenges + ClickUp reopen.
+**External actions:** all **completed**. 3 dwarf spawns (D1 ClickUp, D2 bi-etl, D3 Redshift) from S003. 2 ClickUp comments posted in S008: NGE-6129 sentat→order_produced_ts (id `90120220911315`), NGE-6127 reopen with ORWO mapping + repo gap (id `90120220913597`). Principal flipped NGE-6127 status manually. **No pending external actions.**
 
 ## The ask
 
@@ -19,26 +19,38 @@ Task list is **not** to be created in ClickUp yet — draft to chat, Niklavs tri
 
 ## Where we are
 
-S003 (this session): All three dwarves ran cleanly in parallel. D1 walked 93 ClickUp tickets; D2 scanned bi-etl at HEAD `c450d24fb`; D3 probed live `enterprise_silver.*`. Synthesis landed as HTML at `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — the V1 gap matrix + 12-area task list with estimated owners, ready for ETL check-in 2026-05-22 AM.
+S003 (audit session, earlier 2026-05-21): All three dwarves ran cleanly in parallel. D1 walked 93 ClickUp tickets; D2 scanned bi-etl at HEAD `c450d24fb`; D3 probed live `enterprise_silver.*`. Synthesis landed as HTML at `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html`.
+
+S008 (this session, 2026-05-21 PM): Principal-driven design challenges. Three threads opened and closed:
+1. **ORWO `sentat` semantic.** Currently mapped to `received_by_carrier_ts`; should be `order_produced_ts` (direct equivalent of PCS `SHIPPING_TRACKED`). Posted to NGE-6129, tagged Satya. Pending Satya's call.
+2. **NGE-6127 reopened.** Two gaps: (a) 30 ORWO extkeys NULL on all 4 enrichment columns; (b) the 285 existing PICT/PicaAPI/PCS classifications were applied directly to Redshift by hand and live nowhere in git. Proposed ORWO mapping in comment: DHL/UPS/POST/OTHER 4-bucket (DHL 70.8% / UPS 6.2% / POST 22.7% / OTHER 0.4% of ORWO `fact_shipments`). Awaiting principal decision on ad-hoc UPDATE vs CASE WHEN in `upsert_to_silver.sql` + the seed-file question.
+3. **NEW thread: ORWO product SKU / article number missing.** Principal flagged this as the next investigation. Confirmed `revenue_eur` = NULL on all 89.6M ORWO orderitem rows + `product_key` = NULL on the same (`dw.dim_products` matches 0.02% — open follow-up #2 in NGE-6129 HTML). Glob found candidate sources in NFE: `bi-analytics-main/NFE/shipping_topics/29_ORWO_sperrgut_tcg_and_orwo_shops/sql/orwo_order_products.sql` (primary suspect) + `orwo_package_dims.sql` + `bi-analytics-main/NFE/shipping_topics/9_DHL_orwo_avg_costs/sql/orwo_calculated_cost.sql`. Principal believes the right PTS data source for ORWO products lives in this area and should expose product-level detail (kitchen calendars, etc.). **Not investigated yet — handover material for next session.**
+
+Synthesis HTML at `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` is now slightly stale on two points — ORWO `received_by_carrier_ts` coverage (will flip from 99.9987% to 0% by design once the swap lands) and Area 9 should note the dim_shipping_providers repo gap. Patch on next pass.
 
 Dwarf sibling files (`S002_d1_*.md`, `S002_d2_*.md`, `S002_d3_*.md`) remain in `quest-log/in-progress/` until this quest completes; they move with this file into `completed/` when we close out.
 
 ## Next concrete step — for next session
 
-Resume after the ETL check-in. Principal returns with what the team agreed on. Then:
+Three threads carry forward. Priority for next session (top first):
 
-1. Update this entry's resume section with the agreed task list + assignments.
-2. Niklavs pushes the agreed tasks to ClickUp himself (not Jebrim's job).
-3. Decide whether V1 ships with the carve-outs Niklavs chose for Rewallution / SLA-breach / PCS timestamps / ORWO known-NULLs (see Area 9 in the HTML).
-4. If V1 ships clean: move this quest to `completed/` (sibling dwarf files move with it). If follow-ups remain after V1 launch, retitle and keep in-progress.
+1. **ORWO product SKU investigation.** Read `bi-analytics-main/NFE/shipping_topics/29_ORWO_sperrgut_tcg_and_orwo_shops/sql/orwo_order_products.sql` first — likely the PTS-side source Niklavs used previously. Identify the actual ORWO product/article column + source table. Cross-reference against `dw.dim_products` schema to see whether the 0.02% match is a key-shape issue or a true catalog separation. Output: a 1-page note `bank/notes/projects/orwo_product_source.md` summarising where ORWO product data lives, how it keys, and what the dim_products extension path would look like. This feeds NGE-6129 follow-up #2 (Data Platform owns the dim extension; Jebrim provides the discovery).
+
+2. **ORWO classification decision.** Principal returns with answer on (a) ad-hoc UPDATE vs (b) CASE WHEN in `upsert_to_silver.sql` for the 30 ORWO extkeys, and (c) whether to dump current dim contents to a versioned seed `.sql`. If (a) — Jebrim drafts the 30 UPDATEs. If (b) — Jebrim drafts the SQL patch + the one-time backfill. (c) is independent and almost certainly worth doing regardless.
+
+3. **ETL check-in reconciliation** (originally the primary resume hook). Principal returns with what the team agreed on at the 2026-05-22 AM check-in. Update this entry with the agreed task list + assignments. Niklavs pushes the agreed tasks to ClickUp himself. Decide whether V1 ships with the carve-outs (Rewallution / SLA-breach / PCS timestamps / ORWO known-NULLs — see Area 9 in the HTML).
+
+If V1 ships clean and all three threads close: move this quest to `completed/` (sibling dwarf files move with it). Otherwise retitle and keep in-progress.
 
 ## Files / paths to read first — for next session
 
 1. **This file** — resume context.
-2. `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — the canonical synthesis. Open in browser; sticky-nav.
-3. `quest-log/in-progress/S002_d1_clickup_subtree.md` / `S002_d2_bi_etl_state.md` / `S002_d3_redshift_coverage.md` — dwarf detail if a specific finding needs re-checking.
-4. `players/jebrim/CLAUDE.md` + `_about.md` + `persona.md` — character context if respawn didn't preload.
-5. `quest-log/in-progress/S001_2026-05-20_repo-orientation.md` — sibling. Picks #3/#4/#5 unresumed.
+2. `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — the canonical synthesis. Open in browser; sticky-nav. Note the two stale spots above.
+3. **For ORWO products thread (priority 1):** `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics-main\NFE\shipping_topics\29_ORWO_sperrgut_tcg_and_orwo_shops\sql\orwo_order_products.sql` + `orwo_package_dims.sql` + `bi-analytics-main\NFE\shipping_topics\9_DHL_orwo_avg_costs\sql\orwo_calculated_cost.sql`.
+4. **For ORWO classification thread:** `bi-etl\dags\enterprise_silver\Shipping_Data_Mart\dim_shipping_providers\sql\upsert_to_silver.sql` + `README.md` in the same folder.
+5. `quest-log/in-progress/S002_d1_clickup_subtree.md` / `S002_d2_bi_etl_state.md` / `S002_d3_redshift_coverage.md` — dwarf detail if a specific finding needs re-checking.
+6. `players/jebrim/CLAUDE.md` + `_about.md` + `persona.md` — character context if respawn didn't preload.
+7. `quest-log/in-progress/S001_2026-05-20_repo-orientation.md` — sibling. Picks #3/#4/#5 unresumed.
 
 ## Constraints (from principal, this session)
 
@@ -173,3 +185,9 @@ Not drafting it this session because (a) close-session is firing, (b) the observ
 - T11 (2026-05-21): Synthesized the V1 gap matrix (sections A–F: Done & verified · Tickets vs reality · In progress + owner · Blocked · Open follow-ups · Surprises not ticketed) and the 12-area task list with estimated owners + severity flags. Drafted to chat.
 - T12 (2026-05-21): Principal asked for HTML deliverable instead of `.md`. Wrote `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — self-contained, sticky-nav, color-coded severity. Principal cued close.
 - T13 (2026-05-21, close): Close-session ritual. Tightened resume sections. Surfaced one self-observation as `examine/drafts/` (dwarf-spawn heuristic; observation-backed by S002 scoping turn + this session's execution). SNNN = S003. Commit pending.
+- T14 (2026-05-21, new session): Principal asked what's new on NGE-6129 + contents of `orwo_open_pointers.html`. Pulled live comments + WebFetch'd the canonical HTML (in-repo path claimed by D1 / Satya does not exist locally — only `orwo_integration_walkthrough.html` lives at `dags/enterprise_silver/Shipping_Data_Mart/`; the `orwo_open_pointers.html` Satya cited at commit `9af27d823` is not in git history under that path). Reported on the 4 open follow-ups + the bug-#3 resolution by Łukasz (`7e552464f`, NGE-7146, auto-deployed 2026-05-21 04:00 UTC).
+- T15 (2026-05-21): Principal challenged the design: ORWO `sentat` being used as `received_by_carrier_ts` — should be `order_produced_ts` instead. Verified in `fact_shipments/sql/insert_to_silver.sql` L580, L919; confirmed semantic mismatch (PCS `SHIPPING_TRACKED` already maps to `order_produced_ts` per the same file's L7 glossary + L748 wiring). Drafted comment, principal approved, posted to NGE-6129 as comment id `90120220911315`. Tagged Satya. **Completed.** This is a new V1-blocking semantic correction not in the original S003 synthesis — propagate into the gap matrix on next pass (will flip ORWO `received_by_carrier_ts` coverage from "99.9987%" to "0% (by design)" in Area 9 of the HTML, and surface ORWO `order_produced_ts` as a new column to populate).
+- T16 (2026-05-21): Asked about ORWO carriers in `dim_shipping_providers` + ORWO revenue. Confirmed via Redshift MCP (now loaded as `mcp__redshift__*`): 30 ORWO rows exist with all 4 enrichment columns NULL; `revenue_eur` 100% NULL on 89.6M ORWO orderitem rows. Read `dim_shipping_providers/sql/upsert_to_silver.sql` + README — design is INSERT-only with manual UPDATEs for enrichment per Niklavs 2026-05-04 call.
+- T17 (2026-05-21): Principal proposed simplifying ORWO carriers to 4 groups (DHL / UPS / POST / OTHER). Pulled live per-extkey row counts from `fact_shipments` for ORWO. Built the mapping (15 POST extkeys, 4 DHL, 4 UPS, 7 OTHER); coverage breakdown DHL 70.8% / UPS 6.2% / POST 22.7% / OTHER 0.4%. DHL2 alone is 64.23% of all ORWO; top 6 extkeys carry ~96%. Five ambiguous extkeys flagged (FKBRING/FKBRINGPARCEL/CIRRO/WPOST3/WPOST4 → POST per best guess; GUELL/TD/UNITEDPRINT → OTHER; UNITEDPRINT may be a production-system code mis-routed into the carrier field — separate concern).
+- T18 (2026-05-21): Principal asked why ad-hoc UPDATEs instead of SQL — challenged the existing design. Verified via Redshift: PICT 116/124, PicaAPI 88/89, PCS 81/83 classifications are filled in live, but `git log` shows only 2 commits ever to the dim_shipping_providers folder and only 1 `UPDATE enterprise_silver.dim_shipping_providers` in the entire bi-etl repo (README template line 171). **The 285 PICT/PicaAPI/PCS classification UPDATEs were applied directly to Redshift by hand and do not exist anywhere in version control.** This is a real process gap — surfaced to principal as "manual-in-table-and-undocumented-anywhere-in-git is worse than either pure option (all-in-SQL or all-hand-applied-with-seed-backup)."
+- T19 (2026-05-21): Principal decided to reopen NGE-6127. Drafted comment covering both the ORWO classification gap + the version-control gap, with the proposed ORWO mapping table embedded (service_type=NULL, truck_provider=NULL, has_truck_cost=FALSE for all ORWO since ORWO uses PTSLive not PCS truck allocation). Principal approved. Posted to NGE-6127 as comment id `90120220913597`. **Completed.** Status not flipped from `production` → in-progress in this turn (comment-only); principal can flip via UI or ask in a follow-up.

@@ -80,6 +80,22 @@ Principal defined Picturator = B2C, PicaApi = MerchOne. Asked Jebrim to swap and
 
 Principal asked about open quests. Surfaced seven in-progress entries; called out that this session itself had no quest-log entry — substantive work happened in shipping-agent (additional working dir), nothing wrote to gielinor, the lapse was invisible to disk. Principal cued session close with retroactive log + handover note that shipping-agent iterations are still ongoing.
 
+### T12 — post-close follow-up: local-first reach + recovery rule (2026-05-22)
+
+After the S024 close commit (`188707b`), principal surfaced a third scope-discipline incident from a separate shipping-agent transcript: the agent had reached into the NFE folder for a database module instead of using the local `db.py`. The agent's own confession was diagnostic — *"I didn't check what was already in the folder. I saw the shared/database module fail (wrong working directory) and reached for the next thing I knew instead of stopping to look at what was already here."*
+
+Two failure modes compound:
+
+1. **No local inventory before reach.** Agent grabbed for a known-from-training pattern ("shared database module") instead of globbing the shipping-agent folder. `db.py` was sitting next to `how_to.md`.
+2. **Recovery moved outward.** When the first invocation failed (wrong cwd → import path miss), the agent's recovery move was "find this helper elsewhere" rather than "the cwd is wrong; fix the invocation." Reaching out is *never* the right recovery; the previous §10 tightenings hadn't covered this specific shape.
+
+Added two rules to §10:
+
+- **"Local-first reach"** — before importing, calling, or invoking any helper not in Python's standard library or `pip install`-able, glob the shipping-agent folder first. Names the existing local helpers and the danger words (`shared/`, `lib/`, `helpers/`, `bi_etl/`, parent project).
+- **"Recovery move is closer, not further"** — on script failure, diagnose by asking *what's local I haven't tried*, not *where else could this be*. Reaching outside the folder to find a helper is never the correct recovery.
+
+Together these target the specific gap that the two earlier §10 tightenings (T4: ban shell exploration regardless of path; T8: reference-folder reach) didn't cover. The earlier rules covered *file reads* and *shell exploration*; this one covers *Python imports / script invocations* via cwd-and-PATH side effects.
+
 ## Decisions
 
 - **Inline HTML as the new visual default** — confirmed with principal in T2. Bundle modes shift to "ask before building."

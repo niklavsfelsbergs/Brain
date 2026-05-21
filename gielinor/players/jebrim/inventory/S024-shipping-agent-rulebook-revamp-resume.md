@@ -20,7 +20,7 @@ Watch for residual friction in the next few shipping-agent sessions. Specificall
 - **Pre-action narration creeping back.** Rule #7 says one scoping-restating line; check that the agent doesn't drift into "I'll do A, then B, then C" multi-sentence plans.
 - **Auto-breakout by sub-platform.** Rule #3 says breakdowns are an offer, not a default. If the agent splits "how much" answers by B2C / MerchOne / source without the user asking, rule #3 isn't biting hard enough.
 - **Latency creep.** Rule #8 (don't over-research) and Mode 2 step 1 (check for same-day reusable charts) target a 30–60s saving on canonical asks. Time the first few "show me a chart" turns; if they're still 90s+, something's not landing.
-- **Scope-perimeter reaches.** §10 was tightened twice this session. If a third out-of-perimeter incident shows up, the behavioral rule is insufficient and the next move is rewriting `settings.json` deny patterns to handle absolute paths without denying the working dir.
+- **Scope-perimeter reaches.** §10 was tightened **three times** this session: T4 banned in-folder shell exploration; T8 banned the parent-project reference-folder reach; T12 (post-close follow-up) banned reaching for non-stdlib helpers without inventorying the local folder first, and forbade the "reach further out on failure" recovery move. If a fourth out-of-perimeter incident shows up, the behavioral rule is insufficient — the next move is rewriting `settings.json` deny patterns to handle absolute paths without denying the working dir (currently the deny rules only cover `../**` relative patterns).
 
 When new friction surfaces, the move is the same as this session: principal flags via screenshot, Jebrim diagnoses the root cause in the rulebook, proposes targeted wording, edits.
 

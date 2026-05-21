@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # Architectural guarantee #3: dwarves have a restricted write surface.
-# Active only when env var CLAUDE_BRAIN_DWARF=1. The principal sets this when
-# spawning a dwarf agent; the env propagates into the sub-agent's hook calls.
+# Active only when the PreToolUse payload carries agent_type == "dwarf".
+# Claude Code populates agent_id + agent_type in the JSON payload when a tool
+# call originates inside a sub-agent context; env vars are NOT propagated, so
+# gating on os.environ would leave the boundary silently inert.
+# (Original implementation gated on CLAUDE_BRAIN_DWARF=1; fixed 2026-05-21
+# in the [[S020]] dev-brain ratification pass alongside the gnome fix.)
 #
 # Dwarves may write to:
 #   - bank/notes/...            (any player)
@@ -40,13 +44,13 @@ def is_in_brain(p: Path) -> bool:
 
 
 def main() -> None:
-    if os.environ.get("CLAUDE_BRAIN_DWARF") != "1":
-        sys.exit(0)
-
     try:
         payload = json.load(sys.stdin)
     except Exception as e:
         print(f"dwarf-write-boundary: bad payload: {e}", file=sys.stderr)
+        sys.exit(0)
+
+    if payload.get("agent_type") != "dwarf":
         sys.exit(0)
 
     tool_name = payload.get("tool_name", "")

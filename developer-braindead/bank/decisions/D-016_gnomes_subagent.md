@@ -111,9 +111,18 @@ When the heuristic does not fire, the principal runs the ritual personally — k
 - Extends [[D-015]] (Jebrim layer audit) — the alching procedure D-015 patched now has a designated runner for first-time / heavy passes.
 - Extends `meta/modes.md` principal/dwarf axis to principal/dwarf/gnome. No supersession — both prior roles still operate as before.
 
+## Addendum — 2026-05-21 ([[S020]] ratification pass)
+
+The original implementation gated `gnome-write-boundary.py` (and the parallel `dwarf-write-boundary.py` + `block-sub-spawn.py`) on env var `CLAUDE_BRAIN_GNOME=1`. **This route is inert.** Claude Code does not propagate custom env vars into sub-agent tool calls; the canonical mechanism for "this hook is firing inside sub-agent X" is the PreToolUse JSON payload field `agent_type` (alongside `agent_id`).
+
+Switched all three hooks to gate on `payload.get("agent_type") == "gnome"` (or `"dwarf"`, or both for the sub-spawn block). The decision shape is unchanged — gnome scope, write boundary, blocklist, spawn heuristic, namespace, persona all hold as written above. Only the *trigger predicate* moves from env-var to payload-field. Architectural guarantees #3, #4, #5 in `gielinor/CLAUDE.md` are now actually live; before this fix they were paper-only.
+
+Same fix incidentally re-armed the pre-existing dwarf boundary, which had the same gating bug since its founding hook landed.
+
 ## Anchor
 
 - [[S019]] in dev brain — the implementation session.
+- [[S020]] in dev brain — the ratification pass that landed the env→payload fix.
 - `gielinor/spellbook/skills/spawning-gnomes.md` — operating spec; single source of truth.
 - `gielinor/.claude/hooks/gnome-write-boundary.py` — enforcement.
 - `gielinor/.claude/agents/gnome.md` — agent config.

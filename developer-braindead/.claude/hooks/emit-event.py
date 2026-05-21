@@ -25,6 +25,31 @@ MAP_PATH = VIZ_DIR / "path-map.json"
 STATE_PATH = VIZ_DIR / "state.ndjson"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"
 DWARVES_PATH = VIZ_DIR / "state-dwarves.json"
+GNOMES_PATH = VIZ_DIR / "state-gnomes.json"
+
+# Sub-agent kinds. spawn-time selection from tool_input.subagent_type; tool-call
+# attribution from payload.agent_type. Both reach into the same per-kind state
+# (id prefix, color palette, event names, chat speaker).
+ROLE_CONFIG = {
+    "dwarf": {
+        "id_prefix": "D",
+        "state_path": DWARVES_PATH,
+        "spawn_event": "spawn-dwarf",
+        "despawn_event": "despawn-dwarf",
+        "speaker": "dwarves",
+        "color_prefix": "dwarf",
+        "color_count": 3,
+    },
+    "gnome": {
+        "id_prefix": "G",
+        "state_path": GNOMES_PATH,
+        "spawn_event": "spawn-gnome",
+        "despawn_event": "despawn-gnome",
+        "speaker": "gnomes",
+        "color_prefix": "gnome",
+        "color_count": 3,
+    },
+}
 
 WRITE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 READ_TOOLS = {"Read", "Glob", "Grep"}
@@ -297,14 +322,14 @@ def current_main_actor() -> str:
 
 def handle_bash(payload: dict) -> None:
     """D-014: emit an `action` event for Bash (no path → no move).
-    Attributes to dwarf via agent_id when present, else to the current
-    main-thread actor."""
+    Attributes to sub-agent (dwarf or gnome) via agent_id when present, else
+    to the current main-thread actor."""
     tool_input = payload.get("tool_input") or {}
     verb, target = action_verb_and_target("Bash", tool_input)
     if not target:
         return
-    dwarf, _dw = attribute_to_dwarf(payload)
-    actor = dwarf["id"] if dwarf else current_main_actor()
+    sub, _st, _kind = attribute_to_subagent(payload)
+    actor = sub["id"] if sub else current_main_actor()
     append({
         "wallTime": now_iso(), "source": "hook",
         "type": "action",
@@ -366,22 +391,24 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
     verb, target = action_verb_and_target(tool_name, tool_input) if emit_action else ("", "")
 
     # Sub-agent path — if the payload carries `agent_id`, this tool call came
-    # from inside a Task/Agent sub-agent. Move + action both attribute to the
-    # dwarf so its sprite roams and chat lines speak in its voice.
-    dwarf, dw = attribute_to_dwarf(payload)
-    if dwarf:
-        if dwarf.get("at") != building:
+    # from inside a Task/Agent sub-agent. Dispatch to dwarf or gnome state by
+    # the payload's `agent_type`. Move + action both attribute to the sub-agent
+    # so its sprite roams and chat lines speak in its voice.
+    sub, st, kind = attribute_to_subagent(payload)
+    if sub:
+        cfg = ROLE_CONFIG[kind]
+        if sub.get("at") != building:
             append({
                 "wallTime": wall, "source": "hook",
-                "type": "move", "actor": dwarf["id"], "to": building,
+                "type": "move", "actor": sub["id"], "to": building,
             })
-            dwarf["at"] = building
-            save_json(DWARVES_PATH, dw)
+            sub["at"] = building
+            save_json(cfg["state_path"], st)
         if emit_action and target:
             append({
                 "wallTime": wall, "source": "hook",
                 "type": "action",
-                "actor": dwarf["id"],
+                "actor": sub["id"],
                 "verb": verb,
                 "target": target,
             })
@@ -410,11 +437,11 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
         })
 
 
-def _dwarves_default() -> dict:
-    # Stable shape for the dwarves state file. Keys:
-    #   nextId          — next dwarf number to assign (D1, D2, …)
+def _subagent_default() -> dict:
+    # Stable shape for a per-role state file (dwarves, gnomes). Keys:
+    #   nextId          — next sub-agent number to assign (D1, D2, … or G1, G2, …)
     #   byToolUseId     — { tool_use_id: { id, color, at } } until despawn
-    #   pendingQueue    — FIFO of dwarves whose spawn Pre lacked tool_use_id
+    #   pendingQueue    — FIFO of sub-agents whose spawn Pre lacked tool_use_id
     #   byAgentId       — { agent_id: tool_use_id } bound on first sub-call
     #   pendingAgentBind — FIFO of tool_use_ids awaiting agent_id binding
     return {
@@ -426,65 +453,78 @@ def _dwarves_default() -> dict:
     }
 
 
+def spawn_kind_from_tool_input(tool_input: dict) -> str:
+    """Map a Task tool_input to a ROLE_CONFIG kind. Anything not explicitly
+    'gnome' is treated as a dwarf (general-purpose tasks, claude-code-guide,
+    Explore, etc. all carry dwarf semantics in the visualizer)."""
+    sub_type = (tool_input.get("subagent_type") or "").strip().lower()
+    return "gnome" if sub_type == "gnome" else "dwarf"
+
+
 def handle_task_pre(payload: dict) -> None:
     tool_use_id = payload.get("tool_use_id") or ""
     tool_input = payload.get("tool_input") or {}
+    kind = spawn_kind_from_tool_input(tool_input)
+    cfg = ROLE_CONFIG[kind]
     parent, at = infer_dwarf_parent()
 
-    dw = load_json(DWARVES_PATH, _dwarves_default())
-    n = dw.get("nextId", 1)
-    dwarf_id = f"D{n}"
-    color = f"dwarf-{((n - 1) % 3) + 1}"
-    dw["nextId"] = n + 1
-    entry = {"id": dwarf_id, "color": color, "at": at}
+    st = load_json(cfg["state_path"], _subagent_default())
+    n = st.get("nextId", 1)
+    sub_id = f"{cfg['id_prefix']}{n}"
+    color = f"{cfg['color_prefix']}-{((n - 1) % cfg['color_count']) + 1}"
+    st["nextId"] = n + 1
+    entry = {"id": sub_id, "color": color, "at": at}
     if tool_use_id:
-        dw.setdefault("byToolUseId", {})[tool_use_id] = entry
+        st.setdefault("byToolUseId", {})[tool_use_id] = entry
         # Queue this spawn so the first sub-call carrying `agent_id` can claim
         # it. The Agent tool's Pre fires before the sub-agent exists, so we
         # don't know its agent_id yet; bind on first sighting.
-        dw.setdefault("pendingAgentBind", []).append(tool_use_id)
+        st.setdefault("pendingAgentBind", []).append(tool_use_id)
     else:
-        dw.setdefault("pendingQueue", []).append(entry)
-    save_json(DWARVES_PATH, dw)
+        st.setdefault("pendingQueue", []).append(entry)
+    save_json(cfg["state_path"], st)
 
     description = tool_input.get("description") or tool_input.get("subagent_type") or "task"
     wall = now_iso()
     append({
         "wallTime": wall, "source": "hook",
-        "type": "spawn-dwarf",
-        "id": dwarf_id, "color": color, "parent": parent, "at": at,
+        "type": cfg["spawn_event"],
+        "id": sub_id, "color": color, "parent": parent, "at": at,
         "intent": description[:INTENT_MAX_LEN],
     })
     append({
         "wallTime": wall, "source": "hook",
         "type": "log",
-        "msg": f"* {dwarf_id} spawned by {parent} — {description}",
+        "msg": f"* {sub_id} spawned by {parent} — {description}",
         "cls": "system",
-        "speaker": "dwarves",
+        "speaker": cfg["speaker"],
     })
 
 
 def handle_task_post(payload: dict) -> None:
     tool_use_id = payload.get("tool_use_id") or ""
-    dw = load_json(DWARVES_PATH, _dwarves_default())
+    tool_input = payload.get("tool_input") or {}
+    kind = spawn_kind_from_tool_input(tool_input)
+    cfg = ROLE_CONFIG[kind]
+    st = load_json(cfg["state_path"], _subagent_default())
 
     entry = None
-    if tool_use_id and tool_use_id in dw.get("byToolUseId", {}):
-        entry = dw["byToolUseId"].pop(tool_use_id)
+    if tool_use_id and tool_use_id in st.get("byToolUseId", {}):
+        entry = st["byToolUseId"].pop(tool_use_id)
         # Clean up the agent_id binding so it can't be reused for a future spawn.
-        by_agent = dw.setdefault("byAgentId", {})
+        by_agent = st.setdefault("byAgentId", {})
         for aid, tui in list(by_agent.items()):
             if tui == tool_use_id:
                 by_agent.pop(aid, None)
         # Also drop from the pendingAgentBind queue in case this spawn never
         # had any sub-calls (instant return) so we don't leak a stale entry.
-        pq = dw.setdefault("pendingAgentBind", [])
+        pq = st.setdefault("pendingAgentBind", [])
         if tool_use_id in pq:
             pq.remove(tool_use_id)
-    elif dw.get("pendingQueue"):
+    elif st.get("pendingQueue"):
         # FIFO fallback when tool_use_id wasn't available at Pre time.
-        entry = dw["pendingQueue"].pop(0)
-    save_json(DWARVES_PATH, dw)
+        entry = st["pendingQueue"].pop(0)
+    save_json(cfg["state_path"], st)
 
     if not entry:
         return
@@ -493,7 +533,7 @@ def handle_task_post(payload: dict) -> None:
     parent, _ = infer_dwarf_parent()
     append({
         "wallTime": wall, "source": "hook",
-        "type": "despawn-dwarf",
+        "type": cfg["despawn_event"],
         "id": entry["id"],
     })
     append({
@@ -501,34 +541,40 @@ def handle_task_post(payload: dict) -> None:
         "type": "log",
         "msg": f"* {entry['id']} returns to {parent}",
         "cls": "system",
-        "speaker": "dwarves",
+        "speaker": cfg["speaker"],
     })
 
 
-def attribute_to_dwarf(payload: dict):
+def attribute_to_subagent(payload: dict):
     """If the hook payload carries `agent_id` (sub-agent tool call), return
-    the dwarf entry { id, color, at } that owns it. Binds agent_id → spawn
-    tool_use_id on first sighting via FIFO match against pendingAgentBind.
-    Returns (entry, dw) on success, (None, None) otherwise — caller is
-    responsible for saving `dw` if it mutates `entry["at"]`."""
+    the sub-agent entry { id, color, at } that owns it, plus the state dict
+    and the kind ('dwarf' or 'gnome'). Dispatches on `payload.agent_type`;
+    falls back to dwarf state when agent_type is absent (older Claude Code
+    versions or general-purpose tasks where the field may not be populated).
+    Binds agent_id → spawn tool_use_id on first sighting via FIFO match.
+    Returns (entry, state, kind) on success, (None, None, None) otherwise —
+    caller is responsible for saving `state` if it mutates `entry["at"]`."""
     agent_id = payload.get("agent_id")
     if not agent_id:
-        return None, None
-    dw = load_json(DWARVES_PATH, _dwarves_default())
-    by_agent = dw.setdefault("byAgentId", {})
-    by_tui = dw.setdefault("byToolUseId", {})
+        return None, None, None
+    agent_type = (payload.get("agent_type") or "").strip().lower()
+    kind = "gnome" if agent_type == "gnome" else "dwarf"
+    cfg = ROLE_CONFIG[kind]
+    st = load_json(cfg["state_path"], _subagent_default())
+    by_agent = st.setdefault("byAgentId", {})
+    by_tui = st.setdefault("byToolUseId", {})
     tool_use_id = by_agent.get(agent_id)
     if tool_use_id is None:
-        pending = dw.setdefault("pendingAgentBind", [])
+        pending = st.setdefault("pendingAgentBind", [])
         if not pending:
-            return None, None
+            return None, None, None
         tool_use_id = pending.pop(0)
         by_agent[agent_id] = tool_use_id
-        save_json(DWARVES_PATH, dw)
+        save_json(cfg["state_path"], st)
     entry = by_tui.get(tool_use_id)
     if not entry:
-        return None, None
-    return entry, dw
+        return None, None, None
+    return entry, st, kind
 
 
 def main() -> None:

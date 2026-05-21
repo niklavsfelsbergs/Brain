@@ -59,6 +59,15 @@
     --braindead-bandage: #d8c89c;
     --braindead-goggle: #cf9a2c;
     --braindead-hammer: #5a4530;
+    /* Gnomes — housekeeper sub-agents. Distinct from dwarves: smaller body,
+       tall pointy hat in cool tones (vs dwarves' warm tones), earth-tone vest,
+       scroll instead of hammer. Three hat colors cycle by spawn order. */
+    --gnome-vest: #6e5a3e;
+    --gnome-vest-dk: #4a3a26;
+    --gnome-beard: #d8d0b8;
+    --gnome-1: #6b7da6;   /* slate blue */
+    --gnome-2: #8b6caf;   /* lavender  */
+    --gnome-3: #5d8a7e;   /* sage teal */
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -340,6 +349,7 @@
   .log-entry[data-speaker="dwarves"]   .user { color: #8a5a10; }
   .log-entry[data-speaker="wisp"]      .user { color: #8a7020; }
   .log-entry[data-speaker="braindead"] .user { color: #1a6660; }
+  .log-entry[data-speaker="gnomes"]    .user { color: #5b3d6e; }
   /* Body text stays black for all chat lines */
   .log-entry.intent,
   .log-entry.action,
@@ -414,6 +424,7 @@
   .log-tab[data-tab="jebrim"]  .dot { background: #9bc4ff; color: #5a8ed8; }
   .log-tab[data-tab="zezima"]  .dot { background: #ffb56b; color: #c9783a; }
   .log-tab[data-tab="dwarves"] .dot { background: #ffd24a; color: #cf9a2c; }
+  .log-tab[data-tab="gnomes"]  .dot { background: #c8a8e0; color: #8b6caf; }
   .log-tab[data-tab="wisp"]    .dot { background: #fff4c8; color: #d8c694; }
   .log-tab[data-tab="commits"] .dot { background: #ff9344; color: #c66828; }
   .log-tab.active .dot { box-shadow: 0 0 5px currentColor, inset 1px 1px 0 rgba(0,0,0,0.4); }
@@ -424,12 +435,14 @@
   .log-scroll[data-filter="dwarves"] .log-entry:not([data-speaker="dwarves"]) { display: none; }
   .log-scroll[data-filter="wisp"]    .log-entry:not([data-speaker="wisp"])    { display: none; }
   .log-scroll[data-filter="commits"] .log-entry:not([data-speaker="commits"]) { display: none; }
+  .log-scroll[data-filter="gnomes"]  .log-entry:not([data-speaker="gnomes"])  { display: none; }
 
   .log-entry[data-speaker="jebrim"]    .t::before { content: "● "; color: #1f4b8a; }
   .log-entry[data-speaker="zezima"]    .t::before { content: "● "; color: #a44a14; }
   .log-entry[data-speaker="dwarves"]   .t::before { content: "● "; color: #8a5a10; }
   .log-entry[data-speaker="wisp"]      .t::before { content: "● "; color: #8a7020; }
   .log-entry[data-speaker="braindead"] .t::before { content: "● "; color: #1a6660; }
+  .log-entry[data-speaker="gnomes"]    .t::before { content: "● "; color: #5b3d6e; }
   .log-entry[data-speaker="commits"]   .t::before { content: "● "; color: #6e2c14; }
 
   @media (max-width: 900px) {
@@ -813,7 +826,8 @@
       <div class="legend">
         <div class="row"><span class="swatch" style="background:var(--jebrim-robe)"></span> Jebrim — analyst-player</div>
         <div class="row"><span class="swatch" style="background:var(--zezima-robe)"></span> Zezima — reflective-player <span style="opacity:0.5">(idle)</span></div>
-        <div class="row"><span class="swatch" style="background:#cf9a2c"></span> Dwarves — sub-agent workers</div>
+        <div class="row"><span class="swatch" style="background:#cf9a2c"></span> Dwarves — task-local sub-agents</div>
+        <div class="row"><span class="swatch" style="background:#8b6caf"></span> Gnomes — housekeeping sub-agents</div>
         <div class="row"><span class="swatch" style="background:var(--wisp-core)"></span> Wisp — unscoped/system</div>
       </div>
 
@@ -846,6 +860,7 @@
         <span class="log-tab"        data-tab="jebrim"  role="tab"><span class="dot"></span>JEBRIM</span>
         <span class="log-tab"        data-tab="zezima"  role="tab"><span class="dot"></span>ZEZIMA</span>
         <span class="log-tab"        data-tab="dwarves" role="tab"><span class="dot"></span>DWARVES</span>
+        <span class="log-tab"        data-tab="gnomes"  role="tab"><span class="dot"></span>GNOMES</span>
         <span class="log-tab"        data-tab="wisp"    role="tab"><span class="dot"></span>WISP</span>
         <span class="log-tab"        data-tab="commits" role="tab"><span class="dot"></span>COMMITS</span>
       </div>
@@ -2129,12 +2144,14 @@ let playing = false;
 let speed = 1;
 let cursor = 0;
 let dwarfNodes = {};
+let gnomeNodes = {};
 let wispNode = null;
 let wispActive = false;
 let braindeadNode = null;
 let braindeadActive = false;
 let currentSession = null;
 let dwarfCount = 0;
+let gnomeCount = 0;
 let activePlayer = null;
 const actorPositions = {};
 const actorMoveTimers = {};
@@ -2272,12 +2289,74 @@ function despawnDwarf(id) {
   updateTicker();
 }
 
+function spawnGnome(ev) {
+  const b = STAND[ev.at];
+  const j = jitter(ev.id, ev.at);
+  const x = b.x + j.dx, y = b.y + j.dy * 0.5;
+  actorPositions[ev.id] = {x, y};
+
+  const g = document.createElementNS(svgNS, 'g');
+  g.setAttribute('class', 'actor gnome fade-in');
+  g.setAttribute('id', 'actor-' + ev.id);
+  g.setAttribute('data-actor', ev.id);
+  g.setAttribute('transform', `translate(${x},${y})`);
+  g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
+
+  const colorMap = {'gnome-1':'#6b7da6', 'gnome-2':'#8b6caf', 'gnome-3':'#5d8a7e'};
+  const hat = colorMap[ev.color] || '#6b7da6';
+  // Tall pointy hat + scroll + small body — distinct silhouette from dwarves.
+  // Slimmer body (6 wide vs dwarves' 8), taller hat (-14 to -7 vs dwarves'
+  // -12 to -8), beard tuft in --gnome-beard, vest in --gnome-vest, scroll
+  // in right hand instead of dwarves' hammer.
+  g.innerHTML = `
+    <g class="bob">
+      <ellipse cx="0" cy="3" rx="4.8" ry="1.6" fill="rgba(0,0,0,0.45)"/>
+      <polygon points="-3.5,-7 3.5,-7 0,-15" fill="${hat}"/>
+      <rect x="-3.5" y="-7" width="7" height="1.2" fill="rgba(0,0,0,0.3)"/>
+      <rect x="-0.5" y="-15" width="1" height="1" fill="#e8d8a8"/>
+      <rect x="-2.5" y="-6" width="5" height="3" fill="#e2b88a"/>
+      <rect x="-1.8" y="-5" width="1" height="1" fill="#28201a"/>
+      <rect x="0.8"  y="-5" width="1" height="1" fill="#28201a"/>
+      <rect x="-3" y="-3" width="6" height="2.5" fill="#d8d0b8"/>
+      <rect x="-2.5" y="-1.8" width="5" height="0.6" fill="#bab2a0"/>
+      <rect x="-3" y="-1" width="6" height="5" fill="#6e5a3e"/>
+      <rect x="-3" y="-1" width="6" height="0.8" fill="#4a3a26"/>
+      <rect x="-1" y="-1" width="2" height="5" fill="#4a3a26"/>
+      <rect x="-4" y="-1" width="1" height="4" fill="${hat}"/>
+      <rect x="3"  y="-1" width="1" height="4" fill="${hat}"/>
+      <rect x="4" y="-2" width="2.5" height="5" fill="#efe2bb"/>
+      <rect x="4" y="-2" width="2.5" height="0.8" fill="#d8c694"/>
+      <rect x="4" y="2.2" width="2.5" height="0.8" fill="#d8c694"/>
+      <line x1="4.4" y1="-0.5" x2="6.1" y2="-0.5" stroke="#3a2c1c" stroke-width="0.3"/>
+      <line x1="4.4" y1="0.5"  x2="5.7" y2="0.5"  stroke="#3a2c1c" stroke-width="0.3"/>
+      <line x1="4.4" y1="1.4"  x2="6.1" y2="1.4"  stroke="#3a2c1c" stroke-width="0.3"/>
+      <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
+    </g>
+  `;
+  charactersLayer.appendChild(g);
+  gnomeNodes[ev.id] = {node: g};
+  gnomeCount++;
+  updateTicker();
+}
+
+function despawnGnome(id) {
+  const entry = gnomeNodes[id];
+  if (!entry) return;
+  entry.node.classList.add('fade-out');
+  setTimeout(() => entry.node.remove(), 500);
+  delete gnomeNodes[id];
+  delete actorPositions[id];
+  gnomeCount = Math.max(0, gnomeCount - 1);
+  updateTicker();
+}
+
 // Self-heal when a dynamic actor receives a move/intent before its spawn event.
 // Spawns braindead/wisp at the inferred building so the bubble has a sprite under it.
 function ensureActorExists(actor, atKey) {
   if (!actor) return;
   if (actor === 'jebrim' || actor === 'zezima') return;          // baked in
   if (/^D\d+$/.test(actor)) return;                              // dwarves spawn via spawn-dwarf only
+  if (/^G\d+$/.test(actor)) return;                              // gnomes spawn via spawn-gnome only
   if (document.getElementById('actor-' + actor)) return;           // already present
   if (actor === 'braindead') {
     braindeadActive = true;
@@ -2292,6 +2371,8 @@ function ensureActorExists(actor, atKey) {
 // dwarf's whole lifetime. Player intents expire when the player moves
 // buildings, but dwarves shouldn't lose their bubble mid-walk.
 function isDwarfActor(actor) { return /^D\d+$/.test(actor); }
+function isGnomeActor(actor) { return /^G\d+$/.test(actor); }
+function isSubAgentActor(actor) { return isDwarfActor(actor) || isGnomeActor(actor); }
 
 function spawnBraindead(ev) {
   const at = ev.at || 'braindead-workshop';
@@ -2530,17 +2611,20 @@ function logChatLine(actor, body, cls='', speaker='system') {
 function actorDisplayName(id) {
   if (!id) return '';
   if (/^D\d+$/i.test(id)) return id.toUpperCase();
+  if (/^G\d+$/i.test(id)) return id.toUpperCase();
   return id.charAt(0).toUpperCase() + id.slice(1);
 }
 function speakerFor(id) {
   if (!id) return 'system';
   if (/^D\d+$/i.test(id)) return 'dwarves';
+  if (/^G\d+$/i.test(id)) return 'gnomes';
   if (['jebrim','zezima','wisp','braindead'].includes(id)) return id;
   return 'system';
 }
 
 function deriveSpeaker(msg) {
   if (/\bD[1-3]\b|dwarves?|\bspawning D/i.test(msg)) return 'dwarves';
+  if (/\bG[1-3]\b|gnomes?|\bspawning G/i.test(msg)) return 'gnomes';
   if (activePlayer) return activePlayer;
   if (braindeadActive) return 'braindead';
   if (wispActive) return 'wisp';
@@ -2564,7 +2648,10 @@ function formatWall(iso) {
 }
 function updateTicker() {
   const timeStr = (LIVE && currentEventWallTime) ? formatWall(currentEventWallTime) : formatTime(t);
-  tkStatsEl.textContent = `dwarves: ${dwarfCount} · time ${timeStr}`;
+  const subStats = gnomeCount > 0
+    ? `dwarves: ${dwarfCount} · gnomes: ${gnomeCount}`
+    : `dwarves: ${dwarfCount}`;
+  tkStatsEl.textContent = `${subStats} · time ${timeStr}`;
 }
 
 function applyEvent(ev, instant=false) {
@@ -2591,9 +2678,9 @@ function applyEvent(ev, instant=false) {
       // hook skipped the spawn-braindead event), conjure the sprite now.
       ensureActorExists(ev.actor, ev.to);
       currentBuilding[ev.actor] = ev.to;
-      if (!isDwarfActor(ev.actor)) {
+      if (!isSubAgentActor(ev.actor)) {
         clearIntent(ev.actor, instant);   // player intents expire on building change
-      }                                    // dwarf bubbles persist for the whole task
+      }                                    // dwarf + gnome bubbles persist for the whole task
       if (instant) {
         const b = STAND[ev.to];
         const j = jitter(ev.actor, ev.to);
@@ -2643,6 +2730,14 @@ function applyEvent(ev, instant=false) {
       clearIntent(ev.id, instant);
       despawnDwarf(ev.id);
       break;
+    case 'spawn-gnome':
+      spawnGnome(ev);
+      if (ev.intent) setIntent(ev.id, ev.intent, instant);
+      break;
+    case 'despawn-gnome':
+      clearIntent(ev.id, instant);
+      despawnGnome(ev.id);
+      break;
     case 'spawn-wisp':   wispActive = true; spawnWisp(ev); break;
     case 'despawn-wisp': wispActive = false; clearIntent('wisp', instant); despawnWisp(); break;
     case 'spawn-braindead':   braindeadActive = true; spawnBraindead(ev); break;
@@ -2656,6 +2751,10 @@ function resetWorld() {
     dwarfNodes[id].node.remove();
     delete dwarfNodes[id]; delete actorPositions[id];
   });
+  Object.keys(gnomeNodes).forEach(id => {
+    gnomeNodes[id].node.remove();
+    delete gnomeNodes[id]; delete actorPositions[id];
+  });
   if (wispNode) { wispNode.remove(); wispNode = null; delete actorPositions['wisp']; }
   wispActive = false;
   if (braindeadNode) { braindeadNode.remove(); braindeadNode = null; delete actorPositions['braindead']; delete currentBuilding['braindead']; }
@@ -2665,6 +2764,7 @@ function resetWorld() {
     delete intents[a];
   });
   dwarfCount = 0;
+  gnomeCount = 0;
   const j = document.getElementById('actor-jebrim');
   const z = document.getElementById('actor-zezima');
   const js = STAND['inbox-square'];

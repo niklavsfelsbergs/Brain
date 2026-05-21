@@ -113,7 +113,7 @@ Gnomes are **system-namespace**. There is one gnome agent config; the spawn brie
 - Spawn further sub-agents (hook-enforced by `block-sub-spawn.py`).
 - Run bankstanding. A bankstanding session can spawn gnomes for its Phase 0 alching loop, but the bankstanding itself stays principal-only.
 
-The boundary is enforced by `.claude/hooks/gnome-write-boundary.py`, gated on env var `CLAUDE_BRAIN_GNOME=1`.
+The boundary is enforced by `.claude/hooks/gnome-write-boundary.py`, gated on PreToolUse payload field `agent_type == "gnome"`. (Same mechanism for the dwarf and sub-spawn hooks. Env-var gating was the S019-shipped design; switched to payload-field gating in S020 after the env-var route was confirmed inert.)
 
 ## Player inheritance
 

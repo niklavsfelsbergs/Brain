@@ -10,15 +10,21 @@ It is a working notebook, not a cognitive system. No agent runs cycles over it d
 
 ## Scope
 
-When working in the dev brain, the agent is operating as a **build assistant** for the main brain — not as a character, not as gielinor itself. No persona to maintain. The deliverable is well-considered changes to the main brain's structure and supporting design notes.
+When working in the dev brain, the agent is operating as **Braindead** — the construction crew that builds and maintains gielinor. He has a workshop in the top-left of the visualizer map and walks around gielinor when working on it. No deep persona to perform; the character is mostly visual. The deliverable is well-considered changes to the main brain's structure and supporting design notes.
 
 - **Reads:** dev brain content freely (`bank/`, `examine/`, `quest-log/`, `player/`, `spellbook/`).
 - **Writes:** dev brain layers per `_about.md` conventions; superseded entries move to the layer's `archive/`.
-- **Does not modify `gielinor/` from this brain.** Main brain changes happen in main brain sessions.
+- **Modifying `gielinor/` is fine from this brain.** That's what the construction crew does. (The brain-root CLAUDE.md notes the same; main brain changes are routinely made from dev-brain sessions.)
+
+## The visualizer marker
+
+On dev-brain entry, write `dev-brain` to `brain/.claude/active-mode.txt`. The hook reads this to spawn Braindead in the visualizer; if the marker isn't written, the visualizer treats writes from this session as wisp work. On session close, write `unscoped` (or remove the file) so the next session starts clean. This is a visualizer concern only — not architecturally enforced.
 
 ## Cross-reference allowance
 
-The dev brain may read from `gielinor/` **only on explicit principal cue** — for example, "check how respawn ended up in the main brain." This is a recall affordance, not a default. Treat the main brain as a separate codebase that this brain documents the *construction* of.
+The dev brain reads and writes `gielinor/` freely when implementing main-brain changes — that's Braindead's job, the construction crew working on the main brain's structure. Reads happen as needed to ground the diffs; writes happen as the diffs land.
+
+The asymmetry is the reverse direction: `gielinor/` does **not** write to this brain, and reads from this brain only on explicit principal cue (per the brain-root router). The main brain treats the dev brain as a construction record it doesn't routinely consult; the dev brain treats the main brain as the codebase it actively maintains.
 
 ## Conventions
 

@@ -54,6 +54,11 @@
     --zezima-trim: #f0d49b;
     --wisp: #ffe49b;
     --wisp-core: #fff8d8;
+    --braindead-robe: #4c6478;
+    --braindead-robe-dk: #2e3f50;
+    --braindead-bandage: #d8c89c;
+    --braindead-goggle: #cf9a2c;
+    --braindead-hammer: #5a4530;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -565,6 +570,49 @@
             <rect x="-1" y="-1" width="2" height="2" fill="#ffffff"/>
           </g>
 
+          <!-- Braindead — quirky tinkerer in slate robe, head wrap, goggles -->
+          <g id="braindead">
+            <ellipse cx="0" cy="5" rx="9" ry="2.3" fill="rgba(0,0,0,0.42)"/>
+            <!-- robe body -->
+            <rect x="-7" y="-6" width="14" height="11" fill="var(--braindead-robe)"/>
+            <rect x="-7" y="-6" width="14" height="2"  fill="var(--braindead-robe-dk)"/>
+            <rect x="-7" y="3"  width="14" height="2"  fill="var(--braindead-robe-dk)"/>
+            <!-- belt of pouches -->
+            <rect x="-7" y="-1" width="14" height="1.4" fill="var(--wood-dark)"/>
+            <rect x="-3" y="-0.6" width="2" height="2" fill="var(--braindead-bandage)"/>
+            <!-- sleeves -->
+            <rect x="-9" y="-4" width="2" height="6" fill="var(--braindead-robe)"/>
+            <rect x="7"  y="-4" width="2" height="6" fill="var(--braindead-robe)"/>
+            <!-- face -->
+            <rect x="-4" y="-13" width="8" height="7" fill="#e2b88a"/>
+            <!-- head bandage / wrap (wraps around forehead, ends dangling) -->
+            <rect x="-5" y="-15" width="10" height="2.4" fill="var(--braindead-bandage)"/>
+            <rect x="-5" y="-13" width="2" height="5" fill="var(--braindead-bandage)"/>
+            <rect x="-7" y="-9" width="2" height="3" fill="var(--braindead-bandage)"/>
+            <rect x="-8" y="-7" width="2" height="2" fill="var(--braindead-bandage)" opacity="0.85"/>
+            <!-- goggles pushed up to forehead -->
+            <rect x="-4" y="-12" width="3" height="2" fill="var(--braindead-goggle)" stroke="var(--ink)" stroke-width="0.4"/>
+            <rect x="1"  y="-12" width="3" height="2" fill="var(--braindead-goggle)" stroke="var(--ink)" stroke-width="0.4"/>
+            <rect x="-1" y="-11.5" width="2" height="0.6" fill="var(--ink)"/>
+            <!-- eyes (tired, of course) -->
+            <rect x="-2.5" y="-10.5" width="1" height="1" fill="#28201a"/>
+            <rect x="1.5"  y="-10.5" width="1" height="1" fill="#28201a"/>
+            <!-- crooked grin -->
+            <rect x="-1.5" y="-8" width="3" height="0.6" fill="#5a3320"/>
+            <rect x="1.5" y="-8.5" width="0.6" height="0.6" fill="#5a3320"/>
+            <!-- right hand: hammer -->
+            <rect x="8.5" y="-2" width="1" height="9" fill="var(--braindead-hammer)"/>
+            <rect x="7"  y="-3" width="4" height="2.5" fill="#8a8580"/>
+            <rect x="7"  y="-3" width="4" height="0.8" fill="#b8b3a8"/>
+            <rect x="10.5" y="-3" width="1" height="2.5" fill="#5a554f"/>
+            <!-- left hand: rolled blueprint -->
+            <rect x="-11" y="0" width="3.5" height="6" fill="var(--parchment)"/>
+            <rect x="-11" y="0" width="3.5" height="1" fill="#8d9bb2"/>
+            <rect x="-11" y="5" width="3.5" height="1" fill="#8d9bb2"/>
+            <line x1="-10.4" y1="2.5" x2="-7.7" y2="2.5" stroke="#3d597b" stroke-width="0.3"/>
+            <line x1="-10.4" y1="3.5" x2="-8.5" y2="3.5" stroke="#3d597b" stroke-width="0.3"/>
+          </g>
+
         </defs>
 
         <!-- void backdrop (corners + bottom) -->
@@ -727,6 +775,7 @@ const BUILDINGS = {
   'spellbook-tower':  {x: 880, y: 480, label: 'Spellbook Tower'},
   'keepsake-vault':   {x: 870, y: 660, label: 'Keepsake Vault'},
   'inn':              {x: 540, y: 660, label: 'The Inn'},
+  'braindead-workshop': {x: 140, y: 140, label: 'The Workshop'},
 };
 
 // Where actors stand at each building (front-of-door spot, slightly south of footprint)
@@ -740,6 +789,7 @@ const STAND = {
   'spellbook-tower':  {x: 880, y: 528},
   'keepsake-vault':   {x: 870, y: 698},
   'inn':              {x: 540, y: 700},
+  'braindead-workshop': {x: 140, y: 178},
 };
 
 // Iso path connections (cobblestone strips)
@@ -1544,6 +1594,65 @@ function buildBuildings() {
     });
   }
 
+  // ── Braindead's Workshop — half-finished shack, scaffolding, sawhorse, tools ──
+  {
+    const b = BUILDINGS['braindead-workshop'];
+    const w = 38, d = 22, h = 38, r = 14;
+    const details = `
+      <!-- scaffolding on SE — vertical poles + crossbeams sticking above the roof line -->
+      <line x1="${w - 2}" y1="${-h + 4}" x2="${w - 2}" y2="${-h - r - 18}" stroke="var(--wood-dark)" stroke-width="1.6"/>
+      <line x1="${w + 8}" y1="${-h + 9}" x2="${w + 8}" y2="${-h - 10}" stroke="var(--wood-dark)" stroke-width="1.6"/>
+      <line x1="${w - 2}" y1="${-h - 10}" x2="${w + 8}" y2="${-h - 6}" stroke="var(--wood-mid)" stroke-width="1.4"/>
+      <line x1="${w - 2}" y1="${-h - 22}" x2="${w + 8}" y2="${-h - 18}" stroke="var(--wood-mid)" stroke-width="1.4"/>
+      <!-- diagonal brace -->
+      <line x1="${w - 2}" y1="${-h - 4}" x2="${w + 8}" y2="${-h - 18}" stroke="var(--wood-mid)" stroke-width="1"/>
+      <!-- a single plank propped against the roof ridge -->
+      <line x1="${w + 6}" y1="${-h - 6}" x2="${-2}" y2="${-h - r - 4}" stroke="var(--wood-light)" stroke-width="1.6"/>
+
+      <!-- door SW: simple plank door with bandage-wrapped handle -->
+      <polygon points="${swWallPoly(w, d, 0.38, 0.55, 0, 22)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.38, 0.55, 19, 3)}" fill="var(--wood-shadow)"/>
+      <!-- horizontal plank lines -->
+      <line x1="${-w * 0.38}" y1="${d * 0.62 - 10}" x2="${-w * 0.55}" y2="${d * 0.45 - 10}" stroke="rgba(0,0,0,0.4)" stroke-width="0.4"/>
+      <line x1="${-w * 0.38}" y1="${d * 0.62 - 6}"  x2="${-w * 0.55}" y2="${d * 0.45 - 6}"  stroke="rgba(0,0,0,0.4)" stroke-width="0.4"/>
+      <!-- small lit window SE -->
+      <polygon points="${seWallPoly(w, d, 0.42, 0.58, 16, 10)}" fill="#cf9a2c" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <line x1="${w * 0.5}" y1="${d * 0.5 - 21}" x2="${w * 0.5}" y2="${d * 0.5 - 11}" stroke="var(--wood-dark)" stroke-width="0.4"/>
+      <!-- blueprint pinned to SW wall -->
+      <polygon points="${swWallPoly(w, d, 0.15, 0.32, 10, 8)}" fill="#8d9bb2" stroke="var(--ink)" stroke-width="0.4"/>
+      <polygon points="${swWallPoly(w, d, 0.17, 0.30, 11, 6)}" fill="#a8b5cc"/>
+      <!-- crooked timber framing on SE -->
+      <line x1="${w * 0.18}" y1="${d * 0.82}" x2="${w * 0.22}" y2="${-h + 2}" stroke="var(--wood-shadow)" stroke-width="1.2"/>
+      <line x1="${w * 0.78}" y1="${d * 0.22}" x2="${w * 0.78}" y2="${-h * 0.4}" stroke="var(--wood-shadow)" stroke-width="1.2"/>
+
+      <!-- sawhorse on the SW side, in front of the door -->
+      <g transform="translate(${-w - 4}, ${d + 8})">
+        <rect x="-6" y="-2" width="12" height="1.5" fill="var(--wood-mid)"/>
+        <line x1="-5" y1="-1" x2="-7" y2="3" stroke="var(--wood-dark)" stroke-width="0.8"/>
+        <line x1="-5" y1="-1" x2="-3" y2="3" stroke="var(--wood-dark)" stroke-width="0.8"/>
+        <line x1="5"  y1="-1" x2="3"  y2="3" stroke="var(--wood-dark)" stroke-width="0.8"/>
+        <line x1="5"  y1="-1" x2="7"  y2="3" stroke="var(--wood-dark)" stroke-width="0.8"/>
+        <!-- half-cut plank -->
+        <rect x="-8" y="-3" width="6" height="1" fill="var(--wood-light)"/>
+      </g>
+
+      <!-- toolbox at SE ground -->
+      <g transform="translate(${w + 2}, ${d + 4})">
+        <rect x="-4" y="-3" width="8" height="3.5" fill="var(--wood-dark)"/>
+        <rect x="-4" y="-3" width="8" height="1" fill="var(--wood-mid)"/>
+        <rect x="-3" y="-5" width="6" height="1" fill="var(--braindead-hammer)"/>
+        <rect x="2"  y="-5" width="1" height="2" fill="var(--braindead-hammer)"/>
+      </g>
+    `;
+    html += isoBuilding({
+      id: 'braindead-workshop', label: 'The Workshop',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--wood-light)', left: 'var(--wood-mid)', frame: 'rgba(0,0,0,0.45)', base: 'var(--wood-shadow)' },
+      roof:  { right: 'var(--braindead-robe)', left: 'var(--braindead-robe-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      details,
+    });
+  }
+
   layer.innerHTML = html;
 }
 
@@ -1562,6 +1671,7 @@ const LABEL_Y_OFFSET = {
   'spellbook-tower':  58,   // d=22
   'keepsake-vault':   61,   // d=25
   'inn':              72,   // d=36
+  'braindead-workshop': 58, // d=22
 };
 
 function buildLabels() {
@@ -1722,6 +1832,8 @@ let cursor = 0;
 let dwarfNodes = {};
 let wispNode = null;
 let wispActive = false;
+let braindeadNode = null;
+let braindeadActive = false;
 let currentSession = null;
 let dwarfCount = 0;
 let activePlayer = null;
@@ -1859,6 +1971,33 @@ function despawnDwarf(id) {
   delete actorPositions[id];
   dwarfCount = Math.max(0, dwarfCount - 1);
   updateTicker();
+}
+
+function spawnBraindead(ev) {
+  const at = ev.at || 'braindead-workshop';
+  const b = STAND[at] || STAND['braindead-workshop'];
+  const j = jitter('braindead', at);
+  const x = b.x + j.dx, y = b.y + j.dy * 0.5;
+  actorPositions['braindead'] = {x, y};
+  currentBuilding['braindead'] = at;
+  if (braindeadNode) braindeadNode.remove();
+  const g = document.createElementNS(svgNS, 'g');
+  g.setAttribute('class', 'actor braindead-actor fade-in');
+  g.setAttribute('id', 'actor-braindead');
+  g.setAttribute('data-actor', 'braindead');
+  g.setAttribute('transform', `translate(${x},${y})`);
+  g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
+  g.innerHTML = `<g class="bob"><use href="#braindead"/></g>`;
+  charactersLayer.appendChild(g);
+  braindeadNode = g;
+}
+
+function despawnBraindead() {
+  if (!braindeadNode) return;
+  braindeadNode.classList.add('fade-out');
+  setTimeout(() => { if (braindeadNode) braindeadNode.remove(); braindeadNode = null; }, 500);
+  delete actorPositions['braindead'];
+  delete currentBuilding['braindead'];
 }
 
 function spawnWisp(ev) {
@@ -2022,6 +2161,7 @@ function logLine(msg, cls='', speaker='system') {
 function deriveSpeaker(msg) {
   if (/\bD[1-3]\b|dwarves?|\bspawning D/i.test(msg)) return 'dwarves';
   if (activePlayer) return activePlayer;
+  if (braindeadActive) return 'braindead';
   if (wispActive) return 'wisp';
   return 'system';
 }
@@ -2085,6 +2225,8 @@ function applyEvent(ev, instant=false) {
       break;
     case 'spawn-wisp':   wispActive = true; spawnWisp(ev); break;
     case 'despawn-wisp': wispActive = false; clearIntent('wisp', instant); despawnWisp(); break;
+    case 'spawn-braindead':   braindeadActive = true; spawnBraindead(ev); break;
+    case 'despawn-braindead': braindeadActive = false; clearIntent('braindead', instant); despawnBraindead(); break;
     case 'commit':       logLine(ev.msg, 'commit', 'commits'); break;
   }
 }
@@ -2096,6 +2238,8 @@ function resetWorld() {
   });
   if (wispNode) { wispNode.remove(); wispNode = null; delete actorPositions['wisp']; }
   wispActive = false;
+  if (braindeadNode) { braindeadNode.remove(); braindeadNode = null; delete actorPositions['braindead']; delete currentBuilding['braindead']; }
+  braindeadActive = false;
   Object.keys(intents).forEach(a => {
     intents[a].node.remove();
     delete intents[a];

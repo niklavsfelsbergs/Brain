@@ -32,6 +32,10 @@ READ_TOOLS = {"Read", "Glob", "Grep"}
 INTENT_FRAGMENT = "/.claude/intent/"
 INTENT_MAX_LEN = 60
 
+ACTIVE_MODE_FRAGMENT = "/.claude/active-mode.txt"
+ACTIVE_MODE_PATH = REPO_ROOT / ".claude" / "active-mode.txt"
+DEV_BRAIN_MODE = "dev-brain"
+
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
@@ -130,6 +134,61 @@ def infer_dwarf_parent() -> tuple[str, str]:
     return ("wisp", actors.get("wisp") or "quest-hall")
 
 
+def read_active_mode() -> str:
+    """Returns the first line of active-mode.txt, lowercased+stripped, or ''."""
+    try:
+        if not ACTIVE_MODE_PATH.exists():
+            return ""
+        return ACTIVE_MODE_PATH.read_text(encoding="utf-8").strip().splitlines()[0].lower() if ACTIVE_MODE_PATH.stat().st_size else ""
+    except Exception:
+        return ""
+
+
+def handle_active_mode_write(needle: str) -> bool:
+    """If needle is .claude/active-mode.txt, detect mode transition and emit
+    spawn-braindead / despawn-braindead as needed. Returns True if handled."""
+    s = needle.replace("\\", "/")
+    key = "/" + s if not s.startswith("/") else s
+    if ACTIVE_MODE_FRAGMENT not in key:
+        return False
+    new_mode = read_active_mode()
+    actors = load_json(ACTORS_PATH, {})
+    prev_mode = (actors.get("_mode") or "").lower()
+    if new_mode == prev_mode:
+        return True
+    actors["_mode"] = new_mode
+    save_json(ACTORS_PATH, actors)
+    wall = now_iso()
+    # Transitioned INTO dev-brain — Braindead arrives at the workshop.
+    if new_mode == DEV_BRAIN_MODE and prev_mode != DEV_BRAIN_MODE:
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "spawn-braindead",
+            "at": "braindead-workshop",
+        })
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "log",
+            "msg": "Braindead arrives at the workshop",
+            "cls": "session-start",
+            "speaker": "braindead",
+        })
+    # Transitioned OUT of dev-brain — Braindead leaves.
+    elif prev_mode == DEV_BRAIN_MODE and new_mode != DEV_BRAIN_MODE:
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "despawn-braindead",
+        })
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "log",
+            "msg": "Braindead packs up and leaves",
+            "cls": "session-start",
+            "speaker": "braindead",
+        })
+    return True
+
+
 def handle_intent_write(needle: str) -> bool:
     """If needle is .claude/intent/<actor>.txt, emit an intent event and
     return True. Otherwise return False so the normal path-classify flow
@@ -164,12 +223,18 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict) -> None:
     needle = needle_from_payload(tool_name, tool_input)
     if not needle:
         return
-    # Intent files get special handling — no building move, no log noise.
+    # Sidecar writes get special handling — no building move, no log noise.
+    if tool_name in WRITE_TOOLS and handle_active_mode_write(needle):
+        return
     if tool_name in WRITE_TOOLS and handle_intent_write(needle):
         return
     building, actor = classify(needle, m)
     if not building:
         return
+    # Mode-marker override: if no path actor rule matched (actor == defaultActor),
+    # and the session is dev-brain, the default actor is Braindead, not wisp.
+    if actor == m.get("defaultActor", "wisp") and read_active_mode() == DEV_BRAIN_MODE:
+        actor = "braindead"
     is_write = tool_name in WRITE_TOOLS
     cls = "write" if is_write else "read"
     wall = now_iso()

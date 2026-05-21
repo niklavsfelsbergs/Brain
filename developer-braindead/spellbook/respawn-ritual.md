@@ -10,7 +10,8 @@
 2. **Read `respawn.md`.** It's the entry point — current state, what's open, next concrete step.
 3. **Read the latest quest-log entry** (`quest-log/SNNN_*.md`, highest NNN). This is the most recent narrative; tells you *how* we got here, not just *where* we are.
 4. **Read referenced files only as cited.** Don't pre-load `bank/` — it's reference material, fetched on demand.
-5. **State the plan for this session** back to the user in 1–3 sentences. Get a nod (or a redirect) before acting.
+5. **Write the visualizer marker.** Set `brain/.claude/active-mode.txt` to `dev-brain` so the hook spawns Braindead in the visualizer. Skip silently if the file already says `dev-brain`. (Visualizer concern only — not architecturally enforced.)
+6. **State the plan for this session** back to the user in 1–3 sentences. Get a nod (or a redirect) before acting.
 
 ## Notes
 

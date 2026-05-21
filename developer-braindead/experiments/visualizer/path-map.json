@@ -10,10 +10,14 @@
     "quest-hall",
     "spellbook-tower",
     "keepsake-vault",
-    "inn"
+    "inn",
+    "braindead-workshop"
   ],
 
   "buildingRules": [
+    { "contains": "/developer-braindead/experiments/", "building": "spellbook-tower" },
+    { "contains": "/developer-braindead/",   "building": "braindead-workshop" },
+
     { "contains": "/quest-log/completed/",   "building": "inn" },
     { "contains": "/quest-log/archive/",     "building": "inn" },
     { "contains": "/quest-log/in-progress/", "building": "quest-hall" },
@@ -30,9 +34,6 @@
 
     { "contains": "/meta/",                       "building": "meta-town-hall" },
     { "contains": "gielinor/CLAUDE.md",           "building": "meta-town-hall" },
-    { "contains": "developer-braindead/CLAUDE.md","building": "meta-town-hall" },
-    { "contains": "developer-braindead/_about.md","building": "meta-town-hall" },
-    { "contains": "developer-braindead/respawn.md","building": "meta-town-hall" },
     { "contains": "brain/CLAUDE.md",              "building": "meta-town-hall" },
 
     { "contains": "experiments/",            "building": "spellbook-tower" }
@@ -40,15 +41,18 @@
 
   "actorRules": [
     { "contains": "/players/jebrim/", "actor": "jebrim" },
-    { "contains": "/players/zezima/", "actor": "zezima" }
+    { "contains": "/players/zezima/", "actor": "zezima" },
+    { "contains": "/developer-braindead/", "actor": "braindead" }
   ],
 
   "defaultActor": "wisp",
 
   "_notes": [
     "buildingRules: first match wins; order from most-specific to least-specific.",
+    "/developer-braindead/experiments/ comes before /developer-braindead/ so visualizer work routes to spellbook-tower (it's procedural work on a spell) instead of the workshop. Everything else under dev-brain routes to the workshop.",
+    "Removed individual dev-brain root-file rules (CLAUDE.md, _about.md, respawn.md) — they now fall through to braindead-workshop, which is more correct.",
     "completed/ comes before in-progress/ because both contain '/quest-log/'.",
-    "actorRules: if no rule matches, defaultActor (wisp) is used. The hook has no view into the message-level address-routing cue, so unscoped-as-wisp is the honest fallback (D-009).",
+    "actorRules: /developer-braindead/ → braindead (he lives there regardless of session). The hook layers session-mode on top of these rules — when active-mode.txt is 'dev-brain', the defaultActor flips from wisp to braindead.",
     "A path with no buildingRule match returns null — the hook drops the event rather than guessing."
   ]
 }

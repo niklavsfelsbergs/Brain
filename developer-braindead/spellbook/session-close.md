@@ -14,7 +14,8 @@
 3. **Update `respawn.md`.** Overwrite in place. New `Last updated` line. Refresh "where we are," "what's open," "next concrete step." History lives in quest-log, not here.
 4. **Update `bank/plan.md` if status changed.** Mark items `[x]` if completed; add new items if surfaced.
 5. **Audit Claude memory pointers.** If dev-brain structure changed (new files, renames, layer changes), update `~/.claude/projects/.../memory/` so the cross-conversation memory still points correctly. Risk tracked in [[R-002]].
-6. **Commit the session.** Always. This is the durability checkpoint — every session ends with a git commit that captures everything the session changed.
+6. **Clear the visualizer marker.** Overwrite `brain/.claude/active-mode.txt` with `unscoped` (or leave empty). The hook emits `despawn-braindead` on the transition — Braindead packs up and leaves the workshop. Skip silently if the file is already empty / not `dev-brain`.
+7. **Commit the session.** Always. This is the durability checkpoint — every session ends with a git commit that captures everything the session changed.
 
    - Stage the session's changes. Prefer scoped adds (`git add gielinor/ developer-braindead/ <specific-files>`) over `git add -A`, which can sweep in unintended artifacts. Verify with `git status` before committing.
    - Commit with a structured message:
@@ -25,7 +26,7 @@
    - **Do not skip hooks** (`--no-verify`, `--no-gpg-sign`). If a hook fails, fix the underlying issue and create a new commit — never amend the commit the hook rejected.
    - **If the working tree is clean** (a read-only session — discussion, audit, no file changes), skip the commit silently and note "no commit; tree clean" in the close.
    - **The principal has already authorized end-of-session commits** by making this part of the ritual. Don't ask before committing here; the ritual is the authorization. (The user's standing rule "always ask before committing" still applies *outside* this step.)
-7. **State the close back to the user** in 1–2 sentences. Include the commit hash (or "no commit; tree clean"). Get a nod.
+8. **State the close back to the user** in 1–2 sentences. Include the commit hash (or "no commit; tree clean"). Get a nod.
 
 ## Notes
 

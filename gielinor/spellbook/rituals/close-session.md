@@ -60,6 +60,8 @@ The in-progress entry is the rolling next-session prompt. Compact it so the next
 - **Files / paths to read first:** bulleted, ordered by load priority.
 - **Pending drafts:** populated by step 2 if any.
 
+These sections are what `respawn.md`'s reconciliation prompt reads to surface the next move. If they're not populated, the next respawn has nothing to surface beyond the turn log.
+
 Existing per-turn narrative stays in the entry as history but moves below the resume sections — it's reference, not foreground.
 
 ### 4. Decide: continue or complete?

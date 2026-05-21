@@ -53,11 +53,17 @@ The load order below front-loads only the durable, in-force, identity-shaped mat
 
 When `quest-log/in-progress/` contains a file at session start, an in-flight session was interrupted. Procedure:
 
+The entry's resume sections — **Where we are**, **Next concrete step**, **Files / paths to read first** — are populated by `close-session.md` step 3 and are the canonical hand-off surface. This prompt reads them; it does not regenerate them.
+
 1. Read the most recent in-progress entry.
-2. **Surface to the principal, by name and last state:**
-   - The **quest title** (the file's heading or its filename slug).
-   - The **last completed turn** — what the most recent narrative line said.
-   - The **last logged `pending` action**, if any — what was about to run when the session died.
+2. **Surface to the principal — the resume foreground, not the history:**
+   - The **quest title** (from the file's heading or filename slug).
+   - The **Where we are** section verbatim — current state across open threads.
+   - The **Next concrete step** section verbatim — what next session is meant to do.
+   - The **Files / paths to read first** list — so the principal sees the load plan.
+   - The **last logged `pending` action**, if any — separate from the above; this is the crash-recovery signal.
+
+   Do not surface the per-turn narrative log. That's history; the resume sections are foreground. If the resume sections are missing or empty, surface that explicitly — it means the last close didn't tighten the entry, and the principal needs to know.
 3. **Ask explicitly** — present the three options:
    - **Resume** — continue from where the session left off; assume the pending action did not complete.
    - **Abandon** — move the file to `quest-log/archive/in-progress/` (never delete) and start fresh.

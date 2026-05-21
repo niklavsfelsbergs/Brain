@@ -1,10 +1,11 @@
 # S002 — 2026-05-20 — Shipping Data Mart V1: gap analysis for ETL check-in
 
-**Status:** in-progress
 **Principal:** Niklavs (BI analyst, lead on Shipping Data Mart by shipping-domain specialty)
 **Player:** Jebrim
-**Born:** 2026-05-20 (scoping in S001); resumed 2026-05-21 for execution (S003 audit + synthesis); resumed 2026-05-21 PM (S008) for design challenges + NGE-6127 reopen; resumed 2026-05-21 evening (S011) for ORWO product lineage + destination_country diagnosis + Grzegorz NGE-7094 review.
-**External actions:** all **completed**. 3 dwarf spawns from S003. 2 ClickUp comments posted in S008 (NGE-6129 id `90120220911315`, NGE-6127 id `90120220913597`). S011: 1 dwarf spawn (Grzegorz comments scrape), no ClickUp writes, all Redshift reads. **No pending external actions.**
+**Born:** 2026-05-20 (scoping in S001); resumed 2026-05-21 across S003 (execution + synthesis), S008 (design challenges + NGE-6127 reopen), S011 (ORWO lineage + destination_country + Grzegorz NGE-7094).
+**External actions:** all **completed** (3 dwarf spawns from S003; 2 ClickUp comments S008; 1 dwarf scrape S011). **No pending external actions.**
+
+> Resume state for this quest lives in `players/jebrim/inventory/S002-shipping-data-mart-v1-resume.md` (per `meta/layer-routing.md`). This quest-log keeps narrative, decisions, dwarf plan, and the turn log. Threads detail and "Where we are" summary now live in the inventory file.
 
 ## The ask
 
@@ -17,64 +18,13 @@ V1 launch is 2 days out. Tomorrow morning Niklavs has an ETL-team check-in. Deli
 
 Task list is **not** to be created in ClickUp yet — draft to chat, Niklavs triages, then he pushes.
 
-## Where we are
+## Decisions and findings carried (S002 → S008 → S011)
 
-**Three threads from S008 status:**
+The five active threads, dwarf-output cross-references, and the synthesis-HTML stale-points list are summarized in the inventory resume file (`S002-shipping-data-mart-v1-resume.md`). Full detail per thread is in the turn log below + the dwarf sibling files (`S002_d1_*.md` / `S002_d2_*.md` / `S002_d3_*.md`).
 
-1. **ORWO `sentat` → `order_produced_ts`** — posted to NGE-6129, pending Satya. No movement S011.
-2. **NGE-6127 reopen (ORWO classification + git-coverage gap)** — posted; awaiting principal decision on ad-hoc UPDATE vs CASE WHEN + seed-file question. No movement S011.
-3. **ORWO product SKU lineage — CLOSED (S011).** Trace: PTS `admin.orderline.productid` (numeric, no name) → PTS reference schema `BSCHWARZBACH.NAVCLUSTER` (14,942 rows, 1:1 on productid; carries `navdescription` + `cluster1/2/3` taxonomy from Microsoft Dynamics NAV) → already landed in Redshift as `poc_landing.orwo_navcluster_data` (full TRUNCATE+RELOAD daily by `bi-etl/dags/orwo_dag/02_production_metrics/`). **Dim is landed; the gap is the orderitem-grain fact** — `admin.orderline` is NOT in our warehouse (only the 4 PTS bronzes from `orwo_pts_cs` land: ordering/stats/parcelfinish/labordering, none item-grain). For dim_products extension (NGE-6129 follow-up #2): graduate `poc_landing.orwo_navcluster_data` → silver, OR pull through directly. 0.02% match against current `dw.dim_products` makes sense — ORWO uses NAV-side numeric ids, separate namespace from Picturator.
-
-**S011 new findings:**
-
-4. **ORWO `destination_country` — wiring problem, NOT missing-data problem.** Field exists in PTS at `parcelfinish.recipientcountrycode` (99.6% fill, ISO-2, 28 countries; top: DE 72.5k / NO 5.1k / AT 3.4k / SE 3.2k). Landed in `enterprise_bronze.orwo_pts_parcelfinish`. BUT: `orwo_pts_cs` runs rolling 7d / 21d-daily-sweep — only 89k rows / ~23 days of history. Wiring through fills only **6.4%** of fact_shipments ORWO (161k / 2.51M rows; 96.3% within window, 0% before). Two paths forward: (a) one-time historical Oracle pull to backfill `orwo_pts_parcelfinish`, then hourly DAG keeps it current; (b) check `enterprise_bronze.orwo_shipping_data_mart` (the canonical bronze feeding `fact_shipments` — covers all 2.5M rows) for a country column we're not reading. **(b) is cheaper to check first.**
-
-5. **Grzegorz worked NGE-7094 yesterday (2026-05-20, single 14:44 UTC end-of-day comment).** Five threads in one comment: (i) DB Schenker reconciled +29.4% → **+0.6% MATCH** — two stacked bronze bugs fixed (`-€143k` dedup-drop in `c4f11c46a`, `€1.07M` overcount from NULL `charge_type` collision cleanup; backup in `enterprise_bronze.db_schenker_bak_2026_05_20_null_dup`; forward fix `46a3e2023`). **Memory correction: view `net_transportation_amount_eur` is SUM of all charge components, not transport-only — your earlier note was wrong, now corrected.** (ii) UPS `€50k` apparent gap = `€57k customs + €1k tax` exactly = `fact_shipment_cost_summary.total_eur` design exclusion. Decided: keep as-is, computable on demand. Per-provider "recoverable if exclusion lifted": DHL €2.5M, DHL_Orwo €486k, Landmark Taxes €166k, UPS €58k. (iii) UPS per-invoice grain confirmed via `fact_shipment_invoice_lines.invoice_number`. (iv) Alisa's 7 UPS 24F0Y5 invoices: 1/7 recovered (838406344, `€1,294.86`); root cause `2026-04-07` SharePoint→SFTP migration dropped accounts `000024F0Y5` + `000024W6A9`. Other 6 exhaustively searched, gone. (v) Side bug: UPS bronze `accountnr` 100% NULL on all 5.75M `csv_ups_invoicedata` rows — backfilled to 0 NULL / 17 distinct accounts.
-
-6. **`fact_shipment_invoice_lines.invoice_number` grain verified upstream.** 21/23 carriers 100%; USPS 79.66% (39,920 NULL — all in 2025-08 through mid-2025-11, sourced from legacy `poc_staging.usps` branch of `insert_to_silver.sql` UNION ALL; USPS turned mtid on in their SFTP feed ~2025-11-16); direct_link 97.66% (2,328 NULL — all in 2025-05, single-month source gap). Both gaps unrecoverable from our side — sources never carried the field. For V1 gap matrix: footnote in Area 9, not a fixable bug.
-
-**Ritual side-improvement (S011 trigger):** This session opened thin because respawn surfaced only the last turn narrative, not the resume sections close-session.md populates. Niklavs cued the fix; `gielinor/spellbook/rituals/respawn.md` + `close-session.md` edits committed as `3c52116` "Rituals: tighten resume-section hand-off between close and respawn." Respawn now reads Where we are / Next concrete step / Files to read first verbatim.
-
-**Synthesis HTML at `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html`** now stale on four points: (a) ORWO `received_by_carrier_ts` semantic flip from S008; (b) Area 9 dim_shipping_providers repo gap from S008; (c) ORWO `destination_country` reclassification from "missing" → "wiring + history backfill" from S011; (d) Area 9 sub-rows for USPS 39,920 + direct_link 2,328 unattributable invoice rows from S011. Patch in one pass next session.
+**Ritual side-improvement (S011 trigger):** session opened thin because respawn surfaced only the last turn narrative, not the resume sections close-session.md populates. Niklavs cued the fix; `gielinor/spellbook/rituals/respawn.md` + `close-session.md` edits committed as `3c52116` ("Rituals: tighten resume-section hand-off between close and respawn"). Respawn now reads Where we are / Next concrete step / Files to read first verbatim.
 
 Dwarf sibling files (`S002_d1_*.md`, `S002_d2_*.md`, `S002_d3_*.md`) remain in `quest-log/in-progress/` until this quest completes; they move with this file into `completed/` when we close out.
-
-## Next concrete step — for next session
-
-Priority order (top first):
-
-1. **ORWO `destination_country` — cheap-check-first investigation.** Probe `enterprise_bronze.orwo_shipping_data_mart` (the canonical ORWO bronze feeding `fact_shipments` — covers all 2.5M rows, not the rolling-window `orwo_pts_cs` chain). Read `bi-etl/dags/enterprise_bronze/orwo_shipping/bronze_orwo_shipping_data_mart.py` + `sql/table_creation_ddl.sql` and the silver wiring at `bi-etl/dags/enterprise_silver/Shipping_Data_Mart/fact_shipments/sql/insert_to_silver.sql` (ORWO branch). If a country/postal column exists in the bronze and we're just not reading it: 1-line silver fix, propose patch, hand to Grzegorz. If absent: Plan B is one-time Oracle backfill of `orwo_pts_parcelfinish` to recover the historical `recipientcountrycode` rows for the other 93% of fact_shipments ORWO. Output either way: a finding note in this entry + a recommendation in chat.
-
-2. **NGE-6129 follow-up #2 — dim_products extension path for ORWO.** Now that the lineage is clean (`poc_landing.orwo_navcluster_data` is landed), draft the proposal: either (a) graduate the table to `enterprise_silver` and JOIN from `dim_products` on `productid`, or (b) extend `dim_products` directly with an ORWO source segment. Output: short note to chat → if principal approves direction, comment on NGE-6129 for Data Platform team.
-
-3. **ORWO classification decision (still pending principal input from S008).** Principal returns with answer on (a) ad-hoc UPDATE vs (b) CASE WHEN in `dim_shipping_providers/sql/upsert_to_silver.sql` for the 30 ORWO extkeys, and (c) whether to dump current dim contents to a versioned seed `.sql`. If (a) — draft 30 UPDATEs. If (b) — draft SQL patch + one-time backfill. (c) worth doing regardless.
-
-4. **ETL check-in reconciliation.** Principal returns with what the team agreed (was scheduled for 2026-05-22 AM). Update this entry with agreed task list + assignments. Niklavs pushes to ClickUp himself.
-
-5. **V1 gap matrix HTML patch (single pass).** Four updates queued:
-   - ORWO `received_by_carrier_ts` coverage flip from 99.9987% → 0% by-design (S008).
-   - Area 9 sub-row: `dim_shipping_providers` git-coverage gap (S008).
-   - ORWO `destination_country` reclassification: "missing" → "wiring + historical backfill, ~6% recoverable from current bronze" (S011).
-   - Area 9 sub-rows: USPS 39,920 unattributable invoice rows (Aug → mid-Nov 2025, source SFTP gap) + direct_link 2,328 unattributable (2025-05, source gap). Both upstream, unrecoverable (S011).
-
-If V1 ships clean and all threads close: move this quest to `completed/` (sibling dwarf files move with it).
-
-## Files / paths to read first — for next session
-
-1. **This file** — resume context.
-2. `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — the canonical synthesis. Open in browser; sticky-nav. **Four stale spots noted in Where we are.**
-3. **For destination_country thread (priority 1):**
-   - `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-etl\dags\enterprise_bronze\orwo_shipping\bronze_orwo_shipping_data_mart.py`
-   - `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-etl\dags\enterprise_bronze\orwo_shipping\sql\table_creation_ddl.sql`
-   - `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-etl\dags\enterprise_silver\Shipping_Data_Mart\fact_shipments\sql\insert_to_silver.sql` (ORWO branch — same file where `sentat → order_produced_ts` swap is needed).
-4. **For ORWO product lineage (priority 2 — context already gathered in S011):**
-   - `poc_landing.orwo_navcluster_data` on Redshift — already populated, schema: productid / navdescription / katid / cluster1 / cluster2 / cluster3.
-   - Source DAG: `bi-etl/dags/orwo_dag/02_production_metrics/sql/extract/navcluster_data.sql` (`FROM BSCHWARZBACH.NAVCLUSTER`).
-   - `bi-analytics-main/NFE/shipping_topics/29_ORWO_sperrgut_tcg_and_orwo_shops/pipeline.py` — shows how NFE folks already use this dim.
-5. **For ORWO classification thread:** `bi-etl\dags\enterprise_silver\Shipping_Data_Mart\dim_shipping_providers\sql\upsert_to_silver.sql` + `README.md`.
-6. `quest-log/in-progress/S002_d1_clickup_subtree.md` / `S002_d2_bi_etl_state.md` / `S002_d3_redshift_coverage.md` — dwarf detail if a specific finding needs re-checking.
-7. `players/jebrim/CLAUDE.md` + `_about.md` + `persona.md` — character context if respawn didn't preload.
-8. `quest-log/in-progress/S001_2026-05-20_repo-orientation.md` — sibling. Picks #3/#4/#5 unresumed.
 
 ## Constraints (from principal, this session)
 

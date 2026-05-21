@@ -55,6 +55,18 @@ Dwarves can run none of these rituals. Gnomes can run **session-close**, **alchi
 - The "overturning existing knowledge" path in `bank/`. A new draft that contradicts an existing `bank/notes/` entry surfaces the contradiction during alching review — either the new draft wins (old note archives) or the new draft is rejected. Major shifts in how the agent operates still warrant a `lorebook/drafts/` entry.
 - Treating `meta/` as user-controlled. Hooks could enforce this; for now it's discipline.
 
+## "User-only" with explicit permission
+
+The "User-only" column above is the **default**, not an architectural prohibition. When the principal explicitly authorizes a write to `keepsake/current.md`, `meta/*.md`, or `spellbook/rituals/*.md`, the agent makes the write directly.
+
+Default holds without explicit permission: propose via the appropriate gate (`keepsake/proposals/` for pins; surface the proposed text in chat for `meta/` and `spellbook/rituals/` edits) and let the principal do the edit.
+
+**Not overridable:** hook-enforced lines remain architectural regardless of permission — no writes to `confirmed/`, no deletes, dwarf/gnome write boundaries, no sub-spawning from dwarf/gnome. The user-only override applies *only* to discipline rules, not to the five architectural guarantees in `gielinor/CLAUDE.md`.
+
+The check is *explicit*, not inferred. "Yes, write it" / "go ahead, apply the fix" / "do it" in response to a specific proposal counts. Ambient cooperation, agreement on the substance, or a "sounds good" reaction to general discussion does not.
+
+See [[D-017]] for the founding decision (2026-05-21, S021 alching of Jebrim).
+
 ## Related
 
 - `layer-routing.md` for *which* layer a given piece of content belongs in.

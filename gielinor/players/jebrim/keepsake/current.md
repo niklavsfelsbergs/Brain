@@ -17,3 +17,11 @@ Pinned 2026-05-21 (S015). Source: `proposals/archive/2026-05-21_shipping-data-ma
 **Update discipline:** when new gotchas / recipes / NULL classifications emerge from real work, update `how_to.md` (AI consumption) and `.claude/reference/shipping-data-mart/recipes.md` (human consumption; create if missing). Cross-update Jebrim's `bank/notes/` only when the learning is about methodology or routing, not mart specifics.
 
 *Rotate out when TTYD `how_to.md` restructures / is superseded, or shipping data mart stops being a frequent topic.*
+
+## EU Tender 2026 — active
+
+Pinned 2026-05-21 (S021). Source: `archive/proposals/2026-05-21_eu-tender-2026.md`.
+
+Quantitative review of 2026 EU shipping carrier tenders for TCG-Picanova. Target: 4–6 parcel + 1 freight, cost-only scoring. Phase 2 in flight; **DPD PL walkthrough is the next concrete step.** Decisions locked 2026-05-12 (cost-only, hard cap 6, lane diagnostic + portfolio scoring). New offers landing live (DPD PL + FedEx arrived 2026-05-20). Full detail in `bank/notes/projects/eu_tender_2026.md`.
+
+*Rotate out when tender decisions are signed and carriers contracted, OR project pauses > 1 month with no active work, OR pin grows stale relative to current state.*

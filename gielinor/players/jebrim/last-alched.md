@@ -1,3 +1,3 @@
 # Jebrim — last alched
 
-Never. (Player was scaffolded 2026-05-20; no alching round has run yet.)
+2026-05-21 (first alching; gnome g1 in session S021).

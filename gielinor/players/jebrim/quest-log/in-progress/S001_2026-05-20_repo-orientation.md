@@ -1,35 +1,10 @@
 # S001 — 2026-05-20 — Repo orientation: NFE + bi-etl
 
-**Status:** in-progress (paused; pick #2 elevated to [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis]])
 **Principal:** Niklavs
 **Player:** Jebrim
-**Last close:** 2026-05-21 (S002)
 **No pending external actions.**
 
-## Where we are
-
-Pick #1 (EU Tender 2026) landed at `bank/notes/projects/eu_tender_2026.md`. Pick #2 (Shipping Data Mart) **elevated out of this quest** into its own focused quest (S002) under V1-launch pressure — see [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis]]. Picks #3, #4, #5 (US-side: SHIPPING-COSTS/carriers, dashboards/shipping_costs_monitoring_nextjs, SHIPPING-COSTS/analysis) untouched and remain on this quest.
-
-The Shipping Data Mart landing-note draft below (under "Pending drafts") is **superseded** by S002's eventual output (`bank/notes/projects/shipping_data_mart_v1_gap_analysis.md`). Don't write the old draft. Once S002 lands its output, the draft block here can be cleared.
-
-## Next concrete step
-
-Wait for S002 to complete (post-V1-launch, post-ETL-check-in). Then return to picks #3, #4, #5:
-
-- Pick #3: `SHIPPING-COSTS/carriers` — US tender side. Future task per S001 notes: compare/contrast vs EU tender 2026 approach.
-- Pick #4: `dashboards/shipping_costs_monitoring_nextjs`.
-- Pick #5: `SHIPPING-COSTS/analysis`.
-
-Note: SHIPPING-COSTS is the US tender (distinct from the EU tender 2026 covered in pick #1). The "review vs EU tender" deliverable is the natural synthesis once picks #3 + #5 land.
-
-## Files / paths to read first
-
-- This entry (resume context).
-- `bank/notes/projects/eu_tender_2026.md` — the landing note already written. Sibling to what's coming.
-- `bank/_about.md` — Jebrim's bank conventions.
-- `players/jebrim/CLAUDE.md` + `persona.md` + `_about.md` — player context if respawn didn't preload.
-- `~/Documents/GitHub/bi-analytics-main/NFE/projects/1_shipping_data_mart/README.md` and `CLAUDE.md` — design side.
-- `~/Documents/GitHub/bi-etl/dags/enterprise_silver/shipping_data_mart/` — implementation side. `git pull origin main` before reading; moves fast.
+> Resume state for this quest lives in `players/jebrim/inventory/S001-repo-orientation-resume.md` (per `meta/layer-routing.md`). This quest-log keeps narrative, decisions, and the turn log.
 
 ## Confirmed picks (5)
 

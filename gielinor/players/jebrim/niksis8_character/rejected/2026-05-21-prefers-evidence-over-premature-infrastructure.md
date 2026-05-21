@@ -23,3 +23,15 @@ One data point. The deferral cost was low here (run a dogfood test next session 
 - The evidence framing is less crisp.
 
 If the pattern survives those, it's a confirmed working trait.
+
+---
+
+## Rejection note (S021 alching, 2026-05-21)
+
+Rejected from Jebrim's `niksis8_character/`. Reasons:
+
+1. **Small surface area.** Jebrim is the analyst — he rarely proposes infrastructure. S015 was exceptional. Most sessions, this entry won't fire.
+2. **Kernel overlaps with `decompose-before-answering`.** Both reduce to "don't commit before checking." Not a distinct heuristic at the confirmed-layer level.
+3. **Routing.** The deeper pattern (Niklavs is evidence-driven before committing) is universal Niklavs, not Jebrim-character. Belongs in global `niksis8/` if anywhere.
+
+Kept here for bankstanding to consider re-routing to global `niksis8/drafts/` once a second observation lands.

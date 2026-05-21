@@ -46,3 +46,46 @@ T1: Quest opened. Awaiting principal direction on which review angle to take fir
 - Two harvest drafts surfaced for next-alching review.
 
 **Resume:** see `players/jebrim/inventory/S015-ttyd-resume.md`. Next concrete step: run the dogfood test.
+
+---
+
+## S022 turns (2026-05-21, session opened after S021 alching)
+
+Principal context shift: tomorrow (2026-05-22) is a stakeholder demo of the Shipping Data Mart with TTYD as the showcase. Logistics manager in audience. The dogfood test is no longer abstract — it's a dry-run of the actual demo path (cold AI agent in TTYD answering a real business question). Self-sufficiency of `how_to.md` is now load-bearing.
+
+### T1 — outward-reference scan of TTYD
+
+Scanned TTYD `.md` files for outward refs. AI-config files (`CLAUDE.md` / `AGENTS.md` / `GEMINI.md` / `GROK.md`) clean. `how_to.md` had 4 outward refs: L59 (`NFE/.claude/reference/.../sources.md`), L83 (per-carrier SQL in bi-etl), L196 (`NFE/.claude/reference/.../tables.md` + bi-etl READMEs), L394 (`../../../.env` walk-up for credentials). Also surfaced: a `TTYD-template/` subfolder mirroring the active project with a generic-template `how_to.md` (revenues / labour costs — not shipping-specific) — risk of a cold agent reading the wrong file.
+
+### T2 — structure decision
+
+Principal chose folder-standalone (option b): `how_to.md` as entry, sibling `reference/tables.md` + `reference/sources.md` for deeper drill-downs. Env code change deferred ("works on my laptop, good enough"); a local `.env` was added for the demo. `TTYD-template/` to be removed. Carrier SQL outward ref to be cut, not folded. `how_to.md` to be re-oriented as TTYD-specific, not generic-template-flavored.
+
+### T3 — credentials and template removal
+
+Principal supplied a new read-only Redshift user for the data mart: `ship_mart_ro`. Per discipline: `.gitignore` updated to include `.env` first (it was not previously ignored — only `creds.env` was), then `.env` written at TTYD root with `REDSHIFT_USER` + `REDSHIFT_PASSWORD`. `git check-ignore` confirmed protection. `TTYD-template/` moved via `git mv` to `NFE/projects/_TTYD-template/` (sibling, preserving history); untracked `visualization-studio - template/` came with it. `semantic-layer-draft.json` lived inside the template, so it moved with the template (out of active TTYD path) — semantic layer is deferred per principal until things stabilize.
+
+### T4 — reference files + how_to.md surgical edits
+
+Wrote `reference/tables.md` (folded from NFE-side tables.md, stripped of bi-etl paths and Canonical-README footers) and `reference/sources.md` (folded from NFE-side sources.md, stripped of bi-etl SQL path references). Both files self-contained within TTYD.
+
+Edited `how_to.md`:
+- Header reframed from generic "AI How-To" to "Talk-To-Your-Data how-to" with explicit folder-self-contained framing. Dropped "TBD pending principal-Jebrim authoring (Stream B)" jargon.
+- L59 → `reference/sources.md`.
+- L83 → "per-carrier source tables and ingestion notes in `reference/sources.md`" — bi-etl path dropped.
+- L196 → `reference/tables.md` — both NFE-side and bi-etl per-table README links dropped.
+- §6 Connecting to Redshift — rewrote credentials section: local `.env` (next to `how_to.md`), `find_dotenv()` finds it first via walk-up, gitignored. Mentions `ship_mart_ro` as the demo user.
+
+Verified: `grep` for outward paths across all `.md` files in TTYD returns no matches.
+
+### T5 — known residual
+
+Python docstrings in `db.py` and `connect_redshift.py` still reference `NFE/.env` ("credentials are read from `NFE/.env`", "located by walking up", `../../../.env` fallback). Behavior is correct (`find_dotenv()` walks up from the script's dir, so local `.env` wins), but the docstrings mislead. Principal said env-code cleanup is "later" — leaving for now, flagged for next pass.
+
+### Where we are after S022 turns
+
+- TTYD folder is `.md`-self-contained. Cold agent reading anything in this folder will not hit an outward path link.
+- Local `.env` in place; demo user is `ship_mart_ro` (read-only).
+- `TTYD-template/` out of the active project tree (moved to `NFE/projects/_TTYD-template/`).
+- Python docstring cleanup is the one known residual.
+- **Next concrete step** unchanged from S020 close: run the dogfood test. Question TBD with principal.

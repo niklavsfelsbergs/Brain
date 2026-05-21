@@ -24,23 +24,64 @@ The S020 cascade is on disk but **untested in the wild** — first live gnome sp
 
 ## Next concrete step — START HERE
 
-**Step 1 — first live gnome spawn.** Cue: principal sets up a fresh Jebrim session, recognizes the alching threshold breach at respawn, evaluates the spawn heuristic (>20 turns since last-alched OR never-alched + day-1+ — Jebrim qualifies on both), and spawns a gnome via `Task(subagent_type="gnome", description="Alch Jebrim's namespace — never alched, ~20+ in-flight turns since spawn", ...)`. Watch for:
+**Step 1 — visualizer audit (bugs + improvements).** Queued by principal at S020 post-close. The visualizer accreted a lot of state across S008–S020 (timeline engine, intent bubbles, narration channel, sub-agent attribution, dwarf+gnome pipelines, COMMS tabs, live mode). Now warrants a deliberate pass — not aesthetic polish, but a *correctness and consistency* audit.
+
+**Scope.**
+
+- **`developer-braindead/experiments/visualizer/index.html`** (~2840 lines: SVG defs, CSS, dispatch engine, applyEvent, replay+live mode, scrub seek, COMMS tabs).
+- **`developer-braindead/.claude/hooks/emit-event.py`** (path classification, role config, sub-agent attribution, intent/narration sidecar handling, active-mode marker).
+- **State files:** `state.ndjson`, `state-actors.json`, `state-dwarves.json`, `state-gnomes.json`, `path-map.json`.
+
+**Audit dimensions.**
+
+1. **Bug surface.** Walk every applyEvent case and ask: what if this event arrives out of order? What if it arrives twice? What if a referenced actor doesn't exist? What if the state file got corrupted mid-write? Specifically:
+   - Race conditions between `state-actors.json` and `state.ndjson` writes (multiple concurrent tool calls).
+   - Sub-agent attribution with the FIFO `pendingAgentBind` queue — what if a spawn never gets a sub-call (instant return) and another spawn happens before the GC runs? What if two sub-agents have interleaved sub-calls?
+   - Scrub-back consistency — does `resetWorld` clear *every* piece of state the renderer accumulates? Check intent bubbles, focal labels, ticker counters, action chat history.
+   - Despawn-on-crash — if a Task PreToolUse fires but PostToolUse never does (Claude Code crash, network error), do we leak sprites + state entries? Is there a recovery path?
+   - The "active-mode marker emits braindead spawn" path — what if the file is deleted, or contains an unexpected value, or is written multiple times in rapid succession?
+   - Intent file timing — the renderer reads the file *after* the hook fires, but the file write is asynchronous from the agent's perspective. Stale reads?
+   - The `dwarf parent inference` 10-minute recency window — what happens at minute 9:59 vs 10:01?
+   - The `current_main_actor()` dev-brain override — does it cover every code path that needs it, or only `handle_bash`?
+
+2. **Consistency surface.** Cross-file invariants:
+   - `path-map.json` building rules vs the SVG building IDs — every rule's `building` must exist in `BUILDINGS`.
+   - Color palettes — the four CSS-var sets (jebrim, zezima, braindead, dwarf, gnome) plus the COMMS speaker colors plus the legend swatches plus the tab dot colors. Drift between these surfaces?
+   - `actorDisplayName` / `speakerFor` / `deriveSpeaker` / `isSubAgentActor` — every actor ID pattern should be handled in all four. Audit the matrix.
+   - The action-event verb taxonomy vs the chat CSS classes (`.intent`, `.action`, `.narrate`, `.commit`, `.session-start`, `.system`, `.read`, `.write`) — every emitted `cls` should have a CSS rule.
+
+3. **Improvement backlog.** Items already noted in carried observations:
+   - D-014 follow-ups: action target prettification, chat scroll-lock UX, actor color taxonomy tightening, bubble two-line edge cases.
+   - D-009 deferred: idle indicator, watchdog for non-Claude writes, smarter active-player inference, SSE upgrade.
+   - S009 aesthetic: per-building character (per-building flavor on tooltips, ambient particles).
+   - Narration shakedown — confirm `.claude/narration.txt` reads well in the chat panel at session boundaries / phase transitions.
+   - Gnome workshop building — was deferred in D-016; revisit if the visual gap is now felt after a live gnome spawn.
+
+4. **Documentation surface.** Is the visualizer's behavior documented anywhere a future maintainer could find it? `experiments/visualizer/_README.md` exists — is it current? Does it cover live mode, replay mode, the event schema, the path-map config, the state files?
+
+**Pre-work for the audit.** Spawn the first live gnome (the deferred Step from the S019/S020 cascade, now demoted to Step 2 below). The audit gains a lot from one real end-to-end run of the new pipeline — observing what actually happens beats reasoning about what should.
+
+**Output.** The audit produces a `developer-braindead/bank/research/visualizer-audit-S0NN.md` (or similar) cataloguing findings, sorted by severity (bug > consistency > improvement). Each finding cites the file:line. The principal triages: bugs go to a `Q-NNN` / fix-immediately list, improvements feed the iteration menu, aesthetic items go to the S009 backlog. No fixes land in the audit pass itself — that's the next session.
+
+**Step 2 — first live gnome spawn.** Cue: principal sets up a fresh Jebrim session, recognizes the alching threshold breach at respawn, evaluates the spawn heuristic (>20 turns since last-alched OR never-alched + day-1+ — Jebrim qualifies on both), and spawns a gnome via `Task(subagent_type="gnome", description="Alch Jebrim's namespace — never alched, ~20+ in-flight turns since spawn", ...)`. Watch for:
 
 - **Boundary fires.** If the gnome tries to write to `gielinor/meta/foo.md` (planted test write) or to a confirmed/ path, the hook blocks with the BLOCKED message naming the path and the path-mismatch. If the hook doesn't fire, the env→payload fix didn't take and something deeper is broken.
 - **Visualizer.** Gnome sprite appears next to Jebrim with the task description as a persistent bubble (intent never expires on building change because `isSubAgentActor` now covers G-prefix). Move events as the gnome walks between buildings; action events on each Edit/Write. Despawn-gnome on Task return.
 - **GNOMES tab.** Spawn log, action lines, walk lines all attribute to `speaker: "gnomes"` and render in the new tab with the lavender styling.
 - **State file.** `state-gnomes.json` appears in `experiments/visualizer/` with the gnome's `byToolUseId` / `byAgentId` bindings during the run.
 
-**Step 2 — drafts triage (carried from S018 → S019).** Several drafts still await ruling:
+Steps 1 and 2 pair naturally — Step 2 is the validation event, Step 1 is the deliberate sweep. Doing 2 first gives the audit a fresh trace to walk; doing 1 first lets the audit shape what to watch for in 2. Principal's call.
+
+**Step 3 — drafts triage (carried from S018 → S019).** Several drafts still await ruling:
 
 - `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — promote to `lorebook/decisions/D-NNN_*.md` to canonicalize the S018 audit's structural decisions.
 - `gielinor/players/jebrim/keepsake/proposals/2026-05-21_eu-tender-2026.md` (still untouched).
 - `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md` — awaits Jebrim skills-promotion at first Jebrim alching (covered by Step 1 if the gnome runs).
 - `gielinor/players/jebrim/niksis8_character/drafts/` (S017-era + `2026-05-21-prefers-evidence-over-premature-infrastructure.md`) — also covered by Step 1 if the gnome runs.
 
-**Step 3 — D-014 browser verification (carried from S017).** Subsumed by Step 1's combined test if the principal opens the visualizer in live mode while the gnome runs.
+**Step 4 — D-014 browser verification (carried from S017).** Subsumed by Step 2's combined test if the principal opens the visualizer in live mode while the gnome runs. Also subsumed by Step 1 if the audit reproduces the chat-event taxonomy end-to-end.
 
-**Step 4 — narration channel shakedown.** Still pending — try writing `.claude/narration.txt` at session boundaries / phase transitions and read in the visualizer. Used briefly at S019 open and again at S020 open.
+**Step 5 — narration channel shakedown.** Still pending — try writing `.claude/narration.txt` at session boundaries / phase transitions and read in the visualizer. Used briefly at S019 open and again at S020 open. Audit item under Step 1 covers this.
 
 Other live threads (carried, lower priority):
 
@@ -63,9 +104,10 @@ Iteration menu (deferred, no priority assigned):
 
 ## Open at the start of next session
 
-- **First live gnome spawn** — Step 1. Validates the whole S020 cascade in one shot.
-- **Drafts triage** — Step 2. Largely subsumed if a Jebrim alching gnome runs in Step 1.
-- **D-014 + S015 browser verification** — Step 3. Same combined-test candidate as Step 1.
+- **Visualizer audit** — Step 1. Bugs + consistency + improvements pass over `index.html`, `emit-event.py`, state files. Output is a research note; no fixes land in the audit pass.
+- **First live gnome spawn** — Step 2. Validates the whole S020 cascade. Natural pre-work for Step 1, or run after as the cross-check.
+- **Drafts triage** — Step 3. Largely subsumed if the Jebrim alching gnome runs in Step 2.
+- **D-014 + S015 browser verification** — Step 4. Same combined-test candidate as Step 2.
 - §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations

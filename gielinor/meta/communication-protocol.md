@@ -58,14 +58,36 @@ Respawn, mini-respawn on player switch, threshold checks for alching and banksta
 
 ## Intent narration (visualizer sidecar)
 
-After stating the Plan, write a short phrase (2–6 words, ≤60 chars) to `.claude/intent/<actor>.txt` at the brain root. The visualizer reads this and renders a speech bubble near the actor.
+After stating the Plan, write a short phrase (2–10 words, ≤100 chars) to `.claude/intent/<actor>.txt` at the brain root. The visualizer reads this and renders a speech bubble near the actor (wraps to two lines centered) and also pushes the same string into the COMMS chat panel as `<Actor>: <text>`.
 
-- **Active actor by mode.** Player session → `<player>.txt` (e.g., `jebrim.txt`, `zezima.txt`). Unscoped or dev-brain session → `wisp.txt`.
+- **Active actor by mode.** Player session → `<player>.txt` (e.g., `jebrim.txt`, `zezima.txt`). Dev-brain session → `braindead.txt`. Unscoped session → `wisp.txt`.
 - **Tone is functional, not narrative.** "Wrapping up S002", "Drafting D-009", "Bankstanding — phase 0", "Designing intent narration". Verb + noun, present tense. Not "I will now…" or "About to…".
 - **Update when intent meaningfully changes**, not every micro-action. A turn that's mostly reads with one edit gets one intent line. A turn that pivots — finish one thing, start another — gets two writes in sequence.
 - **Dwarves don't write intent files.** The hook attaches the Task call's `description` field as the dwarf's bubble at spawn time; that bubble persists for the dwarf's lifetime.
 - **No file → no bubble.** Skipping intent narration in turns that don't run the visualizer is fine; the file is a hint, not a contract. If a turn doesn't write, the previous intent stays up until the actor moves buildings (then it clears).
 - **Don't narrate the intent line itself in the visible response.** It's a sidecar — the agent doesn't say "I'm setting my intent to X"; it just writes the file.
+
+## Narration channel (system voice)
+
+Alongside the per-actor intent file, there is a single global narration sidecar at `.claude/narration.txt`. Same overwrite semantics as `intent/*.txt` — the file holds the most recent narration line; the chat keeps history. Cap ≤200 chars.
+
+Narration is **system voice**, not actor voice. The agent doesn't speak it in character. Use it for broader-scope context that surfaces above the per-actor flow:
+
+- Session boundaries — *"Session S017 opens — Jebrim active"*.
+- Ritual phase transitions — *"Bankstanding phase 0 begins"*, *"Phase 0 complete — back to bankstanding mode"*.
+- Mode switches — *"Switching to dev-brain mode"*, *"Returning to gielinor — Zezima active"*.
+- Quiet declarations of structural intent that don't fit a single actor's mouth.
+
+Don't write narration for every turn. Most turns don't warrant it. The bubble + chat already carry per-turn intent; narration is for the events *between* them.
+
+## Intent vs action — discipline rule
+
+Two channels for "what's happening now," and they must not mirror each other:
+
+- **Intent** = *why* and *what scope*. "Drafting D-014", "Wrapping up S016", "Bankstanding — phase 0". Authored by the agent.
+- **Action** = *which file* or *which command*. "Jebrim: editing meta/communication-protocol.md", "Braindead: running git status". Emitted automatically by the hook on Edit/Write/Bash/Glob/Grep.
+
+If the intent line restates what the actions already show ("Editing communication-protocol.md"), the chat doubles itself and intent loses its signal. Keep intent abstract enough that the action stream complements rather than echoes it.
 
 ## Why this rule exists
 

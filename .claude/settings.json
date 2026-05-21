@@ -14,7 +14,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Read|Glob|Grep|Agent|Task",
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Read|Glob|Grep|Bash|Agent|Task",
         "hooks": [
           {
             "type": "command",

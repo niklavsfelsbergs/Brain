@@ -261,18 +261,95 @@
     display: grid; place-items: center;
   }
 
-  /* ─── Log ─── */
-  .logbox { margin-top: 14px; border: 3px solid var(--frame-edge); background: #0e0a06; color: var(--parchment); height: 170px; overflow: hidden; position: relative; box-shadow: inset 0 0 0 2px var(--gold-dk), inset 0 0 40px rgba(0,0,0,0.7); }
-  .logbox header { background: linear-gradient(180deg, #1a140e, #0e0a06); border-bottom: 1px solid var(--gold-dk); padding: 6px 14px; font-family: 'Jacquard 12', serif; font-size: 22px; letter-spacing: 0.08em; color: var(--gold); display: flex; align-items: center; gap: 10px; }
-  .logbox header::before { content: ""; width: 8px; height: 8px; background: var(--gold); box-shadow: 0 0 8px var(--gold); animation: pulse 1400ms ease-in-out infinite; }
+  /* ─── COMMS / chatbox (OSRS-style, D-014) ─── */
+  /* Classic RuneScape chat: black-brown panel, bright yellow body, white
+     usernames, cyan system lines. Sharp 1px inner border, no soft glow. */
+  .logbox {
+    margin-top: 14px;
+    background: #c8b48a;
+    border: 2px solid #2c1f10;
+    height: 340px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      inset 0 0 0 1px #8a7048,
+      inset 1px 1px 0 #e0caa0,
+      inset -1px -1px 0 #5a4020,
+      0 6px 16px rgba(0,0,0,0.5);
+    color: #1a0f06;
+  }
+  .logbox header {
+    background: linear-gradient(180deg, #4a3520 0%, #2e2010 100%);
+    border-bottom: 2px solid #0a0604;
+    box-shadow: inset 0 -1px 0 #5a4126, inset 0 1px 0 #7a5e3a;
+    padding: 4px 12px;
+    font-family: 'VT323', 'Jacquard 12', serif;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    color: #ffcb46;
+    text-shadow: 1px 1px 0 #1a0f06;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 30px;
+  }
+  .logbox header::before {
+    content: "";
+    width: 7px; height: 7px;
+    background: #5fff5f;
+    box-shadow: 0 0 4px #5fff5f, 1px 1px 0 #1a0f06;
+    animation: pulse 1400ms ease-in-out infinite;
+  }
   @keyframes pulse { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
-  .log-scroll { height: calc(100% - 40px); overflow-y: auto; padding: 8px 14px; font-family: 'VT323',monospace; font-size: 16px; line-height: 1.32; color: #d6c7a0; }
-  .log-scroll::-webkit-scrollbar { width: 8px; }
-  .log-scroll::-webkit-scrollbar-track { background: #0e0a06; }
-  .log-scroll::-webkit-scrollbar-thumb { background: var(--gold-dk); }
-  .log-entry { padding: 1px 0; opacity: 0.95; }
-  .log-entry.read { opacity: 0.45; font-size: 14px; font-style: italic; }
-  .log-entry.write { color: #e8d8a8; }
+  .log-scroll {
+    height: calc(100% - 32px);
+    overflow-y: auto;
+    padding: 6px 12px;
+    font-family: 'Trebuchet MS', 'Verdana', 'Tahoma', sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1.35;
+    color: #1a0f06;
+    background: linear-gradient(180deg, #d0bc94 0%, #beaa82 100%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .log-scroll::-webkit-scrollbar { width: 10px; }
+  .log-scroll::-webkit-scrollbar-track { background: #8a7048; border-left: 1px solid #2c1f10; }
+  .log-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #4a3520 0%, #2c1f10 100%);
+    border: 1px solid #1a0f06;
+  }
+  .log-entry {
+    padding: 0 0 1px;
+    color: #0a0604;
+  }
+  .log-entry .t {
+    color: #6a5230;
+    margin-right: 6px;
+    font-weight: normal;
+  }
+  /* Username prefix — actor-tinted, darker for legibility against tan bg */
+  .log-entry .user {
+    margin-right: 2px;
+  }
+  .log-entry .user::after { content: ":"; }
+  /* Per-actor username tint, darker variants so they read on the light panel */
+  .log-entry[data-speaker="jebrim"]    .user { color: #1f4b8a; }
+  .log-entry[data-speaker="zezima"]    .user { color: #a44a14; }
+  .log-entry[data-speaker="dwarves"]   .user { color: #8a5a10; }
+  .log-entry[data-speaker="wisp"]      .user { color: #8a7020; }
+  .log-entry[data-speaker="braindead"] .user { color: #1a6660; }
+  /* Body text stays black for all chat lines */
+  .log-entry.intent,
+  .log-entry.action,
+  .log-entry.write { color: #0a0604; }
+  /* Narration / system: muted dark italic */
+  .log-entry.narrate,
+  .log-entry.system,
+  .log-entry.read    { color: #4a3520; font-style: italic; }
+  .log-entry.commit  { color: #6e2c14; border-top: 1px dashed rgba(110,44,20,0.35); margin-top: 3px; padding-top: 3px; }
+  .log-entry.session-start { color: #1e5a1e; font-weight: bold; margin-top: 4px; }
 
   /* ─── Live mode adjustments (D-009) ─── */
   body[data-mode="live"] .controls { display: none; }
@@ -289,64 +366,57 @@
   }
   @keyframes live-pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
   body[data-mode="live"] .topbar { grid-template-columns: auto 1fr auto; }
-  .log-entry.commit { color: var(--gold); border-top: 1px dashed rgba(216,173,54,0.25); margin-top: 4px; padding-top: 4px; }
-  .log-entry.session-start { color: var(--wisp-core); font-weight: bold; margin-top: 6px; }
-  .log-entry .t { color: #7a6a48; margin-right: 8px; }
 
   .crumb { margin-top: 12px; text-align: center; color: rgba(216,173,54,0.45); font-family: 'VT323',monospace; font-size: 14px; letter-spacing: 0.1em; }
   .crumb span { color: rgba(216,173,54,0.65); }
 
-  /* ─── Log panel tabs (COMMS-style) ─── */
-  .logbox header {
-    padding: 4px 12px;
-    gap: 14px;
-    font-size: 20px;
-  }
+  /* ─── COMMS tabs (OSRS-style buttons) ─── */
   .logbox header .log-title {
-    color: var(--gold);
-    font-family: 'Jacquard 12', serif;
-    letter-spacing: 0.08em;
+    color: #ffcb46;
+    font-family: 'VT323', 'Jacquard 12', serif;
+    text-shadow: 1px 1px 0 #1a0f06;
   }
   .log-tabs {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 1px;
     margin-left: auto;
     font-family: 'VT323', monospace;
-    font-size: 13px;
-    letter-spacing: 0.06em;
+    font-size: 14px;
+    letter-spacing: 0.08em;
   }
   .log-tab {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 3px 8px 4px;
-    color: rgba(216,173,54,0.55);
-    border: 1px solid transparent;
+    padding: 3px 9px 4px;
+    color: #c8a878;
+    background: #3a2812;
+    border: 1px solid #0a0604;
+    box-shadow: inset 1px 1px 0 #5a4126, inset -1px -1px 0 #1a0f06;
     cursor: pointer;
     user-select: none;
     text-transform: uppercase;
-    background: transparent;
     line-height: 1;
-    transition: color 120ms, background 120ms, border-color 120ms;
+    transition: color 100ms, background 100ms;
   }
-  .log-tab:hover { color: var(--gold); border-color: rgba(216,173,54,0.3); }
+  .log-tab:hover { color: #ffcb46; background: #4a3520; }
   .log-tab.active {
-    color: var(--ink);
-    background: var(--gold);
-    border-color: var(--gold-dk);
+    color: #ffff7a;
+    background: #5a3f1f;
+    box-shadow: inset 1px 1px 0 #1a0f06, inset -1px -1px 0 #5a4126;
   }
   .log-tab .dot {
     width: 7px; height: 7px; border-radius: 50%;
-    box-shadow: 0 0 5px currentColor;
+    box-shadow: 0 0 4px currentColor, 1px 1px 0 #1a0f06;
   }
-  .log-tab[data-tab="all"]     .dot { background: var(--parchment); color: var(--parchment-dk); }
-  .log-tab[data-tab="jebrim"]  .dot { background: #6c8ec8; color: #3a5688; }
-  .log-tab[data-tab="zezima"]  .dot { background: #c9783a; color: #8a4520; }
-  .log-tab[data-tab="dwarves"] .dot { background: #cf9a2c; color: #8a6420; }
+  .log-tab[data-tab="all"]     .dot { background: #ffffff; color: #c8c8c8; }
+  .log-tab[data-tab="jebrim"]  .dot { background: #9bc4ff; color: #5a8ed8; }
+  .log-tab[data-tab="zezima"]  .dot { background: #ffb56b; color: #c9783a; }
+  .log-tab[data-tab="dwarves"] .dot { background: #ffd24a; color: #cf9a2c; }
   .log-tab[data-tab="wisp"]    .dot { background: #fff4c8; color: #d8c694; }
-  .log-tab[data-tab="commits"] .dot { background: var(--gold); color: var(--gold-dk); }
-  .log-tab.active .dot { box-shadow: 0 0 6px rgba(0,0,0,0.5); }
+  .log-tab[data-tab="commits"] .dot { background: #ff9344; color: #c66828; }
+  .log-tab.active .dot { box-shadow: 0 0 5px currentColor, inset 1px 1px 0 rgba(0,0,0,0.4); }
 
   /* filter — hide non-matching entries when a filter is active */
   .log-scroll[data-filter="jebrim"]  .log-entry:not([data-speaker="jebrim"])  { display: none; }
@@ -355,11 +425,12 @@
   .log-scroll[data-filter="wisp"]    .log-entry:not([data-speaker="wisp"])    { display: none; }
   .log-scroll[data-filter="commits"] .log-entry:not([data-speaker="commits"]) { display: none; }
 
-  .log-entry[data-speaker="jebrim"]  .t::before { content: "● "; color: #6c8ec8; }
-  .log-entry[data-speaker="zezima"]  .t::before { content: "● "; color: #c9783a; }
-  .log-entry[data-speaker="dwarves"] .t::before { content: "● "; color: #cf9a2c; }
-  .log-entry[data-speaker="wisp"]    .t::before { content: "● "; color: #fff4c8; }
-  .log-entry[data-speaker="commits"] .t::before { content: "● "; color: var(--gold); }
+  .log-entry[data-speaker="jebrim"]    .t::before { content: "● "; color: #1f4b8a; }
+  .log-entry[data-speaker="zezima"]    .t::before { content: "● "; color: #a44a14; }
+  .log-entry[data-speaker="dwarves"]   .t::before { content: "● "; color: #8a5a10; }
+  .log-entry[data-speaker="wisp"]      .t::before { content: "● "; color: #8a7020; }
+  .log-entry[data-speaker="braindead"] .t::before { content: "● "; color: #1a6660; }
+  .log-entry[data-speaker="commits"]   .t::before { content: "● "; color: #6e2c14; }
 
   @media (max-width: 900px) {
     .topbar { grid-template-columns: 1fr; gap: 12px; }
@@ -2358,29 +2429,60 @@ function setIntent(actor, text, instant=false) {
   renderIntent(actor);
 }
 
+// D-014: word-wrap intent text into ≤2 lines for the bubble. ~50 chars per
+// line keeps the bubble visually narrow even at the cap-100 string length.
+function wrapBubbleText(text, maxLine=50) {
+  if (text.length <= maxLine) return [text];
+  const words = text.split(/\s+/);
+  if (words.length === 1) {
+    // Single long token — hard wrap (URLs, paths, etc.).
+    return [text.slice(0, maxLine), text.slice(maxLine, maxLine * 2)];
+  }
+  let line1 = '';
+  let i = 0;
+  while (i < words.length) {
+    const candidate = line1 ? line1 + ' ' + words[i] : words[i];
+    if (candidate.length > maxLine && line1) break;
+    line1 = candidate;
+    i++;
+  }
+  let line2 = words.slice(i).join(' ');
+  if (line2.length > maxLine) line2 = line2.slice(0, maxLine - 1) + '…';
+  return line2 ? [line1, line2] : [line1];
+}
+
 function renderIntent(actor) {
   const entry = intents[actor];
   if (!entry) return;
   const pos = actorPositions[actor];
   if (!pos) return;
   const text = entry.text || '';
-  const w = Math.max(54, text.length * 6.2 + 14);
-  const h = 16;
+  const lines = wrapBubbleText(text, 50);
+  const longest = lines.reduce((m, s) => Math.max(m, s.length), 0);
+  const w = Math.max(54, longest * 6.2 + 14);
+  const lineH = 13;
+  const padY = 4;
+  const h = lines.length * lineH + padY * 2;
   const yOff = -34;        // above head, clears the focal label
   const half = w / 2;
+  const topY = yOff - h;
+  const baseY = topY + padY + 10;   // first-line baseline (font-size 11)
+  const tspans = lines.map((s, i) =>
+    `<tspan x="0" y="${baseY + i * lineH}">${escapeHtml(s)}</tspan>`
+  ).join('');
   entry.node.setAttribute('transform', `translate(${pos.x},${pos.y})`);
   entry.node.innerHTML = `
-    <rect x="${-half}" y="${yOff - h}" width="${w}" height="${h}" rx="5" ry="5"
+    <rect x="${-half}" y="${topY}" width="${w}" height="${h}" rx="5" ry="5"
           fill="rgba(248,238,212,0.96)" stroke="#3a2a1a" stroke-width="0.7"/>
-    <rect x="${-half + 1.2}" y="${yOff - h + 1.2}" width="${w - 2.4}" height="${h - 2.4}" rx="3.5" ry="3.5"
+    <rect x="${-half + 1.2}" y="${topY + 1.2}" width="${w - 2.4}" height="${h - 2.4}" rx="3.5" ry="3.5"
           fill="none" stroke="rgba(216,173,54,0.5)" stroke-width="0.4"/>
     <polygon points="-3.5,${yOff} 3.5,${yOff} 0,${yOff + 5.5}"
              fill="rgba(248,238,212,0.96)" stroke="#3a2a1a" stroke-width="0.7"/>
     <line x1="-2.5" y1="${yOff + 0.4}" x2="2.5" y2="${yOff + 0.4}"
           stroke="rgba(248,238,212,0.96)" stroke-width="1.4"/>
-    <text x="0" y="${yOff - h/2 + 4}" text-anchor="middle"
+    <text text-anchor="middle"
           font-family="VT323" font-size="11" fill="#1f150c"
-          letter-spacing="0.02em">${escapeHtml(text)}</text>
+          letter-spacing="0.02em">${tspans}</text>
   `;
 }
 
@@ -2406,8 +2508,35 @@ function logLine(msg, cls='', speaker='system') {
   li.innerHTML = `<span class="t">[${tStr}]</span>${escapeHtml(msg)}`;
   logEl.appendChild(li);
   logEl.scrollTop = logEl.scrollHeight;
-  while (logEl.childNodes.length > 200) logEl.removeChild(logEl.firstChild);
+  while (logEl.childNodes.length > 400) logEl.removeChild(logEl.firstChild);
   return li;
+}
+
+// D-014: chat-style line with username prefix in actor-colored span.
+// Renders as "[time] <user>:</user> <body>" — username picks up per-speaker color.
+function logChatLine(actor, body, cls='', speaker='system') {
+  const li = document.createElement('div');
+  li.className = 'log-entry ' + cls;
+  li.setAttribute('data-speaker', speaker);
+  const tStr = (LIVE && currentEventWallTime) ? formatWall(currentEventWallTime) : formatTime(t);
+  li.innerHTML = `<span class="t">[${tStr}]</span><span class="user">${escapeHtml(actor)}</span> ${escapeHtml(body)}`;
+  logEl.appendChild(li);
+  logEl.scrollTop = logEl.scrollHeight;
+  while (logEl.childNodes.length > 400) logEl.removeChild(logEl.firstChild);
+  return li;
+}
+
+// D-014: chat-panel helpers — actor name shown in line + speaker key for filtering.
+function actorDisplayName(id) {
+  if (!id) return '';
+  if (/^D\d+$/i.test(id)) return id.toUpperCase();
+  return id.charAt(0).toUpperCase() + id.slice(1);
+}
+function speakerFor(id) {
+  if (!id) return 'system';
+  if (/^D\d+$/i.test(id)) return 'dwarves';
+  if (['jebrim','zezima','wisp','braindead'].includes(id)) return id;
+  return 'system';
 }
 
 function deriveSpeaker(msg) {
@@ -2482,10 +2611,29 @@ function applyEvent(ev, instant=false) {
       // updated actorPositions). Without this, the bubble would stay at the
       // old building while the sprite walks away.
       if (intents[ev.actor]) renderIntent(ev.actor);
+      // D-014: muted-italic chat line on building change.
+      {
+        const label = (BUILDINGS[ev.to] && BUILDINGS[ev.to].label) || ev.to;
+        logLine(`* ${actorDisplayName(ev.actor)} walks to ${label}`,
+                'narrate', speakerFor(ev.actor));
+      }
       break;
     case 'intent':
       ensureActorExists(ev.actor, currentBuilding[ev.actor]);
       setIntent(ev.actor, ev.text, instant);
+      if (ev.text) {
+        logChatLine(actorDisplayName(ev.actor), ev.text,
+                    'intent', speakerFor(ev.actor));
+      }
+      break;
+    case 'action':
+      if (ev.verb && ev.target) {
+        logChatLine(actorDisplayName(ev.actor), `${ev.verb} ${ev.target}`,
+                    'action', speakerFor(ev.actor));
+      }
+      break;
+    case 'narrate':
+      if (ev.text) logLine(`* ${ev.text}`, 'narrate', 'system');
       break;
     case 'spawn-dwarf':
       spawnDwarf(ev);

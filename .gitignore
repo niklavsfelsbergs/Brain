@@ -22,6 +22,9 @@ developer-braindead/experiments/visualizer/state-dwarves.json
 # Intent narration sidecars (D-010) — transient agent self-narration
 .claude/intent/*.txt
 
+# Global narration sidecar (D-014) — system-voice broader-scope commentary
+.claude/narration.txt
+
 # Active-mode marker (D-011) — visualizer-only sidecar
 .claude/active-mode.txt
 

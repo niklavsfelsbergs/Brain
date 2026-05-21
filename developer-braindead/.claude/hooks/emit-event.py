@@ -28,9 +28,18 @@ DWARVES_PATH = VIZ_DIR / "state-dwarves.json"
 
 WRITE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 READ_TOOLS = {"Read", "Glob", "Grep"}
+# D-014: tools that emit chat-side `action` events. Read is intentionally
+# omitted — too noisy, sprite movement already shows building shifts.
+ACTION_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit", "Bash", "Glob", "Grep"}
 
 INTENT_FRAGMENT = "/.claude/intent/"
-INTENT_MAX_LEN = 60
+INTENT_MAX_LEN = 100             # D-014: was 60, bumped for two-line bubble.
+
+NARRATION_FRAGMENT = "/.claude/narration.txt"
+NARRATION_PATH = REPO_ROOT / ".claude" / "narration.txt"
+NARRATION_MAX_LEN = 200
+
+ACTION_TARGET_MAX = 80
 
 ACTIVE_MODE_FRAGMENT = "/.claude/active-mode.txt"
 ACTIVE_MODE_PATH = REPO_ROOT / ".claude" / "active-mode.txt"
@@ -219,6 +228,92 @@ def handle_active_mode_write(needle: str) -> bool:
     return True
 
 
+def handle_narration_write(needle: str) -> bool:
+    """If needle is .claude/narration.txt, read the file and emit a single
+    `narrate` event (system-voice broader-scope commentary, D-014). Returns
+    True if handled (consumes the write so the normal path-classify flow
+    skips it). Empty file → no event, still consume."""
+    s = needle.replace("\\", "/")
+    key = "/" + s if not s.startswith("/") else s
+    if NARRATION_FRAGMENT not in key:
+        return False
+    text = ""
+    try:
+        if NARRATION_PATH.exists() and NARRATION_PATH.stat().st_size:
+            text = NARRATION_PATH.read_text(encoding="utf-8").strip().splitlines()[0]
+    except Exception:
+        text = ""
+    text = text[:NARRATION_MAX_LEN]
+    if text:
+        append({
+            "wallTime": now_iso(), "source": "hook",
+            "type": "narrate",
+            "text": text,
+        })
+    return True
+
+
+def _pretty_target_path(fp: str) -> str:
+    if not fp:
+        return ""
+    rel = to_rel(fp)
+    if rel:
+        return rel[:ACTION_TARGET_MAX]
+    return Path(fp).name[:ACTION_TARGET_MAX]
+
+
+def action_verb_and_target(tool_name: str, tool_input: dict) -> tuple[str, str]:
+    """D-014: map a tool call to a (verb, target) pair for the `action` event.
+    Returns ("", "") for tools that should not emit (e.g., Read)."""
+    if tool_name == "Edit":
+        return ("editing", _pretty_target_path(tool_input.get("file_path") or ""))
+    if tool_name == "Write":
+        return ("writing", _pretty_target_path(tool_input.get("file_path") or ""))
+    if tool_name == "MultiEdit":
+        return ("editing", _pretty_target_path(tool_input.get("file_path") or ""))
+    if tool_name == "NotebookEdit":
+        return ("editing", _pretty_target_path(tool_input.get("notebook_path") or ""))
+    if tool_name == "Bash":
+        cmd = (tool_input.get("command") or "").strip()
+        return ("running", cmd[:ACTION_TARGET_MAX])
+    if tool_name == "Glob":
+        return ("globbing", (tool_input.get("pattern") or "")[:ACTION_TARGET_MAX])
+    if tool_name == "Grep":
+        return ("searching", (tool_input.get("pattern") or "")[:ACTION_TARGET_MAX])
+    return ("", "")
+
+
+def current_main_actor() -> str:
+    """Best-effort main-thread actor for events without a path (e.g., Bash).
+    Dev-brain mode always attributes to Braindead — the recency walk would
+    otherwise lock onto stale player intents from the prior gielinor session.
+    Outside dev-brain, use the same recency heuristic as dwarf parent
+    inference, falling back to Wisp."""
+    if read_active_mode() == DEV_BRAIN_MODE:
+        return "braindead"
+    actor, _ = infer_dwarf_parent()
+    return actor if actor != "wisp" else "wisp"
+
+
+def handle_bash(payload: dict) -> None:
+    """D-014: emit an `action` event for Bash (no path → no move).
+    Attributes to dwarf via agent_id when present, else to the current
+    main-thread actor."""
+    tool_input = payload.get("tool_input") or {}
+    verb, target = action_verb_and_target("Bash", tool_input)
+    if not target:
+        return
+    dwarf, _dw = attribute_to_dwarf(payload)
+    actor = dwarf["id"] if dwarf else current_main_actor()
+    append({
+        "wallTime": now_iso(), "source": "hook",
+        "type": "action",
+        "actor": actor,
+        "verb": verb,
+        "target": target,
+    })
+
+
 def handle_intent_write(needle: str) -> bool:
     """If needle is .claude/intent/<actor>.txt, emit an intent event and
     return True. Otherwise return False so the normal path-classify flow
@@ -258,17 +353,21 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
         return
     if tool_name in WRITE_TOOLS and handle_intent_write(needle):
         return
+    if tool_name in WRITE_TOOLS and handle_narration_write(needle):
+        return
     building, actor = classify(needle, m)
     if not building:
         return
 
-    is_write = tool_name in WRITE_TOOLS
-    cls = "write" if is_write else "read"
     wall = now_iso()
+    # D-014: Read still emits a move (sprite walks into the building) but no
+    # chat-side action — too noisy. Other tools emit a chat-visible action.
+    emit_action = tool_name in ACTION_TOOLS
+    verb, target = action_verb_and_target(tool_name, tool_input) if emit_action else ("", "")
 
     # Sub-agent path — if the payload carries `agent_id`, this tool call came
-    # from inside a Task/Agent sub-agent. Emit move + log under the dwarf's id
-    # so the dwarf sprite roams instead of sitting at its spawn building.
+    # from inside a Task/Agent sub-agent. Move + action both attribute to the
+    # dwarf so its sprite roams and chat lines speak in its voice.
     dwarf, dw = attribute_to_dwarf(payload)
     if dwarf:
         if dwarf.get("at") != building:
@@ -278,13 +377,14 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
             })
             dwarf["at"] = building
             save_json(DWARVES_PATH, dw)
-        append({
-            "wallTime": wall, "source": "hook",
-            "type": "log",
-            "msg": f"{dwarf['id']} {tool_name.lower()} {needle}",
-            "cls": cls,
-            "speaker": "dwarves",
-        })
+        if emit_action and target:
+            append({
+                "wallTime": wall, "source": "hook",
+                "type": "action",
+                "actor": dwarf["id"],
+                "verb": verb,
+                "target": target,
+            })
         return
 
     # Main-thread path — attribute to the active player as before.
@@ -300,13 +400,14 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
         })
         actors[actor] = building
         save_json(ACTORS_PATH, actors)
-    append({
-        "wallTime": wall, "source": "hook",
-        "type": "log",
-        "msg": f"{tool_name.lower()} {needle}",
-        "cls": cls,
-        "speaker": actor,
-    })
+    if emit_action and target:
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "action",
+            "actor": actor,
+            "verb": verb,
+            "target": target,
+        })
 
 
 def _dwarves_default() -> dict:
@@ -357,8 +458,8 @@ def handle_task_pre(payload: dict) -> None:
     append({
         "wallTime": wall, "source": "hook",
         "type": "log",
-        "msg": f"spawning {dwarf_id} — {description}",
-        "cls": "spawn",
+        "msg": f"* {dwarf_id} spawned by {parent} — {description}",
+        "cls": "system",
         "speaker": "dwarves",
     })
 
@@ -388,6 +489,8 @@ def handle_task_post(payload: dict) -> None:
     if not entry:
         return
     wall = now_iso()
+    # Re-infer parent for the despawn message so it reads symmetric to spawn.
+    parent, _ = infer_dwarf_parent()
     append({
         "wallTime": wall, "source": "hook",
         "type": "despawn-dwarf",
@@ -396,8 +499,8 @@ def handle_task_post(payload: dict) -> None:
     append({
         "wallTime": wall, "source": "hook",
         "type": "log",
-        "msg": f"{entry['id']} returns",
-        "cls": "spawn",
+        "msg": f"* {entry['id']} returns to {parent}",
+        "cls": "system",
         "speaker": "dwarves",
     })
 
@@ -453,6 +556,15 @@ def main() -> None:
     # Non-Task: only PostToolUse, only for tools we care about.
     if hook_event and hook_event != "PostToolUse":
         sys.exit(0)
+
+    # Bash has no path → no building classification, no move. Just an action.
+    if tool_name == "Bash":
+        try:
+            handle_bash(payload)
+        except Exception as e:
+            print(f"emit-event: bash handle failed: {e}", file=sys.stderr)
+        sys.exit(0)
+
     if tool_name not in WRITE_TOOLS and tool_name not in READ_TOOLS:
         sys.exit(0)
 

@@ -30,6 +30,17 @@ shipping-agent/
 
 Each file declares audience (AI / AI + analyst / human) and stability (STABLE / LIVE). LIVE files carry `last-verified` stamps + re-verify probes.
 
+## Pending apply — cost vocabulary doc edits (T16, 2026-05-22)
+
+**Blocked on:** next session opened in `bi-analytics-main/` working dir.
+
+Drafted doc-edit proposal at `bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md`. Two insertions to land:
+
+1. **`reference/mart-contract.md`** — new "Cost columns — real vs expected vs final" subsection. Source: §1 of the draft (the four-column table + when-to-use list). Mark LIVE, `last-verified: 2026-05-22`.
+2. **`how_to.md` §0 cross-cutting rules** — new numbered rule on % invoiced reporting. Source: §B of the draft. Insertion point: next numbered slot in §0 (rule 8 unless rules added since the S023 patch).
+
+After applying, archive the proposal section from the draft (column model remains durable). Promote the bank note during next alching.
+
 ## Next concrete step
 
 Watch for residual friction in real shipping-agent sessions against the new structure. Specific regressions to scan for:

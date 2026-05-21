@@ -136,6 +136,27 @@ Smoke test: `python harness/connect_redshift.py --query "SELECT 1 AS smoke;"` re
 
 Committed `d0d8386`, pushed.
 
+### T16 — cost vocabulary + % invoiced reporting rule (S026, 2026-05-22)
+
+Principal flagged friction: the shipping-agent doesn't distinguish `real_shipping_cost_eur` (invoiced, trusted) from `expected_shipping_cost_eur` (pre-invoice approximation) from `final_shipping_cost_eur` (the coalesce). Wants a doc addition that teaches the agent (a) when to use which column, (b) to report what % of any cost figure is invoiced.
+
+Column model confirmed from prior Jebrim work (`S001` L87, `S014_d1` L36/L50, `S023`):
+
+- `real_shipping_cost_eur` — carrier-invoiced; high trust.
+- `expected_shipping_cost_eur` — rate-card / negotiated-rate estimate; medium trust; available pre-invoice.
+- `avg_shipping_cost_eur` — historical-average fallback; low trust.
+- `final_shipping_cost_eur = COALESCE(real, expected, avg)`; `cost_source` flags which one populated it.
+
+State update (principal, T16): the prior "fact_shipments cost cols 100% NULL outside Phase 5" finding from S014 D1 / S023 is **stale** — the cost cols are now wired and populated. The caveat has been stripped from the bank draft.
+
+Constraint: `bi-analytics-main` repo is **not present on this machine** (`Test-Path` = False). Cannot edit `shipping-agent/` docs directly. Drafted the column-vocabulary and the doc-edit proposal text into Jebrim's bank/drafts so the next bi-analytics session can apply it without re-thinking.
+
+% invoiced weighting decided by principal: **euro-weighted** — `SUM(real)/SUM(final)` over the same filter as the headline. Surface the `real + estimated` breakdown when % invoiced < 95%. Low % invoiced on current-week/month-to-date windows is expected, not a defect (invoice lag).
+
+Output: `gielinor/players/jebrim/bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md` — contains both Jebrim's durable column model and the exact proposal text for `reference/mart-contract.md` (new "Cost columns" subsection) + `how_to.md` §0 (new rule on % invoiced reporting).
+
+**Addendum (T16b):** Principal added — cost-bucket grain rule. Buckets (11 `bkt_*` cols on `fact_shipment_cost_summary`) exist only on invoiced rows; expected/avg are single shipment-level totals with no breakdown. Therefore `final_shipping_cost_eur` carries bucket detail only when `cost_source = 'real'`, and an order's final cost is shipment-level only — no order-level column, no sub-shipment grain unless every shipment in scope is invoiced. Added as a separate section in the bank draft and folded into the §0 rule wording ("If the answer includes a bucket breakdown, state that the breakdown reflects only the invoiced subset").
+
 ## Decisions
 
 - **Inline HTML as the new visual default** — confirmed with principal in T2. Bundle modes shift to "ask before building."

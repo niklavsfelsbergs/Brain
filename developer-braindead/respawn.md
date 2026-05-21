@@ -6,7 +6,7 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-21 (end of [[S019]], pre-commit).
+**Last updated.** 2026-05-21 (end of [[S019]], post-commit; follow-up landed for naming/placement fixes).
 
 ## Where we are
 
@@ -23,6 +23,8 @@ Concrete structural changes:
 - Alching write-reach in `write-rules.md` quietly corrected to include `spellbook/drafts/skills/` (was missed in D-015's table edit).
 
 S015 dwarf attribution still untested in the wild. D-014 chat panel verification (S017 outstanding) still pending. Gnomes themselves are also untested in the wild — first live spawn will validate the hook + agent config.
+
+**Post-close follow-up (same date).** Two naming/placement fixes landed as a follow-up commit: (a) `gielinor/spellbook/skills/gnomes.md` → `spawning-gnomes.md` to match `spawning-dwarves.md` convention, (b) `.claude/agents/gnome.md` (brain root) → `gielinor/.claude/agents/gnome.md` so the agent config sits with the rest of the gnome architecture (hook, skill, mode table). All internal references updated. **Discoverability caveat for next session:** verify a gielinor-scope session can still discover the agent at its new path — a brain-root session may or may not (which is semantically the right answer — dev-brain sessions shouldn't spawn gnomes).
 
 ## Next concrete step — START HERE
 

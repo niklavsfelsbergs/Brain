@@ -85,7 +85,7 @@ These restrictions are partly hook-enforced and partly discipline. See `.claude/
 
 ### Gnome role
 
-The agent has been invoked as a **structural housekeeper** by the principal to run session-close, per-player alching, or drafts-triage. Gnomes are functional like dwarves (no introspection, no design decisions), but with a different write surface aimed at housekeeping work — drafts and proposals across players, plus the gielinor-global drafts and `players/inbox/`. See [[D-016]] for the founding decision and `gielinor/spellbook/skills/gnomes.md` for the full operating spec including the spawn heuristic.
+The agent has been invoked as a **structural housekeeper** by the principal to run session-close, per-player alching, or drafts-triage. Gnomes are functional like dwarves (no introspection, no design decisions), but with a different write surface aimed at housekeeping work — drafts and proposals across players, plus the gielinor-global drafts and `players/inbox/`. See [[D-016]] for the founding decision and `gielinor/spellbook/skills/spawning-gnomes.md` for the full operating spec including the spawn heuristic.
 
 Gnomes are **system-namespace**. There is one gnome agent config; the spawn brief names the player(s) in scope. The gnome reads those players' layers and writes to their drafts/proposals, but its identity stays "gnome." Voice is checklist-driven, third-person about the player, no introspection.
 
@@ -134,5 +134,5 @@ Principals can change who the agent (or a player) thinks it is. Dwarves can only
 - `write-rules.md` for the full per-layer table; this file documents the dwarf and gnome subsets.
 - `.claude/hooks/dwarf-write-boundary.py`, `.claude/hooks/gnome-write-boundary.py`, and `.claude/hooks/block-sub-spawn.py` for the enforcement.
 - `spellbook/rituals/bankstanding.md` for the bankstanding-mode procedure.
-- `spellbook/skills/gnomes.md` for the gnome operating spec, spawn heuristic, and reporting format.
+- `spellbook/skills/spawning-gnomes.md` for the gnome operating spec, spawn heuristic, and reporting format.
 - `lorebook/` for the self-improvement log where mode-shaping changes get recorded.

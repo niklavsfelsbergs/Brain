@@ -29,7 +29,7 @@
 #   - any CLAUDE.md / CLAUDE.local.md (principal-edited body)
 #   - .mcp.json / ticks.md / settings.json / .claude/agents/ / .claude/hooks/
 #
-# See meta/modes.md and spellbook/skills/gnomes.md.
+# See meta/modes.md and spellbook/skills/spawning-gnomes.md.
 
 import json
 import os
@@ -115,7 +115,7 @@ def main() -> None:
                 f"BLOCKED: gnomes cannot write to {rel}.\n"
                 f"  Hit blocked substring: {blk}\n"
                 f"  Identity layers, rulebook, rituals, and body files are principal-only.\n"
-                f"  See meta/modes.md and spellbook/skills/gnomes.md.",
+                f"  See meta/modes.md and spellbook/skills/spawning-gnomes.md.",
                 file=sys.stderr,
             )
             sys.exit(2)
@@ -126,7 +126,7 @@ def main() -> None:
             f"  Path is outside the gnome write surface.\n"
             f"  Allowed: drafts/, proposals/, inventory/, quest-log/, archive/,\n"
             f"           rejected/, players/inbox/, bank/notes/, spellbook/skills/.\n"
-            f"  See meta/modes.md and spellbook/skills/gnomes.md.",
+            f"  See meta/modes.md and spellbook/skills/spawning-gnomes.md.",
             file=sys.stderr,
         )
         sys.exit(2)

@@ -47,7 +47,7 @@ Gnomes also **cannot spawn further sub-agents**. The existing `block-sub-dwarf-s
 
 ### Namespace
 
-Gnomes are **system-namespace**, not player-namespace. There is one gnome agent config (`.claude/agents/gnome.md`) regardless of which ritual or which player. The spawn brief carries the player as a parameter; the gnome reads that player's layers and writes to that player's drafts/proposals — but its identity is "gnome," not "gnome-of-Jebrim." Voice is system-flavored: checklist-driven, terse status updates, third-person about the player ("Jebrim's `completed/` has 0 files — nothing to harvest").
+Gnomes are **system-namespace**, not player-namespace. There is one gnome agent config (`gielinor/.claude/agents/gnome.md`) regardless of which ritual or which player. The spawn brief carries the player as a parameter; the gnome reads that player's layers and writes to that player's drafts/proposals — but its identity is "gnome," not "gnome-of-Jebrim." Voice is system-flavored: checklist-driven, terse status updates, third-person about the player ("Jebrim's `completed/` has 0 files — nothing to harvest").
 
 Consequence: a single gnome invocation can in principle touch multiple players (e.g., bankstanding Phase 0 spawning *one* gnome per player would be the per-player model; spawning one gnome that walks all players is also possible but discouraged for context-window reasons). Practical pattern: one gnome per player per alching pass; one gnome for the whole session-close.
 
@@ -59,13 +59,13 @@ Heuristic auto-spawn — the principal evaluates against these criteria at ritua
 - **Alching:** > 20 harvest-target turns in the player's `in-progress/` since last-alched OR > 10 pending drafts OR never-alched-and-day-1+.
 - **Drafts-triage:** > 10 pending drafts across the brain.
 
-The numeric thresholds live in `gielinor/spellbook/skills/gnomes.md` (single source) and are referenced by `close-session.md`, `alching.md`, and any future drafts-triage ritual. Tuning happens in one place.
+The numeric thresholds live in `gielinor/spellbook/skills/spawning-gnomes.md` (single source) and are referenced by `close-session.md`, `alching.md`, and any future drafts-triage ritual. Tuning happens in one place.
 
 When the heuristic does not fire, the principal runs the ritual personally — keeps the procedure from drifting, since the principal walks the steps periodically and notices when they need editing.
 
 ### Persona
 
-`gielinor/spellbook/skills/gnomes.md` carries the gnome's full operating spec: scope, write boundary (referencing the hook), spawn trigger (the heuristic), persona, communication discipline. The persona is intentionally thin — gnomes are functional, not introspective. They report in checklist form ("step 3 complete: 0 files in `completed/`, 0 bank drafts proposed"), don't speculate, don't write `examine/drafts/` about themselves.
+`gielinor/spellbook/skills/spawning-gnomes.md` carries the gnome's full operating spec: scope, write boundary (referencing the hook), spawn trigger (the heuristic), persona, communication discipline. The persona is intentionally thin — gnomes are functional, not introspective. They report in checklist form ("step 3 complete: 0 files in `completed/`, 0 bank drafts proposed"), don't speculate, don't write `examine/drafts/` about themselves.
 
 **Alternatives considered.**
 
@@ -82,15 +82,15 @@ When the heuristic does not fire, the principal runs the ritual personally — k
 *Files added.*
 
 - `gielinor/.claude/hooks/gnome-write-boundary.py` — the allow-list hook, gated on `CLAUDE_BRAIN_GNOME=1`.
-- `.claude/agents/gnome.md` — Claude Code agent config. Tools: Read, Edit, Write, Glob, Grep, Bash. No Agent/Task tool (cannot spawn sub-agents).
-- `gielinor/spellbook/skills/gnomes.md` — operating spec, single source of truth for spawn heuristics and persona.
+- `gielinor/.claude/agents/gnome.md` — Claude Code agent config. Tools: Read, Edit, Write, Glob, Grep, Bash. No Agent/Task tool (cannot spawn sub-agents).
+- `gielinor/spellbook/skills/spawning-gnomes.md` — operating spec, single source of truth for spawn heuristics and persona.
 - This file.
 
 *Files modified.*
 
 - `gielinor/.claude/settings.json` — register `gnome-write-boundary.py` in the PreToolUse Edit/Write matcher.
 - `gielinor/.claude/hooks/block-sub-dwarf-spawn.py` — generalize the env-var gate to fire on either `CLAUDE_BRAIN_DWARF=1` or `CLAUDE_BRAIN_GNOME=1`. Rename optional; functional generalization is enough.
-- `gielinor/meta/modes.md` — add gnome as the third value on the principal/dwarf axis. Document scope, write reach, spawn trigger (with `→ spellbook/skills/gnomes.md` for the source of truth on numeric thresholds), namespace, persona pointer.
+- `gielinor/meta/modes.md` — add gnome as the third value on the principal/dwarf axis. Document scope, write reach, spawn trigger (with `→ spellbook/skills/spawning-gnomes.md` for the source of truth on numeric thresholds), namespace, persona pointer.
 - `gielinor/meta/write-rules.md` — add a gnome row to the ritual write-reach table.
 - `gielinor/CLAUDE.md` — fifth architectural guarantee: gnome write boundary, mirroring the dwarf entry.
 - `gielinor/spellbook/rituals/close-session.md` — add step 0 spawn-decision (heuristic check + gnome brief on hit).
@@ -114,6 +114,6 @@ When the heuristic does not fire, the principal runs the ritual personally — k
 ## Anchor
 
 - [[S019]] in dev brain — the implementation session.
-- `gielinor/spellbook/skills/gnomes.md` — operating spec; single source of truth.
+- `gielinor/spellbook/skills/spawning-gnomes.md` — operating spec; single source of truth.
 - `gielinor/.claude/hooks/gnome-write-boundary.py` — enforcement.
-- `.claude/agents/gnome.md` — agent config.
+- `gielinor/.claude/agents/gnome.md` — agent config.

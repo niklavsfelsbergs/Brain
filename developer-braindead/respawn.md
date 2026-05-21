@@ -14,10 +14,10 @@
 
 Concrete structural changes:
 
-- New role **gnome** — system-namespace structural housekeeper, distinct from dwarves (functional/task-local). One agent config at `.claude/agents/gnome.md`; spawn brief carries player scope as parameter.
+- New role **gnome** — system-namespace structural housekeeper, distinct from dwarves (functional/task-local). One agent config at `gielinor/.claude/agents/gnome.md`; spawn brief carries player scope as parameter.
 - New hook `gielinor/.claude/hooks/gnome-write-boundary.py` — allow-list (drafts/proposals/inventory/quest-log across players + globals' drafts + `players/inbox/`) and explicit blocklist (`confirmed/`, `lorebook/decisions/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, body files, `.claude/`-infrastructure). Blocklist wins on collisions. Gated on `CLAUDE_BRAIN_GNOME=1`.
 - Renamed + generalized: `block-sub-dwarf-spawn.py` → `block-sub-spawn.py`. Fires on either `CLAUDE_BRAIN_DWARF=1` or `CLAUDE_BRAIN_GNOME=1`. Message names the role.
-- New skill `gielinor/spellbook/skills/gnomes.md` — operating spec, **single source of truth for the heuristic numbers**. Both rituals (close-session, alching) reference this file at their step 0 spawn-decision rather than carrying their own copies.
+- New skill `gielinor/spellbook/skills/spawning-gnomes.md` — operating spec, **single source of truth for the heuristic numbers**. Both rituals (close-session, alching) reference this file at their step 0 spawn-decision rather than carrying their own copies.
 - Rulebook: `meta/modes.md` axis retitled "principal vs sub-agent" with three subsections; `meta/write-rules.md` table got Session-close + Drafts-triage rows + hooks-enforced list updated; `gielinor/CLAUDE.md` 4 → 5 architectural guarantees.
 - Both rituals patched with step 0 spawn-decision (`close-session.md`, `alching.md`).
 - Alching write-reach in `write-rules.md` quietly corrected to include `spellbook/drafts/skills/` (was missed in D-015's table edit).
@@ -28,7 +28,7 @@ S015 dwarf attribution still untested in the wild. D-014 chat panel verification
 
 **Step 1 — approve gnomes work + implement them in the visualizer** (queued by principal at S019 close). Two sub-deliverables:
 
-1. **Principal review and ratification of the S019 cascade.** Re-read [[D-016]], `gielinor/spellbook/skills/gnomes.md`, the two ritual step-0 additions, and the modes.md gnome-role section. Surface anything that needs adjustment before the gnomes go live in production. Specifically worth re-checking: the explicit blocklist in `gnome-write-boundary.py` (does it cover every principal-only surface?) and the spawn heuristic numbers (are they tuned right or do they need first-pass calibration?).
+1. **Principal review and ratification of the S019 cascade.** Re-read [[D-016]], `gielinor/spellbook/skills/spawning-gnomes.md`, the two ritual step-0 additions, and the modes.md gnome-role section. Surface anything that needs adjustment before the gnomes go live in production. Specifically worth re-checking: the explicit blocklist in `gnome-write-boundary.py` (does it cover every principal-only surface?) and the spawn heuristic numbers (are they tuned right or do they need first-pass calibration?).
 
 2. **Visualizer integration.** Spec + implement. Concrete deliverables for the visualizer pass:
    - **Sprite.** Gnome sprite distinct from dwarves. Smaller? Different hat? Per [[D-016]] *Things deferred* — defer the building question initially; reuse dwarf-spawn semantics (gnome spawns next to the active player like a dwarf) until a workshop building is warranted.
@@ -80,7 +80,7 @@ Iteration menu (deferred, no priority assigned):
 
 From [[S019]] (new): **a new role's blocklist is easier to get right than its allow-list.** The gnome write-boundary hook uses both — allow-list for the housekeeping surface (broad), and explicit blocklist for principal-only paths that might otherwise match (`confirmed/` inside drafts-archive paths, `keepsake/current.md` inside the keepsake/ surface). Blocklist precedence is load-bearing; surface this if the hook ever fires unexpectedly.
 
-From [[S019]] (new): **single source of truth for tunable numbers is worth one hop.** Spawn heuristic thresholds live in `gielinor/spellbook/skills/gnomes.md`; the rituals reference but don't copy. If the numbers prove wrong on first use, one file edits the threshold for all sites.
+From [[S019]] (new): **single source of truth for tunable numbers is worth one hop.** Spawn heuristic thresholds live in `gielinor/spellbook/skills/spawning-gnomes.md`; the rituals reference but don't copy. If the numbers prove wrong on first use, one file edits the threshold for all sites.
 
 From [[S018]] (still relevant): **the quest log is the gravitational center; other layers starve without explicit routing.** Layer-routing.md + drafts-gates + inventory promotion fixed this for now. Candidate for an `I-NNN` next bankstanding.
 
@@ -119,9 +119,9 @@ From [[S003]]–[[S007]]: **structure-first, content earns its way in.** **Build
 1. `respawn.md` (this file)
 2. `quest-log/S019_gnomes_subagent_implementation.md` — most recent session, the gnomes build.
 3. `bank/decisions/D-016_gnomes_subagent.md` — the founding decision; ratify before visualizer integration.
-4. `gielinor/spellbook/skills/gnomes.md` — operating spec; single source of truth for heuristics.
+4. `gielinor/spellbook/skills/spawning-gnomes.md` — operating spec; single source of truth for heuristics.
 5. `gielinor/.claude/hooks/gnome-write-boundary.py` — the enforcement.
-6. `.claude/agents/gnome.md` — agent config.
+6. `gielinor/.claude/agents/gnome.md` — agent config.
 7. `gielinor/meta/modes.md` — updated principal/dwarf/gnome axis.
 8. `gielinor/spellbook/rituals/close-session.md` + `alching.md` — step 0 spawn-decisions.
 9. **For visualizer integration (Step 1.2):** `developer-braindead/.claude/hooks/emit-event.py` and `experiments/visualizer/index.html` — where spawn-gnome events would emit and render.

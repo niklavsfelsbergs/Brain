@@ -35,7 +35,7 @@ Three principal-only rituals each have a bounded write surface, layered on top o
 | Drafts-triage | drafts/proposals across players + globals | report-only by default; can propose `rejected/` moves with principal sign-off in-session. **No promotions.** |
 | Respawn | layers per `spellbook/rituals/respawn.md` | reads only (plus per-turn quest-log discipline once the session is live) |
 
-Dwarves can run none of these rituals. Gnomes can run **session-close**, **alching** (per-player), and **drafts-triage** when spawned by the principal at the ritual's step 0 spawn-decision; bankstanding stays principal-only at the top level (though it can spawn gnomes for its Phase 0 alching loop). See `modes.md` and `spellbook/skills/gnomes.md` for the gnome write surface and spawn heuristic.
+Dwarves can run none of these rituals. Gnomes can run **session-close**, **alching** (per-player), and **drafts-triage** when spawned by the principal at the ritual's step 0 spawn-decision; bankstanding stays principal-only at the top level (though it can spawn gnomes for its Phase 0 alching loop). See `modes.md` and `spellbook/skills/spawning-gnomes.md` for the gnome write surface and spawn heuristic.
 
 ## What's enforced vs guided
 
@@ -44,7 +44,7 @@ Dwarves can run none of these rituals. Gnomes can run **session-close**, **alchi
 - No writes to any `confirmed/` path. Applies across all scopes — global `examine/`, `niksis8/`, `lorebook/`, per-player `examine/`, `niksis8_character/`.
 - No file deletes. The agent moves files into the corresponding `archive/`.
 - Dwarf write boundary (see `modes.md`).
-- Gnome write boundary (see `modes.md` and `spellbook/skills/gnomes.md`). Gnomes can write across players to drafts/proposals/inventory/quest-log but are blocked from `confirmed/`, `lorebook/decisions/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, and body files.
+- Gnome write boundary (see `modes.md` and `spellbook/skills/spawning-gnomes.md`). Gnomes can write across players to drafts/proposals/inventory/quest-log but are blocked from `confirmed/`, `lorebook/decisions/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, and body files.
 - No sub-spawning from a dwarf or gnome. Only the principal spawns.
 
 **CLAUDE.md guides (discipline):**

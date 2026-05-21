@@ -70,7 +70,7 @@ The agent works through each item below in order, restricted to the active playe
 
 ### 0. Spawn-decision — principal-self or gnome?
 
-Before walking the steps, evaluate the gnome spawn heuristic for alching (per `spellbook/skills/gnomes.md`):
+Before walking the steps, evaluate the gnome spawn heuristic for alching (per `spellbook/skills/spawning-gnomes.md`):
 
 - **> 20 harvest-target turns** in the player's `quest-log/in-progress/` since `last-alched.md`, OR
 - **> 10 pending drafts** across this player's `examine/drafts/`, `niksis8_character/drafts/`, `bank/drafts/notes/`, `spellbook/drafts/skills/`, `keepsake/proposals/`, OR

@@ -37,7 +37,7 @@ For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in 
 
 ### 0. Spawn-decision — principal-self or gnome?
 
-Before walking the steps, evaluate the gnome spawn heuristic for session-close (per `spellbook/skills/gnomes.md`):
+Before walking the steps, evaluate the gnome spawn heuristic for session-close (per `spellbook/skills/spawning-gnomes.md`):
 
 - **> 15 turns** in the active session, OR
 - **≥ 2 players touched** in the session, OR
@@ -49,7 +49,7 @@ If any fires, spawn a **gnome** with the session-close brief:
 - Players in scope: all players with non-empty `quest-log/in-progress/`.
 - Inputs: which threshold(s) fired (turn count, players touched, drafts pending).
 
-The gnome runs steps 1–9 and returns the structured report (per `spellbook/skills/gnomes.md`). The principal reviews the report and approves any proposals before the session actually ends.
+The gnome runs steps 1–9 and returns the structured report (per `spellbook/skills/spawning-gnomes.md`). The principal reviews the report and approves any proposals before the session actually ends.
 
 If no threshold fires (light session — typically **< 10 turns AND read-only**), run steps 1–9 personally. Light closes stay with the principal so the procedure doesn't drift.
 

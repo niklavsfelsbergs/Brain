@@ -8,7 +8,7 @@ See [[D-016]] (dev brain) for the founding decision and `gielinor/meta/modes.md`
 
 A **structural housekeeper** sub-agent. Functional like a dwarf (no introspection, no design decisions), but with a different write surface aimed at the housekeeping rituals — session-close, per-player alching, drafts-triage.
 
-System-namespace. One agent config (`.claude/agents/gnome.md`); the spawn brief carries the player(s) in scope as a parameter. Voice is system-flavored, checklist-driven, third-person about the player.
+System-namespace. One agent config (`gielinor/.claude/agents/gnome.md`); the spawn brief carries the player(s) in scope as a parameter. Voice is system-flavored, checklist-driven, third-person about the player.
 
 ## When this fires — the spawn heuristic
 
@@ -138,6 +138,6 @@ A **bankstanding Phase 0** loop spawns one gnome per player needing alching — 
 - `spellbook/rituals/close-session.md` — step 0 references this skill.
 - `spellbook/rituals/alching.md` — step 0 references this skill.
 - `spellbook/skills/spawning-dwarves.md` — the companion skill for the functional sub-agent.
-- `.claude/agents/gnome.md` — the agent config (system prompt + tools).
+- `gielinor/.claude/agents/gnome.md` — the agent config (system prompt + tools).
 - `.claude/hooks/gnome-write-boundary.py` — the enforcement.
 - `.claude/hooks/block-sub-spawn.py` — sub-spawn block.

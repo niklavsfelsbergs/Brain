@@ -6,93 +6,69 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-21 (end of [[S007]]).
+**Last updated.** 2026-05-21 (end of [[S008]]).
 
 ## Where we are
 
-Main brain has been exercised on real work — Jebrim ran two player-side sessions today: S001 (repo orientation + close-session ritual adoption) and S002 (Shipping Data Mart V1 gap-analysis scoping). Both produced quest-log entries and bank notes; S002 is mid-execution with three dwarves planned but not yet spawned.
+[[S008]] was a dev-brain session (same calendar day as [[S006]] and [[S007]]) that built the [[Q-007]] visualizer's **replay-from-git-log v0** as an iso 2D SVG. Single self-contained HTML at `experiments/visualizer/index.html`, ~1700 lines, no dependencies (Google Fonts is the only network ref; pure monospace fallback works offline). Animates the real S001→S007 + Q-007 git history: Jebrim walks between buildings, three dwarves spawn at Quest Hall for the S002 wave, wisp appears for unscoped sessions, commits fire in the event log.
 
-[[S006]] (this dev-brain session) was triggered by a failure mode surfaced *during* the brain-root → dev-brain transition: I attempted to bulk-read Jebrim's in-progress S002 quest file to "write a hand-off note" when no player had been active in the current session at all. Two pushes from Niklavs got the conceptual error named: the brain-root and master `CLAUDE.md` both said "previously active player's `quest-log/in-progress/` (if any) gets a hand-off note" — which I read as "any in-progress file on disk" rather than "outgoing player in *this session*."
+[[D-008]] landed the decision *iso 2D over three.js 3D* — Niklavs proposed 3D, the v0 went iso instead because (a) one-shot three.js produces flat-grey-box demos, not RuneScape, and (b) the engine is asset-agnostic so a real 3D pass later is a sprite swap, not a redesign. [[Q-007]] flipped `open → working`; live-mode (watcher + hooks) is still open.
 
-What [[S006]] landed:
-
-1. **Hand-off note precondition (3 files).** `gielinor/spellbook/rituals/respawn.md` mini-respawn step 1 now leads with an explicit **Precondition** — skipped when no outgoing player exists this session — and the step itself defines the note's shape (one-line marker, "do not re-read or summarize the quest's existing content"). `gielinor/CLAUDE.md` and `brain/CLAUDE.md` both got matching clarifications.
-2. **Spawning-dwarves skill (new).** `gielinor/spellbook/skills/spawning-dwarves.md` codifies the dwarf workflow end-to-end: trigger heuristic (≥2 independent paths + amplifier), pre-flight check, briefing template, **background-by-default** channel, status-on-ping, completion-weave, dwarf quest-log streaming discipline, anti-patterns. Heuristic seeded from Jebrim's own S002 self-observation.
-3. **Dwarf-spawn annotation.** `gielinor/meta/communication-protocol.md` got a subsection mandating that the Plan line lists dwarves inline (manifest) when the heuristic fires — piggybacks on the already-in-force Understanding/Plan preamble.
-
-Net main-brain delta: +1 file, 4 files edited in place. No new dev-brain entries beyond this session's `respawn.md` overwrite and `S006_*.md` quest-log entry.
-
-[[S007]] (same day) added one more ritual-level change: **bankstanding now starts with a Phase 0 that alches each player with changes since last alch.** Coupling spotted by Niklavs after we discussed whether to bankstand today (answer: not yet, because nothing is drafted/tidied). Single-cue UX — user types "let's bankstand" and the ritual handles the per-player alching sequencing before its own work begins. Architectural purity preserved by making the alching↔bankstanding mode transition mid-ritual the *only* sanctioned mid-ritual mode transition. Three files edited: `gielinor/spellbook/rituals/bankstanding.md` (Phase 0 inserted, step 6 rewritten as a post-check), `gielinor/spellbook/rituals/alching.md` (third invocation mode added), `gielinor/meta/modes.md` (mid-ritual transition paragraph).
-
-What changed in [[S005]] vs [[S004]]:
-
-1. **Alching ritual (new).** Per-player tending counterpart to bankstanding. `gielinor/spellbook/rituals/alching.md` documents scope (single active player only), six-step procedure, five recommendation thresholds at respawn, two invocation modes (explicit / threshold-recommended). Each player got a `last-alched.md` placeholder.
-2. **Bankstanding sharpened (rewrite).** Now strictly **global-only writes**. Reads everything for cross-player synthesis, but per-player tending is alching's job. Procedure trimmed 8 → 7 steps; new step 6 reads each player's `last-alched.md` to flag overdue players.
-3. **Four-mode framework (modes.md rewrite).** Session modes expanded three → four: player, unscoped, alching, bankstanding. The orthogonality with the principal-vs-dwarf axis is preserved.
-4. **Write-rules ritual-reach table (new subsection).** `meta/write-rules.md` now documents bankstanding-vs-alching-vs-respawn reach alongside the per-layer write discipline.
-5. **Understanding/Plan preamble protocol (new behavioral rule).** Every response opens with two short bold-labelled lines before the substantive reply. Compresses for trivial asks. Applies in every mode and role; voice adapts, structure does not. Full rule in `meta/communication-protocol.md` (new); prominent summary added near the top of master `CLAUDE.md` (before "What you are"); `@import` added to the meta block. Per-player `persona.md` files each got a brief `**Preamble.**` note acknowledging the protocol applies and how voice adapts. Not restated per persona.
-6. **Brain-root routers (new files outside `gielinor/`).** `brain/CLAUDE.md` is the top-level router: two brain systems, route by working directory, no cross-read by default. `developer-braindead/CLAUDE.md` is the dev-brain entry: read `respawn.md` first, build-assistant scope, one-way cross-read allowance to `gielinor/` on explicit cue.
-7. **Audit refreshed.** `build_audit.py` annotations updated for every S005-touched file; new annotations added for the new files. New `CONTENT_GROUPS` section "Brain-root routers (outside gielinor/)" renders the two external CLAUDE.md files in the linear contents view (they're intentionally not in the sidebar tree, which stays a clean mirror of `gielinor/`). Landing diagram redrawn. `gielinor-audit.html` regenerated: 105 files / 80 dirs / 46 drift flags.
-
-Net main-brain state: +4 files inside `gielinor/` over end-of-[[S004]], plus 2 new files at the brain root and dev-brain root. The brain has still not been run on a real task.
+[[I-002]] landed: *render UI in your head before shipping it*. Six visible bugs over the session that a single screenshot would have caught. Promoted from observation to posture rule.
 
 ## Next concrete step — START HERE
 
-**Resume Jebrim S002 and exercise the new spawning-dwarves skill.** Jebrim's S002 quest is mid-execution with three dwarves planned (D1 ClickUp subtree, D2 bi-etl scan, D3 Redshift coverage). That spawn wave will be the **first real test** of the [[S006]] skill — specifically the background-by-default channel, the Plan-line manifest annotation, and the status-on-ping behavior. Watch for friction during real use; that's the design feedback we're after.
+**Continue [[S008]] — apply the inspiration-image pass to the visualizer.** Late in the session Niklavs shared a reference pixel-art game screenshot (saved screenshot reference is in chat, not on disk). Six concrete deltas were agreed on, in priority order. The visualizer file is already iterating; each delta is a localized change.
 
-Secondary follow-ups, in priority order:
+### The six deltas (do them in this order)
 
-1. **Draft the deferred dev-brain records.** A `D-NNN` decision capturing the hand-off wording fix (context → decision → alternatives → consequences). An `I-NNN` examine draft on the failure mode itself — *conflating disk-state with session-state, and the bulk-read-to-write-a-marker reflex.* Both were proposed at the end of [[S006]] but user cued close before they landed.
-2. **Watch for the third occurrence pattern.** [[S004]] / [[S005]] / [[S006]] all surfaced via pushback after the agent committed to a wrong-shaped action. If a fourth occurrence lands, that's the threshold for promoting "principal pushback is the primary ambiguity signal" to a confirmed `examine/` entry in the main brain.
+1. **Always-on building labels with ornate gold-bracketed frames.** Replace the current hover-only `<text class="plaque">` with permanent labels below each building. Format like `◆ QUEST HALL ◆` in Jacquard 12, gold text, dark backdrop chip. Big readability win. *(~15 min)*
 
-## Parallel track — visualizer design
+2. **Sky + horizon strip above the grass.** The black void above the iso diamond is dead weight. Add a sky band at the top of the SVG: linear gradient (light blue → pale yellow) → distant mountain silhouettes (3-4 layers, decreasing opacity) → tree line. The grass diamond can stay below it; just kill the void above. *(~30 min)*
 
-[[Q-007]] (`bank/open-questions/Q-007_gielinor_visualizer.md`) captures a proposal for a real-time Gielinor visualizer — top-down map with buildings per brain layer, character sprites for players, smaller sprites for dwarves, animated as the agent reads / writes / spawns. Architecture sketched (watchdog + hooks + HTML/CSS-transitions). Trigger condition for building: real dwarf wave runs *and* first bankstanding produces real motion to render. Don't start before then.
+3. **Ground decoration density.** The grass tiles are clean; the reference image has ~3-4× more ground detail. Sprinkle grass tufts, mushrooms, pebbles, small flowers, mushroom rings. Use the existing `overlays` layer; add 5-6 new tiny sprites in `<defs>` and seed them across the diamond. *(~20 min)*
 
-Next-session option (if deferred-build trigger has fired): read [[Q-007]], decide build/defer/scope-down, start with a **replay-from-git-log v0** before committing to real-time infrastructure.
+4. **Taller buildings + per-building character pass.** The single biggest visual impact. Our buildings are squat iso pyramids; the reference has tall, ornate structures. Push the proportions: increase `h` and `r` per building. Add per-building character — Spellbook Tower should rival the reference's "Vericity" for verticality, Meta Town Hall should feel like a castle (multiple spires, banners), Lorebook Library should be a building of consequence not a shed with books stuck on top. *(~1-2 hr — biggest delta, save until 1-3 land)*
 
-What to watch for during the dwarf spawn (specific to [[S006]] additions):
+5. **COMMS-style log panel restyle.** The reference's `● JUSTS ● KHA'AN ● JEFF ● TEACHER` colored-dot speaker tabs are a beautiful nav pattern. Adapt to ours: `● JEBRIM ● ZEZIMA ● DWARVES ● WISP ● COMMITS` as filterable tabs above the event log. Each click filters log entries. Keep the existing log content; restyle the header and add tab filtering. *(~30 min)*
 
-1. **Dwarf-spawn heuristic firing correctly.** When the principal hits the three-dwarf wave for S002, does the Plan-line manifest annotation actually appear? Does the principal go background-by-default, or fall back to foreground blocking spawn?
-2. **Status-on-ping behavior.** When the user asks "status?" mid-wave, does the principal tail siblings since last check (cheap) or re-read the whole file (expensive)? Friction here gets flagged for the hook-vs-discipline call.
-3. **Completion-weave timing.** Does each dwarf's completion get surfaced in the next response, or batched silently until all return? The skill says next response; verify.
-4. **Synthesis gate.** Principal must wait for *all* dwarves before synthesizing unless user cues otherwise. Watch for premature synthesis on partial returns.
-5. **Hand-off note shape — verified by absence.** Next mid-session player switch (or player→unscoped switch) should produce a one-line marker, not a bulk-read prelude. If the agent still bulk-reads, the fix didn't land at the behavior level — only at the rule level.
-6. **Carry-over from prior watch-list:** Understanding/Plan preamble in practice (compress correctly? voice adapts?); address-based invocation (sticky? mid-session switch?); hook enforcement (`confirmed/` writes, file deletes — both should block); per-turn quest-log discipline.
+6. **Active-player focal label.** Like the reference's `◆ VERICITY ◆` label that says "this is the place" — float a label above the currently active player showing `◆ JEBRIM AT QUEST HALL ◆` (or whichever building). Updates on every move event. Reinforces the camera/attention. *(~15 min)*
 
-After the dwarf wave completes, run a dev-brain session to capture observations and write the deferred `D-NNN` + `I-NNN` drafts.
+### What NOT to take from the reference (decided in [[S008]], do not relitigate)
+
+- The HUD top-left (`PLAYGROUND / HEALTH 100 / CYCLE 90 / SLEEPING`). Game-stat metaphor; the brain isn't a game with health.
+- The `HOME / BRAIN 3D / DASHBOARD` nav. Implies multiple pages that don't exist.
+- Multi-character COMMS content. The aesthetic yes; the chatroom no.
+- Side-scroller perspective. The iso diamond is what makes 9 buildings work — flatten it and only 3 fit.
+- Hyper-detailed building textures (every brick). Weekend of asset work; one-shot fidelity should stay at RS-Classic level, not OSRS-modern.
 
 ## Open at the start of next session
 
-- **§C Pilot definition** — data source, "concerning" definition, output channel. Drives §B-class architecture refinements through real use.
-- **§E Gates layer** — blocked on [[Q-002]] (async gates). Pick up when a real workflow surfaces the need.
-- **§H.3 brain-zone taxonomy** — content for `player/working-agreements.md`. Not blocking but worth landing.
-- **§H.4 identity ↔ main-brain interaction** — how `examine/I-NNN` entries here interact with main-brain `examine/` and per-player `examine/`. Decide when an identity observation from dev work needs to land in the main brain too.
+- All six deltas above (the main work).
+- After the deltas land, consider whether the v0 is "good enough to show people" or whether to escalate to live-mode (watcher + hooks emitting events to `state.json`). Live mode is the still-open part of [[Q-007]].
+- **§C Pilot definition** — data source, "concerning" definition, output channel. Drives §B-class architecture refinements through real use. *(Unchanged from prior respawn; visualizer is parallel work.)*
+- **§H.3 brain-zone taxonomy** — content for `player/working-agreements.md`. Not blocking.
+- **§H.4 identity ↔ main-brain interaction** — how `examine/I-NNN` entries here interact with main-brain `examine/`. [[I-002]] is a candidate for export.
 
 ## Carried-over observations
 
-From [[S003]] / reaffirmed [[S004]]: **structure-first, content earns its way in.** Reaffirmed again in [[S005]] — three rounds of corrections against the same scaffold, each landing before content accumulated against the previous shape. Worth surfacing as a candidate `examine/` identity entry at next bankstanding.
+From [[S008]] (now codified as [[I-002]]): **render UI in your head before shipping it.** Six iteration cycles for visible bugs this session — the cost of mentally previewing the SVG/CSS is seconds, the cost of skipping it is a round-trip per bug.
 
-From [[S004]] / reaffirmed [[S005]]: **build the verification surface alongside the artifact, not after.** The audit HTML kept earning its weight through both correction rounds — Niklavs sized each batch of changes to the audit's call-out surface. Also a candidate `examine/` entry.
+From [[S003]]–[[S007]] (carried, reaffirmed): **structure-first, content earns its way in.** **Build the verification surface alongside the artifact, not after.** Both still candidate `examine/` entries on the main-brain side.
 
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S007_bankstanding_phase_0_alching.md` — most recent session
-3. `quest-log/S006_handoff_precondition_and_dwarf_spawning.md` — prior session
-4. `quest-log/S005_alching_preamble_protocol_brain_routers.md` — alching, preamble, routers
-5. `quest-log/S004_main_brain_corrections_post_s003.md` — the four corrections
-6. `quest-log/S003_main_brain_phase_1_scaffold.md` — original build session
-7. `bank/plan.md` — current mission state (§B done; §C and beyond open)
-8. **Brain-root router:** `../CLAUDE.md` (note the [[S006]] hand-off no-op clause)
-9. **Main brain entry:** `../gielinor/CLAUDE.md` (note the [[S006]] outgoing-player clarification on the mid-session switching paragraph)
-10. **Main-brain files most recently changed (latest first):**
-    - `../gielinor/spellbook/rituals/bankstanding.md` ([[S007]] Phase 0 + rewritten step 6)
-    - `../gielinor/spellbook/rituals/alching.md` ([[S007]] third invocation mode)
-    - `../gielinor/meta/modes.md` ([[S007]] mid-ritual transition paragraph)
-    - `../gielinor/spellbook/skills/spawning-dwarves.md` ([[S006]] new skill)
-    - `../gielinor/spellbook/rituals/respawn.md` ([[S006]] mini-respawn Precondition + hand-off note shape spec)
-    - `../gielinor/meta/communication-protocol.md` ([[S006]] dwarf-spawn annotation subsection)
-11. **Audit:** `../gielinor-audit.html` (still reflects S005 state — [[S006]] +1 file, [[S007]] 0 new files; regenerate when the next session adds or moves something the audit indexes).
+2. `quest-log/S008_iso_visualizer_v0.md` — most recent session
+3. `bank/decisions/D-008_iso_replay_v0_over_three_js.md` — the iso-vs-3D decision
+4. `examine/I-002_render_before_shipping_ui.md` — the new posture rule
+5. `bank/open-questions/Q-007_gielinor_visualizer.md` — updated status
+6. `experiments/visualizer/index.html` — the artifact being iterated. Most recent state has: iso projection, grass filling viewport (no diamond clip), pyramidal building roofs, three-layer shadows + stone plinths, iso-coord-based flora, stationary trees (sway killed), compass rose, multi-letter directions.
+7. `quest-log/S007_bankstanding_phase_0_alching.md` — prior session
+8. `bank/plan.md` — current mission state. Visualizer is parallel to plan items; not on the plan.
 
 `bank/decisions/`, `bank/assumptions/`, `bank/open-questions/`, `bank/risks/` are reference material — open as cited.
+
+## Note on the visualizer's engine
+
+The engine (event timeline, `applyEvent` dispatch, CSS-transition movement, RAF tick loop, scrub-seek with `instant` flag) is **asset-agnostic and should not be touched during the six deltas**. All six deltas are visual layer changes. If the next session needs to change engine behavior (e.g., adding tab filtering for delta 5), keep the timeline data structure and dispatch surface intact — only add filter state on top.

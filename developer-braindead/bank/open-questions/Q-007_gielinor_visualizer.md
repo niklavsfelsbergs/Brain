@@ -1,6 +1,6 @@
 # Q-007 — Gielinor real-time visualizer
 
-**Status.** `open`. Opened in [[S007]].
+**Status.** `working` — replay v0 shipped in [[S008]] as iso 2D SVG (see [[D-008]]). Live-mode question still open: build the watcher+hooks substrate, or leave at replay-only? Trigger for that decision is whether the v0 proves useful enough to invest in real-time.
 
 **The question.** Should we build a real-time visualization of the brain operating — a top-down Gielinor map with buildings for each brain layer, players as character sprites, dwarves as smaller sprites — animated live as the agent reads, writes, spawns, and synthesizes?
 

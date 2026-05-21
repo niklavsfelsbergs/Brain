@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gielinor · Brain Replay v0 (iso)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=VT323&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --grass-1: #5a7f37;
+    --grass-2: #6e9442;
+    --grass-3: #82a851;
+    --grass-shadow: #3e5a26;
+    --path: #b6975f;
+    --path-dark: #8c7044;
+    --path-stone: #a08560;
+    --cobble: #847a6f;
+    --stone-dark: #3f3830;
+    --stone-mid: #65594d;
+    --stone-light: #968576;
+    --stone-shadow: #4a4138;
+    --wood-dark: #4a2f1a;
+    --wood-mid: #75502f;
+    --wood-light: #a37c50;
+    --wood-shadow: #3a2110;
+    --roof-red: #9a4332;
+    --roof-red-dk: #6e2c1f;
+    --roof-blue: #3d597b;
+    --roof-blue-dk: #283c58;
+    --roof-green: #4f6b3a;
+    --roof-green-dk: #324624;
+    --roof-purple: #5b3d6e;
+    --roof-purple-dk: #3a2954;
+    --water: #4d7790;
+    --water-light: #71a0b8;
+    --water-foam: #c8e0e8;
+    --water-dk: #2c536b;
+    --gold: #d8ad36;
+    --gold-dk: #997620;
+    --parchment: #efe2bb;
+    --parchment-dk: #d8c694;
+    --ink: #28201a;
+    --ink-soft: #50402f;
+    --frame-bg: #14100c;
+    --frame-edge: #2c2018;
+    --void: #0e0a06;
+    --jebrim-robe: #2e4d75;
+    --jebrim-trim: #d8ad36;
+    --jebrim-hat: #3a2954;
+    --zezima-robe: #a85a2a;
+    --zezima-hood: #5e3010;
+    --zezima-trim: #f0d49b;
+    --wisp: #ffe49b;
+    --wisp-core: #fff8d8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(ellipse at top, #2a1f15 0%, #14100c 60%, #0a0805 100%);
+    color: var(--parchment);
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 18px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .stage {
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 24px 24px 32px;
+  }
+
+  /* ─── Header (quest scroll) ─── */
+  .topbar {
+    background: linear-gradient(180deg, var(--parchment) 0%, var(--parchment-dk) 100%);
+    color: var(--ink);
+    border: 3px solid var(--frame-edge);
+    position: relative;
+    padding: 14px 28px 16px;
+    box-shadow:
+      0 0 0 1px var(--gold-dk) inset,
+      0 8px 32px rgba(0,0,0,0.6),
+      0 0 24px rgba(216, 173, 54, 0.08);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 28px;
+  }
+  .topbar::before, .topbar::after {
+    content: ""; position: absolute; top: 6px; bottom: 6px;
+    width: 2px; background: var(--gold-dk); opacity: 0.5;
+  }
+  .topbar::before { left: 6px; } .topbar::after { right: 6px; }
+
+  .brand { display: flex; align-items: center; gap: 14px; padding-right: 16px; border-right: 1px solid rgba(80,64,47,0.3); }
+  .brand-mark { width: 44px; height: 44px; display: grid; place-items: center; font-family: 'Jacquard 12', serif; font-size: 42px; color: var(--gold-dk); text-shadow: 0 1px 0 rgba(255,255,255,0.4); line-height: 1; }
+  .brand-text h1 { font-family: 'Jacquard 12','IM Fell English SC',serif; font-size: 34px; margin: 0; line-height: 0.9; letter-spacing: 0.04em; color: var(--ink); }
+  .brand-text .sub { font-family: 'VT323',monospace; font-size: 14px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+
+  .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  button, select { font-family: 'VT323',monospace; background: var(--parchment-dk); color: var(--ink); border: 2px solid var(--ink-soft); border-radius: 0; padding: 4px 12px; font-size: 18px; cursor: pointer; line-height: 1.2; transition: background 120ms, transform 80ms; box-shadow: inset -2px -2px 0 rgba(0,0,0,0.12), inset 1px 1px 0 rgba(255,255,255,0.4); }
+  button:hover { background: #e8d6a3; }
+  button:active { transform: translateY(1px); }
+  button.active { background: var(--ink); color: var(--parchment); }
+  .play-btn { font-size: 22px; min-width: 50px; padding: 4px 10px 6px; background: var(--gold); color: var(--ink); border-color: var(--gold-dk); }
+  .play-btn:hover { background: #f0c344; }
+
+  .speed-toggles { display: flex; gap: 0; border: 2px solid var(--ink-soft); }
+  .speed-toggles button { border: none; border-right: 1px solid var(--ink-soft); padding: 4px 8px; box-shadow: none; }
+  .speed-toggles button:last-child { border-right: none; }
+
+  .scrub-wrap { flex: 1; min-width: 240px; position: relative; height: 24px; display: flex; align-items: center; }
+  #scrub { width: 100%; -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+  #scrub::-webkit-slider-runnable-track { height: 8px; background: var(--ink); border: 1px solid var(--stone-dark); }
+  #scrub::-moz-range-track { height: 8px; background: var(--ink); border: 1px solid var(--stone-dark); }
+  #scrub::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 18px; margin-top: -5px; background: var(--gold); border: 2px solid var(--ink); cursor: grab; }
+  #scrub::-moz-range-thumb { width: 14px; height: 18px; background: var(--gold); border: 2px solid var(--ink); }
+  .scrub-ticks { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 8px; pointer-events: none; }
+  .scrub-ticks .tk { position: absolute; top: 0; width: 2px; height: 8px; background: var(--gold-dk); opacity: 0.7; }
+
+  .now-playing { padding-left: 18px; border-left: 1px solid rgba(80,64,47,0.3); min-width: 200px; max-width: 280px; text-align: right; }
+  .now-playing .nid { font-family: 'Jacquard 12', serif; font-size: 26px; line-height: 1; color: var(--ink); }
+  .now-playing .nmeta { font-family: 'VT323',monospace; font-size: 14px; color: var(--ink-soft); margin-top: 4px; line-height: 1.15; word-break: break-word; }
+
+  /* ─── Map frame ─── */
+  .world {
+    margin-top: 18px; position: relative;
+    border: 3px solid var(--frame-edge);
+    background: var(--frame-bg);
+    padding: 6px;
+    box-shadow:
+      inset 0 0 0 2px var(--gold-dk),
+      inset 0 0 60px rgba(0,0,0,0.7),
+      0 12px 48px rgba(0,0,0,0.6);
+  }
+  .world::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(216,173,54,0.18); pointer-events: none; z-index: 3; }
+  .map-wrap { position: relative; }
+  svg.map { display: block; width: 100%; height: auto; background: #1a140e; shape-rendering: crispEdges; image-rendering: pixelated; }
+
+  /* Building hover */
+  .building { cursor: default; transition: filter 200ms; }
+  .building:hover { filter: brightness(1.18) drop-shadow(0 0 8px rgba(216,173,54,0.5)); }
+  .building text.plaque { opacity: 0; transition: opacity 150ms; pointer-events: none; }
+  .building:hover text.plaque { opacity: 1; }
+
+  /* Character motion */
+  .actor { transition: transform 1800ms cubic-bezier(0.45, 0.05, 0.55, 0.95); }
+  .actor.player, .actor.dwarf { filter: drop-shadow(0 0 1.2px rgba(0,0,0,0.85)) drop-shadow(0 1px 0 rgba(0,0,0,0.7)); }
+  .actor.walking .bob { animation: bob 360ms steps(2) infinite; }
+  @keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-2px);} }
+  @keyframes idle-breath { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-1px);} }
+  .actor .bob { animation: idle-breath 2400ms ease-in-out infinite; }
+  .actor .glow { opacity: 0; transition: opacity 400ms; }
+  .actor.active .glow { opacity: 1; }
+  .actor.fade-in { animation: fadeIn 500ms ease-out; }
+  .actor.fade-out { animation: fadeOut 500ms ease-in forwards; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  @keyframes fadeOut { from{opacity:1;} to{opacity:0;} }
+
+  /* trees are stationary — they don't walk */
+  .tree, .tree.sway, .tree.sway2 { animation: none; }
+
+  .ripple { animation: ripple 3800ms linear infinite; }
+  .ripple.delay { animation-delay: -1800ms; }
+  @keyframes ripple { 0%{transform:translateX(-6px); opacity:0;} 50%{opacity:0.8;} 100%{transform:translateX(6px); opacity:0;} }
+
+  .smoke { animation: smoke 3400ms linear infinite; transform-box: fill-box; transform-origin: center; }
+  .smoke.d1 { animation-delay: -1100ms; }
+  .smoke.d2 { animation-delay: -2200ms; }
+  @keyframes smoke { 0%{transform:translate(0,0) scale(0.6); opacity:0;} 20%{opacity:0.8;} 100%{transform:translate(-4px,-28px) scale(1.4); opacity:0;} }
+
+  .dust { animation: dust 800ms ease-out forwards; pointer-events: none; }
+  @keyframes dust { 0%{opacity:0.75; transform:scale(0.4);} 100%{opacity:0; transform:scale(1.5);} }
+
+  .wisp-glow { filter: url(#wispGlow); }
+  @keyframes wisp-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);} }
+  .wisp-bob { animation: wisp-float 2200ms ease-in-out infinite; }
+
+  .tower-aura { animation: aura 2600ms ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes aura { 0%,100%{opacity:0.35; transform:scale(1);} 50%{opacity:0.7; transform:scale(1.15);} }
+
+  .torch-flame { animation: flicker 220ms steps(2) infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes flicker { 0%,100%{transform:scaleY(1) translateY(0);} 50%{transform:scaleY(0.85) translateY(1px);} }
+
+  .gem-shine { animation: shine 2200ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes shine { 0%,100%{opacity:0.6;} 50%{opacity:1;} }
+
+  /* ─── Overlays ─── */
+  .ticker {
+    position: absolute; top: 14px; left: 16px;
+    background: rgba(20,16,12,0.85); border: 1px solid var(--gold-dk);
+    color: var(--parchment); font-family: 'VT323',monospace; font-size: 14px;
+    padding: 6px 12px; letter-spacing: 0.06em; pointer-events: none; z-index: 4;
+    min-width: 240px; box-shadow: 0 0 12px rgba(0,0,0,0.5);
+  }
+  .ticker .tk-id { color: var(--gold); font-family: 'Jacquard 12', serif; font-size: 22px; line-height: 1; display: inline-block; margin-right: 8px; }
+  .ticker .tk-line { display: block; margin-top: 2px; font-size: 13px; opacity: 0.85; line-height: 1.2; }
+  .ticker .tk-stats { display: block; margin-top: 4px; font-size: 12px; opacity: 0.65; }
+
+  .legend {
+    position: absolute; bottom: 14px; left: 16px;
+    background: rgba(20,16,12,0.85); border: 1px solid var(--gold-dk);
+    padding: 8px 12px; font-family: 'VT323',monospace; font-size: 13px;
+    color: var(--parchment); z-index: 4; line-height: 1.4; pointer-events: none;
+  }
+  .legend .row { display: flex; align-items: center; gap: 8px; }
+  .legend .swatch { width: 12px; height: 12px; border: 1px solid var(--ink); }
+
+  .compass {
+    position: absolute; top: 14px; right: 16px;
+    width: 78px; height: 78px;
+    background: rgba(20,16,12,0.7); border: 1px solid var(--gold-dk);
+    color: var(--gold); z-index: 4;
+    pointer-events: none;
+    display: grid; place-items: center;
+  }
+
+  /* ─── Log ─── */
+  .logbox { margin-top: 14px; border: 3px solid var(--frame-edge); background: #0e0a06; color: var(--parchment); height: 170px; overflow: hidden; position: relative; box-shadow: inset 0 0 0 2px var(--gold-dk), inset 0 0 40px rgba(0,0,0,0.7); }
+  .logbox header { background: linear-gradient(180deg, #1a140e, #0e0a06); border-bottom: 1px solid var(--gold-dk); padding: 6px 14px; font-family: 'Jacquard 12', serif; font-size: 22px; letter-spacing: 0.08em; color: var(--gold); display: flex; align-items: center; gap: 10px; }
+  .logbox header::before { content: ""; width: 8px; height: 8px; background: var(--gold); box-shadow: 0 0 8px var(--gold); animation: pulse 1400ms ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
+  .log-scroll { height: calc(100% - 40px); overflow-y: auto; padding: 8px 14px; font-family: 'VT323',monospace; font-size: 16px; line-height: 1.32; color: #d6c7a0; }
+  .log-scroll::-webkit-scrollbar { width: 8px; }
+  .log-scroll::-webkit-scrollbar-track { background: #0e0a06; }
+  .log-scroll::-webkit-scrollbar-thumb { background: var(--gold-dk); }
+  .log-entry { padding: 1px 0; opacity: 0.95; }
+  .log-entry.commit { color: var(--gold); border-top: 1px dashed rgba(216,173,54,0.25); margin-top: 4px; padding-top: 4px; }
+  .log-entry.session-start { color: var(--wisp-core); font-weight: bold; margin-top: 6px; }
+  .log-entry .t { color: #7a6a48; margin-right: 8px; }
+
+  .crumb { margin-top: 12px; text-align: center; color: rgba(216,173,54,0.45); font-family: 'VT323',monospace; font-size: 14px; letter-spacing: 0.1em; }
+  .crumb span { color: rgba(216,173,54,0.65); }
+
+  @media (max-width: 900px) {
+    .topbar { grid-template-columns: 1fr; gap: 12px; }
+    .now-playing { border-left: none; padding-left: 0; text-align: left; max-width: none; }
+    .brand { border-right: none; padding-right: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">⚔</div>
+      <div class="brand-text">
+        <h1>Gielinor</h1>
+        <div class="sub">Brain Replay · iso v0 · from git log</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="playPause" class="play-btn" title="Play / Pause">▶</button>
+      <div class="speed-toggles" role="group" aria-label="Speed">
+        <button data-speed="0.5">½×</button>
+        <button data-speed="1" class="active">1×</button>
+        <button data-speed="2">2×</button>
+        <button data-speed="4">4×</button>
+      </div>
+      <div class="scrub-wrap">
+        <input type="range" id="scrub" min="0" max="1000" value="0" step="1">
+        <div class="scrub-ticks" id="scrubTicks"></div>
+      </div>
+      <select id="jumpSession" title="Jump to session">
+        <option value="">↦ Jump…</option>
+      </select>
+    </div>
+
+    <div class="now-playing">
+      <div class="nid" id="sessionId">—</div>
+      <div class="nmeta" id="sessionMeta">awaiting playback · press ▶</div>
+    </div>
+  </header>
+
+  <div class="world">
+    <div class="map-wrap">
+      <svg class="map" viewBox="0 0 1200 820" preserveAspectRatio="xMidYMid meet" aria-label="Gielinor brain map">
+        <defs>
+          <!-- Water -->
+          <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="var(--water-light)"/>
+            <stop offset="60%"  stop-color="var(--water)"/>
+            <stop offset="100%" stop-color="var(--water-dk)"/>
+          </linearGradient>
+          <!-- Vignette -->
+          <radialGradient id="vignette" cx="50%" cy="55%" r="68%">
+            <stop offset="62%" stop-color="rgba(0,0,0,0)"/>
+            <stop offset="100%" stop-color="rgba(0,0,0,0.55)"/>
+          </radialGradient>
+          <!-- Wisp glow filter -->
+          <filter id="wispGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <!-- Tower aura -->
+          <radialGradient id="auraGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#c8a8e8" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#c8a8e8" stop-opacity="0"/>
+          </radialGradient>
+          <!-- Player active glow -->
+          <radialGradient id="activeGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff2b3" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#fff2b3" stop-opacity="0"/>
+          </radialGradient>
+          <!-- gem glow -->
+          <radialGradient id="gemGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#f0a8e0" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#f0a8e0" stop-opacity="0"/>
+          </radialGradient>
+
+          <!-- ── billboard sprites ── -->
+
+          <!-- Tree -->
+          <g id="tree">
+            <ellipse cx="0" cy="6" rx="13" ry="3.5" fill="rgba(0,0,0,0.32)"/>
+            <rect x="-3" y="-4" width="6" height="10" fill="var(--wood-dark)"/>
+            <rect x="-2" y="-4" width="1" height="10" fill="#2a1808"/>
+            <circle cx="0"  cy="-12" r="14" fill="var(--grass-shadow)"/>
+            <circle cx="-3" cy="-15" r="10" fill="#3e6432"/>
+            <circle cx="4"  cy="-12" r="8"  fill="#588744"/>
+            <circle cx="-5" cy="-10" r="5"  fill="#6d9a4d"/>
+            <circle cx="2"  cy="-18" r="4"  fill="#82b35a"/>
+            <rect x="-5" y="-15" width="1" height="1" fill="#2d4520"/>
+            <rect x="3"  y="-11" width="1" height="1" fill="#2d4520"/>
+          </g>
+
+          <!-- Bush -->
+          <g id="bush">
+            <ellipse cx="0" cy="2" rx="9" ry="2.2" fill="rgba(0,0,0,0.25)"/>
+            <circle cx="-3" cy="-2" r="5" fill="#577e3a"/>
+            <circle cx="3"  cy="-1" r="6" fill="#6a9645"/>
+            <circle cx="0"  cy="-4" r="4" fill="#7eaf52"/>
+          </g>
+
+          <!-- Flower -->
+          <g id="flower">
+            <rect x="-1" y="-1" width="2" height="2" fill="var(--gold)"/>
+            <rect x="-2" y="0"  width="1" height="1" fill="#e69b9b"/>
+            <rect x="2"  y="0"  width="1" height="1" fill="#e69b9b"/>
+            <rect x="0"  y="-2" width="1" height="1" fill="#e69b9b"/>
+            <rect x="0"  y="2"  width="1" height="1" fill="#e69b9b"/>
+          </g>
+
+          <!-- Rock -->
+          <g id="rock">
+            <ellipse cx="0" cy="2" rx="7" ry="1.5" fill="rgba(0,0,0,0.3)"/>
+            <polygon points="-6,1 -4,-5 2,-6 6,0 5,2" fill="#7a716a"/>
+            <polygon points="-6,1 -4,-5 -2,-3 -1,1" fill="#968576"/>
+            <polygon points="2,-6 6,0 4,-2" fill="#5e564d"/>
+          </g>
+
+          <!-- Jebrim (billboard) -->
+          <g id="jebrim">
+            <ellipse cx="0" cy="5" rx="9" ry="2.3" fill="rgba(0,0,0,0.42)"/>
+            <rect x="-7" y="-6" width="14" height="11" fill="var(--jebrim-robe)"/>
+            <rect x="-7" y="-6" width="14" height="2"  fill="#1f365a"/>
+            <rect x="-1" y="-6" width="2"  height="11" fill="var(--jebrim-trim)"/>
+            <rect x="-7" y="-1" width="14" height="1" fill="#1a2a44"/>
+            <rect x="-9" y="-4" width="2" height="6" fill="var(--jebrim-robe)"/>
+            <rect x="7"  y="-4" width="2" height="6" fill="var(--jebrim-robe)"/>
+            <rect x="-4" y="-13" width="8" height="7" fill="#e2b88a"/>
+            <rect x="-4" y="-9"  width="8" height="1" fill="#b88c61"/>
+            <rect x="-3" y="-8"  width="6" height="2" fill="#5a4530"/>
+            <rect x="-2" y="-11" width="1" height="1" fill="#28201a"/>
+            <rect x="1"  y="-11" width="1" height="1" fill="#28201a"/>
+            <polygon points="-6,-13 6,-13 0,-22" fill="var(--jebrim-hat)"/>
+            <rect x="-7" y="-14" width="14" height="2" fill="var(--jebrim-hat)"/>
+            <rect x="-7" y="-13" width="14" height="1" fill="var(--jebrim-trim)"/>
+            <rect x="-1" y="-21" width="2" height="2" fill="var(--jebrim-trim)"/>
+            <rect x="-11" y="0" width="3" height="5" fill="var(--parchment)"/>
+            <rect x="-11" y="0" width="3" height="1" fill="var(--gold-dk)"/>
+          </g>
+
+          <!-- Zezima (billboard) -->
+          <g id="zezima">
+            <ellipse cx="0" cy="5" rx="9" ry="2.3" fill="rgba(0,0,0,0.42)"/>
+            <rect x="-7" y="-6" width="14" height="11" fill="var(--zezima-robe)"/>
+            <rect x="-7" y="-6" width="14" height="2"  fill="#8a4520"/>
+            <rect x="-7" y="3"  width="14" height="2"  fill="var(--zezima-trim)"/>
+            <rect x="-9" y="-4" width="2" height="6" fill="var(--zezima-robe)"/>
+            <rect x="7"  y="-4" width="2" height="6" fill="var(--zezima-robe)"/>
+            <rect x="-4" y="-13" width="8" height="7" fill="#e8c39a"/>
+            <rect x="-5" y="-15" width="10" height="3" fill="var(--zezima-hood)"/>
+            <rect x="-5" y="-13" width="2"  height="5" fill="var(--zezima-hood)"/>
+            <rect x="3"  y="-13" width="2"  height="5" fill="var(--zezima-hood)"/>
+            <rect x="-2" y="-11" width="1" height="1" fill="#28201a"/>
+            <rect x="1"  y="-11" width="1" height="1" fill="#28201a"/>
+            <rect x="-1" y="-8" width="2" height="1" fill="#8a4520"/>
+            <rect x="8" y="-3" width="1" height="6" fill="var(--wood-dark)"/>
+            <polygon points="8,-3 9,-3 11,-7 9,-6" fill="#e8d8a8"/>
+          </g>
+
+          <!-- Wisp -->
+          <g id="wisp">
+            <circle cx="0" cy="0" r="11" fill="var(--wisp)" opacity="0.18"/>
+            <circle cx="0" cy="0" r="7"  fill="var(--wisp)" opacity="0.45"/>
+            <circle cx="0" cy="0" r="4"  fill="var(--wisp-core)"/>
+            <rect x="-1" y="-1" width="2" height="2" fill="#ffffff"/>
+          </g>
+
+        </defs>
+
+        <!-- void backdrop -->
+        <rect x="0" y="0" width="1200" height="820" fill="var(--void)"/>
+
+        <!-- Layers (populated by JS) -->
+        <g id="ground"></g>
+        <g id="ground-overlays"></g>
+        <g id="pond"></g>
+        <g id="paths"></g>
+        <g id="flora-back"></g>
+        <g id="buildings"></g>
+        <g id="flora-front"></g>
+        <g id="particles"></g>
+        <g id="characters">
+          <g class="actor player" id="actor-jebrim" data-actor="jebrim" transform="translate(260, 240)">
+            <ellipse class="glow" cx="0" cy="0" rx="22" ry="22" fill="url(#activeGlow)"/>
+            <g class="bob"><use href="#jebrim"/></g>
+          </g>
+          <g class="actor player" id="actor-zezima" data-actor="zezima" transform="translate(850, 620)" style="opacity:0.55">
+            <ellipse class="glow" cx="0" cy="0" rx="22" ry="22" fill="url(#activeGlow)"/>
+            <g class="bob"><use href="#zezima"/></g>
+          </g>
+        </g>
+
+        <!-- vignette -->
+        <rect x="0" y="0" width="1200" height="820" fill="url(#vignette)" pointer-events="none"/>
+      </svg>
+
+      <div class="ticker">
+        <span class="tk-id" id="tkId">—</span><span id="tkCommit"></span>
+        <span class="tk-line" id="tkLine">awaiting</span>
+        <span class="tk-stats" id="tkStats">dwarves: 0 · time 00:00</span>
+      </div>
+
+      <div class="legend">
+        <div class="row"><span class="swatch" style="background:var(--jebrim-robe)"></span> Jebrim — analyst-player</div>
+        <div class="row"><span class="swatch" style="background:var(--zezima-robe)"></span> Zezima — reflective-player <span style="opacity:0.5">(idle)</span></div>
+        <div class="row"><span class="swatch" style="background:#cf9a2c"></span> Dwarves — sub-agent workers</div>
+        <div class="row"><span class="swatch" style="background:var(--wisp-core)"></span> Wisp — unscoped/system</div>
+      </div>
+
+      <div class="compass">
+        <svg viewBox="-32 -32 64 64" width="64" height="64">
+          <circle cx="0" cy="0" r="29" fill="rgba(20,16,12,0.55)" stroke="var(--gold-dk)" stroke-width="1.5"/>
+          <circle cx="0" cy="0" r="22" fill="none" stroke="var(--gold-dk)" stroke-width="0.5" opacity="0.4"/>
+          <!-- 4-direction needle -->
+          <polygon points="0,-20 4,0 0,20 -4,0" fill="var(--gold-dk)" opacity="0.85"/>
+          <polygon points="0,-20 4,0 0,0" fill="#f0c344"/>
+          <polygon points="0,20 -4,0 0,0" fill="var(--gold)" opacity="0.5"/>
+          <!-- direction letters -->
+          <text x="0" y="-22" text-anchor="middle" font-family="Jacquard 12" font-size="14" fill="#f0c344" stroke="var(--ink)" stroke-width="0.4">N</text>
+          <text x="0" y="28" text-anchor="middle" font-family="Jacquard 12" font-size="11" fill="var(--gold-dk)" opacity="0.85">S</text>
+          <text x="22" y="3" text-anchor="middle" font-family="Jacquard 12" font-size="11" fill="var(--gold-dk)" opacity="0.85">E</text>
+          <text x="-22" y="3" text-anchor="middle" font-family="Jacquard 12" font-size="11" fill="var(--gold-dk)" opacity="0.85">W</text>
+          <circle cx="0" cy="0" r="2" fill="var(--gold)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="logbox">
+    <header>EVENT&nbsp;LOG</header>
+    <div class="log-scroll" id="logScroll"></div>
+  </div>
+
+  <div class="crumb">replay built from <span>git log</span> · iso projection · sessions S001–S007 + Q-007 · <span>experiments/visualizer</span></div>
+
+</div>
+
+<script>
+"use strict";
+
+const svgNS = 'http://www.w3.org/2000/svg';
+
+// ─────────────────────────────────────────────────────────────
+//   World data
+// ─────────────────────────────────────────────────────────────
+
+// Buildings: screen positions (the southern/foot corner of the building)
+const BUILDINGS = {
+  'inbox-square':     {x: 260, y: 270, label: 'Inbox Square'},
+  'meta-town-hall':   {x: 590, y: 190, label: 'Meta Town Hall'},
+  'lorebook-library': {x: 920, y: 280, label: 'Lorebook Library'},
+  'bank':             {x: 400, y: 410, label: 'Bank'},
+  'examine-hall':     {x: 220, y: 560, label: 'Hall of Mirrors'},
+  'quest-hall':       {x: 620, y: 460, label: 'Quest Hall'},
+  'spellbook-tower':  {x: 880, y: 480, label: 'Spellbook Tower'},
+  'keepsake-vault':   {x: 870, y: 660, label: 'Keepsake Vault'},
+  'inn':              {x: 540, y: 660, label: 'The Inn'},
+};
+
+// Where actors stand at each building (front-of-door spot, slightly south of footprint)
+const STAND = {
+  'inbox-square':     {x: 260, y: 285},
+  'meta-town-hall':   {x: 590, y: 240},
+  'lorebook-library': {x: 920, y: 332},
+  'bank':             {x: 400, y: 462},
+  'examine-hall':     {x: 220, y: 600},
+  'quest-hall':       {x: 620, y: 510},
+  'spellbook-tower':  {x: 880, y: 528},
+  'keepsake-vault':   {x: 870, y: 698},
+  'inn':              {x: 540, y: 700},
+};
+
+// Iso path connections (cobblestone strips)
+const PATHS = [
+  ['inbox-square', 'meta-town-hall'],
+  ['meta-town-hall', 'lorebook-library'],
+  ['inbox-square', 'bank'],
+  ['bank', 'quest-hall'],
+  ['meta-town-hall', 'quest-hall'],
+  ['lorebook-library', 'spellbook-tower'],
+  ['quest-hall', 'spellbook-tower'],
+  ['quest-hall', 'inn'],
+  ['examine-hall', 'bank'],
+  ['examine-hall', 'inn'],
+  ['spellbook-tower', 'keepsake-vault'],
+  ['inn', 'keepsake-vault'],
+];
+
+const TILE_W = 64, TILE_H = 32;
+
+// Iso transform — origin at (gx=0, gy=0) maps to (offX, offY).
+// offY centers the grass diamond on the building cluster.
+const ISO = { offX: 600, offY: 440 };
+function isoToScreen(gx, gy) {
+  return {
+    x: ISO.offX + (gx - gy) * TILE_W/2,
+    y: ISO.offY + (gx + gy) * TILE_H/2,
+  };
+}
+
+// jitter for actors sharing a building
+function jitter(actorId, atKey) {
+  let h = 0;
+  const s = actorId + ':' + atKey;
+  for (let i = 0; i < s.length; i++) h = ((h<<5) - h + s.charCodeAt(i)) | 0;
+  return { dx: ((h & 31) - 15), dy: (((h>>5) & 15) - 7) };
+}
+
+// ─────────────────────────────────────────────────────────────
+//   Generate the iso ground (diamond patch of grass tiles)
+// ─────────────────────────────────────────────────────────────
+
+function buildGround() {
+  const ground = document.getElementById('ground');
+  const overlays = document.getElementById('ground-overlays');
+  // Big enough to fill the entire viewport — viewport crop does the rest.
+  const cols = 56, rows = 56;
+  for (let gy = 0; gy < rows; gy++) {
+    for (let gx = 0; gx < cols; gx++) {
+      const p = isoToScreen(gx - cols/2, gy - rows/2);
+      // viewport crop only — no diamond mask, grass fills the whole frame
+      if (p.x < -40 || p.x > 1240 || p.y < -20 || p.y > 840) continue;
+
+      const isLight = ((gx + gy) % 2 === 0);
+      let fill = isLight ? '#5e8639' : '#577d35';
+      // soft vignette via distance from screen center
+      const dx = p.x - 600, dy = (p.y - 410) * 1.5;
+      const edge = Math.hypot(dx, dy);
+      if (edge > 620) fill = '#4d6c2d';
+      if (edge > 760) fill = '#3f5a26';
+      const poly = document.createElementNS(svgNS, 'polygon');
+      poly.setAttribute('points',
+        `${p.x},${p.y - TILE_H/2} ${p.x + TILE_W/2},${p.y} ${p.x},${p.y + TILE_H/2} ${p.x - TILE_W/2},${p.y}`);
+      poly.setAttribute('fill', fill);
+      poly.setAttribute('stroke', 'rgba(50,80,30,0.35)');
+      poly.setAttribute('stroke-width', '0.5');
+      ground.appendChild(poly);
+
+      // sprinkle small detail
+      const hashSeed = (gx * 31 + gy * 17) & 255;
+      if (hashSeed % 13 === 0) {
+        const dot = document.createElementNS(svgNS, 'rect');
+        dot.setAttribute('x', p.x - 2); dot.setAttribute('y', p.y - 1);
+        dot.setAttribute('width', 2); dot.setAttribute('height', 2);
+        dot.setAttribute('fill', '#82a851');
+        overlays.appendChild(dot);
+      }
+      if (hashSeed % 19 === 3) {
+        const dot = document.createElementNS(svgNS, 'rect');
+        dot.setAttribute('x', p.x + 4); dot.setAttribute('y', p.y + 2);
+        dot.setAttribute('width', 1); dot.setAttribute('height', 1);
+        dot.setAttribute('fill', '#3e5a26');
+        overlays.appendChild(dot);
+      }
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//   Cobblestone paths between buildings
+// ─────────────────────────────────────────────────────────────
+
+function buildPaths() {
+  const paths = document.getElementById('paths');
+  PATHS.forEach(([a, b]) => {
+    const A = STAND[a], B = STAND[b];
+    const dx = B.x - A.x, dy = B.y - A.y;
+    const len = Math.hypot(dx, dy);
+    const stones = Math.floor(len / 14);
+    for (let i = 1; i < stones; i++) {
+      const t = i / stones;
+      const cx = A.x + dx * t + (((i * 17) % 5) - 2);
+      const cy = A.y + dy * t + (((i * 13) % 3) - 1);
+      // small iso diamond stone
+      const w = 12 + ((i * 7) % 3);
+      const h = 6;
+      const fill = (i % 3 === 0) ? '#9a8060' : (i % 3 === 1) ? '#b6975f' : '#a08560';
+      const poly = document.createElementNS(svgNS, 'polygon');
+      poly.setAttribute('points',
+        `${cx},${cy - h/2} ${cx + w/2},${cy} ${cx},${cy + h/2} ${cx - w/2},${cy}`);
+      poly.setAttribute('fill', fill);
+      poly.setAttribute('stroke', '#6e5535');
+      poly.setAttribute('stroke-width', '0.5');
+      paths.appendChild(poly);
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//   Iso pond
+// ─────────────────────────────────────────────────────────────
+
+function buildPond() {
+  const pond = document.getElementById('pond');
+  const cx = 740, cy = 620;
+  // big diamond
+  const poly = document.createElementNS(svgNS, 'polygon');
+  poly.setAttribute('points', `${cx},${cy - 36} ${cx + 90},${cy} ${cx},${cy + 36} ${cx - 90},${cy}`);
+  poly.setAttribute('fill', 'url(#waterGrad)');
+  poly.setAttribute('stroke', 'var(--water-dk)');
+  poly.setAttribute('stroke-width', '2');
+  pond.appendChild(poly);
+
+  // foam
+  const foam = document.createElementNS(svgNS, 'polygon');
+  foam.setAttribute('points', `${cx},${cy - 32} ${cx + 80},${cy} ${cx},${cy + 32} ${cx - 80},${cy}`);
+  foam.setAttribute('fill', 'none');
+  foam.setAttribute('stroke', 'var(--water-foam)');
+  foam.setAttribute('stroke-width', '0.6');
+  foam.setAttribute('opacity', '0.4');
+  pond.appendChild(foam);
+
+  // ripples
+  [[cx-30, cy-6], [cx+20, cy+8], [cx-10, cy+18], [cx+40, cy-12]].forEach((p, i) => {
+    const r = document.createElementNS(svgNS, 'line');
+    r.setAttribute('x1', p[0] - 8); r.setAttribute('y1', p[1]);
+    r.setAttribute('x2', p[0] + 8); r.setAttribute('y2', p[1]);
+    r.setAttribute('stroke', 'var(--water-light)');
+    r.setAttribute('stroke-width', '1');
+    r.setAttribute('class', i % 2 === 0 ? 'ripple' : 'ripple delay');
+    pond.appendChild(r);
+  });
+
+  // lily pad
+  const lily = document.createElementNS(svgNS, 'g');
+  lily.innerHTML = `
+    <polygon points="${cx-22},${cy+4} ${cx-12},${cy} ${cx-22},${cy-4} ${cx-32},${cy}" fill="#4f6b3a"/>
+    <polygon points="${cx-22},${cy+3} ${cx-13},${cy} ${cx-22},${cy-3} ${cx-31},${cy}" fill="#6a9645"/>
+    <circle cx="${cx-22}" cy="${cy-1}" r="1.5" fill="#f0b0c8"/>
+  `;
+  pond.appendChild(lily);
+}
+
+// ─────────────────────────────────────────────────────────────
+//   Flora — trees, bushes, flowers, rocks
+// ─────────────────────────────────────────────────────────────
+
+function buildFlora() {
+  const back = document.getElementById('flora-back');
+  const front = document.getElementById('flora-front');
+
+  // helper — iso (cx, cy) to screen, with building collision check
+  function isoXY(cx, cy) {
+    return { x: 600 + (cx - cy) * 32, y: 440 + (cx + cy) * 16 };
+  }
+  function clearOfBuildings(x, y, pad=72) {
+    return !Object.values(BUILDINGS).some(b => Math.hypot(b.x - x, b.y - y) < pad);
+  }
+
+  // Outer ring — trees ring the inside of the diamond perimeter
+  const outerRing = [
+    [-11, -0.5], [-10.5, -3.5], [-9, -6], [-6.5, -8.5], [-3.5, -10], [-0.5, -11],
+    [2.5, -10.5], [5.5, -9.5], [8, -7.5], [10, -5], [11, -2], [11.2, 1.5],
+    [10.5, 4.5], [9, 7.5], [6.5, 9.5], [3.5, 10.5], [0.5, 11], [-2.5, 10.5],
+    [-5.5, 9.5], [-8, 7.5], [-9.5, 5], [-10.5, 2.5]
+  ];
+  outerRing.forEach(([cx, cy], i) => {
+    const p = isoXY(cx, cy);
+    if (p.x < 30 || p.x > 1170 || p.y < 30 || p.y > 800) return;
+    const cls = i % 2 === 0 ? 'tree sway' : 'tree sway2';
+    if (cy > 4) addUse(front, 'tree', p.x, p.y, cls);
+    else addUse(back, 'tree', p.x, p.y, cls);
+  });
+
+  // Inner ring — scattered, avoiding buildings
+  const innerRing = [
+    [-8, -3], [-6, -7], [-2, -9], [2, -9], [6, -7], [8, -3.5],
+    [9, 0.5], [8, 4], [6, 7.5], [2, 9.5], [-2, 9.5], [-6, 7.5], [-8.5, 4], [-9, 0.5],
+    [-5, -4], [-4, -6], [5, -5], [4, -7], [-7, 4], [7, 4.5], [-3, 6], [4, 6.5],
+  ];
+  innerRing.forEach(([cx, cy], i) => {
+    const p = isoXY(cx, cy);
+    if (!clearOfBuildings(p.x, p.y, 80)) return;
+    if (p.x < 30 || p.x > 1170 || p.y < 30 || p.y > 800) return;
+    const cls = i % 2 === 0 ? 'tree sway2' : 'tree sway';
+    if (cy > 4) addUse(front, 'tree', p.x, p.y, cls);
+    else addUse(back, 'tree', p.x, p.y, cls);
+  });
+
+  // bushes — in iso coords, mid-distance
+  [[-8.5, 1], [-5, -3], [-2, -5], [4, -5], [6.5, -2], [3, 6], [-4, 5], [-1, 7], [7, 3.5], [-7, -5], [5, -2.5]]
+    .forEach(([cx, cy]) => {
+      const p = isoXY(cx, cy);
+      if (!clearOfBuildings(p.x, p.y, 50)) return;
+      addUse(back, 'bush', p.x, p.y);
+    });
+
+  // flowers — clusters
+  [[-6, -4], [-6.2, -3.8], [-5.8, -4.2], [3.5, 5], [3.7, 5.2], [3.3, 4.8], [-2.5, -7], [-2.7, -6.8], [6, 1.5], [6.2, 1.7], [-3, 4], [-2.8, 4.2]]
+    .forEach(([cx, cy]) => {
+      const p = isoXY(cx, cy);
+      addUse(back, 'flower', p.x, p.y);
+    });
+
+  // rocks — sparse on grass
+  [[-7, -1], [5, -6], [-3, 8.5], [9, 2], [-9.5, 3], [1, -8], [-6.5, 8]]
+    .forEach(([cx, cy]) => {
+      const p = isoXY(cx, cy);
+      if (!clearOfBuildings(p.x, p.y, 60)) return;
+      addUse(back, 'rock', p.x, p.y);
+    });
+}
+
+function addUse(parent, href, x, y, cls='') {
+  const u = document.createElementNS(svgNS, 'use');
+  u.setAttribute('href', '#' + href);
+  u.setAttribute('x', x);
+  u.setAttribute('y', y);
+  if (cls) u.setAttribute('class', cls);
+  parent.appendChild(u);
+}
+
+// ─────────────────────────────────────────────────────────────
+//   Iso building generator
+// ─────────────────────────────────────────────────────────────
+//
+// Each building has:
+//   - cx, cy:    south (foot) corner of the base diamond, in screen coords
+//   - w, d:      half-width and half-depth of base (so corners: N=(0,-d), E=(w,0), S=(0,d), W=(-w,0))
+//   - h:         wall height in px
+//   - r:         roof peak rise above wall top
+//   - walls:     {right, left, frame}   — right=SE-face, left=SW-face
+//   - roof:      {right, left, ridge}
+//   - details:   inline SVG string drawn after walls but before roof? we draw all walls, then roof, then details.
+//
+
+function isoBuilding(opts) {
+  const {id, label, cx, cy, w, d, h, r, walls, roof, details = ''} = opts;
+  // corners
+  const Sx = 0, Sy = d;
+  const Ex = w, Ey = 0;
+  const Nx = 0, Ny = -d;
+  const Wx = -w, Wy = 0;
+  const Stop_y = Sy - h, Etop_y = Ey - h, Ntop_y = Ny - h, Wtop_y = Wy - h;
+  const apexY = -h - r;
+
+  // Multi-layer shadow — wide diffuse outer + tight dark inner, both offset for "sun from upper-right" feel
+  const shadow = `
+    <polygon points="${10},${d + 14} ${w + 16},${10} ${10},${-d - 4} ${-w - 4},${10}" fill="rgba(0,0,0,0.18)"/>
+    <polygon points="${6},${d + 10} ${w + 10},${8} ${6},${-d}    ${-w},${8}"          fill="rgba(0,0,0,0.32)"/>
+    <polygon points="${2},${d + 6}  ${w + 4},${4}  ${2},${-d + 2} ${-w + 2},${4}"     fill="rgba(0,0,0,0.4)"/>
+  `;
+
+  // stone plinth — slightly larger than the wall footprint, the building "sits on" it
+  const plinthW = w + 4, plinthD = d + 2;
+  const plinth = `
+    <polygon points="0,${plinthD} ${plinthW},0 0,${-plinthD} ${-plinthW},0" fill="${walls.base || '#3a3128'}" stroke="rgba(0,0,0,0.5)" stroke-width="0.8"/>
+    <polygon points="0,${plinthD - 3} ${plinthW - 3},0 0,${-plinthD + 3} ${-plinthW + 3},0" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+  `;
+
+  // base diamond — the actual wall footprint, sits inside the plinth
+  const base = `<polygon points="${Sx},${Sy} ${Ex},${Ey} ${Nx},${Ny} ${Wx},${Wy}" fill="${walls.base || 'rgba(0,0,0,0.15)'}" opacity="0.85"/>`;
+
+  // SW wall (left, darker — away from imagined light from upper-right)
+  const swWall = `<polygon points="${Sx},${Sy} ${Wx},${Wy} ${Wx},${Wtop_y} ${Sx},${Stop_y}" fill="${walls.left}"/>`;
+  // SE wall (right, lighter)
+  const seWall = `<polygon points="${Sx},${Sy} ${Ex},${Ey} ${Ex},${Etop_y} ${Sx},${Stop_y}" fill="${walls.right}"/>`;
+
+  // frame edges
+  const frame = walls.frame ? `
+    <line x1="${Sx}" y1="${Sy}" x2="${Sx}" y2="${Stop_y}" stroke="${walls.frame}" stroke-width="1.5"/>
+    <line x1="${Ex}" y1="${Ey}" x2="${Ex}" y2="${Etop_y}" stroke="${walls.frame}" stroke-width="1.5"/>
+    <line x1="${Wx}" y1="${Wy}" x2="${Wx}" y2="${Wtop_y}" stroke="${walls.frame}" stroke-width="1.5"/>
+    <line x1="${Sx}" y1="${Stop_y}" x2="${Ex}" y2="${Etop_y}" stroke="${walls.frame}" stroke-width="1"/>
+    <line x1="${Sx}" y1="${Stop_y}" x2="${Wx}" y2="${Wtop_y}" stroke="${walls.frame}" stroke-width="1"/>
+  ` : '';
+
+  // Roof: pyramidal — two visible triangular slopes
+  // SW slope: (S_top, W_top, apex)
+  // SE slope: (S_top, E_top, apex)
+  const swRoof = `<polygon points="${Sx},${Stop_y} ${Wx},${Wtop_y} 0,${apexY}" fill="${roof.left}"/>`;
+  const seRoof = `<polygon points="${Sx},${Stop_y} ${Ex},${Etop_y} 0,${apexY}" fill="${roof.right}"/>`;
+  // outline ridge edges
+  const roofRidge = `
+    <line x1="${Sx}" y1="${Stop_y}" x2="0" y2="${apexY}" stroke="${roof.ridge || 'rgba(0,0,0,0.4)'}" stroke-width="1"/>
+    <line x1="${Wx}" y1="${Wtop_y}" x2="0" y2="${apexY}" stroke="${roof.ridge || 'rgba(0,0,0,0.4)'}" stroke-width="1"/>
+    <line x1="${Ex}" y1="${Etop_y}" x2="0" y2="${apexY}" stroke="${roof.ridge || 'rgba(0,0,0,0.4)'}" stroke-width="1"/>
+  `;
+
+  return `<g class="building" data-id="${id}" transform="translate(${cx},${cy})">
+    ${shadow}${plinth}${base}${swWall}${seWall}${frame}${swRoof}${seRoof}${roofRidge}${details}
+    <text class="plaque" x="0" y="${d + 22}" text-anchor="middle"
+          font-family="Jacquard 12" font-size="20" fill="var(--parchment)"
+          stroke="var(--ink)" stroke-width="0.4">${label}</text>
+  </g>`;
+}
+
+// Helper: parallelogram on the SW wall (a door/window).
+// f1, f2: fraction along the wall from S (0) to W (1).
+// vy: vertical bottom offset above ground (px). H: window height.
+// Returns SVG polygon points string.
+function swWallPoly(w, d, f1, f2, vy, H) {
+  const p = (f) => ({x: -w * f, y: d * (1 - f) - vy});
+  const a = p(f1), b = p(f2);
+  return `${a.x},${a.y} ${b.x},${b.y} ${b.x},${b.y - H} ${a.x},${a.y - H}`;
+}
+// Same for SE wall (S to E)
+function seWallPoly(w, d, f1, f2, vy, H) {
+  const p = (f) => ({x: w * f, y: d * (1 - f) - vy});
+  const a = p(f1), b = p(f2);
+  return `${a.x},${a.y} ${b.x},${b.y} ${b.x},${b.y - H} ${a.x},${a.y - H}`;
+}
+
+// ─────────────────────────────────────────────────────────────
+//   Build all 9 buildings
+// ─────────────────────────────────────────────────────────────
+
+function buildBuildings() {
+  const layer = document.getElementById('buildings');
+  let html = '';
+
+  // ── Inbox Square — flat stone platform with bulletin board (no walls) ──
+  {
+    const b = BUILDINGS['inbox-square'];
+    const w = 56, d = 28;
+    // checkered tile diamond
+    let tiles = '';
+    for (let i = -2; i <= 2; i++) {
+      for (let j = -2; j <= 2; j++) {
+        if (Math.abs(i) + Math.abs(j) > 3) continue;
+        const tx = (i - j) * 14;
+        const ty = (i + j) * 7;
+        const fill = ((i + j + 100) % 2 === 0) ? 'var(--stone-light)' : 'var(--stone-mid)';
+        tiles += `<polygon points="${tx},${ty-7} ${tx+14},${ty} ${tx},${ty+7} ${tx-14},${ty}" fill="${fill}" stroke="var(--stone-shadow)" stroke-width="0.5"/>`;
+      }
+    }
+    // bulletin board on the back (north)
+    const bb = `
+      <polygon points="0,-26 12,-32 12,-12 0,-6" fill="var(--wood-dark)"/>
+      <polygon points="0,-26 -12,-32 -12,-12 0,-6" fill="var(--wood-mid)"/>
+      <rect x="-10" y="-30" width="20" height="3" fill="var(--wood-dark)"/>
+      <!-- paper notes (on the SE/visible face) -->
+      <polygon points="2,-22 5,-23.5 5,-15.5 2,-14" fill="var(--parchment)"/>
+      <polygon points="6,-22.5 9,-24 9,-16 6,-14.5" fill="var(--parchment)"/>
+      <!-- left side notes -->
+      <polygon points="-2,-22 -5,-23.5 -5,-15.5 -2,-14" fill="var(--parchment-dk)"/>
+      <!-- post bases -->
+      <rect x="-2" y="-12" width="1" height="6" fill="var(--wood-dark)"/>
+      <rect x="11" y="-19" width="1" height="6" fill="var(--wood-dark)"/>
+    `;
+    html += `<g class="building" data-id="inbox-square" transform="translate(${b.x},${b.y})">
+      <polygon points="0,${d+5} ${w+5},5 0,${-d+5} ${-w+5},5" fill="rgba(0,0,0,0.25)"/>
+      ${tiles}
+      ${bb}
+      <text class="plaque" x="0" y="${d + 22}" text-anchor="middle" font-family="Jacquard 12" font-size="20" fill="var(--parchment)" stroke="var(--ink)" stroke-width="0.4">Inbox Square</text>
+    </g>`;
+  }
+
+  // ── Meta Town Hall — tall stone with banners + spire ──
+  {
+    const b = BUILDINGS['meta-town-hall'];
+    const w = 75, d = 38, h = 70, r = 38;
+    const details = `
+      <!-- clock medallion on SW wall -->
+      <circle cx="${-w*0.5}" cy="${d*0.5 - 38}" r="9" fill="var(--parchment)" stroke="var(--ink)" stroke-width="1"/>
+      <rect x="${-w*0.5 - 1}" y="${d*0.5 - 44}" width="2" height="6" fill="var(--ink)"/>
+      <rect x="${-w*0.5}"     y="${d*0.5 - 39}" width="6" height="1.5" fill="var(--ink)"/>
+      <!-- banners hanging from eaves -->
+      <polygon points="${-w + 6},${-h + 2} ${-w + 16},${-h + 2} ${-w + 13},${-h + 22} ${-w + 9},${-h + 22}" fill="var(--roof-red)" stroke="var(--roof-red-dk)" stroke-width="0.5"/>
+      <polygon points="${w - 16},${-h + 2} ${w - 6},${-h + 2} ${w - 9},${-h + 22} ${w - 13},${-h + 22}" fill="var(--roof-red)" stroke="var(--roof-red-dk)" stroke-width="0.5"/>
+      <!-- door on SW (frontish) -->
+      <polygon points="${swWallPoly(w, d, 0.35, 0.5, 0, 32)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.35, 0.5, 28, 4)}" fill="#1a0e04"/>
+      <!-- arched window SE -->
+      <polygon points="${seWallPoly(w, d, 0.3, 0.45, 18, 22)}" fill="var(--roof-blue-dk)" stroke="var(--stone-light)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 18, 22)}" fill="var(--roof-blue-dk)" stroke="var(--stone-light)" stroke-width="0.6"/>
+      <!-- spire on apex -->
+      <polygon points="-4,${-h - r} 4,${-h - r} 0,${-h - r - 22}" fill="var(--roof-blue-dk)"/>
+      <rect x="-1" y="${-h - r - 28}" width="2" height="6" fill="var(--gold)"/>
+      <polygon points="-4,${-h - r - 32} 4,${-h - r - 32} 0,${-h - r - 40}" fill="var(--gold)"/>
+      <!-- ridge highlight -->
+      <line x1="0" y1="${d - h}" x2="0" y2="${-h - r}" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+    `;
+    html += isoBuilding({
+      id: 'meta-town-hall', label: 'Meta Town Hall',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--stone-mid)', left: 'var(--stone-dark)', frame: 'rgba(0,0,0,0.35)', base: 'var(--stone-shadow)' },
+      roof:  { right: 'var(--roof-blue)', left: 'var(--roof-blue-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      details,
+    });
+  }
+
+  // ── Lorebook Library — red roof, ivy, books on top ──
+  {
+    const b = BUILDINGS['lorebook-library'];
+    const w = 64, d = 32, h = 56, r = 28;
+    const details = `
+      <!-- ivy on SW wall -->
+      <rect x="${-w + 1}" y="${-h + 4}" width="3" height="${h - 4}" fill="#3e6432"/>
+      <circle cx="${-w + 2}" cy="${-h + 16}" r="2" fill="#588744"/>
+      <circle cx="${-w + 2}" cy="${-h + 28}" r="2" fill="#588744"/>
+      <circle cx="${-w + 2}" cy="${-h + 42}" r="2" fill="#588744"/>
+      <!-- door SW -->
+      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 28)}" fill="var(--wood-mid)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 25, 3)}" fill="var(--wood-dark)"/>
+      <!-- arched windows SE -->
+      <polygon points="${seWallPoly(w, d, 0.25, 0.4, 14, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-mid)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 14, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-mid)" stroke-width="0.6"/>
+      <!-- books stacked on the SE roof slope (sits at ridge, visible against roof) -->
+      <g transform="translate(8, ${-h - r*0.5})">
+        <rect x="0" y="0" width="20" height="6" fill="#7a3c1f" stroke="#3a1a0c" stroke-width="0.5"/>
+        <rect x="0" y="0" width="20" height="1.5" fill="var(--gold)"/>
+        <rect x="2" y="-6" width="16" height="6" fill="#5a3a72" stroke="#2a1a40" stroke-width="0.5"/>
+        <rect x="2" y="-6" width="16" height="1.5" fill="var(--gold)"/>
+        <rect x="4" y="-12" width="12" height="6" fill="#3a5775" stroke="#1a2a40" stroke-width="0.5"/>
+        <rect x="4" y="-12" width="12" height="1.5" fill="var(--gold)"/>
+        <!-- bookmark ribbon -->
+        <rect x="10" y="-12" width="1.5" height="14" fill="#d8ad36"/>
+      </g>
+      <!-- LORE banner across SE roof -->
+      <polygon points="-14,${d - h - 8} 22,${-h - 4} 22,${-h + 4} -14,${d - h}" fill="var(--parchment)" opacity="0.9"/>
+      <text x="4" y="${d - h - 2}" font-family="Jacquard 12" font-size="11" fill="var(--ink)" transform="rotate(-26 4 ${d-h-2})">LORE</text>
+    `;
+    html += isoBuilding({
+      id: 'lorebook-library', label: 'Lorebook Library',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.3)', base: 'var(--stone-shadow)' },
+      roof:  { right: 'var(--roof-red)', left: 'var(--roof-red-dk)', ridge: 'rgba(0,0,0,0.45)' },
+      details,
+    });
+  }
+
+  // ── Bank — dark stone vault with gold trim ──
+  {
+    const b = BUILDINGS['bank'];
+    const w = 70, d = 35, h = 60, r = 30;
+    const details = `
+      <!-- gold trim band across top of both walls -->
+      <polygon points="${0},${d - h + 2} ${w},${-h + 2} ${w},${-h + 5} ${0},${d - h + 5}" fill="var(--gold)"/>
+      <polygon points="${0},${d - h + 2} ${-w},${-h + 2} ${-w},${-h + 5} ${0},${d - h + 5}" fill="var(--gold-dk)"/>
+      <!-- reinforced band lower -->
+      <polygon points="${0},${d - 28} ${w},${-28} ${w},${-25} ${0},${d - 25}" fill="#1f1812"/>
+      <polygon points="${0},${d - 28} ${-w},${-28} ${-w},${-25} ${0},${d - 25}" fill="#1f1812"/>
+      <!-- big double doors on SW -->
+      <polygon points="${swWallPoly(w, d, 0.32, 0.55, 0, 36)}" fill="var(--gold-dk)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.32, 0.55, 33, 3)}" fill="var(--gold)"/>
+      <line x1="${-w*0.435}" y1="${d*0.565}" x2="${-w*0.435}" y2="${d*0.565 - 36}" stroke="#5a4520" stroke-width="1"/>
+      <!-- gold $ symbol on apex -->
+      <rect x="-5" y="${-h - r + 4}" width="10" height="3" fill="var(--gold)"/>
+      <rect x="-2" y="${-h - r}"     width="4"  height="11" fill="var(--gold)"/>
+      <rect x="-5" y="${-h - r + 8}" width="10" height="3" fill="var(--gold)"/>
+      <!-- coin pile in front — distinct coins with rim outline -->
+      <ellipse cx="0" cy="${d + 14}" rx="22" ry="4" fill="rgba(0,0,0,0.4)"/>
+      <circle cx="-11" cy="${d + 12}" r="3" fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="1"/>
+      <circle cx="-4"  cy="${d + 13}" r="3" fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="1"/>
+      <circle cx="3"   cy="${d + 12}" r="3" fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="1"/>
+      <circle cx="10"  cy="${d + 13}" r="3" fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="1"/>
+      <circle cx="-7"  cy="${d + 9}"  r="3" fill="#f0c344" stroke="var(--gold-dk)" stroke-width="1"/>
+      <circle cx="0"   cy="${d + 9}"  r="3" fill="#f0c344" stroke="var(--gold-dk)" stroke-width="1"/>
+      <circle cx="7"   cy="${d + 9}"  r="3" fill="#f0c344" stroke="var(--gold-dk)" stroke-width="1"/>
+      <circle cx="-3"  cy="${d + 6}"  r="2.5" fill="#f8d050" stroke="var(--gold-dk)" stroke-width="0.8"/>
+      <circle cx="3"   cy="${d + 6}"  r="2.5" fill="#f8d050" stroke="var(--gold-dk)" stroke-width="0.8"/>
+    `;
+    html += isoBuilding({
+      id: 'bank', label: 'Bank',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--stone-dark)', left: '#2a241e', frame: 'rgba(0,0,0,0.55)', base: '#1c1812' },
+      roof:  { right: 'var(--roof-red-dk)', left: '#4d1d13', ridge: '#1a0e04' },
+      details,
+    });
+  }
+
+  // ── Hall of Mirrors — short walls, dome on top ──
+  {
+    const b = BUILDINGS['examine-hall'];
+    const w = 50, d = 25, h = 36, r = 6;
+    const details = `
+      <!-- mirror window SW: silver gleam parallelogram -->
+      <polygon points="${swWallPoly(w, d, 0.25, 0.5, 8, 22)}" fill="#a8c5d8" stroke="#5d7d96" stroke-width="0.8"/>
+      <polygon points="${swWallPoly(w, d, 0.3, 0.34, 12, 18)}" fill="#d8e8f0"/>
+      <!-- mirror window SE -->
+      <polygon points="${seWallPoly(w, d, 0.25, 0.5, 8, 22)}" fill="#a8c5d8" stroke="#5d7d96" stroke-width="0.8"/>
+      <polygon points="${seWallPoly(w, d, 0.3, 0.34, 12, 18)}" fill="#d8e8f0"/>
+      <!-- small door front -->
+      <polygon points="${swWallPoly(w, d, 0.55, 0.65, 0, 22)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
+      <!-- dome above the (almost flat) roof apex — sized to wall base, not a UFO -->
+      <ellipse cx="0" cy="${-h - r - 6}" rx="22" ry="11" fill="var(--roof-purple)"/>
+      <ellipse cx="0" cy="${-h - r - 6}" rx="22" ry="11" fill="none" stroke="var(--roof-purple-dk)" stroke-width="1.2"/>
+      <ellipse cx="-5" cy="${-h - r - 9}" rx="10" ry="3.5" fill="rgba(255,255,255,0.22)"/>
+      <!-- finial -->
+      <rect x="-1" y="${-h - r - 24}" width="2" height="8" fill="var(--gold-dk)"/>
+      <circle cx="0" cy="${-h - r - 26}" r="2.5" fill="var(--gold)"/>
+    `;
+    html += isoBuilding({
+      id: 'examine-hall', label: 'Hall of Mirrors',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.3)', base: 'var(--stone-shadow)' },
+      roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      details,
+    });
+  }
+
+  // ── Quest Hall — big wooden tavern, the heart ──
+  {
+    const b = BUILDINGS['quest-hall'];
+    const w = 85, d = 42, h = 64, r = 30;
+    const details = `
+      <!-- timber framing across walls (vertical posts) -->
+      <line x1="${-w*0.4}" y1="${d*0.4}" x2="${-w*0.4}" y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
+      <line x1="${-w*0.75}" y1="${d*0.25}" x2="${-w*0.75}" y2="${d*0.25 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
+      <line x1="${w*0.4}" y1="${d*0.4}" x2="${w*0.4}" y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
+      <line x1="${w*0.75}" y1="${d*0.25}" x2="${w*0.75}" y2="${d*0.25 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
+      <!-- mid horizontal beam -->
+      <polygon points="${0},${d*0.5} ${w},${-h*0.5} ${w},${-h*0.5 + 3} ${0},${d*0.5 + 3}" fill="var(--wood-shadow)" opacity="0.5"/>
+      <polygon points="${0},${d*0.5} ${-w},${-h*0.5} ${-w},${-h*0.5 + 3} ${0},${d*0.5 + 3}" fill="var(--wood-shadow)" opacity="0.5"/>
+      <!-- big door SW -->
+      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 38)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 35, 3)}" fill="#1a0e04"/>
+      <line x1="${-w*0.475}" y1="${d*0.525}" x2="${-w*0.475}" y2="${d*0.525 - 38}" stroke="#1a0e04" stroke-width="1.5"/>
+      <!-- door handle -->
+      <circle cx="${-w*0.42}" cy="${d*0.58 - 18}" r="1.2" fill="var(--gold)"/>
+      <!-- lit windows SE -->
+      <polygon points="${seWallPoly(w, d, 0.2, 0.35, 22, 14)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 22, 14)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.2, 0.35, 42, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 42, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <!-- lit windows SW -->
+      <polygon points="${swWallPoly(w, d, 0.15, 0.3, 24, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <polygon points="${swWallPoly(w, d, 0.7, 0.85, 24, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <!-- chimney + smoke on apex (right) -->
+      <rect x="14" y="${-h - r + 6}" width="9" height="14" fill="var(--stone-dark)"/>
+      <rect x="14" y="${-h - r + 6}" width="9" height="2" fill="#1a0e04"/>
+      <circle class="smoke"    cx="18" cy="${-h - r + 4}" r="3" fill="rgba(220,220,220,0.6)"/>
+      <circle class="smoke d1" cx="18" cy="${-h - r + 4}" r="3" fill="rgba(220,220,220,0.5)"/>
+      <circle class="smoke d2" cx="18" cy="${-h - r + 4}" r="3" fill="rgba(220,220,220,0.55)"/>
+      <!-- hanging sign by SW wall -->
+      <rect x="${-w - 2}" y="${-26}" width="2" height="22" fill="var(--wood-dark)"/>
+      <line x1="${-w - 1}" y1="-22" x2="${-w + 14}" y2="-14" stroke="var(--wood-dark)" stroke-width="2"/>
+      <polygon points="${-w + 14},-14 ${-w + 32},-6 ${-w + 32},10 ${-w + 14},2" fill="var(--parchment)"/>
+      <text x="${-w + 23}" y="-1" font-family="Jacquard 12" font-size="9" fill="var(--ink)" transform="rotate(-26 ${-w+23} -1)">QUEST</text>
+      <!-- torches by the door -->
+      <rect x="${-w*0.32}" y="${d*0.68 - 18}" width="1.5" height="14" fill="var(--wood-dark)"/>
+      <ellipse class="torch-flame" cx="${-w*0.32 + 0.75}" cy="${d*0.68 - 22}" rx="2.5" ry="4" fill="#ffaa3c"/>
+      <ellipse class="torch-flame" cx="${-w*0.32 + 0.75}" cy="${d*0.68 - 22}" rx="1" ry="2.5" fill="#ffeb88"/>
+    `;
+    html += isoBuilding({
+      id: 'quest-hall', label: 'Quest Hall',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--wood-mid)', left: 'var(--wood-dark)', frame: 'rgba(0,0,0,0.5)', base: 'var(--wood-shadow)' },
+      roof:  { right: 'var(--roof-green)', left: 'var(--roof-green-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      details,
+    });
+  }
+
+  // ── Spellbook Tower — tall narrow + steep cone ──
+  {
+    const b = BUILDINGS['spellbook-tower'];
+    const w = 42, d = 21, h = 112, r = 56;
+    const details = `
+      <!-- tower bands -->
+      <polygon points="${0},${d - 32} ${w},${-32} ${w},${-29} ${0},${d - 29}" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="${0},${d - 32} ${-w},${-32} ${-w},${-29} ${0},${d - 29}" fill="rgba(0,0,0,0.4)"/>
+      <polygon points="${0},${d - 64} ${w},${-64} ${w},${-61} ${0},${d - 61}" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="${0},${d - 64} ${-w},${-64} ${-w},${-61} ${0},${d - 61}" fill="rgba(0,0,0,0.4)"/>
+      <polygon points="${0},${d - 92} ${w},${-92} ${w},${-89} ${0},${d - 89}" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="${0},${d - 92} ${-w},${-92} ${-w},${-89} ${0},${d - 89}" fill="rgba(0,0,0,0.4)"/>
+      <!-- arrow-slit windows -->
+      <polygon points="${swWallPoly(w, d, 0.4, 0.45, 78, 12)}" fill="var(--roof-purple-dk)"/>
+      <polygon points="${seWallPoly(w, d, 0.55, 0.6, 78, 12)}" fill="var(--roof-purple-dk)"/>
+      <!-- magic window SW middle -->
+      <polygon points="${swWallPoly(w, d, 0.35, 0.55, 36, 16)}" fill="#b89cd8" stroke="#5b3d6e" stroke-width="0.8"/>
+      <polygon points="${swWallPoly(w, d, 0.42, 0.47, 40, 12)}" fill="#fff0ff"/>
+      <!-- door -->
+      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 22)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
+      <!-- star on apex -->
+      <circle class="tower-aura" cx="0" cy="${-h - r + 12}" r="22" fill="url(#auraGrad)"/>
+      <rect x="-1" y="${-h - r - 4}" width="2" height="8" fill="var(--gold-dk)"/>
+      <polygon points="0,${-h - r - 14} 3,${-h - r - 8} 8,${-h - r - 6} 4,${-h - r - 2} 6,${-h - r + 4} 0,${-h - r} -6,${-h - r + 4} -4,${-h - r - 2} -8,${-h - r - 6} -3,${-h - r - 8}" fill="var(--gold)"/>
+    `;
+    html += isoBuilding({
+      id: 'spellbook-tower', label: 'Spellbook Tower',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.35)', base: 'var(--stone-shadow)' },
+      roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: '#2a1a3a' },
+      details,
+    });
+  }
+
+  // ── Keepsake Vault — small ornate with gem ──
+  {
+    const b = BUILDINGS['keepsake-vault'];
+    const w = 48, d = 24, h = 38, r = 32;
+    const details = `
+      <!-- gold trim top and bottom -->
+      <polygon points="${0},${d - 4} ${w},${-4} ${w},${-2} ${0},${d - 2}" fill="var(--gold)"/>
+      <polygon points="${0},${d - 4} ${-w},${-4} ${-w},${-2} ${0},${d - 2}" fill="var(--gold-dk)"/>
+      <polygon points="${0},${d - h + 4} ${w},${-h + 4} ${w},${-h + 6} ${0},${d - h + 6}" fill="var(--gold)"/>
+      <polygon points="${0},${d - h + 4} ${-w},${-h + 4} ${-w},${-h + 6} ${0},${d - h + 6}" fill="var(--gold-dk)"/>
+      <!-- ornate door SW -->
+      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 24)}" fill="var(--gold-dk)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${-w*0.4 - 1},${d*0.6 - 24} ${-w*0.55 + 1},${d*0.45 - 24} ${-w*0.475},${d*0.525 - 30}" fill="var(--gold)"/>
+      <!-- round windows -->
+      <circle cx="${-w*0.2}" cy="${d*0.2 - 22}" r="4" fill="#b89cd8" stroke="var(--gold)" stroke-width="0.8"/>
+      <circle cx="${w*0.4}"  cy="${-d*0.4 - 22}" r="4" fill="#b89cd8" stroke="var(--gold)" stroke-width="0.8"/>
+      <!-- gem at apex -->
+      <polygon points="0,${-h - r - 4} -7,${-h - r + 8} 0,${-h - r + 20} 7,${-h - r + 8}" fill="#f0a8e0"/>
+      <polygon points="0,${-h - r - 4} -7,${-h - r + 8} 0,${-h - r + 8}" fill="#f8c0ec"/>
+      <circle class="gem-shine" cx="0" cy="${-h - r + 4}" r="14" fill="url(#gemGlow)"/>
+      <!-- crown spikes around gem -->
+      <polygon points="-9,${-h - r + 6} -7,${-h - r + 8} -5,${-h - r + 6} -7,${-h - r}" fill="var(--gold)"/>
+      <polygon points="9,${-h - r + 6} 7,${-h - r + 8} 5,${-h - r + 6} 7,${-h - r}" fill="var(--gold)"/>
+    `;
+    html += isoBuilding({
+      id: 'keepsake-vault', label: 'Keepsake Vault',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--stone-dark)', left: '#2a241e', frame: 'rgba(0,0,0,0.5)', base: '#1c1812' },
+      roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: '#2a1a3a' },
+      details,
+    });
+  }
+
+  // ── The Inn — warm wood, lit windows, chimney smoke, mug sign ──
+  {
+    const b = BUILDINGS['inn'];
+    const w = 70, d = 35, h = 56, r = 26;
+    const details = `
+      <!-- timber framing -->
+      <line x1="${-w*0.4}" y1="${d*0.4}" x2="${-w*0.4}" y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
+      <line x1="${w*0.4}"  y1="${d*0.4}" x2="${w*0.4}"  y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
+      <polygon points="${0},${d*0.45} ${w},${-h*0.45}  ${w},${-h*0.45 + 3} ${0},${d*0.45 + 3}" fill="var(--wood-shadow)" opacity="0.5"/>
+      <polygon points="${0},${d*0.45} ${-w},${-h*0.45} ${-w},${-h*0.45 + 3} ${0},${d*0.45 + 3}" fill="var(--wood-shadow)" opacity="0.5"/>
+      <!-- door SW -->
+      <polygon points="${swWallPoly(w, d, 0.42, 0.55, 0, 26)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.42, 0.55, 23, 3)}" fill="#1a0e04"/>
+      <!-- lit windows SE -->
+      <polygon points="${seWallPoly(w, d, 0.18, 0.32, 16, 12)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.58, 0.72, 16, 12)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.18, 0.32, 34, 10)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.58, 0.72, 34, 10)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <!-- lit windows SW -->
+      <polygon points="${swWallPoly(w, d, 0.13, 0.28, 18, 12)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <polygon points="${swWallPoly(w, d, 0.7, 0.85, 18, 12)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <!-- chimney + smoke on SW side of roof -->
+      <rect x="-22" y="${-h - r + 4}" width="9" height="14" fill="var(--stone-dark)"/>
+      <rect x="-22" y="${-h - r + 4}" width="9" height="2" fill="#1a0e04"/>
+      <circle class="smoke"    cx="-18" cy="${-h - r + 2}" r="3" fill="rgba(220,220,220,0.6)"/>
+      <circle class="smoke d1" cx="-18" cy="${-h - r + 2}" r="3" fill="rgba(220,220,220,0.5)"/>
+      <circle class="smoke d2" cx="-18" cy="${-h - r + 2}" r="3" fill="rgba(220,220,220,0.55)"/>
+      <!-- mug sign on SE -->
+      <rect x="${w + 2}" y="${-30}" width="2" height="22" fill="var(--wood-dark)"/>
+      <line x1="${w + 1}" y1="-26" x2="${w - 14}" y2="-18" stroke="var(--wood-dark)" stroke-width="2"/>
+      <polygon points="${w - 14},-18 ${w - 32},-10 ${w - 32},6 ${w - 14},-2" fill="var(--parchment)"/>
+      <g transform="translate(${w - 23} -6)">
+        <rect x="-4" y="-3" width="8" height="6" fill="var(--wood-mid)"/>
+        <rect x="-4" y="-3" width="8" height="2" fill="#f0e2b8"/>
+        <rect x="2"  y="-2" width="3" height="4" fill="var(--wood-mid)"/>
+      </g>
+    `;
+    html += isoBuilding({
+      id: 'inn', label: 'The Inn',
+      cx: b.x, cy: b.y, w, d, h, r,
+      walls: { right: 'var(--wood-light)', left: 'var(--wood-mid)', frame: 'rgba(0,0,0,0.45)', base: 'var(--wood-shadow)' },
+      roof:  { right: 'var(--roof-red)', left: 'var(--roof-red-dk)', ridge: 'rgba(0,0,0,0.5)' },
+      details,
+    });
+  }
+
+  layer.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────
+//   EVENTS — synthesized timeline from real git log
+// ─────────────────────────────────────────────────────────────
+
+const EVENTS = [
+  // ──── S001 ────
+  {t: 0,     type: 'session-start', id: 'S001', commit: '3d76a69', subject: 'Repo orientation + close-session ritual', player: 'jebrim'},
+  {t: 0,     type: 'log', msg: 'Jebrim awakens at Inbox Square', cls: 'session-start'},
+  {t: 1200,  type: 'move', actor: 'jebrim', to: 'meta-town-hall'},
+  {t: 1200,  type: 'log', msg: 'reads master CLAUDE.md at Meta Town Hall'},
+  {t: 4000,  type: 'move', actor: 'jebrim', to: 'spellbook-tower'},
+  {t: 4000,  type: 'log', msg: 'loads respawn ritual at Spellbook Tower'},
+  {t: 6800,  type: 'move', actor: 'jebrim', to: 'quest-hall'},
+  {t: 6800,  type: 'log', msg: 'opens new quest-log entry at Quest Hall'},
+  {t: 9600,  type: 'move', actor: 'jebrim', to: 'inn'},
+  {t: 9600,  type: 'log', msg: 'session-close ritual adopted'},
+  {t: 11200, type: 'commit', msg: '3d76a69 · S001 complete', cls: 'commit'},
+
+  // ──── S002 ────
+  {t: 13000, type: 'session-start', id: 'S002', commit: 'dd401fe', subject: 'Scope Shipping Data Mart V1 gap-analysis', player: 'jebrim'},
+  {t: 13000, type: 'log', msg: 'Jebrim resumes from the Inn', cls: 'session-start'},
+  {t: 13500, type: 'move', actor: 'jebrim', to: 'bank'},
+  {t: 13500, type: 'log', msg: 'consults bank notes — prior gap audits'},
+  {t: 16200, type: 'move', actor: 'jebrim', to: 'quest-hall'},
+  {t: 16200, type: 'log', msg: 'scoping at Quest Hall — three branches'},
+
+  // dwarf wave
+  {t: 18500, type: 'spawn-dwarf', id: 'D1', color: 'dwarf-1', parent: 'jebrim', at: 'quest-hall'},
+  {t: 18500, type: 'log', msg: 'spawning D1 — ClickUp subtree'},
+  {t: 18900, type: 'spawn-dwarf', id: 'D2', color: 'dwarf-2', parent: 'jebrim', at: 'quest-hall'},
+  {t: 18900, type: 'log', msg: 'spawning D2 — bi-etl scan'},
+  {t: 19300, type: 'spawn-dwarf', id: 'D3', color: 'dwarf-3', parent: 'jebrim', at: 'quest-hall'},
+  {t: 19300, type: 'log', msg: 'spawning D3 — Redshift coverage'},
+
+  {t: 20800, type: 'move', actor: 'D1', to: 'bank'},
+  {t: 21200, type: 'move', actor: 'D2', to: 'bank'},
+  {t: 21600, type: 'move', actor: 'D3', to: 'examine-hall'},
+
+  {t: 23800, type: 'move', actor: 'D1', to: 'quest-hall'},
+  {t: 23800, type: 'log', msg: 'D1: ClickUp ETL chain mapped'},
+  {t: 24200, type: 'move', actor: 'D2', to: 'lorebook-library'},
+  {t: 24600, type: 'move', actor: 'D3', to: 'bank'},
+
+  {t: 26800, type: 'move', actor: 'D1', to: 'bank'},
+  {t: 27200, type: 'move', actor: 'D2', to: 'quest-hall'},
+  {t: 27200, type: 'log', msg: 'D2: bi-etl orphan detection done'},
+  {t: 27600, type: 'move', actor: 'D3', to: 'quest-hall'},
+  {t: 27600, type: 'log', msg: 'D3: Redshift coverage matrix'},
+  {t: 29800, type: 'move', actor: 'D1', to: 'quest-hall'},
+  {t: 31000, type: 'despawn-dwarf', id: 'D1'},
+  {t: 31000, type: 'log', msg: 'D1 returns — synthesizing'},
+  {t: 31400, type: 'despawn-dwarf', id: 'D2'},
+  {t: 31400, type: 'log', msg: 'D2 returns — synthesizing'},
+  {t: 31800, type: 'despawn-dwarf', id: 'D3'},
+  {t: 31800, type: 'log', msg: 'D3 returns — synthesizing'},
+  {t: 33000, type: 'commit', msg: 'dd401fe · S002 in-flight', cls: 'commit'},
+
+  // ──── S003 ────
+  {t: 35000, type: 'session-start', id: 'S003', commit: '50d8475', subject: 'Shipping Data Mart V1 audit — gap matrix + task list as HTML', player: 'jebrim'},
+  {t: 35400, type: 'move', actor: 'jebrim', to: 'lorebook-library'},
+  {t: 35400, type: 'log', msg: 'cross-referencing Lorebook decisions'},
+  {t: 38000, type: 'move', actor: 'jebrim', to: 'quest-hall'},
+  {t: 38000, type: 'log', msg: 'writing audit HTML'},
+  {t: 40800, type: 'move', actor: 'jebrim', to: 'inn'},
+  {t: 40800, type: 'log', msg: 'audit shipped — S003 complete'},
+  {t: 42400, type: 'commit', msg: '50d8475 · S003 closed', cls: 'commit'},
+
+  // ──── S004 (unscoped — wisp) ────
+  {t: 44400, type: 'session-start', id: 'S004', commit: '1d87a64', subject: 'Lorebook redefined, three-modes axis, audit tool', player: null},
+  {t: 44400, type: 'spawn-wisp', at: 'meta-town-hall'},
+  {t: 44400, type: 'log', msg: 'unscoped — system tends rulebook', cls: 'session-start'},
+  {t: 45800, type: 'move', actor: 'wisp', to: 'lorebook-library'},
+  {t: 45800, type: 'log', msg: 'redefining lorebook as self-improvement log'},
+  {t: 48400, type: 'move', actor: 'wisp', to: 'meta-town-hall'},
+  {t: 48400, type: 'log', msg: 'modes.md — three-axis framework'},
+  {t: 51000, type: 'move', actor: 'wisp', to: 'lorebook-library'},
+  {t: 52400, type: 'commit', msg: '1d87a64 · S004 closed', cls: 'commit'},
+  {t: 53000, type: 'despawn-wisp'},
+
+  // ──── S005 ────
+  {t: 54500, type: 'session-start', id: 'S005', commit: '1cb4090', subject: 'Alching ritual + Understanding/Plan preamble + brain-root routers', player: null},
+  {t: 54500, type: 'spawn-wisp', at: 'spellbook-tower'},
+  {t: 54500, type: 'log', msg: 'forging alching ritual', cls: 'session-start'},
+  {t: 56400, type: 'move', actor: 'wisp', to: 'meta-town-hall'},
+  {t: 56400, type: 'log', msg: 'communication-protocol.md drafted'},
+  {t: 58800, type: 'move', actor: 'wisp', to: 'spellbook-tower'},
+  {t: 58800, type: 'log', msg: 'four-mode framework lands'},
+  {t: 61400, type: 'move', actor: 'wisp', to: 'meta-town-hall'},
+  {t: 62800, type: 'commit', msg: '1cb4090 · S005 closed', cls: 'commit'},
+  {t: 63400, type: 'despawn-wisp'},
+
+  // ──── S006 ────
+  {t: 65000, type: 'session-start', id: 'S006', commit: 'df4cb7e', subject: 'Hand-off note precondition + spawning-dwarves skill', player: null},
+  {t: 65000, type: 'spawn-wisp', at: 'spellbook-tower'},
+  {t: 65000, type: 'log', msg: 'new skill: spawning-dwarves', cls: 'session-start'},
+  {t: 66800, type: 'move', actor: 'wisp', to: 'meta-town-hall'},
+  {t: 66800, type: 'log', msg: 'mini-respawn precondition added'},
+  {t: 69400, type: 'move', actor: 'wisp', to: 'spellbook-tower'},
+  {t: 70800, type: 'commit', msg: 'df4cb7e · S006 closed', cls: 'commit'},
+  {t: 71400, type: 'despawn-wisp'},
+
+  // ──── S007 ────
+  {t: 73000, type: 'session-start', id: 'S007', commit: '19a4497', subject: 'Bankstanding Phase 0 — alch changed players first', player: null},
+  {t: 73000, type: 'spawn-wisp', at: 'meta-town-hall'},
+  {t: 73000, type: 'log', msg: 'bankstanding gains Phase 0', cls: 'session-start'},
+  {t: 74600, type: 'move', actor: 'wisp', to: 'spellbook-tower'},
+  {t: 74600, type: 'log', msg: 'bankstanding.md rewritten'},
+  {t: 77000, type: 'move', actor: 'wisp', to: 'meta-town-hall'},
+  {t: 78400, type: 'commit', msg: '19a4497 · S007 closed', cls: 'commit'},
+  {t: 79000, type: 'despawn-wisp'},
+
+  // ──── Q-007 ────
+  {t: 80500, type: 'session-start', id: 'Q-007', commit: 'df76a71', subject: 'Open Q-007: Gielinor real-time visualizer (handoff)', player: null},
+  {t: 80500, type: 'spawn-wisp', at: 'inbox-square'},
+  {t: 80500, type: 'log', msg: 'visualizer proposal lodged at Inbox Square', cls: 'session-start'},
+  {t: 83000, type: 'commit', msg: 'df76a71 · Q-007 opened', cls: 'commit'},
+  {t: 84500, type: 'despawn-wisp'},
+  {t: 85500, type: 'log', msg: '~ end of replay ~ press ▶ to loop'},
+];
+
+const TOTAL_MS = 87000;
+
+// ─────────────────────────────────────────────────────────────
+//   Engine
+// ─────────────────────────────────────────────────────────────
+
+const charactersLayer = document.getElementById('characters');
+const particlesLayer  = document.getElementById('particles');
+const logEl = document.getElementById('logScroll');
+const playBtn = document.getElementById('playPause');
+const scrub = document.getElementById('scrub');
+const sessionIdEl = document.getElementById('sessionId');
+const sessionMetaEl = document.getElementById('sessionMeta');
+const tkIdEl = document.getElementById('tkId');
+const tkCommitEl = document.getElementById('tkCommit');
+const tkLineEl = document.getElementById('tkLine');
+const tkStatsEl = document.getElementById('tkStats');
+const jumpSel = document.getElementById('jumpSession');
+const scrubTicks = document.getElementById('scrubTicks');
+
+let t = 0;
+let lastFrame = performance.now();
+let playing = false;
+let speed = 1;
+let cursor = 0;
+let dwarfNodes = {};
+let wispNode = null;
+let currentSession = null;
+let dwarfCount = 0;
+let activePlayer = null;
+const actorPositions = {};
+const actorMoveTimers = {};
+
+actorPositions['jebrim'] = {x: STAND['inbox-square'].x, y: STAND['inbox-square'].y};
+actorPositions['zezima'] = {x: STAND['keepsake-vault'].x - 30, y: STAND['keepsake-vault'].y};
+
+// jump dropdown + scrub ticks
+const sessionStarts = EVENTS.filter(e => e.type === 'session-start');
+sessionStarts.forEach(s => {
+  const opt = document.createElement('option');
+  opt.value = s.t;
+  opt.textContent = `${s.id} · ${s.subject.slice(0, 36)}${s.subject.length>36?'…':''}`;
+  jumpSel.appendChild(opt);
+  const tk = document.createElement('span');
+  tk.className = 'tk';
+  tk.style.left = `${(s.t / TOTAL_MS) * 100}%`;
+  tk.title = s.id;
+  scrubTicks.appendChild(tk);
+});
+scrub.max = TOTAL_MS;
+
+function setActorTransform(el, x, y, withTransition=true) {
+  if (!withTransition) {
+    const prev = el.style.transition;
+    el.style.transition = 'none';
+    el.setAttribute('transform', `translate(${x},${y})`);
+    void el.getBoundingClientRect();
+    el.style.transition = prev;
+  } else {
+    el.setAttribute('transform', `translate(${x},${y})`);
+  }
+}
+
+function moveActor(actorId, toKey, duration) {
+  const b = STAND[toKey];
+  if (!b) return;
+  const j = jitter(actorId, toKey);
+  const tx = b.x + j.dx, ty = b.y + j.dy * 0.5;
+  const fromPos = actorPositions[actorId] || {x: b.x, y: b.y};
+  actorPositions[actorId] = {x: tx, y: ty};
+
+  const el = document.getElementById('actor-' + actorId);
+  if (!el) return;
+
+  el.style.transition = `transform ${duration}ms cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
+  el.classList.add('walking');
+
+  const steps = Math.max(2, Math.floor(duration / 240));
+  for (let i = 1; i <= steps; i++) {
+    const frac = i / steps;
+    const dt = (i / steps) * duration;
+    setTimeout(() => {
+      spawnDust(
+        fromPos.x + (tx - fromPos.x) * frac,
+        fromPos.y + (ty - fromPos.y) * frac + 4
+      );
+    }, dt);
+  }
+  if (actorMoveTimers[actorId]) clearTimeout(actorMoveTimers[actorId]);
+  actorMoveTimers[actorId] = setTimeout(() => {
+    el.classList.remove('walking');
+  }, duration);
+
+  el.setAttribute('transform', `translate(${tx},${ty})`);
+}
+
+function spawnDust(x, y) {
+  const d = document.createElementNS(svgNS, 'g');
+  d.setAttribute('class', 'dust');
+  d.setAttribute('transform', `translate(${x},${y})`);
+  d.innerHTML = `
+    <ellipse cx="0" cy="0" rx="5" ry="2" fill="rgba(200,180,140,0.55)"/>
+    <ellipse cx="-3" cy="-1" rx="1.8" ry="1" fill="rgba(200,180,140,0.4)"/>
+    <ellipse cx="3" cy="0" rx="1.2" ry="0.8" fill="rgba(200,180,140,0.4)"/>
+  `;
+  particlesLayer.appendChild(d);
+  setTimeout(() => d.remove(), 900);
+}
+
+function spawnDwarf(ev) {
+  const b = STAND[ev.at];
+  const j = jitter(ev.id, ev.at);
+  const x = b.x + j.dx, y = b.y + j.dy * 0.5;
+  actorPositions[ev.id] = {x, y};
+
+  const g = document.createElementNS(svgNS, 'g');
+  g.setAttribute('class', 'actor dwarf fade-in');
+  g.setAttribute('id', 'actor-' + ev.id);
+  g.setAttribute('data-actor', ev.id);
+  g.setAttribute('transform', `translate(${x},${y})`);
+  g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
+
+  const colorMap = {'dwarf-1':'#cf9a2c', 'dwarf-2':'#b54a32', 'dwarf-3':'#46946c'};
+  const hat = colorMap[ev.color] || '#cf9a2c';
+
+  g.innerHTML = `
+    <g class="bob">
+      <ellipse cx="0" cy="3" rx="5.5" ry="1.7" fill="rgba(0,0,0,0.45)"/>
+      <rect x="-4" y="-4" width="8" height="7" fill="#5a4530"/>
+      <rect x="-4" y="-1" width="8" height="1" fill="#3a2c1c"/>
+      <rect x="-5" y="-3" width="1" height="5" fill="#5a4530"/>
+      <rect x="4"  y="-3" width="1" height="5" fill="#5a4530"/>
+      <rect x="-3" y="-8" width="6" height="4" fill="#e2b88a"/>
+      <rect x="-3" y="-6" width="6" height="3" fill="#d8c694"/>
+      <rect x="-2" y="-3" width="4" height="1" fill="#d8c694"/>
+      <rect x="-2" y="-7" width="1" height="1" fill="#28201a"/>
+      <rect x="1"  y="-7" width="1" height="1" fill="#28201a"/>
+      <rect x="-4" y="-10" width="8" height="2" fill="${hat}"/>
+      <rect x="-3" y="-12" width="6" height="2" fill="${hat}"/>
+      <rect x="-3" y="-11" width="6" height="1" fill="rgba(0,0,0,0.25)"/>
+      <rect x="5" y="-7" width="1" height="9" fill="#4a2f1a"/>
+      <rect x="3" y="-8" width="5" height="2" fill="#a8a8a8"/>
+      <rect x="3" y="-8" width="5" height="1" fill="#d4d4d4"/>
+      <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
+    </g>
+  `;
+  charactersLayer.appendChild(g);
+  dwarfNodes[ev.id] = {node: g};
+  dwarfCount++;
+  updateTicker();
+}
+
+function despawnDwarf(id) {
+  const entry = dwarfNodes[id];
+  if (!entry) return;
+  entry.node.classList.add('fade-out');
+  setTimeout(() => entry.node.remove(), 500);
+  delete dwarfNodes[id];
+  delete actorPositions[id];
+  dwarfCount = Math.max(0, dwarfCount - 1);
+  updateTicker();
+}
+
+function spawnWisp(ev) {
+  const b = STAND[ev.at];
+  actorPositions['wisp'] = {x: b.x, y: b.y - 36};
+  if (wispNode) wispNode.remove();
+  const g = document.createElementNS(svgNS, 'g');
+  g.setAttribute('class', 'actor wisp-actor fade-in');
+  g.setAttribute('id', 'actor-wisp');
+  g.setAttribute('data-actor', 'wisp');
+  g.setAttribute('transform', `translate(${b.x},${b.y - 36})`);
+  g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
+  g.innerHTML = `<g class="wisp-bob"><g class="wisp-glow"><use href="#wisp"/></g></g>`;
+  charactersLayer.appendChild(g);
+  wispNode = g;
+}
+
+function despawnWisp() {
+  if (!wispNode) return;
+  wispNode.classList.add('fade-out');
+  setTimeout(() => { if (wispNode) wispNode.remove(); wispNode = null; }, 500);
+  delete actorPositions['wisp'];
+}
+
+function setActivePlayer(p) {
+  activePlayer = p;
+  const j = document.getElementById('actor-jebrim');
+  const z = document.getElementById('actor-zezima');
+  j.classList.toggle('active', p === 'jebrim');
+  z.classList.toggle('active', p === 'zezima');
+  j.style.opacity = (p === 'jebrim') ? '1' : '0.5';
+  z.style.opacity = (p === 'zezima') ? '1' : '0.5';
+}
+
+function logLine(msg, cls='') {
+  const li = document.createElement('div');
+  li.className = 'log-entry ' + cls;
+  const tStr = formatTime(t);
+  li.innerHTML = `<span class="t">[${tStr}]</span>${escapeHtml(msg)}`;
+  logEl.appendChild(li);
+  logEl.scrollTop = logEl.scrollHeight;
+  while (logEl.childNodes.length > 200) logEl.removeChild(logEl.firstChild);
+  return li;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+function formatTime(ms) {
+  const sec = Math.floor(ms / 1000);
+  const m = Math.floor(sec / 60); const s = sec % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function updateTicker() {
+  tkStatsEl.textContent = `dwarves: ${dwarfCount} · time ${formatTime(t)}`;
+}
+
+function applyEvent(ev, instant=false) {
+  const dur = instant ? 0 : (1800 / Math.max(0.5, speed));
+  switch (ev.type) {
+    case 'session-start':
+      currentSession = ev;
+      sessionIdEl.textContent = ev.id;
+      sessionMetaEl.textContent = `${ev.commit} · ${ev.subject}`;
+      tkIdEl.textContent = ev.id;
+      tkCommitEl.textContent = ' · ' + ev.commit;
+      tkLineEl.textContent = ev.subject;
+      if (ev.player) setActivePlayer(ev.player); else setActivePlayer(null);
+      break;
+    case 'log':
+      logLine(ev.msg, ev.cls || '');
+      tkLineEl.textContent = ev.msg;
+      break;
+    case 'move':
+      if (instant) {
+        const b = STAND[ev.to];
+        const j = jitter(ev.actor, ev.to);
+        const el = document.getElementById('actor-' + ev.actor);
+        if (el && b) {
+          actorPositions[ev.actor] = {x: b.x + j.dx, y: b.y + j.dy * 0.5};
+          setActorTransform(el, b.x + j.dx, b.y + j.dy * 0.5, false);
+        }
+      } else {
+        moveActor(ev.actor, ev.to, dur);
+      }
+      break;
+    case 'spawn-dwarf':  spawnDwarf(ev); break;
+    case 'despawn-dwarf':despawnDwarf(ev.id); break;
+    case 'spawn-wisp':   spawnWisp(ev); break;
+    case 'despawn-wisp': despawnWisp(); break;
+    case 'commit':       logLine(ev.msg, 'commit'); break;
+  }
+}
+
+function resetWorld() {
+  Object.keys(dwarfNodes).forEach(id => {
+    dwarfNodes[id].node.remove();
+    delete dwarfNodes[id]; delete actorPositions[id];
+  });
+  if (wispNode) { wispNode.remove(); wispNode = null; delete actorPositions['wisp']; }
+  dwarfCount = 0;
+  const j = document.getElementById('actor-jebrim');
+  const z = document.getElementById('actor-zezima');
+  const js = STAND['inbox-square'];
+  const zs = STAND['keepsake-vault'];
+  setActorTransform(j, js.x, js.y, false);
+  setActorTransform(z, zs.x - 30, zs.y, false);
+  actorPositions['jebrim'] = {x: js.x, y: js.y};
+  actorPositions['zezima'] = {x: zs.x - 30, y: zs.y};
+  setActivePlayer(null);
+  logEl.innerHTML = '';
+  cursor = 0;
+  sessionIdEl.textContent = '—';
+  sessionMetaEl.textContent = 'awaiting playback · press ▶';
+  tkIdEl.textContent = '—'; tkCommitEl.textContent = '';
+  tkLineEl.textContent = 'awaiting';
+  updateTicker();
+}
+
+function seekTo(newT) {
+  const forward = newT >= t;
+  if (!forward) { resetWorld(); t = 0; }
+  while (cursor < EVENTS.length && EVENTS[cursor].t <= newT) {
+    applyEvent(EVENTS[cursor], true); cursor++;
+  }
+  t = newT; scrub.value = t; updateTicker();
+}
+
+function tick(now) {
+  const dt = now - lastFrame; lastFrame = now;
+  if (playing) {
+    t += dt * speed;
+    if (t > TOTAL_MS) { t = TOTAL_MS; playing = false; playBtn.textContent = '↻'; }
+    while (cursor < EVENTS.length && EVENTS[cursor].t <= t) {
+      applyEvent(EVENTS[cursor], false); cursor++;
+    }
+    scrub.value = t; updateTicker();
+  }
+  requestAnimationFrame(tick);
+}
+
+// controls
+playBtn.addEventListener('click', () => {
+  if (t >= TOTAL_MS) seekTo(0);
+  playing = !playing;
+  playBtn.textContent = playing ? '⏸' : '▶';
+  lastFrame = performance.now();
+});
+document.querySelectorAll('.speed-toggles button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.speed-toggles button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    speed = parseFloat(btn.dataset.speed);
+  });
+});
+scrub.addEventListener('input', () => {
+  const target = parseFloat(scrub.value);
+  playing = false; playBtn.textContent = '▶';
+  seekTo(target);
+});
+jumpSel.addEventListener('change', () => {
+  const v = parseFloat(jumpSel.value);
+  if (isNaN(v)) return;
+  playing = false; playBtn.textContent = '▶';
+  seekTo(v); jumpSel.value = '';
+});
+
+// build world
+buildGround();
+buildPond();
+buildPaths();
+buildFlora();
+buildBuildings();
+
+// init engine
+resetWorld();
+requestAnimationFrame(tick);
+
+setTimeout(() => {
+  if (!playing) {
+    playing = true; playBtn.textContent = '⏸';
+    lastFrame = performance.now();
+  }
+}, 1200);
+
+</script>
+</body>
+</html>

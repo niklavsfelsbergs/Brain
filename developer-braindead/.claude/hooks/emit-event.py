@@ -110,14 +110,30 @@ def needle_from_payload(tool_name: str, tool_input: dict) -> str | None:
 
 
 def infer_dwarf_parent() -> tuple[str, str]:
-    # Walk state.ndjson from the tail; first non-wisp actor with a `move`
-    # wins. Fall back to wisp at quest-hall.
+    # The stream is global across all Claude sessions; the hook can't tell
+    # which conversation fired the Task. Prefer the most recent `intent`
+    # event over `move` because every turn writes intent for its active
+    # actor — that's the cleanest per-session anchor. Fall back to `move`
+    # only if no recent intent exists, and ignore stale events past the
+    # window so a long-dormant actor doesn't keep claiming new spawns.
+    RECENCY_SEC = 600   # 10 minutes
     try:
         if not STATE_PATH.exists():
             return ("wisp", "quest-hall")
         lines = STATE_PATH.read_text(encoding="utf-8").splitlines()
     except Exception:
         return ("wisp", "quest-hall")
+
+    now = datetime.now(timezone.utc)
+
+    def parse_wall(s):
+        try: return datetime.fromisoformat(s)
+        except Exception: return None
+
+    intent_actor = None
+    move_actor = None
+    actors = load_json(ACTORS_PATH, {})
+
     for line in reversed(lines):
         if not line.strip():
             continue
@@ -125,12 +141,26 @@ def infer_dwarf_parent() -> tuple[str, str]:
             ev = json.loads(line)
         except Exception:
             continue
-        if ev.get("type") == "move":
-            actor = ev.get("actor")
-            if actor and actor != "wisp":
-                return (actor, ev.get("to") or "quest-hall")
-    # Nothing but wisp / no moves at all
-    actors = load_json(ACTORS_PATH, {})
+        wt = parse_wall(ev.get("wallTime", ""))
+        if wt is None or (now - wt).total_seconds() > RECENCY_SEC:
+            # Past the recency window — stop walking; older events are stale.
+            break
+        t = ev.get("type")
+        if t == "intent":
+            a = ev.get("actor")
+            if a and a != "wisp" and intent_actor is None:
+                intent_actor = a
+                break   # intent is the strongest signal — take it and stop
+        elif t == "move":
+            a = ev.get("actor")
+            if a and a != "wisp" and move_actor is None:
+                move_actor = (a, ev.get("to") or actors.get(a) or "quest-hall")
+
+    if intent_actor:
+        at = actors.get(intent_actor) or "quest-hall"
+        return (intent_actor, at)
+    if move_actor:
+        return move_actor
     return ("wisp", actors.get("wisp") or "quest-hall")
 
 
@@ -219,7 +249,7 @@ def handle_intent_write(needle: str) -> bool:
     return True
 
 
-def handle_write_or_read(tool_name: str, tool_input: dict, m: dict) -> None:
+def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dict) -> None:
     needle = needle_from_payload(tool_name, tool_input)
     if not needle:
         return
@@ -231,13 +261,37 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict) -> None:
     building, actor = classify(needle, m)
     if not building:
         return
+
+    is_write = tool_name in WRITE_TOOLS
+    cls = "write" if is_write else "read"
+    wall = now_iso()
+
+    # Sub-agent path — if the payload carries `agent_id`, this tool call came
+    # from inside a Task/Agent sub-agent. Emit move + log under the dwarf's id
+    # so the dwarf sprite roams instead of sitting at its spawn building.
+    dwarf, dw = attribute_to_dwarf(payload)
+    if dwarf:
+        if dwarf.get("at") != building:
+            append({
+                "wallTime": wall, "source": "hook",
+                "type": "move", "actor": dwarf["id"], "to": building,
+            })
+            dwarf["at"] = building
+            save_json(DWARVES_PATH, dw)
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "log",
+            "msg": f"{dwarf['id']} {tool_name.lower()} {needle}",
+            "cls": cls,
+            "speaker": "dwarves",
+        })
+        return
+
+    # Main-thread path — attribute to the active player as before.
     # Mode-marker override: if no path actor rule matched (actor == defaultActor),
     # and the session is dev-brain, the default actor is Braindead, not wisp.
     if actor == m.get("defaultActor", "wisp") and read_active_mode() == DEV_BRAIN_MODE:
         actor = "braindead"
-    is_write = tool_name in WRITE_TOOLS
-    cls = "write" if is_write else "read"
-    wall = now_iso()
     actors = load_json(ACTORS_PATH, {})
     if actors.get(actor) != building:
         append({
@@ -255,20 +309,41 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict) -> None:
     })
 
 
+def _dwarves_default() -> dict:
+    # Stable shape for the dwarves state file. Keys:
+    #   nextId          — next dwarf number to assign (D1, D2, …)
+    #   byToolUseId     — { tool_use_id: { id, color, at } } until despawn
+    #   pendingQueue    — FIFO of dwarves whose spawn Pre lacked tool_use_id
+    #   byAgentId       — { agent_id: tool_use_id } bound on first sub-call
+    #   pendingAgentBind — FIFO of tool_use_ids awaiting agent_id binding
+    return {
+        "nextId": 1,
+        "byToolUseId": {},
+        "pendingQueue": [],
+        "byAgentId": {},
+        "pendingAgentBind": [],
+    }
+
+
 def handle_task_pre(payload: dict) -> None:
     tool_use_id = payload.get("tool_use_id") or ""
     tool_input = payload.get("tool_input") or {}
     parent, at = infer_dwarf_parent()
 
-    dw = load_json(DWARVES_PATH, {"nextId": 1, "byToolUseId": {}, "pendingQueue": []})
+    dw = load_json(DWARVES_PATH, _dwarves_default())
     n = dw.get("nextId", 1)
     dwarf_id = f"D{n}"
     color = f"dwarf-{((n - 1) % 3) + 1}"
     dw["nextId"] = n + 1
+    entry = {"id": dwarf_id, "color": color, "at": at}
     if tool_use_id:
-        dw.setdefault("byToolUseId", {})[tool_use_id] = {"id": dwarf_id, "color": color}
+        dw.setdefault("byToolUseId", {})[tool_use_id] = entry
+        # Queue this spawn so the first sub-call carrying `agent_id` can claim
+        # it. The Agent tool's Pre fires before the sub-agent exists, so we
+        # don't know its agent_id yet; bind on first sighting.
+        dw.setdefault("pendingAgentBind", []).append(tool_use_id)
     else:
-        dw.setdefault("pendingQueue", []).append({"id": dwarf_id, "color": color})
+        dw.setdefault("pendingQueue", []).append(entry)
     save_json(DWARVES_PATH, dw)
 
     description = tool_input.get("description") or tool_input.get("subagent_type") or "task"
@@ -290,11 +365,21 @@ def handle_task_pre(payload: dict) -> None:
 
 def handle_task_post(payload: dict) -> None:
     tool_use_id = payload.get("tool_use_id") or ""
-    dw = load_json(DWARVES_PATH, {"nextId": 1, "byToolUseId": {}, "pendingQueue": []})
+    dw = load_json(DWARVES_PATH, _dwarves_default())
 
     entry = None
     if tool_use_id and tool_use_id in dw.get("byToolUseId", {}):
         entry = dw["byToolUseId"].pop(tool_use_id)
+        # Clean up the agent_id binding so it can't be reused for a future spawn.
+        by_agent = dw.setdefault("byAgentId", {})
+        for aid, tui in list(by_agent.items()):
+            if tui == tool_use_id:
+                by_agent.pop(aid, None)
+        # Also drop from the pendingAgentBind queue in case this spawn never
+        # had any sub-calls (instant return) so we don't leak a stale entry.
+        pq = dw.setdefault("pendingAgentBind", [])
+        if tool_use_id in pq:
+            pq.remove(tool_use_id)
     elif dw.get("pendingQueue"):
         # FIFO fallback when tool_use_id wasn't available at Pre time.
         entry = dw["pendingQueue"].pop(0)
@@ -315,6 +400,32 @@ def handle_task_post(payload: dict) -> None:
         "cls": "spawn",
         "speaker": "dwarves",
     })
+
+
+def attribute_to_dwarf(payload: dict):
+    """If the hook payload carries `agent_id` (sub-agent tool call), return
+    the dwarf entry { id, color, at } that owns it. Binds agent_id → spawn
+    tool_use_id on first sighting via FIFO match against pendingAgentBind.
+    Returns (entry, dw) on success, (None, None) otherwise — caller is
+    responsible for saving `dw` if it mutates `entry["at"]`."""
+    agent_id = payload.get("agent_id")
+    if not agent_id:
+        return None, None
+    dw = load_json(DWARVES_PATH, _dwarves_default())
+    by_agent = dw.setdefault("byAgentId", {})
+    by_tui = dw.setdefault("byToolUseId", {})
+    tool_use_id = by_agent.get(agent_id)
+    if tool_use_id is None:
+        pending = dw.setdefault("pendingAgentBind", [])
+        if not pending:
+            return None, None
+        tool_use_id = pending.pop(0)
+        by_agent[agent_id] = tool_use_id
+        save_json(DWARVES_PATH, dw)
+    entry = by_tui.get(tool_use_id)
+    if not entry:
+        return None, None
+    return entry, dw
 
 
 def main() -> None:
@@ -350,7 +461,7 @@ def main() -> None:
         sys.exit(0)
 
     try:
-        handle_write_or_read(tool_name, payload.get("tool_input") or {}, m)
+        handle_write_or_read(tool_name, payload.get("tool_input") or {}, m, payload)
     except Exception as e:
         print(f"emit-event: handle failed: {e}", file=sys.stderr)
 

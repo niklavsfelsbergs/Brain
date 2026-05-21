@@ -2206,7 +2206,7 @@ function despawnDwarf(id) {
 function ensureActorExists(actor, atKey) {
   if (!actor) return;
   if (actor === 'jebrim' || actor === 'zezima') return;          // baked in
-  if (actor.startsWith('dwarf-')) return;                          // dwarf-N have their own spawn protocol
+  if (/^D\d+$/.test(actor)) return;                              // dwarves spawn via spawn-dwarf only
   if (document.getElementById('actor-' + actor)) return;           // already present
   if (actor === 'braindead') {
     braindeadActive = true;
@@ -2216,6 +2216,11 @@ function ensureActorExists(actor, atKey) {
     spawnWisp({at: atKey || 'quest-hall'});
   }
 }
+
+// A dwarf's intent bubble is its task description — persistent for the
+// dwarf's whole lifetime. Player intents expire when the player moves
+// buildings, but dwarves shouldn't lose their bubble mid-walk.
+function isDwarfActor(actor) { return /^D\d+$/.test(actor); }
 
 function spawnBraindead(ev) {
   const at = ev.at || 'braindead-workshop';
@@ -2457,7 +2462,9 @@ function applyEvent(ev, instant=false) {
       // hook skipped the spawn-braindead event), conjure the sprite now.
       ensureActorExists(ev.actor, ev.to);
       currentBuilding[ev.actor] = ev.to;
-      clearIntent(ev.actor, instant);   // intent expires on building change
+      if (!isDwarfActor(ev.actor)) {
+        clearIntent(ev.actor, instant);   // player intents expire on building change
+      }                                    // dwarf bubbles persist for the whole task
       if (instant) {
         const b = STAND[ev.to];
         const j = jitter(ev.actor, ev.to);
@@ -2471,6 +2478,10 @@ function applyEvent(ev, instant=false) {
         moveActor(ev.actor, ev.to, dur);
         if (ev.actor === activePlayer) updateFocalLabel(dur);
       }
+      // Drag any active bubble along with the actor (renderIntent reads the
+      // updated actorPositions). Without this, the bubble would stay at the
+      // old building while the sprite walks away.
+      if (intents[ev.actor]) renderIntent(ev.actor);
       break;
     case 'intent':
       ensureActorExists(ev.actor, currentBuilding[ev.actor]);

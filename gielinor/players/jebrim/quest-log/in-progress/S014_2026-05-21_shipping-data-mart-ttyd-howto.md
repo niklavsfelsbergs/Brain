@@ -1,10 +1,10 @@
 # S014 — 2026-05-21 — Shipping Data Mart TTYD how-to
 
-**Status:** in-progress (Stream A landed, Stream B + recheck pending)
+**Status:** in-progress (Stream A landed, reference-set refresh landed S015, how_to.md §1–§4 authoring + closeout still ahead)
 **Principal:** Niklavs
 **Player:** Jebrim
 **Born:** 2026-05-21
-**External actions:** all completed. 5 dwarf spawns this session (D1 Redshift probe, D2 bi-etl walk, D3 template map, D4 connection harness, A scaffold). All returned successfully. Scaffold smoke test (`python -c "import db"`) passed. **No pending external actions.**
+**External actions:** all completed across all sessions. S015 (this close) added: git fetch on bi-analytics-main (no pull needed, up-to-date) + 16 Edits across `overview.md` / `tables.md` / `sources.md`. **No pending external actions.**
 **Relationship to S002:** explicitly **separated**. S002 stays parked; this quest does NOT inherit S002's open investigations. Any S002-overlap finding (destination_country, ORWO classification, dim_products extension) is re-derived from scratch here, and unfinished items are surfaced as drafts for principal triage — no implicit carry-over.
 
 ## The ask
@@ -52,7 +52,15 @@ Original TTYD target = `sl_gold.{dim_shops, fact_shop_daily}` (Shop Level mart).
 
 ## Where we are
 
-**Stream A landed clean. Stream B authoring still ahead. Mart still mid-update; ETL team behind schedule per principal.**
+**Stream A landed + reference-set refresh landed (S015). T11 NULL classification locked. ORWO dedup priority locked at last. how_to.md §1–§4 authoring still ahead, then DQ subsection + bi-analytics commit + bank-note harvest at quest close.**
+
+**bi-analytics-main working-dir state at S015 close.** 3 files modified, **NOT YET COMMITTED**:
+
+- `NFE/.claude/reference/shipping-data-mart/overview.md`
+- `NFE/.claude/reference/shipping-data-mart/tables.md`
+- `NFE/.claude/reference/shipping-data-mart/sources.md`
+
+These will be folded into the single Stream B commit (task #10) once §1–§4 authoring is done. Next session: do NOT commit reference-set refresh as its own commit; bundle it with the §1–§4 work.
 
 Scope fully locked. 5 dwarves returned this session (D1-D4 recon + A scaffold). All decisions confirmed (see T4 turn log). Stream A produced 18 working files in `NFE/projects/3_shipping_data_mart_TTYD/`: scaffold tree copied, `db.py`/`connect_redshift.py` adapted to pull creds from `NFE/.env`, `sample_queries.sql` rewritten, viz-studio retargeted (4 files), `how_to.md` skeleton with §5/§6/§7/§8 + §4 gold-banner. Smoke test passed.
 
@@ -75,43 +83,49 @@ Stream B = principal-Jebrim authoring work in main context. Authoring proceeds *
 
 ## Next concrete step — for next session
 
-Stream B authoring, in this order:
+**No resume trigger — pick up directly.** S015 closed the hold (T11/T13 lifted it). D1 re-probe is deferred to a separate post-V1 quest per principal call ("mart wont update, we proceed with what is"). Authoring proceeds against T11 classification + refreshed reference set.
 
-1. **Refresh `NFE/.claude/reference/shipping-data-mart/overview.md`** against D1+D2 truth: 7 silver tables + 1 bronze dim (drop `dim_carrier_sla` references), 5 source systems (add ORWO with attribute-empty status block), orchestrator = 6 phases (correct docstring stale). Use D1 row counts + D2 commit hashes inline. Status blocks for: `fact_shipments` cost-rollup cols 100% NULL, ORWO attribute-empty cols, gold-layer pending.
-2. **Refresh `NFE/.claude/reference/shipping-data-mart/tables.md`** — drop `dim_carrier_sla` section entirely. Per-table accuracy pass against D2's last-modified commits. Cost-rollup status block on `fact_shipments` table section.
-3. **Refresh `NFE/.claude/reference/shipping-data-mart/sources.md`** — add ORWO as 5th source. Re-verify 23 carrier list against D2's `sql/providers/` count (14 aggregated + 9 granular + 4 deferred). Confirm currency strategies still 5 distinct.
-4. **Author `how_to.md` §1 Pipeline Overview** at `NFE/projects/3_shipping_data_mart_TTYD/how_to.md` — replace the TBD placeholder. Source from refreshed `overview.md`. Mart shape + business questions + phases.
-5. **Author `how_to.md` §2 Data Sources** — 5 source systems + ORWO status block + carrier inventory.
-6. **Author `how_to.md` §3 Data Structure** — bronze/silver/(eventual)gold layers + key transformation patterns + canonical join shape.
-7. **Author `how_to.md` §4 Silver Layer Reference** — banner already in place. Per-table reference under it (7 silver + 1 bronze), columns + grain + sources + status blocks for unstable cols.
-8. **Recheck trigger.** When principal cues mart-update settled → re-run D1 Redshift probe → patch every `> Status: in progress (2026-05-21)` block with post-update facts. Single sweep.
-9. **Side-issue surfacing.** Flag ORPS creds-in-source incident separately (task #6). Not in this quest's deliverable.
+**Task list state at S015 close** (in TaskCreate slots #1–#11):
+- ✅ #1 overview.md — done
+- ✅ #2 tables.md — done
+- ✅ #3 sources.md — done
+- ⏳ #4 author §1 Pipeline Overview — **next step**
+- ⏳ #5 author §2 Data Sources
+- ⏳ #6 author §3 Data Structure
+- ⏳ #7 author §4 Silver Layer Reference (per-table under existing gold-banner)
+- ⏳ #8 spot-check per-AI entry points (CLAUDE/AGENTS/GEMINI/GROK)
+- ⏳ #9 add Known DQ / Open Investigations subsection to how_to.md (carries T11 Bucket 4)
+- ⏳ #10 single Stream B commit to bi-analytics-main (reference refresh + §1–§4 + DQ subsection bundled)
+- ⏳ #11 close S014 + harvest bank notes (mart NULL classification rubric harvest candidate per principal's "harvest from finished quests" rule)
 
-**Optional next step before Stream B starts:** ask principal whether to commit the `NFE/projects/3_shipping_data_mart_TTYD/` Stream A scaffold to the bi-analytics-main repo now, or wait until Stream B is done.
+Stream B authoring order (tasks #4–#9):
+
+1. **§1 Pipeline Overview** — replace TBD placeholder in `NFE/projects/3_shipping_data_mart_TTYD/how_to.md`. Source from refreshed `overview.md`: mart shape (7 silver + 1 bronze), 5 sources w/ dedup chain `Picturator > PicaAPI > PCS > Rewallution > ORWO`, business questions, 6 phases. No status blocks (T11 cost cols are canonical, not status).
+2. **§2 Data Sources** — 5 source systems. Source from refreshed `sources.md`. ORWO documented as 5th but with **no status block** (empty-by-design per T11). Carrier inventory: 14 agg + 9 granular + 4 deferred.
+3. **§3 Data Structure** — bronze/silver/(eventual)gold layers + transformation patterns + canonical join shape on `shipment_id`. Gold-banner already in §4.
+4. **§4 Silver Layer Reference** — banner already in place. Per-table reference under it: 7 silver (MSK, fact_shipments, fact_shipment_orderitems, fact_shipment_invoice_lines, fact_shipment_cost_summary, fact_truck_charges, dim_shipping_providers) + 1 bronze (dim_truck_costs). Apply T11 empty-by-design notes per-source per-column.
+5. **Open Investigations subsection** — carry T11 Bucket 4 verbatim: carrier-ts coverage anomaly (Picturator ~34%, PicaAPI ~78%) + mart-wide empty-column audit (with `is_return` as known do-not-use example) + ORPS creds-in-source side-issue placeholder.
+6. **Spot-check per-AI entry points** — CLAUDE/AGENTS/GEMINI/GROK at the project root should all point at `how_to.md`. Stream A populated these; verify.
+7. **Single Stream B commit to bi-analytics-main** bundling all of the above (reference refresh + §1–§4 + DQ subsection).
+8. **Close S014 + harvest.** Per T11 rule, harvest the mart NULL classification rubric as a Jebrim bank draft once the quest closes (harvest from finished work, not in flight). Candidate slug: `bank/drafts/notes/mart-audit-null-classification-rubric.md`.
+
+**Stream A scaffold committed to bi-analytics-main** (confirmed by principal at T10, 2026-05-21). Reference-set refresh NOT YET committed — bundles into task #7.
 
 ## Files / paths to read first — for next session
 
-1. **This file** — resume context.
-2. **Dwarf reports (recon — fresh from this session):**
-   - `S014_d1_redshift_probe.md` — live mart state. **Key findings:** 7 silver tables + 1 bronze dim, `dim_carrier_sla` absent, `fact_shipments` cost-rollup cols 100% NULL across all 18.5M rows, ORWO is largest source by item count but attribute-empty.
-   - `S014_d2_bi_etl_walk.md` — repo state. **Key findings:** `Shipping_Data_Mart` PascalCase canonical, no gold layer in repo, orchestrator actually 6 phases (Phase 0 window-gate added 2026-05-14), `dim_shipping_providers/sql/upsert_to_silver.sql:20` has NGE-XXXX placeholder.
-   - `S014_d3_template_map.md` — per-file action verdicts on TTYD template.
-   - `S014_d4_connection_harness.md` — `NFE/.env` has only USER+PASSWORD; host/port/db hardcoded per NFE convention. Bridge plan implemented in Stream A.
-   - `S014_a_scaffold.md` — Stream A landing report.
-3. **NFE current reference set (Stream B refresh targets, in this order):**
-   - `bi-analytics-main/NFE/.claude/reference/shipping-data-mart/overview.md`
-   - `bi-analytics-main/NFE/.claude/reference/shipping-data-mart/tables.md`
-   - `bi-analytics-main/NFE/.claude/reference/shipping-data-mart/sources.md`
-4. **Scaffold in place (Stream B authoring target):**
-   - `NFE/projects/3_shipping_data_mart_TTYD/how_to.md` — §5/§6/§7/§8 + §4 gold-banner already written. §1/§2/§3/§4 carry `<!-- TBD: authoring by principal-Jebrim, Stream B -->` placeholders.
-   - `NFE/projects/3_shipping_data_mart_TTYD/db.py` + `connect_redshift.py` + `sample_queries.sql` — adapted, smoke-tested.
-5. **TTYD template (reference only — kept intact at `NFE/projects/3_shipping_data_mart_TTYD/TTYD-template/`):**
-   - `TTYD-template/how_to.md` — section-by-section reference for §1-§4 authoring style.
-   - `TTYD-template/semantic-layer-draft.json` — for future shipping semantic-layer authoring (deferred).
-6. **bi-etl repo (truth source side 1 — git pull before reading):**
-   - `Documents/GitHub/bi-etl/dags/enterprise_silver/Shipping_Data_Mart/` (PascalCase, confirmed by D2). Re-check for any gold-layer commit before Stream B authoring.
-7. **Redshift live (truth source side 2 — re-probe when mart settles):**
-   - Same 7+1 tables via `mcp__redshift__*`. Same probes as D1; capture deltas.
+1. **This file** — resume context. T11 (NULL classification, principal-authoritative) and T12/T13 (reference-set refresh details) are the load-bearing turns.
+2. **Stream B authoring target (only file to edit for §1–§4 authoring):**
+   - `bi-analytics-main/NFE/projects/3_shipping_data_mart_TTYD/how_to.md` — §5/§6/§7/§8 + §4 gold-banner already written. §1/§2/§3/§4 carry `<!-- TBD: authoring by principal-Jebrim, Stream B -->` placeholders.
+3. **Refreshed reference set (Stream B authoring source — already up-to-date as of S015):**
+   - `bi-analytics-main/NFE/.claude/reference/shipping-data-mart/overview.md` ← §1 source
+   - `bi-analytics-main/NFE/.claude/reference/shipping-data-mart/sources.md` ← §2 source
+   - `bi-analytics-main/NFE/.claude/reference/shipping-data-mart/tables.md` ← §3/§4 source
+4. **TTYD template (reference only — kept intact):**
+   - `bi-analytics-main/NFE/projects/3_shipping_data_mart_TTYD/TTYD-template/how_to.md` — §1–§4 authoring style reference.
+5. **S014 dwarf reports (background context — read only if a question requires it; reference-set refresh already encodes their findings):**
+   - `S014_d1_redshift_probe.md`, `S014_d2_bi_etl_walk.md`, `S014_d3_template_map.md`, `S014_d4_connection_harness.md`, `S014_a_scaffold.md`.
+6. **bi-etl repo (truth source — re-pull only if §3/§4 authoring needs to verify a specific transformation pattern not captured in reference set):**
+   - `Documents/GitHub/bi-etl/dags/enterprise_silver/Shipping_Data_Mart/` (PascalCase).
 
 ## Constraints (from principal, this session)
 
@@ -131,3 +145,39 @@ Stream B authoring, in this order:
 - T6 (2026-05-21): Spawned Stream A dwarf. 18 files written into `NFE/projects/3_shipping_data_mart_TTYD/`. `db.py` smoke test passed. Dwarf judgment calls: `find_dotenv(filename=".env", usecwd=False)` for cwd-independent resolution, `:shipment_id_placeholder` psycopg2 bind syntax in sample_queries.sql query #5, deleted the shop-margin Codex JSON sample outside the brain (no-delete rule scopes to gielinor/). Tasks #1/#4/#5 closed; #3 advanced to "skeleton done, §1-§4 pending".
 - T7 (2026-05-21): Principal asked clarifying questions on (a) creds source, (b) `:shipment_id_placeholder`, (c) what was dropped. Re-read `db.py` + `sample_queries.sql` + scaffold quest-log to answer precisely. All three answered.
 - T8 (2026-05-21, close): Close-session ritual. Tightened resume sections. Harvested observations into drafts (see Pending drafts section). Committed brain side. bi-analytics commit deferred — pending principal call.
+- T9 (2026-05-21, resume → re-hold): Principal opened session "lets continue on shipping mart TTYD". Surfaced resume foreground. **Principal reversed T5 build-now stance:** mart refresh still incomplete, and D1's empty-column readings reflect mid-refresh state — authoring Stream B now would bake in transient nulls as documented truth. **Stream B on hold until mart refresh settles, then re-run D1 probe before any §1–§4 authoring.** Reference-refresh (steps 1–3) also on hold for the same reason. Stream A scaffold remains landed in `NFE/projects/3_shipping_data_mart_TTYD/` regardless. Next-session trigger: principal cues "mart refresh done" or equivalent → re-probe D1 → resume Stream B.
+- T10 (2026-05-21): Principal confirmed Stream A scaffold is already committed to bi-analytics-main. T6 optional-commit item closed. Standing by — no further action this session until mart refresh trigger.
+- T11 (2026-05-21, build-now restart): Principal reversed T9 stand-by — "mart wont update, we need to proceed with what is." Walked through D1's empty-column inventory together; principal supplied authoritative sort. **Working NULL classification for Stream B authoring (V1 snapshot, principal-authoritative, 2026-05-21):**
+
+  **Bucket 1 — Will fill (document as canonical, no status block):**
+  - `fact_shipments.real_shipping_cost_eur` / `final_shipping_cost_eur` / `cost_source` / `currency_code` — all sources. (Cost rollup IS intended on fact_shipments; current 100% NULL is mid-refresh state.)
+  - `fact_shipments.destination_country` (ORWO)
+  - `fact_shipments.net_revenue_eur` (ORWO)
+  - `fact_shipment_orderitems.revenue_eur` (ORWO)
+
+  **Bucket 2 — Empty by design for V1 (document as "this source does not carry this attribute"):**
+  - `fact_shipments.received_by_carrier_ts` / `delivered_by_carrier_ts` / `truckload_id` (ORWO)
+  - `fact_shipments.weight_kg` (ORWO 47% NULL — package dims imperfect, acceptable for V1)
+  - `fact_shipment_orderitems.revenue_eur` (PCS — intended, cost-data-only source)
+  - `fact_shipment_orderitems.product_key` (ORWO — NULL by design, expected. **No special sku-as-product_key rule** — principal retracted, would draw confusion; iterate later.)
+
+  **Bucket 3 — Known but tolerated:**
+  - `map_shipment_key.updated_at` / `dw_timestamp` 100% NULL — ETL bug, not vital. Use `order_created_date` for recency.
+  - 168k MSK keys without `fact_shipments` row — OK now, should clear later.
+  - `fact_shipment_invoice_lines.shipment_id` 0.82% NULL — expected (not every charge finds a clean join).
+
+  **Bucket 4 — Open investigations (flagged in how_to.md open-questions section, NOT this artifact's scope):**
+  - **Carrier-event timestamp coverage** — Picturator ~34% NULL / PicaAPI ~78% NULL on `received_by_carrier_ts` / `delivered_by_carrier_ts`. Expected lower; investigate.
+  - **Mart-wide empty-column audit** — find all 100%-NULL columns mart-wide, classify each as (a) defined-intended, (b) deprecated, (c) bugged, (d) empty-for-V1, (e) undefined / don't-use. `is_return` is one known example (table TBD — possibly different name from `is_reorder` on `fact_shipment_orderitems`). Until this audit runs, the "do not use" list in `how_to.md` stays open-ended.
+
+  **Bucket 5 — Structural:**
+  - `dim_carrier_sla` — out of scope V1, do not reference anywhere.
+  - Gold schema — name TBD, migration 2026-05-22 (tomorrow). §4 keeps the gold-banner.
+
+  **Bank-draft NOT created** — principal correction: "the notes stem from the quest, we don't know enough about the mart yet." Notes are harvested from finished work, not drafted in flight. Lesson saved to memory. Stream B authoring proceeds against this quest-log-resident classification only.
+- T12 (2026-05-21): Reference-set refresh complete. Three files updated in `bi-analytics-main/NFE/.claude/reference/shipping-data-mart/` against D1+D2 truth + T11 classification:
+  - **overview.md** — 4→5 source systems (ORWO), fact_shipments col 57→64 + dropped "PICT+PICAAPI only" v1 filter, orchestrator 5→6 phases (Phase 0 window-gate detail + 0a/0b), schedule `None`→`0 4 * * *` UTC, gold-migration banner (2026-05-22 TBD). ORWO dedup priority left as TBD-confirm-with-mart-owner.
+  - **tables.md** — MSK ORWO source CTE added + MSK updated_at/dw_timestamp 100% NULL gotcha. fact_shipments: scope filter dropped, ORWO source branch added (Wolfen production_site), full NULL classification (do-not-use/no-source/ORWO-won't/ORWO-partial buckets), carrier-ts coverage anomaly gotcha. fact_shipment_orderitems: ORWO branch + Navision articlenumber backfill, ORWO product_key NULL-by-design note, ORWO 73% row-dominance gotcha. fact_shipment_invoice_lines: `shippingprovider` → `shippingprovider_extkey` rename (2026-05-20), ORWO carrier-distributive notes, 0.82% shipment_id NULL acceptable. fact_truck_charges: `cost_per_parcel_eur_smoothed` col added. **New `dim_shipping_providers` section** (was missing).
+  - **sources.md** — 4→5 source systems header. New ORWO H3 (~30 lines covering identity, articlenumber backfill, V1 attribute classification per T11, volume dominance, dim_providers landed, NGE-XXXX allow-list placeholder). dim_shipping_providers cross-cutting section synced with tables.md (PK includes source_system, full ref in tables.md).
+  - Tasks #1/#2/#3 closed. **One open question for principal:** ORWO's position in the dedup priority chain (currently flagged TBD in both `overview.md` and `sources.md`).
+- T13 (2026-05-21): Principal locked ORWO dedup priority = last. Chain is now `Picturator > PicaAPI > PCS > Rewallution > ORWO`. Patched both `overview.md` and `sources.md` to drop the TBD flag. Reference-set refresh fully closed.

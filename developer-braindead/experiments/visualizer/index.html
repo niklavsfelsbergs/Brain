@@ -143,12 +143,12 @@
 
   /* Building hover */
   .building { cursor: default; transition: filter 200ms; }
-  .building:hover { filter: brightness(1.18) drop-shadow(0 0 8px rgba(216,173,54,0.5)); }
-  .building text.plaque { opacity: 0; transition: opacity 150ms; pointer-events: none; }
-  .building:hover text.plaque { opacity: 1; }
+  .building:hover { filter: brightness(1.15) drop-shadow(0 0 8px rgba(216,173,54,0.4)); }
+  .bldg-label { pointer-events: none; }
 
   /* Character motion */
   .actor { transition: transform 1800ms cubic-bezier(0.45, 0.05, 0.55, 0.95); }
+  #focal-label { transition: transform 1800ms cubic-bezier(0.45, 0.05, 0.55, 0.95), opacity 360ms; }
   .actor.player, .actor.dwarf { filter: drop-shadow(0 0 1.2px rgba(0,0,0,0.85)) drop-shadow(0 1px 0 rgba(0,0,0,0.7)); }
   .actor.walking .bob { animation: bob 360ms steps(2) infinite; }
   @keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-2px);} }
@@ -236,6 +236,71 @@
   .crumb { margin-top: 12px; text-align: center; color: rgba(216,173,54,0.45); font-family: 'VT323',monospace; font-size: 14px; letter-spacing: 0.1em; }
   .crumb span { color: rgba(216,173,54,0.65); }
 
+  /* ─── Log panel tabs (COMMS-style) ─── */
+  .logbox header {
+    padding: 4px 12px;
+    gap: 14px;
+    font-size: 20px;
+  }
+  .logbox header .log-title {
+    color: var(--gold);
+    font-family: 'Jacquard 12', serif;
+    letter-spacing: 0.08em;
+  }
+  .log-tabs {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    font-family: 'VT323', monospace;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+  }
+  .log-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px 4px;
+    color: rgba(216,173,54,0.55);
+    border: 1px solid transparent;
+    cursor: pointer;
+    user-select: none;
+    text-transform: uppercase;
+    background: transparent;
+    line-height: 1;
+    transition: color 120ms, background 120ms, border-color 120ms;
+  }
+  .log-tab:hover { color: var(--gold); border-color: rgba(216,173,54,0.3); }
+  .log-tab.active {
+    color: var(--ink);
+    background: var(--gold);
+    border-color: var(--gold-dk);
+  }
+  .log-tab .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    box-shadow: 0 0 5px currentColor;
+  }
+  .log-tab[data-tab="all"]     .dot { background: var(--parchment); color: var(--parchment-dk); }
+  .log-tab[data-tab="jebrim"]  .dot { background: #6c8ec8; color: #3a5688; }
+  .log-tab[data-tab="zezima"]  .dot { background: #c9783a; color: #8a4520; }
+  .log-tab[data-tab="dwarves"] .dot { background: #cf9a2c; color: #8a6420; }
+  .log-tab[data-tab="wisp"]    .dot { background: #fff4c8; color: #d8c694; }
+  .log-tab[data-tab="commits"] .dot { background: var(--gold); color: var(--gold-dk); }
+  .log-tab.active .dot { box-shadow: 0 0 6px rgba(0,0,0,0.5); }
+
+  /* filter — hide non-matching entries when a filter is active */
+  .log-scroll[data-filter="jebrim"]  .log-entry:not([data-speaker="jebrim"])  { display: none; }
+  .log-scroll[data-filter="zezima"]  .log-entry:not([data-speaker="zezima"])  { display: none; }
+  .log-scroll[data-filter="dwarves"] .log-entry:not([data-speaker="dwarves"]) { display: none; }
+  .log-scroll[data-filter="wisp"]    .log-entry:not([data-speaker="wisp"])    { display: none; }
+  .log-scroll[data-filter="commits"] .log-entry:not([data-speaker="commits"]) { display: none; }
+
+  .log-entry[data-speaker="jebrim"]  .t::before { content: "● "; color: #6c8ec8; }
+  .log-entry[data-speaker="zezima"]  .t::before { content: "● "; color: #c9783a; }
+  .log-entry[data-speaker="dwarves"] .t::before { content: "● "; color: #cf9a2c; }
+  .log-entry[data-speaker="wisp"]    .t::before { content: "● "; color: #fff4c8; }
+  .log-entry[data-speaker="commits"] .t::before { content: "● "; color: var(--gold); }
+
   @media (max-width: 900px) {
     .topbar { grid-template-columns: 1fr; gap: 12px; }
     .now-playing { border-left: none; padding-left: 0; text-align: left; max-width: none; }
@@ -282,6 +347,13 @@
     <div class="map-wrap">
       <svg class="map" viewBox="0 0 1200 820" preserveAspectRatio="xMidYMid meet" aria-label="Gielinor brain map">
         <defs>
+          <!-- Sky -->
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#3d5878"/>
+            <stop offset="35%"  stop-color="#6486a8"/>
+            <stop offset="72%"  stop-color="#b89868"/>
+            <stop offset="100%" stop-color="#7a5a3c"/>
+          </linearGradient>
           <!-- Water -->
           <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"   stop-color="var(--water-light)"/>
@@ -355,6 +427,69 @@
             <polygon points="2,-6 6,0 4,-2" fill="#5e564d"/>
           </g>
 
+          <!-- Mushroom (small red toadstool) -->
+          <g id="mushroom">
+            <ellipse cx="0" cy="2" rx="2.2" ry="0.6" fill="rgba(0,0,0,0.4)"/>
+            <rect x="-0.5" y="-1" width="1.5" height="3" fill="#e8d4a0"/>
+            <ellipse cx="0" cy="-1.5" rx="2.2" ry="1.1" fill="#b8392a"/>
+            <ellipse cx="0" cy="-2" rx="1.6" ry="0.5" fill="#d44a3a"/>
+            <rect x="-1" y="-2" width="0.6" height="0.6" fill="#f4e8d8"/>
+            <rect x="1" y="-1.5" width="0.5" height="0.5" fill="#f4e8d8"/>
+            <rect x="-0.2" y="-0.8" width="0.5" height="0.5" fill="#f4e8d8"/>
+          </g>
+
+          <!-- Grass tuft (3-blade cluster) -->
+          <g id="tuft">
+            <rect x="-2.5" y="-0.5" width="0.8" height="2" fill="#587e3a"/>
+            <rect x="-1" y="-1.5" width="0.8" height="3" fill="#6a9645"/>
+            <rect x="0.5" y="-2.5" width="0.8" height="4" fill="#82b35a"/>
+            <rect x="2" y="-1" width="0.8" height="2.5" fill="#6a9645"/>
+            <rect x="-0.2" y="-3" width="0.5" height="1" fill="#9bc66e"/>
+          </g>
+
+          <!-- Pebble cluster -->
+          <g id="pebble">
+            <ellipse cx="0" cy="1.5" rx="3" ry="0.6" fill="rgba(0,0,0,0.32)"/>
+            <ellipse cx="-1" cy="0" rx="1.8" ry="1.1" fill="#7a716a"/>
+            <ellipse cx="1.5" cy="0.5" rx="1.2" ry="0.8" fill="#85786d"/>
+            <rect x="-1.6" y="-0.5" width="0.7" height="0.7" fill="#a08f80"/>
+          </g>
+
+          <!-- Dandelion (yellow puffball) -->
+          <g id="dandelion">
+            <rect x="0" y="0" width="0.6" height="3" fill="#4a6a2a"/>
+            <circle cx="0.3" cy="-0.5" r="1.6" fill="#f0d038"/>
+            <rect x="-0.5" y="-1" width="0.5" height="0.5" fill="#fff58c"/>
+            <rect x="0.6" y="-0.8" width="0.5" height="0.5" fill="#fff58c"/>
+          </g>
+
+          <!-- Daisy (white petals + yellow center) -->
+          <g id="daisy">
+            <rect x="0" y="0" width="0.5" height="4" fill="#577e3a"/>
+            <rect x="-2" y="-1" width="1" height="1" fill="#f4f0e0"/>
+            <rect x="2" y="-1" width="1" height="1" fill="#f4f0e0"/>
+            <rect x="0" y="-3" width="1" height="1" fill="#f4f0e0"/>
+            <rect x="0" y="1" width="1" height="1" fill="#f4f0e0"/>
+            <rect x="0" y="-1" width="1" height="1" fill="#f0c344"/>
+          </g>
+
+          <!-- Mushroom ring (4-mushroom cluster) -->
+          <g id="mushroom-ring">
+            <ellipse cx="0" cy="0" rx="7" ry="3" fill="rgba(80,60,30,0.15)"/>
+            <use href="#mushroom" x="-5" y="0"/>
+            <use href="#mushroom" x="5" y="0"/>
+            <use href="#mushroom" x="0" y="-2"/>
+            <use href="#mushroom" x="0" y="2"/>
+          </g>
+
+          <!-- Lavender sprig -->
+          <g id="lavender">
+            <rect x="0" y="0" width="0.5" height="4" fill="#4a6a2a"/>
+            <rect x="-0.5" y="-1.5" width="1.5" height="2" fill="#9270b8"/>
+            <rect x="-0.3" y="-2.5" width="1" height="1" fill="#b89cd8"/>
+            <rect x="0" y="-3.2" width="0.5" height="0.7" fill="#d8b8e8"/>
+          </g>
+
           <!-- Jebrim (billboard) -->
           <g id="jebrim">
             <ellipse cx="0" cy="5" rx="9" ry="2.3" fill="rgba(0,0,0,0.42)"/>
@@ -406,8 +541,63 @@
 
         </defs>
 
-        <!-- void backdrop -->
+        <!-- void backdrop (corners + bottom) -->
         <rect x="0" y="0" width="1200" height="820" fill="var(--void)"/>
+
+        <!-- Sky band + horizon -->
+        <g id="sky" pointer-events="none">
+          <rect x="0" y="0" width="1200" height="170" fill="url(#skyGrad)"/>
+          <!-- distant clouds -->
+          <ellipse cx="180" cy="42" rx="58" ry="6" fill="#c6d8e0" opacity="0.32"/>
+          <ellipse cx="780" cy="28" rx="72" ry="5" fill="#c6d8e0" opacity="0.28"/>
+          <ellipse cx="980" cy="58" rx="48" ry="4" fill="#dde6ec" opacity="0.35"/>
+          <ellipse cx="420" cy="70" rx="64" ry="5" fill="#dde6ec" opacity="0.3"/>
+          <!-- mountains back layer (most distant, pale) -->
+          <polygon points="
+            -10,170 40,118 95,134 150,108 210,128 270,98 330,118 390,90 455,116
+            520,96 585,120 650,92 715,118 780,104 845,124 910,98 975,120 1040,102
+            1105,124 1170,110 1210,170" fill="#52617e" opacity="0.55"/>
+          <!-- mountains mid layer -->
+          <polygon points="
+            -10,170 30,142 90,150 145,128 205,148 268,124 330,146 390,118 455,144
+            520,124 590,144 655,122 715,148 780,128 845,146 915,124 975,148 1040,128
+            1105,150 1170,138 1210,170" fill="#3a4860" opacity="0.7"/>
+          <!-- mountain front layer (closest, snow caps) -->
+          <polygon points="
+            -10,170 50,158 100,162 158,148 218,160 280,146 342,158 402,142 462,156
+            520,144 580,158 645,144 712,158 776,146 840,158 906,144 970,158 1036,146
+            1100,160 1170,150 1210,170" fill="#2e3a4e" opacity="0.85"/>
+          <!-- snow caps (tiny white triangles on the front peaks) -->
+          <polygon points="100,162 105,158 110,164" fill="#dce4ec" opacity="0.55"/>
+          <polygon points="280,146 286,142 292,148" fill="#dce4ec" opacity="0.55"/>
+          <polygon points="462,156 468,152 474,158" fill="#dce4ec" opacity="0.55"/>
+          <polygon points="645,144 651,140 657,146" fill="#dce4ec" opacity="0.55"/>
+          <polygon points="906,144 912,140 918,146" fill="#dce4ec" opacity="0.55"/>
+          <!-- distant tree line silhouette -->
+          <path d="M0,170 L0,160 Q4,156 8,160 Q14,154 18,160 Q24,156 28,162 Q34,156 38,160
+            Q44,154 48,160 Q54,156 58,162 Q66,154 72,160 Q78,156 84,162 Q92,154 98,160
+            Q104,156 110,162 Q118,154 124,160 Q132,156 138,162 Q146,154 152,160
+            Q160,156 166,162 Q174,154 180,160 Q188,156 194,162 Q202,154 208,160
+            Q216,156 222,162 Q230,154 236,160 Q244,156 250,162 Q258,154 264,160
+            Q272,156 278,162 Q286,154 292,160 Q300,156 306,162 Q314,154 320,160
+            Q328,156 334,162 Q342,154 348,160 Q356,156 362,162 Q370,154 376,160
+            Q384,156 390,162 Q398,154 404,160 Q412,156 418,162 Q426,154 432,160
+            Q440,156 446,162 Q454,154 460,160 Q468,156 474,162 Q482,154 488,160
+            Q496,156 502,162 Q510,154 516,160 Q524,156 530,162 Q538,154 544,160
+            Q552,156 558,162 Q566,154 572,160 Q580,156 586,162 Q594,154 600,160
+            Q608,156 614,162 Q622,154 628,160 Q636,156 642,162 Q650,154 656,160
+            Q664,156 670,162 Q678,154 684,160 Q692,156 698,162 Q706,154 712,160
+            Q720,156 726,162 Q734,154 740,160 Q748,156 754,162 Q762,154 768,160
+            Q776,156 782,162 Q790,154 796,160 Q804,156 810,162 Q818,154 824,160
+            Q832,156 838,162 Q846,154 852,160 Q860,156 866,162 Q874,154 880,160
+            Q888,156 894,162 Q902,154 908,160 Q916,156 922,162 Q930,154 936,160
+            Q944,156 950,162 Q958,154 964,160 Q972,156 978,162 Q986,154 992,160
+            Q1000,156 1006,162 Q1014,154 1020,160 Q1028,156 1034,162 Q1042,154 1048,160
+            Q1056,156 1062,162 Q1070,154 1076,160 Q1084,156 1090,162 Q1098,154 1104,160
+            Q1112,156 1118,162 Q1126,154 1132,160 Q1140,156 1146,162 Q1154,154 1160,160
+            Q1168,156 1174,162 Q1182,154 1188,160 Q1196,156 1200,160 L1200,170 Z"
+            fill="#1c2818" opacity="0.65"/>
+        </g>
 
         <!-- Layers (populated by JS) -->
         <g id="ground"></g>
@@ -427,10 +617,14 @@
             <ellipse class="glow" cx="0" cy="0" rx="22" ry="22" fill="url(#activeGlow)"/>
             <g class="bob"><use href="#zezima"/></g>
           </g>
+          <g id="focal-label" pointer-events="none" opacity="0"></g>
         </g>
 
         <!-- vignette -->
         <rect x="0" y="0" width="1200" height="820" fill="url(#vignette)" pointer-events="none"/>
+
+        <!-- Building name plates — always on top, even over actors and vignette -->
+        <g id="building-labels" pointer-events="none"></g>
       </svg>
 
       <div class="ticker">
@@ -466,7 +660,17 @@
   </div>
 
   <div class="logbox">
-    <header>EVENT&nbsp;LOG</header>
+    <header>
+      <span class="log-title">COMMS</span>
+      <div class="log-tabs" id="logTabs" role="tablist">
+        <span class="log-tab active" data-tab="all"     role="tab"><span class="dot"></span>ALL</span>
+        <span class="log-tab"        data-tab="jebrim"  role="tab"><span class="dot"></span>JEBRIM</span>
+        <span class="log-tab"        data-tab="zezima"  role="tab"><span class="dot"></span>ZEZIMA</span>
+        <span class="log-tab"        data-tab="dwarves" role="tab"><span class="dot"></span>DWARVES</span>
+        <span class="log-tab"        data-tab="wisp"    role="tab"><span class="dot"></span>WISP</span>
+        <span class="log-tab"        data-tab="commits" role="tab"><span class="dot"></span>COMMITS</span>
+      </div>
+    </header>
     <div class="log-scroll" id="logScroll"></div>
   </div>
 
@@ -577,20 +781,49 @@ function buildGround() {
 
       // sprinkle small detail
       const hashSeed = (gx * 31 + gy * 17) & 255;
-      if (hashSeed % 13 === 0) {
+      const hashSeed2 = (gx * 41 + gy * 23 + 11) & 255;
+
+      // building clearance — sprites within 70px of any building center are skipped
+      const nearBldg = Object.values(BUILDINGS).some(
+        bb => Math.hypot(bb.x - p.x, bb.y - p.y) < 72
+      );
+
+      // Light grass-tuft dot — kept dense even near buildings
+      if (hashSeed % 9 === 0) {
         const dot = document.createElementNS(svgNS, 'rect');
         dot.setAttribute('x', p.x - 2); dot.setAttribute('y', p.y - 1);
         dot.setAttribute('width', 2); dot.setAttribute('height', 2);
         dot.setAttribute('fill', '#82a851');
         overlays.appendChild(dot);
       }
-      if (hashSeed % 19 === 3) {
+      // Dark grass tip
+      if (hashSeed % 15 === 3) {
         const dot = document.createElementNS(svgNS, 'rect');
         dot.setAttribute('x', p.x + 4); dot.setAttribute('y', p.y + 2);
         dot.setAttribute('width', 1); dot.setAttribute('height', 1);
         dot.setAttribute('fill', '#3e5a26');
         overlays.appendChild(dot);
       }
+      // Bright grass speck
+      if (hashSeed2 % 11 === 4) {
+        const dot = document.createElementNS(svgNS, 'rect');
+        dot.setAttribute('x', p.x - 5); dot.setAttribute('y', p.y);
+        dot.setAttribute('width', 1); dot.setAttribute('height', 1);
+        dot.setAttribute('fill', '#a8c468');
+        overlays.appendChild(dot);
+      }
+
+      // Larger sprites — skip near buildings
+      if (nearBldg) continue;
+
+      if (hashSeed % 23 === 7)  addUse(overlays, 'tuft',      p.x - 6, p.y + 4);
+      if (hashSeed % 29 === 11) addUse(overlays, 'mushroom',  p.x + 6, p.y - 2);
+      if (hashSeed % 31 === 13) addUse(overlays, 'pebble',    p.x - 4, p.y + 6);
+      if (hashSeed % 37 === 19) addUse(overlays, 'dandelion', p.x + 8, p.y + 1);
+      if (hashSeed % 41 === 5)  addUse(overlays, 'daisy',     p.x - 8, p.y - 3);
+      if (hashSeed2 % 53 === 17) addUse(overlays, 'lavender', p.x + 2, p.y + 2);
+      // mushroom rings — very rare
+      if (hashSeed % 89 === 41) addUse(overlays, 'mushroom-ring', p.x, p.y + 4);
     }
   }
 }
@@ -678,66 +911,88 @@ function buildFlora() {
   const back = document.getElementById('flora-back');
   const front = document.getElementById('flora-front');
 
-  // helper — iso (cx, cy) to screen, with building collision check
-  function isoXY(cx, cy) {
-    return { x: 600 + (cx - cy) * 32, y: 440 + (cx + cy) * 16 };
-  }
-  function clearOfBuildings(x, y, pad=72) {
+  const POND_CX = 740, POND_CY = 620, POND_PAD = 110;
+
+  function clearOfBuildings(x, y, pad=80) {
     return !Object.values(BUILDINGS).some(b => Math.hypot(b.x - x, b.y - y) < pad);
   }
-
-  // Outer ring — trees ring the inside of the diamond perimeter
-  const outerRing = [
-    [-11, -0.5], [-10.5, -3.5], [-9, -6], [-6.5, -8.5], [-3.5, -10], [-0.5, -11],
-    [2.5, -10.5], [5.5, -9.5], [8, -7.5], [10, -5], [11, -2], [11.2, 1.5],
-    [10.5, 4.5], [9, 7.5], [6.5, 9.5], [3.5, 10.5], [0.5, 11], [-2.5, 10.5],
-    [-5.5, 9.5], [-8, 7.5], [-9.5, 5], [-10.5, 2.5]
-  ];
-  outerRing.forEach(([cx, cy], i) => {
-    const p = isoXY(cx, cy);
-    if (p.x < 30 || p.x > 1170 || p.y < 30 || p.y > 800) return;
-    const cls = i % 2 === 0 ? 'tree sway' : 'tree sway2';
-    if (cy > 4) addUse(front, 'tree', p.x, p.y, cls);
-    else addUse(back, 'tree', p.x, p.y, cls);
-  });
-
-  // Inner ring — scattered, avoiding buildings
-  const innerRing = [
-    [-8, -3], [-6, -7], [-2, -9], [2, -9], [6, -7], [8, -3.5],
-    [9, 0.5], [8, 4], [6, 7.5], [2, 9.5], [-2, 9.5], [-6, 7.5], [-8.5, 4], [-9, 0.5],
-    [-5, -4], [-4, -6], [5, -5], [4, -7], [-7, 4], [7, 4.5], [-3, 6], [4, 6.5],
-  ];
-  innerRing.forEach(([cx, cy], i) => {
-    const p = isoXY(cx, cy);
-    if (!clearOfBuildings(p.x, p.y, 80)) return;
-    if (p.x < 30 || p.x > 1170 || p.y < 30 || p.y > 800) return;
-    const cls = i % 2 === 0 ? 'tree sway2' : 'tree sway';
-    if (cy > 4) addUse(front, 'tree', p.x, p.y, cls);
-    else addUse(back, 'tree', p.x, p.y, cls);
-  });
-
-  // bushes — in iso coords, mid-distance
-  [[-8.5, 1], [-5, -3], [-2, -5], [4, -5], [6.5, -2], [3, 6], [-4, 5], [-1, 7], [7, 3.5], [-7, -5], [5, -2.5]]
-    .forEach(([cx, cy]) => {
-      const p = isoXY(cx, cy);
-      if (!clearOfBuildings(p.x, p.y, 50)) return;
-      addUse(back, 'bush', p.x, p.y);
+  function clearOfPond(x, y, pad=POND_PAD) {
+    return Math.hypot(POND_CX - x, POND_CY - y) > pad;
+  }
+  function clearOfPaths(x, y, pad=22) {
+    return !PATHS.some(([a, b]) => {
+      const A = STAND[a], B = STAND[b];
+      const dx = B.x - A.x, dy = B.y - A.y;
+      const len2 = dx * dx + dy * dy;
+      if (len2 < 1) return Math.hypot(A.x - x, A.y - y) < pad;
+      let t = ((x - A.x) * dx + (y - A.y) * dy) / len2;
+      t = Math.max(0, Math.min(1, t));
+      const px = A.x + t * dx, py = A.y + t * dy;
+      return Math.hypot(px - x, py - y) < pad;
     });
+  }
 
-  // flowers — clusters
-  [[-6, -4], [-6.2, -3.8], [-5.8, -4.2], [3.5, 5], [3.7, 5.2], [3.3, 4.8], [-2.5, -7], [-2.7, -6.8], [6, 1.5], [6.2, 1.7], [-3, 4], [-2.8, 4.2]]
-    .forEach(([cx, cy]) => {
-      const p = isoXY(cx, cy);
-      addUse(back, 'flower', p.x, p.y);
-    });
+  function placeTree(x, y, layerHint) {
+    if (x < 6 || x > 1194 || y < 174 || y > 812) return;
+    if (!clearOfBuildings(x, y, 86)) return;
+    if (!clearOfPond(x, y, 104)) return;
+    const layer = layerHint || (y > 560 ? front : back);
+    addUse(layer, 'tree', x, y);
+  }
 
-  // rocks — sparse on grass
-  [[-7, -1], [5, -6], [-3, 8.5], [9, 2], [-9.5, 3], [1, -8], [-6.5, 8]]
-    .forEach(([cx, cy]) => {
-      const p = isoXY(cx, cy);
-      if (!clearOfBuildings(p.x, p.y, 60)) return;
-      addUse(back, 'rock', p.x, p.y);
-    });
+  // ── Edge-frame of trees: thick on all four sides ──
+  // Top edge — across just below the horizon (sky band ends at y=170)
+  for (let x = 24; x <= 1176; x += 46) {
+    placeTree(x + ((x * 7) % 14) - 7,  178 + ((x * 11) % 14), back);
+    if ((x % 92) === 0) placeTree(x + 22, 200 + ((x * 5) % 12), back);
+  }
+  // a slight second row of top trees, staggered, for depth
+  for (let x = 50; x <= 1150; x += 58) {
+    placeTree(x + ((x * 13) % 18) - 9, 210 + ((x * 7) % 16), back);
+  }
+  // Bottom edge — front layer (these stand in front of bottom buildings)
+  for (let x = 14; x <= 1186; x += 44) {
+    placeTree(x + ((x * 11) % 16) - 8, 776 + ((x * 9) % 18), front);
+    if ((x % 88) === 22) placeTree(x + 18, 760 + ((x * 5) % 12), front);
+  }
+  // Left edge
+  for (let y = 210; y <= 770; y += 40) {
+    placeTree(20 + ((y * 7) % 18),   y + ((y * 5) % 16), y > 560 ? front : back);
+    if ((y % 80) === 0) placeTree(58 + ((y * 11) % 14), y + 12, y > 560 ? front : back);
+  }
+  // Right edge
+  for (let y = 210; y <= 770; y += 40) {
+    placeTree(1180 - ((y * 7) % 18),  y + ((y * 5) % 16), y > 560 ? front : back);
+    if ((y % 80) === 0) placeTree(1140 - ((y * 11) % 14), y + 12, y > 560 ? front : back);
+  }
+
+  // ── Small details scattered through the open map (with clearance) ──
+  function placeIfClear(layer, href, x, y, opts={}) {
+    if (x < 30 || x > 1170 || y < 180 || y > 800) return;
+    if (!clearOfBuildings(x, y, opts.bPad || 60)) return;
+    if (!clearOfPond(x, y, opts.pPad || 90)) return;
+    if (!clearOfPaths(x, y, opts.pathPad || 18)) return;
+    addUse(layer, href, x, y);
+  }
+
+  // pseudo-random scatter for bushes
+  for (let i = 0; i < 30; i++) {
+    const x = 110 + ((i * 127) % 980);
+    const y = 220 + ((i * 91)  % 560);
+    placeIfClear(back, 'bush', x, y);
+  }
+  // flower clusters (3 each, tight)
+  for (let i = 0; i < 14; i++) {
+    const cx = 100 + ((i * 167) % 1000);
+    const cy = 230 + ((i * 113) % 540);
+    [[0,0],[3,-2],[-2,3]].forEach(([ox,oy]) => placeIfClear(back, 'flower', cx+ox, cy+oy, {pathPad: 14}));
+  }
+  // rocks — fewer, weighted toward the periphery
+  for (let i = 0; i < 16; i++) {
+    const x = 80 + ((i * 199) % 1040);
+    const y = 220 + ((i * 79)  % 560);
+    placeIfClear(back, 'rock', x, y, {bPad: 70});
+  }
 }
 
 function addUse(parent, href, x, y, cls='') {
@@ -818,9 +1073,27 @@ function isoBuilding(opts) {
 
   return `<g class="building" data-id="${id}" transform="translate(${cx},${cy})">
     ${shadow}${plinth}${base}${swWall}${seWall}${frame}${swRoof}${seRoof}${roofRidge}${details}
-    <text class="plaque" x="0" y="${d + 22}" text-anchor="middle"
-          font-family="Jacquard 12" font-size="20" fill="var(--parchment)"
-          stroke="var(--ink)" stroke-width="0.4">${label}</text>
+  </g>`;
+}
+
+// Ornate gold-bracketed name plate. Returns SVG markup, positioned at (0, y) in local coords.
+function ornateLabel(text, y) {
+  const t = text.toUpperCase();
+  const w = Math.max(74, t.length * 9 + 24);
+  const half = w / 2;
+  return `<g class="bldg-label" pointer-events="none">
+    <rect x="${-half}" y="${y - 11}" width="${w}" height="20"
+          fill="rgba(14,10,6,0.92)" stroke="var(--gold-dk)" stroke-width="1"/>
+    <rect x="${-half + 1.5}" y="${y - 9.5}" width="${w - 3}" height="17"
+          fill="none" stroke="var(--gold)" stroke-width="0.4" opacity="0.55"/>
+    <polygon points="${-half - 6},${y - 1} ${-half - 1},${y - 7} ${-half + 5},${y - 1} ${-half - 1},${y + 5}"
+             fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="0.5"/>
+    <polygon points="${half + 6},${y - 1} ${half + 1},${y - 7} ${half - 5},${y - 1} ${half + 1},${y + 5}"
+             fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="0.5"/>
+    <text x="0" y="${y + 4}" text-anchor="middle"
+          font-family="Jacquard 12" font-size="17" fill="var(--gold)"
+          letter-spacing="0.08em" stroke="rgba(0,0,0,0.7)" stroke-width="0.3"
+          paint-order="stroke">${t}</text>
   </g>`;
 }
 
@@ -881,34 +1154,50 @@ function buildBuildings() {
       <polygon points="0,${d+5} ${w+5},5 0,${-d+5} ${-w+5},5" fill="rgba(0,0,0,0.25)"/>
       ${tiles}
       ${bb}
-      <text class="plaque" x="0" y="${d + 22}" text-anchor="middle" font-family="Jacquard 12" font-size="20" fill="var(--parchment)" stroke="var(--ink)" stroke-width="0.4">Inbox Square</text>
     </g>`;
   }
 
-  // ── Meta Town Hall — tall stone with banners + spire ──
+  // ── Meta Town Hall — tall castle-like with banners, central + corner spires ──
   {
     const b = BUILDINGS['meta-town-hall'];
-    const w = 75, d = 38, h = 70, r = 38;
+    const w = 78, d = 39, h = 96, r = 50;
     const details = `
-      <!-- clock medallion on SW wall -->
-      <circle cx="${-w*0.5}" cy="${d*0.5 - 38}" r="9" fill="var(--parchment)" stroke="var(--ink)" stroke-width="1"/>
-      <rect x="${-w*0.5 - 1}" y="${d*0.5 - 44}" width="2" height="6" fill="var(--ink)"/>
-      <rect x="${-w*0.5}"     y="${d*0.5 - 39}" width="6" height="1.5" fill="var(--ink)"/>
-      <!-- banners hanging from eaves -->
-      <polygon points="${-w + 6},${-h + 2} ${-w + 16},${-h + 2} ${-w + 13},${-h + 22} ${-w + 9},${-h + 22}" fill="var(--roof-red)" stroke="var(--roof-red-dk)" stroke-width="0.5"/>
-      <polygon points="${w - 16},${-h + 2} ${w - 6},${-h + 2} ${w - 9},${-h + 22} ${w - 13},${-h + 22}" fill="var(--roof-red)" stroke="var(--roof-red-dk)" stroke-width="0.5"/>
-      <!-- door on SW (frontish) -->
-      <polygon points="${swWallPoly(w, d, 0.35, 0.5, 0, 32)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.35, 0.5, 28, 4)}" fill="#1a0e04"/>
-      <!-- arched window SE -->
-      <polygon points="${seWallPoly(w, d, 0.3, 0.45, 18, 22)}" fill="var(--roof-blue-dk)" stroke="var(--stone-light)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 18, 22)}" fill="var(--roof-blue-dk)" stroke="var(--stone-light)" stroke-width="0.6"/>
-      <!-- spire on apex -->
-      <polygon points="-4,${-h - r} 4,${-h - r} 0,${-h - r - 22}" fill="var(--roof-blue-dk)"/>
-      <rect x="-1" y="${-h - r - 28}" width="2" height="6" fill="var(--gold)"/>
-      <polygon points="-4,${-h - r - 32} 4,${-h - r - 32} 0,${-h - r - 40}" fill="var(--gold)"/>
+      <!-- clock medallion on SW wall (upper half) -->
+      <circle cx="${-w*0.5}" cy="${d*0.5 - 52}" r="10" fill="var(--parchment)" stroke="var(--ink)" stroke-width="1"/>
+      <circle cx="${-w*0.5}" cy="${d*0.5 - 52}" r="10" fill="none" stroke="var(--gold-dk)" stroke-width="0.6" opacity="0.7"/>
+      <rect x="${-w*0.5 - 1}" y="${d*0.5 - 58}" width="2" height="7" fill="var(--ink)"/>
+      <rect x="${-w*0.5}"     y="${d*0.5 - 53}" width="7" height="1.5" fill="var(--ink)"/>
+      <circle cx="${-w*0.5}" cy="${d*0.5 - 52}" r="1" fill="var(--gold)"/>
+      <!-- banners hanging from eaves (longer, more castle-like) -->
+      <polygon points="${-w + 6},${-h + 2} ${-w + 18},${-h + 2} ${-w + 15},${-h + 30} ${-w + 9},${-h + 30}" fill="var(--roof-red)" stroke="var(--roof-red-dk)" stroke-width="0.5"/>
+      <rect x="${-w + 8}" y="${-h + 10}" width="8" height="2" fill="var(--gold)"/>
+      <polygon points="${w - 18},${-h + 2} ${w - 6},${-h + 2} ${w - 9},${-h + 30} ${w - 15},${-h + 30}" fill="var(--roof-red)" stroke="var(--roof-red-dk)" stroke-width="0.5"/>
+      <rect x="${w - 16}" y="${-h + 10}" width="8" height="2" fill="var(--gold)"/>
+      <!-- large arched double door on SW -->
+      <polygon points="${swWallPoly(w, d, 0.32, 0.52, 0, 40)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.32, 0.52, 36, 4)}" fill="#1a0e04"/>
+      <polygon points="${swWallPoly(w, d, 0.32, 0.42, 0, 40)}" fill="none" stroke="#1a0e04" stroke-width="0.6"/>
+      <!-- arched windows SE (mid-wall) -->
+      <polygon points="${seWallPoly(w, d, 0.28, 0.42, 22, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-light)" stroke-width="0.6"/>
+      <polygon points="${seWallPoly(w, d, 0.58, 0.72, 22, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-light)" stroke-width="0.6"/>
+      <!-- upper-row arched windows SE -->
+      <polygon points="${seWallPoly(w, d, 0.32, 0.42, 60, 16)}" fill="#3d597b" stroke="var(--stone-light)" stroke-width="0.5"/>
+      <polygon points="${seWallPoly(w, d, 0.58, 0.68, 60, 16)}" fill="#3d597b" stroke="var(--stone-light)" stroke-width="0.5"/>
+      <!-- corner turret spires (E and W roof corners) -->
+      <polygon points="${-w + 6},${-h + 2} ${-w + 14},${-h + 2} ${-w + 10},${-h - 22}" fill="var(--roof-blue-dk)"/>
+      <rect x="${-w + 9}" y="${-h - 28}" width="2" height="6" fill="var(--gold-dk)"/>
+      <polygon points="${-w + 7},${-h - 32} ${-w + 13},${-h - 32} ${-w + 10},${-h - 40}" fill="var(--gold)"/>
+      <polygon points="${w - 14},${-h + 2} ${w - 6},${-h + 2} ${w - 10},${-h - 22}" fill="var(--roof-blue-dk)"/>
+      <rect x="${w - 11}" y="${-h - 28}" width="2" height="6" fill="var(--gold-dk)"/>
+      <polygon points="${w - 13},${-h - 32} ${w - 7},${-h - 32} ${w - 10},${-h - 40}" fill="var(--gold)"/>
+      <!-- central spire on apex -->
+      <polygon points="-5,${-h - r} 5,${-h - r} 0,${-h - r - 28}" fill="var(--roof-blue-dk)"/>
+      <polygon points="-5,${-h - r} 0,${-h - r} 0,${-h - r - 28}" fill="#1d2c40"/>
+      <rect x="-1.5" y="${-h - r - 36}" width="3" height="8" fill="var(--gold-dk)"/>
+      <polygon points="-5,${-h - r - 40} 5,${-h - r - 40} 0,${-h - r - 50}" fill="var(--gold)"/>
+      <circle cx="0" cy="${-h - r - 38}" r="1.5" fill="var(--gold)"/>
       <!-- ridge highlight -->
-      <line x1="0" y1="${d - h}" x2="0" y2="${-h - r}" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+      <line x1="0" y1="${d - h}" x2="0" y2="${-h - r}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
     `;
     html += isoBuilding({
       id: 'meta-town-hall', label: 'Meta Town Hall',
@@ -922,19 +1211,24 @@ function buildBuildings() {
   // ── Lorebook Library — red roof, ivy, books on top ──
   {
     const b = BUILDINGS['lorebook-library'];
-    const w = 64, d = 32, h = 56, r = 28;
+    const w = 66, d = 33, h = 76, r = 40;
     const details = `
-      <!-- ivy on SW wall -->
+      <!-- ivy on SW wall (climbs higher) -->
       <rect x="${-w + 1}" y="${-h + 4}" width="3" height="${h - 4}" fill="#3e6432"/>
-      <circle cx="${-w + 2}" cy="${-h + 16}" r="2" fill="#588744"/>
+      <circle cx="${-w + 2}" cy="${-h + 14}" r="2" fill="#588744"/>
       <circle cx="${-w + 2}" cy="${-h + 28}" r="2" fill="#588744"/>
       <circle cx="${-w + 2}" cy="${-h + 42}" r="2" fill="#588744"/>
+      <circle cx="${-w + 2}" cy="${-h + 56}" r="2.2" fill="#6a9645"/>
+      <circle cx="${-w + 4}" cy="${-h + 64}" r="1.8" fill="#588744"/>
       <!-- door SW -->
       <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 28)}" fill="var(--wood-mid)" stroke="var(--ink)" stroke-width="0.5"/>
       <polygon points="${swWallPoly(w, d, 0.4, 0.55, 25, 3)}" fill="var(--wood-dark)"/>
-      <!-- arched windows SE -->
+      <!-- arched windows SE (lower row) -->
       <polygon points="${seWallPoly(w, d, 0.25, 0.4, 14, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-mid)" stroke-width="0.6"/>
       <polygon points="${seWallPoly(w, d, 0.55, 0.7, 14, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-mid)" stroke-width="0.6"/>
+      <!-- upper row windows SE -->
+      <polygon points="${seWallPoly(w, d, 0.28, 0.4, 50, 14)}" fill="#3d597b" stroke="var(--stone-mid)" stroke-width="0.5"/>
+      <polygon points="${seWallPoly(w, d, 0.56, 0.68, 50, 14)}" fill="#3d597b" stroke="var(--stone-mid)" stroke-width="0.5"/>
       <!-- books stacked on the SE roof slope (sits at ridge, visible against roof) -->
       <g transform="translate(8, ${-h - r*0.5})">
         <rect x="0" y="0" width="20" height="6" fill="#7a3c1f" stroke="#3a1a0c" stroke-width="0.5"/>
@@ -962,7 +1256,7 @@ function buildBuildings() {
   // ── Bank — dark stone vault with gold trim ──
   {
     const b = BUILDINGS['bank'];
-    const w = 70, d = 35, h = 60, r = 30;
+    const w = 72, d = 36, h = 82, r = 44;
     const details = `
       <!-- gold trim band across top of both walls -->
       <polygon points="${0},${d - h + 2} ${w},${-h + 2} ${w},${-h + 5} ${0},${d - h + 5}" fill="var(--gold)"/>
@@ -1002,7 +1296,7 @@ function buildBuildings() {
   // ── Hall of Mirrors — short walls, dome on top ──
   {
     const b = BUILDINGS['examine-hall'];
-    const w = 50, d = 25, h = 36, r = 6;
+    const w = 54, d = 27, h = 50, r = 10;
     const details = `
       <!-- mirror window SW: silver gleam parallelogram -->
       <polygon points="${swWallPoly(w, d, 0.25, 0.5, 8, 22)}" fill="#a8c5d8" stroke="#5d7d96" stroke-width="0.8"/>
@@ -1032,7 +1326,7 @@ function buildBuildings() {
   // ── Quest Hall — big wooden tavern, the heart ──
   {
     const b = BUILDINGS['quest-hall'];
-    const w = 85, d = 42, h = 64, r = 30;
+    const w = 88, d = 44, h = 88, r = 46;
     const details = `
       <!-- timber framing across walls (vertical posts) -->
       <line x1="${-w*0.4}" y1="${d*0.4}" x2="${-w*0.4}" y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
@@ -1056,6 +1350,11 @@ function buildBuildings() {
       <!-- lit windows SW -->
       <polygon points="${swWallPoly(w, d, 0.15, 0.3, 24, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
       <polygon points="${swWallPoly(w, d, 0.7, 0.85, 24, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
+      <!-- upper-row lit windows (second floor) -->
+      <polygon points="${swWallPoly(w, d, 0.2, 0.32, 60, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.68, 0.8, 60, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.5"/>
+      <polygon points="${seWallPoly(w, d, 0.25, 0.37, 62, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.5"/>
+      <polygon points="${seWallPoly(w, d, 0.62, 0.74, 62, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.5"/>
       <!-- chimney + smoke on apex (right) -->
       <rect x="14" y="${-h - r + 6}" width="9" height="14" fill="var(--stone-dark)"/>
       <rect x="14" y="${-h - r + 6}" width="9" height="2" fill="#1a0e04"/>
@@ -1081,30 +1380,52 @@ function buildBuildings() {
     });
   }
 
-  // ── Spellbook Tower — tall narrow + steep cone ──
+  // ── Spellbook Tower — towering wizard spire, the tallest in the village ──
   {
     const b = BUILDINGS['spellbook-tower'];
-    const w = 42, d = 21, h = 112, r = 56;
+    const w = 44, d = 22, h = 156, r = 84;
     const details = `
-      <!-- tower bands -->
-      <polygon points="${0},${d - 32} ${w},${-32} ${w},${-29} ${0},${d - 29}" fill="rgba(0,0,0,0.3)"/>
-      <polygon points="${0},${d - 32} ${-w},${-32} ${-w},${-29} ${0},${d - 29}" fill="rgba(0,0,0,0.4)"/>
-      <polygon points="${0},${d - 64} ${w},${-64} ${w},${-61} ${0},${d - 61}" fill="rgba(0,0,0,0.3)"/>
-      <polygon points="${0},${d - 64} ${-w},${-64} ${-w},${-61} ${0},${d - 61}" fill="rgba(0,0,0,0.4)"/>
-      <polygon points="${0},${d - 92} ${w},${-92} ${w},${-89} ${0},${d - 89}" fill="rgba(0,0,0,0.3)"/>
-      <polygon points="${0},${d - 92} ${-w},${-92} ${-w},${-89} ${0},${d - 89}" fill="rgba(0,0,0,0.4)"/>
-      <!-- arrow-slit windows -->
-      <polygon points="${swWallPoly(w, d, 0.4, 0.45, 78, 12)}" fill="var(--roof-purple-dk)"/>
-      <polygon points="${seWallPoly(w, d, 0.55, 0.6, 78, 12)}" fill="var(--roof-purple-dk)"/>
-      <!-- magic window SW middle -->
-      <polygon points="${swWallPoly(w, d, 0.35, 0.55, 36, 16)}" fill="#b89cd8" stroke="#5b3d6e" stroke-width="0.8"/>
-      <polygon points="${swWallPoly(w, d, 0.42, 0.47, 40, 12)}" fill="#fff0ff"/>
+      <!-- tower bands (5 bands for the tall wall) -->
+      <polygon points="${0},${d - 30} ${w},${-30} ${w},${-27} ${0},${d - 27}" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="${0},${d - 30} ${-w},${-30} ${-w},${-27} ${0},${d - 27}" fill="rgba(0,0,0,0.4)"/>
+      <polygon points="${0},${d - 60} ${w},${-60} ${w},${-57} ${0},${d - 57}" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="${0},${d - 60} ${-w},${-60} ${-w},${-57} ${0},${d - 57}" fill="rgba(0,0,0,0.4)"/>
+      <polygon points="${0},${d - 90} ${w},${-90} ${w},${-87} ${0},${d - 87}" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="${0},${d - 90} ${-w},${-90} ${-w},${-87} ${0},${d - 87}" fill="rgba(0,0,0,0.4)"/>
+      <polygon points="${0},${d - 120} ${w},${-120} ${w},${-117} ${0},${d - 117}" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="${0},${d - 120} ${-w},${-120} ${-w},${-117} ${0},${d - 117}" fill="rgba(0,0,0,0.4)"/>
+      <polygon points="${0},${d - 144} ${w},${-144} ${w},${-141} ${0},${d - 141}" fill="rgba(0,0,0,0.3)"/>
+      <polygon points="${0},${d - 144} ${-w},${-144} ${-w},${-141} ${0},${d - 141}" fill="rgba(0,0,0,0.4)"/>
+      <!-- arrow-slit windows (upper) -->
+      <polygon points="${swWallPoly(w, d, 0.4, 0.45, 104, 14)}" fill="var(--roof-purple-dk)"/>
+      <polygon points="${seWallPoly(w, d, 0.55, 0.6, 104, 14)}" fill="var(--roof-purple-dk)"/>
+      <polygon points="${swWallPoly(w, d, 0.4, 0.45, 132, 14)}" fill="var(--roof-purple-dk)"/>
+      <polygon points="${seWallPoly(w, d, 0.55, 0.6, 132, 14)}" fill="var(--roof-purple-dk)"/>
+      <!-- arrow-slit windows (lower) -->
+      <polygon points="${swWallPoly(w, d, 0.4, 0.45, 76, 12)}" fill="var(--roof-purple-dk)"/>
+      <polygon points="${seWallPoly(w, d, 0.55, 0.6, 76, 12)}" fill="var(--roof-purple-dk)"/>
+      <!-- magic window SW middle (glows) -->
+      <polygon points="${swWallPoly(w, d, 0.32, 0.6, 38, 18)}" fill="#b89cd8" stroke="#5b3d6e" stroke-width="0.8"/>
+      <polygon points="${swWallPoly(w, d, 0.4, 0.5, 42, 14)}" fill="#fff0ff"/>
+      <polygon points="${swWallPoly(w, d, 0.42, 0.48, 44, 10)}" fill="#ffd8ff"/>
+      <!-- crenellation at top of wall -->
+      <rect x="${-w + 2}" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
+      <rect x="${-w + 12}" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
+      <rect x="${w - 16}" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
+      <rect x="${w - 6}" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
+      <rect x="-2" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
       <!-- door -->
-      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 22)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
-      <!-- star on apex -->
-      <circle class="tower-aura" cx="0" cy="${-h - r + 12}" r="22" fill="url(#auraGrad)"/>
-      <rect x="-1" y="${-h - r - 4}" width="2" height="8" fill="var(--gold-dk)"/>
-      <polygon points="0,${-h - r - 14} 3,${-h - r - 8} 8,${-h - r - 6} 4,${-h - r - 2} 6,${-h - r + 4} 0,${-h - r} -6,${-h - r + 4} -4,${-h - r - 2} -8,${-h - r - 6} -3,${-h - r - 8}" fill="var(--gold)"/>
+      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 24)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
+      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 22, 2)}" fill="#1a0e04"/>
+      <circle cx="${-w*0.46}" cy="${d*0.54 - 12}" r="1" fill="var(--gold)"/>
+      <!-- magic aura around star -->
+      <circle class="tower-aura" cx="0" cy="${-h - r + 18}" r="28" fill="url(#auraGrad)"/>
+      <!-- spire decorative bands -->
+      <line x1="-${w*0.6}" y1="${-h - r*0.35}" x2="${w*0.6}" y2="${-h - r*0.35}" stroke="rgba(255,255,255,0.12)" stroke-width="0.5"/>
+      <!-- finial -->
+      <rect x="-1.2" y="${-h - r - 6}" width="2.4" height="10" fill="var(--gold-dk)"/>
+      <polygon points="0,${-h - r - 18} 4,${-h - r - 10} 9,${-h - r - 8} 5,${-h - r - 3} 7,${-h - r + 5} 0,${-h - r} -7,${-h - r + 5} -5,${-h - r - 3} -9,${-h - r - 8} -4,${-h - r - 10}" fill="var(--gold)"/>
+      <circle cx="0" cy="${-h - r - 4}" r="2" fill="#fff8d8"/>
     `;
     html += isoBuilding({
       id: 'spellbook-tower', label: 'Spellbook Tower',
@@ -1118,7 +1439,7 @@ function buildBuildings() {
   // ── Keepsake Vault — small ornate with gem ──
   {
     const b = BUILDINGS['keepsake-vault'];
-    const w = 48, d = 24, h = 38, r = 32;
+    const w = 50, d = 25, h = 56, r = 46;
     const details = `
       <!-- gold trim top and bottom -->
       <polygon points="${0},${d - 4} ${w},${-4} ${w},${-2} ${0},${d - 2}" fill="var(--gold)"/>
@@ -1151,7 +1472,7 @@ function buildBuildings() {
   // ── The Inn — warm wood, lit windows, chimney smoke, mug sign ──
   {
     const b = BUILDINGS['inn'];
-    const w = 70, d = 35, h = 56, r = 26;
+    const w = 72, d = 36, h = 76, r = 38;
     const details = `
       <!-- timber framing -->
       <line x1="${-w*0.4}" y1="${d*0.4}" x2="${-w*0.4}" y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
@@ -1194,6 +1515,33 @@ function buildBuildings() {
     });
   }
 
+  layer.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────
+//   Building name plates — top-layer labels (drawn last,
+//   over vignette and actors)
+// ─────────────────────────────────────────────────────────────
+
+const LABEL_Y_OFFSET = {
+  'inbox-square':     64,   // d=28
+  'meta-town-hall':   75,   // d=39
+  'lorebook-library': 69,   // d=33
+  'bank':             72,   // d=36
+  'examine-hall':     63,   // d=27
+  'quest-hall':       80,   // d=44
+  'spellbook-tower':  58,   // d=22
+  'keepsake-vault':   61,   // d=25
+  'inn':              72,   // d=36
+};
+
+function buildLabels() {
+  const layer = document.getElementById('building-labels');
+  let html = '';
+  Object.entries(BUILDINGS).forEach(([id, b]) => {
+    const yoff = LABEL_Y_OFFSET[id] || 60;
+    html += `<g transform="translate(${b.x},${b.y + yoff})">${ornateLabel(b.label, 0)}</g>`;
+  });
   layer.innerHTML = html;
 }
 
@@ -1344,11 +1692,13 @@ let speed = 1;
 let cursor = 0;
 let dwarfNodes = {};
 let wispNode = null;
+let wispActive = false;
 let currentSession = null;
 let dwarfCount = 0;
 let activePlayer = null;
 const actorPositions = {};
 const actorMoveTimers = {};
+const currentBuilding = {};
 
 actorPositions['jebrim'] = {x: STAND['inbox-square'].x, y: STAND['inbox-square'].y};
 actorPositions['zezima'] = {x: STAND['keepsake-vault'].x - 30, y: STAND['keepsake-vault'].y};
@@ -1512,15 +1862,74 @@ function setActivePlayer(p) {
   z.style.opacity = (p === 'zezima') ? '1' : '0.5';
 }
 
-function logLine(msg, cls='') {
+function updateFocalLabel(dur) {
+  const el = document.getElementById('focal-label');
+  if (!el) return;
+  if (!activePlayer) {
+    el.style.opacity = '0';
+    return;
+  }
+  const pos = actorPositions[activePlayer];
+  if (!pos) { el.style.opacity = '0'; return; }
+  const bld = currentBuilding[activePlayer];
+  const bldLabel = (bld && BUILDINGS[bld]) ? BUILDINGS[bld].label.toUpperCase() : 'GIELINOR';
+  const text = `${activePlayer.toUpperCase()} AT ${bldLabel}`;
+  const w = Math.max(118, text.length * 8 + 26);
+  const half = w / 2;
+  const yOffset = -44;
+
+  // Use transition duration matching actor's walk if provided; else snap.
+  if (dur != null && dur > 0) {
+    el.style.transition = `transform ${dur}ms cubic-bezier(0.45,0.05,0.55,0.95), opacity 360ms`;
+  } else {
+    el.style.transition = 'none';
+    void el.getBoundingClientRect();
+  }
+
+  el.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+  el.style.opacity = '1';
+  el.innerHTML = `
+    <rect x="${-half}" y="${yOffset - 11}" width="${w}" height="20"
+          fill="rgba(14,10,6,0.94)" stroke="var(--gold)" stroke-width="0.8"/>
+    <rect x="${-half + 1.5}" y="${yOffset - 9.5}" width="${w - 3}" height="17"
+          fill="none" stroke="rgba(216,173,54,0.55)" stroke-width="0.4"/>
+    <polygon points="${-half - 7},${yOffset - 1} ${-half - 1},${yOffset - 8} ${-half + 5},${yOffset - 1} ${-half - 1},${yOffset + 6}"
+             fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="0.5"/>
+    <polygon points="${half + 7},${yOffset - 1} ${half + 1},${yOffset - 8} ${half - 5},${yOffset - 1} ${half + 1},${yOffset + 6}"
+             fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="0.5"/>
+    <text x="0" y="${yOffset + 4}" text-anchor="middle"
+          font-family="Jacquard 12" font-size="16" fill="#ffe49b"
+          letter-spacing="0.08em" stroke="rgba(0,0,0,0.7)" stroke-width="0.35"
+          paint-order="stroke">${escapeHtml(text)}</text>
+    <polygon points="-5,${yOffset + 9} 5,${yOffset + 9} 0,${yOffset + 17}"
+             fill="rgba(14,10,6,0.94)" stroke="var(--gold)" stroke-width="0.6"/>
+  `;
+
+  // Restore default transition after snap
+  if (dur == null || dur === 0) {
+    setTimeout(() => {
+      el.style.transition = '';
+    }, 20);
+  }
+}
+
+function logLine(msg, cls='', speaker='system') {
   const li = document.createElement('div');
   li.className = 'log-entry ' + cls;
+  li.setAttribute('data-speaker', speaker);
   const tStr = formatTime(t);
   li.innerHTML = `<span class="t">[${tStr}]</span>${escapeHtml(msg)}`;
   logEl.appendChild(li);
   logEl.scrollTop = logEl.scrollHeight;
   while (logEl.childNodes.length > 200) logEl.removeChild(logEl.firstChild);
   return li;
+}
+
+function deriveSpeaker(msg) {
+  if (/\bD[1-3]\b|dwarves?|\bspawning D/i.test(msg)) return 'dwarves';
+  if (activePlayer) return activePlayer;
+  if (wispActive) return 'wisp';
+  return 'system';
 }
 
 function escapeHtml(s) {
@@ -1546,12 +1955,14 @@ function applyEvent(ev, instant=false) {
       tkCommitEl.textContent = ' · ' + ev.commit;
       tkLineEl.textContent = ev.subject;
       if (ev.player) setActivePlayer(ev.player); else setActivePlayer(null);
+      updateFocalLabel();
       break;
     case 'log':
-      logLine(ev.msg, ev.cls || '');
+      logLine(ev.msg, ev.cls || '', deriveSpeaker(ev.msg));
       tkLineEl.textContent = ev.msg;
       break;
     case 'move':
+      currentBuilding[ev.actor] = ev.to;
       if (instant) {
         const b = STAND[ev.to];
         const j = jitter(ev.actor, ev.to);
@@ -1560,15 +1971,17 @@ function applyEvent(ev, instant=false) {
           actorPositions[ev.actor] = {x: b.x + j.dx, y: b.y + j.dy * 0.5};
           setActorTransform(el, b.x + j.dx, b.y + j.dy * 0.5, false);
         }
+        if (ev.actor === activePlayer) updateFocalLabel();
       } else {
         moveActor(ev.actor, ev.to, dur);
+        if (ev.actor === activePlayer) updateFocalLabel(dur);
       }
       break;
     case 'spawn-dwarf':  spawnDwarf(ev); break;
     case 'despawn-dwarf':despawnDwarf(ev.id); break;
-    case 'spawn-wisp':   spawnWisp(ev); break;
-    case 'despawn-wisp': despawnWisp(); break;
-    case 'commit':       logLine(ev.msg, 'commit'); break;
+    case 'spawn-wisp':   wispActive = true; spawnWisp(ev); break;
+    case 'despawn-wisp': wispActive = false; despawnWisp(); break;
+    case 'commit':       logLine(ev.msg, 'commit', 'commits'); break;
   }
 }
 
@@ -1578,6 +1991,7 @@ function resetWorld() {
     delete dwarfNodes[id]; delete actorPositions[id];
   });
   if (wispNode) { wispNode.remove(); wispNode = null; delete actorPositions['wisp']; }
+  wispActive = false;
   dwarfCount = 0;
   const j = document.getElementById('actor-jebrim');
   const z = document.getElementById('actor-zezima');
@@ -1587,7 +2001,10 @@ function resetWorld() {
   setActorTransform(z, zs.x - 30, zs.y, false);
   actorPositions['jebrim'] = {x: js.x, y: js.y};
   actorPositions['zezima'] = {x: zs.x - 30, y: zs.y};
+  currentBuilding['jebrim'] = 'inbox-square';
+  currentBuilding['zezima'] = 'keepsake-vault';
   setActivePlayer(null);
+  updateFocalLabel();
   logEl.innerHTML = '';
   cursor = 0;
   sessionIdEl.textContent = '—';
@@ -1645,12 +2062,24 @@ jumpSel.addEventListener('change', () => {
   seekTo(v); jumpSel.value = '';
 });
 
+// Speaker tab filter
+document.querySelectorAll('.log-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.log-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const v = tab.dataset.tab;
+    if (v === 'all') logEl.removeAttribute('data-filter');
+    else logEl.setAttribute('data-filter', v);
+  });
+});
+
 // build world
 buildGround();
 buildPond();
 buildPaths();
 buildFlora();
 buildBuildings();
+buildLabels();
 
 // init engine
 resetWorld();

@@ -399,6 +399,56 @@ def _load_existing(path: Path) -> dict:
         return {}
 
 
+def _latest_action_for(sid8: str, ndjson_path: Path, max_bytes: int = 256_000) -> Optional[dict]:
+    """Walk state.ndjson tail backward for the most recent 'action' event whose
+    sessionId starts with sid8. Returns {'text': str, 'ts': float} or None.
+
+    Action events are emit-event.py's canonical tool-use signal:
+        {"type":"action","verb":"editing|searching|reading|running",
+         "target":"<path-or-cmd>","sessionId":"<full-uuid>","wallTime":"<ISO>"}
+
+    Used by _write_manifest to stamp the per-session heartbeat that the
+    switchboard renders as the .sb-action line. Capped tail-read so unbounded
+    ndjson growth doesn't crater hook latency. S049/D2."""
+    if not ndjson_path.exists():
+        return None
+    try:
+        with open(ndjson_path, "rb") as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - max_bytes))
+            tail = f.read().decode("utf-8", errors="ignore")
+        lines = tail.splitlines()
+        for line in reversed(lines):
+            if '"type":"action"' not in line:
+                continue
+            try:
+                ev = json.loads(line)
+            except Exception:
+                continue
+            if ev.get("type") != "action":
+                continue
+            ev_sid = (ev.get("sessionId") or "")[:8]
+            if ev_sid != sid8:
+                continue
+            verb = ev.get("verb") or "action"
+            target = ev.get("target") or ""
+            if len(target) > 50:
+                target = target[:47] + "…"
+            text = f"{verb} {target}".strip() if target else verb
+            ts_iso = ev.get("wallTime") or ""
+            ts = 0.0
+            try:
+                from datetime import datetime
+                ts = datetime.fromisoformat(ts_iso).timestamp()
+            except Exception:
+                pass
+            return {"text": text, "ts": ts}
+        return None
+    except Exception:
+        return None
+
+
 def _write_manifest() -> None:
     """Snapshot live status files into a single manifest at VIZ_DIR. Browser
     polls this one file (fetch is cheap for one file, expensive for a glob).
@@ -496,6 +546,18 @@ def _write_manifest() -> None:
                             j["building"] = bld
                 except Exception as e:
                     print(f"status-sidecar: manifest building refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
+                # S049/D2: latest action stamp — switchboard heartbeat. Read
+                # fresh per row from state.ndjson tail so the row ticks at
+                # hook-fire cadence even when intent doesn't change.
+                try:
+                    s8 = j.get("sid8") or ""
+                    if s8:
+                        act = _latest_action_for(s8, VIZ_DIR / "state.ndjson")
+                        if act:
+                            j["latest_action"] = act["text"]
+                            j["latest_action_ts"] = act["ts"]
+                except Exception as e:
+                    print(f"status-sidecar: latest_action refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
                 sessions.append(j)
         sessions.sort(key=lambda x: x.get("last_event_ts") or 0, reverse=True)
         out = {

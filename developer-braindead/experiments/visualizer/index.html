@@ -502,7 +502,7 @@
   .sb-row {
     display: grid;
     grid-template-columns: 14px 1fr auto auto;
-    grid-template-rows: auto auto;
+    grid-template-rows: auto auto auto;
     gap: 1px 8px;
     padding: 6px 6px 7px;
     margin-bottom: 4px;
@@ -572,6 +572,21 @@
     -webkit-box-orient: vertical;
     word-break: break-word;
   }
+  /* S049/D2: heartbeat row — latest tool action with age. Updates per-poll
+     (~2s) from manifest and per-second age tick from render loop. Hidden
+     when the session has no recorded action yet. */
+  .sb-row .sb-action {
+    grid-row: 3 / 4; grid-column: 2 / 5;
+    font-family: 'VT323', monospace;
+    font-size: 11px;
+    color: #5a4020;
+    line-height: 1.2;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sb-row .sb-action.sb-action-empty { display: none; }
   /* State coloring on the dot + left border + chip + row tint */
   .sb-row[data-state="waiting_for_user"] {
     border-left-color: #d8a234;
@@ -2332,10 +2347,28 @@ const baseActorToSid = new Map();            // 'braindead' / 'wisp' / 'guthix' 
 const subAgentParentSid = {};                // 'D1' / 'G2' / 'P3' -> sid8 (from spawn event)
 const wanderOffsets = {};                    // actorKey -> {dx, dy}  (for cancellation/inspection)
 const wanderTimers = {};                     // actorKey -> next-hop deadline ms
-const WANDER_MAX_PX = 18;                    // max ± offset from building anchor
-const WANDER_MIN_INTERVAL_MS = 4000;
-const WANDER_MAX_INTERVAL_MS = 12000;
 const NO_WANDER_ACTORS = new Set(['guthix']); // matches existing CSS (Guthix doesn't walk)
+// State-aware wander parameters (S049). Working sprites feel busy; waiting calmer;
+// closing winding down; idle/ended frozen. Keyed off sprite state-class set by
+// setSpriteState. Unknown/missing state falls through to WAITING.
+const WANDER_STATE_TABLE = {
+  'state-working':          { amp: 35, minMs: 1200, maxMs: 3500 },
+  'state-waiting_for_user': { amp: 18, minMs: 4000, maxMs: 12000 },
+  'state-closing':          { amp: 10, minMs: 6000, maxMs: 14000 },
+  'state-idle':             null,
+  'state-ended':            null,
+  'state-unknown':          { amp: 18, minMs: 4000, maxMs: 12000 },
+};
+const WANDER_FALLBACK_PARAMS = WANDER_STATE_TABLE['state-waiting_for_user'];
+function wanderParamsFor(g) {
+  if (!g) return WANDER_FALLBACK_PARAMS;
+  for (const cls of g.classList) {
+    if (cls.startsWith('state-')) {
+      return (cls in WANDER_STATE_TABLE) ? WANDER_STATE_TABLE[cls] : WANDER_FALLBACK_PARAMS;
+    }
+  }
+  return WANDER_FALLBACK_PARAMS;
+}
 
 function getSpriteSid8FromNode(node) {
   if (!node || !node.dataset) return null;
@@ -2388,7 +2421,9 @@ function wrapWander(g) {
   if (!wander) {
     wander = document.createElementNS(svgNS, 'g');
     wander.setAttribute('class', 'wander');
-    wander.setAttribute('transform', 'translate(0,0)');
+    // S049/D1: CSS-property transform so the .wander CSS transition fires.
+    // SVG transform attribute is not transitioned by `transition: transform`.
+    wander.style.transform = 'translate(0px,0px)';
     while (g.firstChild && g.firstChild !== wander) {
       wander.appendChild(g.firstChild);
     }
@@ -2437,8 +2472,14 @@ function deriveSessionState(record) {
 }
 function setSpriteState(g, state) {
   if (!g) return;
+  const target = 'state-' + (state || 'unknown');
+  if (g.classList.contains(target)) return;  // no-op, preserve wander timer
   for (const c of SPRITE_STATE_CLASSES) g.classList.remove(c);
-  g.classList.add('state-' + (state || 'unknown'));
+  g.classList.add(target);
+  // S049: state changed — clear the wander timer so the new cadence kicks in
+  // on the next maybeTickWander (≤1s) instead of waiting out the previous one.
+  const actorKey = (g.id || '').replace(/^actor-/, '');
+  if (actorKey) delete wanderTimers[actorKey];
 }
 
 function defaultBuildingFor(actor) {
@@ -2631,20 +2672,26 @@ function tickWanderForActor(g, actorKey) {
   if (g.classList.contains('walking')) return;
   const wander = g.querySelector(':scope > .wander');
   if (!wander) return;
-  const dx = Math.round((Math.random() * 2 - 1) * WANDER_MAX_PX);
-  const dy = Math.round((Math.random() * 2 - 1) * (WANDER_MAX_PX * 0.6));
+  const params = wanderParamsFor(g);
+  if (!params) return;  // state-idle/ended — sprite stays still
+  const amp = params.amp;
+  const dx = Math.round((Math.random() * 2 - 1) * amp);
+  const dy = Math.round((Math.random() * 2 - 1) * (amp * 0.6));
   wanderOffsets[actorKey] = {dx, dy};
-  wander.setAttribute('transform', `translate(${dx},${dy})`);
+  // S049/D1: CSS-property write with px units so .wander transition fires.
+  wander.style.transform = `translate(${dx}px,${dy}px)`;
 }
 
 function maybeTickWander() {
   const now = Date.now();
   function maybe(actorKey, g) {
+    const params = wanderParamsFor(g);
+    if (!params) { delete wanderTimers[actorKey]; return; }
     const due = wanderTimers[actorKey] || 0;
     if (now < due) return;
     tickWanderForActor(g, actorKey);
-    wanderTimers[actorKey] = now + WANDER_MIN_INTERVAL_MS +
-      Math.random() * (WANDER_MAX_INTERVAL_MS - WANDER_MIN_INTERVAL_MS);
+    wanderTimers[actorKey] = now + params.minMs +
+      Math.random() * (params.maxMs - params.minMs);
   }
   // Static players (instance 1)
   const jb = document.getElementById('actor-jebrim'); if (jb) maybe('jebrim', jb);
@@ -2707,12 +2754,13 @@ function moveActor(actorId, toKey, duration) {
   if (!el) return;
 
   // Clear any active wander offset so the actor lands exactly at the building
-  // anchor rather than walking to (tx+wdx, ty+wdy). Next wander tick will pick
-  // a fresh offset after WANDER_MIN_INTERVAL_MS at the new building.
+  // anchor rather than walking to (tx+wdx, ty+wdy). Next wander tick picks a
+  // fresh offset on the schedule of whatever state the sprite is in.
   const wanderInner = el.querySelector(':scope > .wander');
-  if (wanderInner) wanderInner.setAttribute('transform', 'translate(0,0)');
+  if (wanderInner) wanderInner.style.transform = 'translate(0px,0px)';
   delete wanderOffsets[actorId];
-  wanderTimers[actorId] = Date.now() + WANDER_MIN_INTERVAL_MS;
+  const params = wanderParamsFor(el) || WANDER_FALLBACK_PARAMS;
+  wanderTimers[actorId] = Date.now() + params.minMs;
 
   el.style.transition = `transform ${duration}ms cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
   const nonWalker = NON_WALKING_ACTORS.has(actorId);
@@ -4385,6 +4433,18 @@ if (LIVE) {
       // Strip BOM if the intent file was written with one (Windows quirk).
       intent.textContent = (r.intent || '').replace(/^﻿/, '') || '—';
       row.appendChild(intent);
+
+      // S049/D2: heartbeat row — latest tool action with age. Hidden when
+      // session has no recorded action (fresh session, replay-only viz, etc.).
+      const action = document.createElement('div');
+      action.className = 'sb-action';
+      if (r.latest_action && r.latest_action_ts) {
+        const sec = Math.max(0, (Date.now() / 1000) - r.latest_action_ts);
+        action.textContent = `${r.latest_action} · ${formatAge(sec)}`;
+      } else {
+        action.classList.add('sb-action-empty');
+      }
+      row.appendChild(action);
 
       // Click → fire claude-focus:// URL scheme. The OS hands the URL to
       // focus-window.ps1 (registered via register-claude-focus.ps1), which

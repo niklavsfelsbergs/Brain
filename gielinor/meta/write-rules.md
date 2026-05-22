@@ -39,6 +39,8 @@ Dwarves can run none of these rituals. Gnomes can run **session-close**, **alchi
 
 **Voice per ritual.** Bankstanding is performed in the voice of **Guthix**, the brain's caretaker deity (see [[guthix]]) — not the active player and not the wisp. Alching is performed in the voice of the active player. Session-close, drafts-triage, and respawn carry the voice of whichever actor is active when they run (the player, Braindead, or — if unscoped — wisp). Voice is orthogonal to write-reach; it determines the actor on whose intent file the agent speaks and which sprite the visualizer renders.
 
+**Guthix's godly proposals.** During bankstanding, Guthix has elevated authority to *propose* changes to surfaces normally marked user-only — `meta/*.md`, `spellbook/rituals/*.md`, `keepsake/current.md`, hooks, body files, even the architecture and his own role. Proposals land in `deities/guthix/proposals/` and the principal reviews them. This is an extension of the "User-only with explicit permission" mechanism below, scoped to one actor (Guthix) and one ritual (bankstanding); the architectural guarantees (hook-enforced lines) remain non-overridable even for him. See `deities/guthix/proposals/_about.md` for scope, shape, and the surfaces he may target.
+
 ## What's enforced vs guided
 
 **Hooks enforce (architectural):**

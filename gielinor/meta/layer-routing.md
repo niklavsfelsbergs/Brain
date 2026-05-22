@@ -20,6 +20,11 @@ The brain's layers are differentiated by *what they store*, not *when they're wr
 | **Cross-player always-surface pin** | `keepsake/proposals/` (global) → principal pins |
 | **Decision about how the agent operates going forward** | `lorebook/drafts/` → principal approves to `lorebook/decisions/D-NNN_*.md` |
 | **Construction history of the brain itself** (only writeable in dev-brain mode) | `developer-braindead/bank/decisions/D-NNN_*.md` |
+| **Cross-cutting knowledge about the brain itself** — patterns, drift observations, recurrent themes Guthix notices during bankstanding | `deities/guthix/bank/drafts/notes/` → next bankstanding promotes to `deities/guthix/bank/notes/` |
+| **Bankstanding ritual trace** — what one pass covered, proposed, flagged | `deities/guthix/quest-log/in-progress/B-NNN_*.md` → moves to `completed/` on clean ritual close |
+| **In-progress bankstanding state** — phase tracker, mid-pass carry-forward | `deities/guthix/inventory/B-NNN-resume.md` |
+| **System-level pin for Guthix specifically** (always surface to him on respawn) | `deities/guthix/keepsake/proposals/` (Guthix-scope) → principal pins to `deities/guthix/keepsake/current.md` |
+| **Godly proposal** — proposed change to anything in the system (meta rules, rituals, hooks, architecture, Guthix himself), drafted only during bankstanding | `deities/guthix/proposals/` → principal lands, edits, or rejects. Rejections preserved in `deities/guthix/proposals/rejected/`. See `deities/guthix/proposals/_about.md`. |
 
 ## The principle
 

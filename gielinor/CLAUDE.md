@@ -119,6 +119,7 @@ Global:
 - `spellbook/` — your rituals and cross-player skills.
 - `meta/` — the current rulebook (imported above).
 - `players/` — the characters you embody.
+- `deities/` — overarching system-scope actors (Guthix). Each has its own bank/quest-log/inventory/keepsake at deity-scope; tend the brain itself rather than working within it. See `meta/guthix.md` and `deities/_about.md`.
 
 Per-player (`players/<name>/`):
 

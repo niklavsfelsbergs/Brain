@@ -186,8 +186,6 @@
   /* S039: force pixelated rendering on every <image> — some browsers don't
      inherit image-rendering from the parent SVG. */
   svg.map image { image-rendering: pixelated; image-rendering: crisp-edges; }
-  /* Dim the green ground so buildings and characters pop. */
-  svg.map #ground { filter: brightness(0.62) saturate(0.78); }
 
   /* Building hover */
   .building { cursor: help; transition: filter 200ms; }
@@ -255,6 +253,30 @@
   .actor.fade-out { animation: fadeOut 500ms ease-in forwards; }
   @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
   @keyframes fadeOut { from{opacity:1;} to{opacity:0;} }
+
+  /* Sprite-as-handle (parity with switchboard rows). Live-mode actors with a
+     resolvable sid8 get pointer cursor + brief flash on click; the click
+     handler fires the same vscode://niksis8.claude-focus URI as the
+     switchboard. Ghost sprites (no sid8 — pre-cleanup, stale, or sub-agent
+     whose parent has gone) get a red flash instead and refuse the focus. */
+  .actor.clickable { cursor: pointer; }
+  .actor.sprite-focus-click { filter: drop-shadow(0 0 6px #2e7a2e); }
+  .actor.sprite-ghost-click { filter: drop-shadow(0 0 6px #a23b2c); }
+  /* Sprite gold-ring pulse — fired on switchboard row hover so the principal
+     can map a row to a sprite without parsing actor·instance labels. */
+  @keyframes spritePulse {
+    0%, 100% { filter: drop-shadow(0 0 0px var(--gold)); }
+    50%      { filter: drop-shadow(0 0 8px var(--gold)) drop-shadow(0 0 14px var(--gold)); }
+  }
+  .actor.pulsing { animation: spritePulse 600ms ease-in-out; }
+
+  /* Idle-wander wrapper. JS picks a random offset every 4-12s while the actor
+     is stationary; the SVG transform attribute transitions over 1200ms
+     ease-in-out so the drift reads as ambient pacing, not teleportation.
+     Wander is suppressed during walking (moveActor clears the offset and
+     tickWanderForActor early-exits on .walking). The bubble stays anchored
+     at the building because actorPositions[] is never updated by wander. */
+  .wander { transition: transform 1200ms ease-in-out; }
 
   /* Intent speech bubbles (D-010) */
   /* I3: bubble drop-shadow so the tan body reads on busy backgrounds. */
@@ -749,6 +771,22 @@
   .log-entry.read    { color: #4a3520; font-style: italic; }
   .log-entry.commit  { color: var(--commits-text); border-top: 1px dashed color-mix(in srgb, var(--commits-text) 35%, transparent); margin-top: 3px; padding-top: 3px; }
   .log-entry.session-start { color: #1e5a1e; font-weight: bold; margin-top: 4px; }
+  /* S043 (D-024): comms-channel entries from gielinor/comms/ + developer-braindead/comms/.
+     OPEN/CLOSING headers carry a faint left rule so multi-line entries read as a single
+     post; body lines are indented and slightly muted. */
+  .log-entry.comms-open    { border-left: 2px solid color-mix(in srgb, currentColor 50%, transparent); padding-left: 6px; margin-top: 4px; }
+  .log-entry.comms-update  { border-left: 2px dashed color-mix(in srgb, currentColor 40%, transparent); padding-left: 6px; margin-top: 4px; }
+  .log-entry.comms-closing { border-left: 2px dotted color-mix(in srgb, currentColor 40%, transparent); padding-left: 6px; margin-top: 4px; opacity: 0.85; }
+  .log-entry.comms-dialog  { border-left: 2px solid color-mix(in srgb, var(--gold) 60%, transparent); padding-left: 6px; margin-top: 4px; }
+  /* Body collapsed by default — header click expands. Discipline aims at 2-3
+     lines per body; collapsed default keeps the panel readable even for the
+     legacy multi-paragraph entries that predate the cap. */
+  .log-entry.comms-body    { display: none; color: #3b2814; padding-left: 18px; font-size: 11.5px; }
+  .log-entry.comms-body.show { display: block; }
+  .log-entry.comms-body .t { opacity: 0; }  /* hide timestamp on continuation lines */
+  .log-entry.comms-toggleable { cursor: pointer; }
+  .log-entry.comms-toggleable::after { content: " ▸"; opacity: 0.45; font-size: 10px; margin-left: 4px; }
+  .log-entry.comms-toggleable.expanded::after { content: " ▾"; opacity: 0.7; }
 
   /* ─── Live mode adjustments (D-009) ─── */
   body[data-mode="live"] .controls { display: none; }
@@ -958,37 +996,15 @@
 
           <!-- ── billboard sprites ── -->
 
-          <!-- Tree variants (S039) — bottom-center at origin. -->
-          <g id="tree"><image href="sprites/tiles/tree-leafy-1.png" x="-22" y="-58" width="44" height="60"/></g>
-          <g id="tree-1"><image href="sprites/tiles/tree-leafy-1.png" x="-22" y="-58" width="44" height="60"/></g>
-          <g id="tree-2"><image href="sprites/tiles/tree-leafy-2.png" x="-22" y="-58" width="44" height="60"/></g>
-          <g id="tree-3"><image href="sprites/tiles/tree-leafy-3.png" x="-22" y="-58" width="44" height="60"/></g>
-          <g id="tree-4"><image href="sprites/tiles/tree-leafy-4.png" x="-22" y="-58" width="44" height="60"/></g>
-          <g id="tree-pine"><image href="sprites/tiles/tree-pine-1.png" x="-16" y="-58" width="32" height="58"/></g>
-          <g id="tree-autumn"><image href="sprites/tiles/tree-autumn.png" x="-22" y="-54" width="44" height="56"/></g>
+          <!-- v4 flora: all from one coherent sheet (sprites/*.png), no /tiles/. -->
+          <g id="tree"><image href="sprites/tree-leafy.png" x="-18" y="-36" width="36" height="36"/></g>
+          <g id="tree-leafy"><image href="sprites/tree-leafy.png" x="-18" y="-36" width="36" height="36"/></g>
+          <g id="tree-pine"><image href="sprites/tree-pine.png" x="-12" y="-38" width="24" height="38"/></g>
+          <g id="tree-small"><image href="sprites/tree-small.png" x="-9" y="-18" width="18" height="18"/></g>
 
-          <!-- Bush variants -->
-          <g id="bush"><image href="sprites/tiles/bush-1.png" x="-14" y="-24" width="28" height="26"/></g>
-          <g id="bush-1"><image href="sprites/tiles/bush-1.png" x="-14" y="-24" width="28" height="26"/></g>
-          <g id="bush-2"><image href="sprites/tiles/bush-2.png" x="-13" y="-22" width="26" height="24"/></g>
-          <g id="bush-3"><image href="sprites/tiles/bush-3.png" x="-12" y="-22" width="24" height="24"/></g>
-
-          <!-- Flower cluster -->
-          <g id="flower"><image href="sprites/tiles/flower-cluster.png" x="-9" y="-20" width="18" height="22"/></g>
-
-          <!-- Rock variants -->
-          <g id="rock"><image href="sprites/tiles/rock-large.png" x="-14" y="-15" width="28" height="17"/></g>
-          <g id="rock-large"><image href="sprites/tiles/rock-large.png" x="-14" y="-15" width="28" height="17"/></g>
-          <g id="rock-medium"><image href="sprites/tiles/rock-medium.png" x="-11" y="-18" width="22" height="20"/></g>
-
-          <!-- Animals (idle ambient — S039) -->
-          <g id="horse-1"><image href="sprites/tiles/horse-brown.png" x="-18" y="-32" width="36" height="34"/></g>
-          <g id="horse-2"><image href="sprites/tiles/horse-grey.png"  x="-18" y="-32" width="36" height="34"/></g>
-          <g id="horse-3"><image href="sprites/tiles/horse-paint.png" x="-18" y="-32" width="36" height="34"/></g>
-          <g id="horse-4"><image href="sprites/tiles/horse-black.png" x="-18" y="-32" width="36" height="34"/></g>
-          <g id="pet-1"><image href="sprites/tiles/dog-2.png" x="-10" y="-22" width="20" height="24"/></g>
-          <g id="pet-2"><image href="sprites/tiles/dog-3.png" x="-10" y="-22" width="20" height="24"/></g>
-          <g id="pet-3"><image href="sprites/tiles/dog-5.png" x="-10" y="-22" width="20" height="24"/></g>
+          <g id="bush"><image href="sprites/bush.png" x="-13" y="-19" width="26" height="20"/></g>
+          <g id="flower"><image href="sprites/flower.png" x="-12" y="-19" width="24" height="20"/></g>
+          <g id="rock"><image href="sprites/rock.png" x="-13" y="-17" width="26" height="18"/></g>
 
           <!-- Mushroom (small red toadstool) -->
           <g id="mushroom">
@@ -1053,39 +1069,38 @@
             <rect x="0" y="-3.2" width="0.5" height="0.7" fill="#d8b8e8"/>
           </g>
 
-          <!-- Jebrim (v2 PNG: 92×185, slim full-body). Shadow ellipse retained;
-               bottom-center of art at (0,5) so STAND/foot logic still reads. -->
+          <!-- Jebrim (v4: 105×197) -->
           <g id="jebrim">
             <ellipse cx="0" cy="5" rx="8" ry="2.2" fill="rgba(0,0,0,0.42)"/>
-            <image href="sprites/jebrim.png" x="-7" y="-23" width="14" height="28"
+            <image href="sprites/jebrim.png" x="-7.5" y="-23" width="15" height="28"
                    preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>
           </g>
 
-          <!-- Zezima (93×181) -->
+          <!-- Zezima (122×196) -->
           <g id="zezima">
-            <ellipse cx="0" cy="5" rx="8" ry="2.2" fill="rgba(0,0,0,0.42)"/>
-            <image href="sprites/zezima.png" x="-7.2" y="-23" width="14.4" height="28"
+            <ellipse cx="0" cy="5" rx="8.5" ry="2.2" fill="rgba(0,0,0,0.42)"/>
+            <image href="sprites/zezima.png" x="-8.7" y="-23" width="17.4" height="28"
                    preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>
           </g>
 
-          <!-- Wisp (86×167, vertical orb shape — centered on origin, no shadow) -->
+          <!-- Wisp (105×195) -->
           <g id="wisp">
-            <image href="sprites/wisp.png" x="-7" y="-13.5" width="14" height="27"
+            <image href="sprites/wisp.png" x="-7.5" y="-14" width="15" height="28"
                    preserveAspectRatio="xMidYMid meet" image-rendering="pixelated"/>
           </g>
 
-          <!-- Braindead (92×170) — shadow ellipse retained. -->
+          <!-- Braindead (v4: 161×195) -->
           <g id="braindead">
-            <ellipse cx="0" cy="5" rx="8" ry="2.2" fill="rgba(0,0,0,0.42)"/>
-            <image href="sprites/braindead.png" x="-7.6" y="-23" width="15.2" height="28"
+            <ellipse cx="0" cy="5" rx="9" ry="2.4" fill="rgba(0,0,0,0.42)"/>
+            <image href="sprites/braindead.png" x="-11.5" y="-23" width="23" height="28"
                    preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>
           </g>
 
-          <!-- Guthix (124×185) — floats, no ground shadow. Aura backdrop kept. -->
+          <!-- Guthix (182×197) — floats, no ground shadow. Aura kept. -->
           <g id="guthix">
             <circle cx="0" cy="-4" r="17" fill="var(--guthix-aura)" opacity="0.10"/>
             <circle cx="0" cy="-4" r="12" fill="var(--guthix-aura)" opacity="0.16"/>
-            <image href="sprites/guthix.png" x="-9.4" y="-23" width="18.8" height="28"
+            <image href="sprites/guthix.png" x="-13" y="-23" width="26" height="28"
                    preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>
           </g>
 
@@ -1368,8 +1383,8 @@ function buildGround() {
   const ground = document.getElementById('ground');
   const overlays = document.getElementById('ground-overlays');
   const svgNS = 'http://www.w3.org/2000/svg';
-  const TW = 157, TH = 80;  // tile native = 157×115; visible diamond face ≈ 80 tall
-  const VISIBLE_H = 115;    // full image height (block sits on dirt cliff)
+  const TW = 210, TH = 90;  // v4 ground-tile native 210×128; diamond face ≈ 90 tall
+  const VISIBLE_H = 128;    // full image height
   // Iso grid: columns step by (TW/2, TH/2); rows by (-TW/2, TH/2).
   // Cover the world (1680 × 1148) with a comfortable margin.
   const range = 18;
@@ -1379,7 +1394,7 @@ function buildGround() {
       const cy = 574 + (gx + gy) * (TH / 2);
       if (cx + TW/2 < -80 || cx - TW/2 > 1760 || cy + VISIBLE_H/2 < -80 || cy - VISIBLE_H/2 > 1228) continue;
       const im = document.createElementNS(svgNS, 'image');
-      im.setAttribute('href', 'sprites/tiles/ground-grass.png');
+      im.setAttribute('href', 'sprites/ground-tile.png');
       im.setAttribute('x', cx - TW/2);
       im.setAttribute('y', cy - VISIBLE_H/2);
       im.setAttribute('width', TW);
@@ -1560,7 +1575,7 @@ function buildFlora() {
     return true;
   }
 
-  const TREE_VARIANTS = ['tree-1', 'tree-2', 'tree-3', 'tree-4', 'tree-pine', 'tree-autumn'];
+  const TREE_VARIANTS = ['tree-leafy', 'tree-pine'];
   function placeTree(x, y, layerHint) {
     if (x < 8 || x > 1672 || y < 244 || y > 1137) return;
     if (!clearOfBuildings(x, y, 120)) return;
@@ -1619,12 +1634,11 @@ function buildFlora() {
     addUse(layer, href, x, y);
   }
 
-  // pseudo-random scatter for bushes (variant per placement, deterministic)
-  const BUSH_VARIANTS = ['bush-1', 'bush-2', 'bush-3'];
+  // pseudo-random scatter for bushes (single v4 bush variant)
   for (let i = 0; i < 44; i++) {
     const x = 154 + ((i * 127) % 1372);
     const y = 308 + ((i * 91)  % 784);
-    placeIfClear(back, BUSH_VARIANTS[i % BUSH_VARIANTS.length], x, y);
+    placeIfClear(back, 'bush', x, y);
   }
   // flower clusters (3 each, tight; bounds scaled 1.4×, count 14→20)
   for (let i = 0; i < 20; i++) {
@@ -1632,26 +1646,15 @@ function buildFlora() {
     const cy = 322 + ((i * 113) % 756);
     [[0,0],[4,-3],[-3,4]].forEach(([ox,oy]) => placeIfClear(back, 'flower', cx+ox, cy+oy, {pathPad: 20}));
   }
-  // rocks — fewer, weighted toward the periphery (variants alternate)
-  const ROCK_VARIANTS = ['rock-large', 'rock-medium'];
+  // rocks — fewer, weighted toward the periphery (single v4 rock)
   for (let i = 0; i < 22; i++) {
     const x = 112 + ((i * 199) % 1456);
     const y = 308 + ((i * 79)  % 784);
-    placeIfClear(back, ROCK_VARIANTS[i % ROCK_VARIANTS.length], x, y, {bPad: 98});
+    placeIfClear(back, 'rock', x, y, {bPad: 98});
   }
-  // S039: idle ambient animals — 4 horses + 4 pets at fixed-ish positions,
-  // each filtered through placeIfClear so they don't land on a building.
-  const animals = [
-    {href: 'horse-1', x: 480,  y: 460},
-    {href: 'horse-2', x: 1080, y: 510},
-    {href: 'horse-3', x: 350,  y: 880},
-    {href: 'horse-4', x: 1380, y: 840},
-    {href: 'pet-1',   x: 700,  y: 480},
-    {href: 'pet-2',   x: 980,  y: 770},
-    {href: 'pet-3',   x: 420,  y: 720},
-    {href: 'pet-1',   x: 1180, y: 980},
-  ];
-  animals.forEach(a => placeIfClear(front, a.href, a.x, a.y, {bPad: 110, pathPad: 18}));
+  // v4 sheet doesn't include animals — dropped the horse/pet scatter to
+  // keep visual coherence. Re-add only if an animal sheet lands in the
+  // same art style.
 }
 
 function addUse(parent, href, x, y, cls='') {
@@ -1864,17 +1867,17 @@ function buildBuildings() {
   const SCALE = 1.0;
   const Y_DROP = 60; // px below building center for PNG bottom
   const BLD_SPRITE_DIMS = {
-    'inbox-square':       {w: 213, h: 170},
-    'meta-town-hall':     {w: 200, h: 192},
-    'lorebook-library':   {w: 195, h: 188},
-    'bank':               {w: 203, h: 171},
-    'examine-hall':       {w: 102, h: 200},
-    'quest-hall':         {w: 206, h: 170},
-    'spellbook-tower':    {w: 89,  h: 183},
-    'keepsake-vault':     {w: 166, h: 175},
-    'inn':                {w: 258, h: 181},
-    'braindead-workshop': {w: 211, h: 185},
-    'iceberg':            {w: 200, h: 113},
+    'inbox-square':       {w: 207, h: 174},
+    'meta-town-hall':     {w: 232, h: 196},
+    'lorebook-library':   {w: 239, h: 181},
+    'bank':               {w: 228, h: 147},
+    'examine-hall':       {w: 131, h: 193},
+    'quest-hall':         {w: 257, h: 179},
+    'spellbook-tower':    {w: 157, h: 187},
+    'keepsake-vault':     {w: 185, h: 171},
+    'inn':                {w: 255, h: 182},
+    'braindead-workshop': {w: 230, h: 186},
+    'iceberg':            {w: 193, h: 88},
   };
   let html = '';
   Object.entries(BUILDINGS).forEach(([id, b]) => {
@@ -2293,6 +2296,186 @@ const instanceLastEventAt = {};
 const instanceNodes = {};   // actorKey -> SVG <g> element
 const INSTANCE_IDLE_MS = 5 * 60 * 1000;
 
+// ─────────────────────────────────────────────────────────────
+//   Switchboard-driven liveness + click-to-focus + wander
+//   Populated by the switchboard IIFE (live mode only). The
+//   sprite engine reads these to GC ghosts immediately when a
+//   sid disappears from the manifest, and to route sprite
+//   clicks to the same VS Code window the switchboard row
+//   would. In replay mode these stay empty and the 5-min
+//   INSTANCE_IDLE_MS sweep is the only despawn signal.
+// ─────────────────────────────────────────────────────────────
+let liveSidsSet = new Set();                 // 'sid8'
+const actorInstanceToSid = new Map();        // 'braindead-2' -> 'sid8' (instance >= 2)
+const baseActorToSid = new Map();            // 'braindead' / 'wisp' / 'guthix' / 'jebrim' -> sid8 (instance 1)
+const subAgentParentSid = {};                // 'D1' / 'G2' / 'P3' -> sid8 (from spawn event)
+const wanderOffsets = {};                    // actorKey -> {dx, dy}  (for cancellation/inspection)
+const wanderTimers = {};                     // actorKey -> next-hop deadline ms
+const WANDER_MAX_PX = 18;                    // max ± offset from building anchor
+const WANDER_MIN_INTERVAL_MS = 4000;
+const WANDER_MAX_INTERVAL_MS = 12000;
+const NO_WANDER_ACTORS = new Set(['guthix']); // matches existing CSS (Guthix doesn't walk)
+
+function getSpriteSid8FromNode(node) {
+  if (!node || !node.dataset) return null;
+  const actor = node.dataset.actor;
+  if (!actor) return null;
+  if (/^[DGP]\d+$/.test(actor)) return subAgentParentSid[actor] || null;
+  const inst = +(node.dataset.instance || 1);
+  if (inst > 1) return actorInstanceToSid.get(actor + '-' + inst) || null;
+  return baseActorToSid.get(actor) || null;
+}
+
+function onSpriteClick(ev) {
+  const node = ev.currentTarget;
+  const actor = node.dataset.actor;
+  const instance = node.dataset.instance;
+  const sid8 = getSpriteSid8FromNode(node);
+  console.log('[sprite-click]', {
+    actor, instance, sid8,
+    knownInstances: Array.from(actorInstanceToSid.entries()),
+    knownBase: Array.from(baseActorToSid.entries()),
+    knownSubagents: Object.entries(subAgentParentSid),
+    liveSids: Array.from(liveSidsSet),
+  });
+  if (!sid8) {
+    node.classList.add('sprite-ghost-click');
+    setTimeout(() => node.classList.remove('sprite-ghost-click'), 350);
+    return;
+  }
+  node.classList.add('sprite-focus-click');
+  setTimeout(() => node.classList.remove('sprite-focus-click'), 350);
+  const url = 'vscode://niksis8.claude-focus/focus?sid8=' + encodeURIComponent(sid8);
+  console.log('[sprite-click] navigating to', url);
+  window.location.href = url;
+}
+
+function wireSpriteClick(g) {
+  if (!g || g.__clickWired) return;
+  g.__clickWired = true;
+  g.classList.add('clickable');
+  g.addEventListener('click', onSpriteClick);
+}
+
+// Wrap an actor's existing children in <g class="wander">. Idempotent.
+// The wander group inherits the parent's main transform (building anchor)
+// and adds its own small translate on top; SVG composes them.
+function wrapWander(g) {
+  if (!g || g.__wanderWrapped) return;
+  // Find existing wander child if one was already injected (re-wrap safety).
+  let wander = g.querySelector(':scope > .wander');
+  if (!wander) {
+    wander = document.createElementNS(svgNS, 'g');
+    wander.setAttribute('class', 'wander');
+    wander.setAttribute('transform', 'translate(0,0)');
+    while (g.firstChild && g.firstChild !== wander) {
+      wander.appendChild(g.firstChild);
+    }
+    g.appendChild(wander);
+  }
+  g.__wanderWrapped = true;
+}
+
+// Cascade-aware GC. Called after each switchboard poll in live mode. Any
+// sprite whose sid8 isn't in liveSidsSet (or sub-agent whose parent isn't
+// live) fades immediately. Player instance 1 (jebrim/zezima) lives in
+// static HTML and is never despawned by this sweep.
+function gcDeadSprites() {
+  if (document.body.dataset.mode !== 'live') return;
+  if (!liveSidsSet.size) return;  // first-poll safety: sidecar may not have populated yet
+  for (const actorKey of Object.keys(instanceNodes)) {
+    if (!actorInstanceToSid.has(actorKey)) {
+      despawnPlayerInstance(actorKey);
+    }
+  }
+  if (braindeadActive && !baseActorToSid.has('braindead')) {
+    braindeadActive = false;
+    clearIntent('braindead', false);
+    despawnBraindead();
+    delete instanceLastEventAt['braindead'];
+  }
+  if (wispActive && !baseActorToSid.has('wisp')) {
+    wispActive = false;
+    clearIntent('wisp', false);
+    despawnWisp();
+    delete instanceLastEventAt['wisp'];
+  }
+  if (guthixActive && !baseActorToSid.has('guthix')) {
+    guthixActive = false;
+    clearIntent('guthix', false);
+    despawnGuthix();
+    delete instanceLastEventAt['guthix'];
+  }
+  for (const id of Object.keys(dwarfNodes)) {
+    const psid = subAgentParentSid[id];
+    if (psid && !liveSidsSet.has(psid)) {
+      clearIntent(id, false);
+      despawnDwarf(id);
+      delete subAgentParentSid[id];
+      delete instanceLastEventAt[id];
+    }
+  }
+  for (const id of Object.keys(gnomeNodes)) {
+    const psid = subAgentParentSid[id];
+    if (psid && !liveSidsSet.has(psid)) {
+      clearIntent(id, false);
+      despawnGnome(id);
+      delete subAgentParentSid[id];
+      delete instanceLastEventAt[id];
+    }
+  }
+  for (const id of Object.keys(penguinNodes)) {
+    const psid = subAgentParentSid[id];
+    if (psid && !liveSidsSet.has(psid)) {
+      clearIntent(id, false);
+      despawnPenguin(id);
+      delete subAgentParentSid[id];
+      delete instanceLastEventAt[id];
+    }
+  }
+}
+
+// Pick a fresh wander offset for one actor and write it to its .wander child.
+// Suppressed when the actor is walking (CSS rule snaps wander to 0,0 during
+// .walking via transition:none; we still skip the JS write to avoid stomping
+// on the snap). Pre-S043 sprites that haven't been wrapped (replay events
+// before the wander wrapper landed) are skipped silently.
+function tickWanderForActor(g, actorKey) {
+  if (!g || NO_WANDER_ACTORS.has(actorKey)) return;
+  if (g.classList.contains('walking')) return;
+  const wander = g.querySelector(':scope > .wander');
+  if (!wander) return;
+  const dx = Math.round((Math.random() * 2 - 1) * WANDER_MAX_PX);
+  const dy = Math.round((Math.random() * 2 - 1) * (WANDER_MAX_PX * 0.6));
+  wanderOffsets[actorKey] = {dx, dy};
+  wander.setAttribute('transform', `translate(${dx},${dy})`);
+}
+
+function maybeTickWander() {
+  const now = Date.now();
+  function maybe(actorKey, g) {
+    const due = wanderTimers[actorKey] || 0;
+    if (now < due) return;
+    tickWanderForActor(g, actorKey);
+    wanderTimers[actorKey] = now + WANDER_MIN_INTERVAL_MS +
+      Math.random() * (WANDER_MAX_INTERVAL_MS - WANDER_MIN_INTERVAL_MS);
+  }
+  // Static players (instance 1)
+  const jb = document.getElementById('actor-jebrim'); if (jb) maybe('jebrim', jb);
+  const zz = document.getElementById('actor-zezima'); if (zz) maybe('zezima', zz);
+  // Dynamic singletons
+  if (braindeadActive && braindeadNode) maybe('braindead', braindeadNode);
+  if (wispActive && wispNode) maybe('wisp', wispNode);
+  // Guthix excluded via NO_WANDER_ACTORS
+  // Parallel-instance players
+  for (const k of Object.keys(instanceNodes)) maybe(k, instanceNodes[k]);
+  // Sub-agents
+  for (const k of Object.keys(dwarfNodes)) maybe(k, dwarfNodes[k].node);
+  for (const k of Object.keys(gnomeNodes)) maybe(k, gnomeNodes[k].node);
+  for (const k of Object.keys(penguinNodes)) maybe(k, penguinNodes[k].node);
+}
+setInterval(maybeTickWander, 1000);
+
 actorPositions['jebrim'] = {x: STAND['inbox-square'].x, y: STAND['inbox-square'].y};
 actorPositions['zezima'] = {x: STAND['keepsake-vault'].x - 42, y: STAND['keepsake-vault'].y};
 
@@ -2336,6 +2519,14 @@ function moveActor(actorId, toKey, duration) {
 
   const el = document.getElementById('actor-' + actorId);
   if (!el) return;
+
+  // Clear any active wander offset so the actor lands exactly at the building
+  // anchor rather than walking to (tx+wdx, ty+wdy). Next wander tick will pick
+  // a fresh offset after WANDER_MIN_INTERVAL_MS at the new building.
+  const wanderInner = el.querySelector(':scope > .wander');
+  if (wanderInner) wanderInner.setAttribute('transform', 'translate(0,0)');
+  delete wanderOffsets[actorId];
+  wanderTimers[actorId] = Date.now() + WANDER_MIN_INTERVAL_MS;
 
   el.style.transition = `transform ${duration}ms cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
   const nonWalker = NON_WALKING_ACTORS.has(actorId);
@@ -2397,14 +2588,17 @@ function spawnDwarf(ev) {
   g.innerHTML = `
     <g class="bob">
       <ellipse cx="0" cy="5" rx="9" ry="2.9" fill="rgba(0,0,0,0.45)"/>
-      <image href="sprites/dwarf.png" x="-16" y="-32" width="32" height="35"
+      <image href="sprites/dwarf.png" x="-14" y="-26" width="28" height="28"
              preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"
              style="image-rendering: pixelated;"/>
       <text x="0" y="15" text-anchor="middle" font-family="VT323" font-size="11" fill="#fff" stroke="#000" stroke-width="0.6">${ev.id}</text>
     </g>
   `;
   charactersLayer.appendChild(g);
-  dwarfNodes[ev.id] = {node: g, color: hat};
+  wrapWander(g);
+  wireSpriteClick(g);
+  if (ev.parentSid8) subAgentParentSid[ev.id] = ev.parentSid8;
+  dwarfNodes[ev.id] = {node: g, color: hat, parentSid8: ev.parentSid8 || null};
   dwarfCount++;
   updateTicker();
 }
@@ -2444,14 +2638,17 @@ function spawnGnome(ev) {
   g.innerHTML = `
     <g class="bob">
       <ellipse cx="0" cy="5" rx="8" ry="2.7" fill="rgba(0,0,0,0.45)"/>
-      <image href="sprites/gnome.png" x="-13" y="-38" width="26" height="40"
+      <image href="sprites/gnome.png" x="-9.5" y="-26" width="19" height="28"
              preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"
              style="image-rendering: pixelated;"/>
       <text x="0" y="15" text-anchor="middle" font-family="VT323" font-size="11" fill="#fff" stroke="#000" stroke-width="0.6">${ev.id}</text>
     </g>
   `;
   charactersLayer.appendChild(g);
-  gnomeNodes[ev.id] = {node: g, color: hat};
+  wrapWander(g);
+  wireSpriteClick(g);
+  if (ev.parentSid8) subAgentParentSid[ev.id] = ev.parentSid8;
+  gnomeNodes[ev.id] = {node: g, color: hat, parentSid8: ev.parentSid8 || null};
   gnomeCount++;
   updateTicker();
 }
@@ -2495,14 +2692,17 @@ function spawnPenguin(ev) {
   g.innerHTML = `
     <g class="bob">
       <ellipse cx="0" cy="5" rx="7.5" ry="2.5" fill="rgba(0,0,0,0.45)"/>
-      <image href="sprites/penguin.png" x="-13" y="-34" width="26" height="36"
+      <image href="sprites/penguin.png" x="-10" y="-24" width="20" height="26"
              preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"
              style="image-rendering: pixelated;"/>
       <text x="0" y="15" text-anchor="middle" font-family="VT323" font-size="11" fill="#fff" stroke="#000" stroke-width="0.6">${ev.id}</text>
     </g>
   `;
   charactersLayer.appendChild(g);
-  penguinNodes[ev.id] = {node: g, color: scarf};
+  wrapWander(g);
+  wireSpriteClick(g);
+  if (ev.parentSid8) subAgentParentSid[ev.id] = ev.parentSid8;
+  penguinNodes[ev.id] = {node: g, color: scarf, parentSid8: ev.parentSid8 || null};
   penguinCount++;
   updateTicker();
 }
@@ -2630,6 +2830,8 @@ function spawnPlayerInstance(actor, instance, at) {
           paint-order="stroke">·${inst}</text>
   `;
   charactersLayer.appendChild(g);
+  wrapWander(g);
+  wireSpriteClick(g);
   instanceNodes[actorKey] = g;
 }
 
@@ -2662,6 +2864,8 @@ function spawnBraindead(ev) {
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
   g.innerHTML = `<g class="bob"><use href="#braindead" transform="scale(2.4)"/></g>`;
   charactersLayer.appendChild(g);
+  wrapWander(g);
+  wireSpriteClick(g);
   braindeadNode = g;
 }
 
@@ -2689,6 +2893,8 @@ function spawnWisp(ev) {
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
   g.innerHTML = `<g class="wisp-bob"><g class="wisp-glow"><use href="#wisp" transform="scale(1.7)"/></g></g>`;
   charactersLayer.appendChild(g);
+  wrapWander(g);
+  wireSpriteClick(g);
   wispNode = g;
 }
 
@@ -2722,6 +2928,8 @@ function spawnGuthix(ev) {
   g.style.transition = 'transform 2200ms cubic-bezier(0.55,0.05,0.45,0.95)';
   g.innerHTML = `<g class="guthix-bob"><g class="guthix-glow"><use href="#guthix" transform="scale(1.7)"/></g></g>`;
   charactersLayer.appendChild(g);
+  wireSpriteClick(g);
+  // Guthix doesn't wander (matches NON_WALKING_ACTORS); skip wrapWander.
   guthixNode = g;
 }
 
@@ -3323,14 +3531,22 @@ function applyEvent(ev, instant=false) {
       const actorKey = instanceKey(ev.actor, ev.instance);
       ensureActorExists(ev.actor, currentBuilding[actorKey], ev.instance);
       setIntent(actorKey, ev.text, instant);
-      if (ev.text) {
+      // S043 (D-024): in live mode, COMMS becomes inter-session dialogue
+      // (gielinor/comms/active.md + dev-brain comms/active.md). Speech bubbles
+      // continue to carry "what I'm doing." Don't echo intent into the chat —
+      // it would drown out the conversation channel. Replay mode keeps the old
+      // behavior so historical reels stay rich.
+      if (ev.text && !LIVE) {
         logChatLine(actorDisplayName(actorKey), ev.text,
                     'intent', speakerFor(ev.actor));
       }
       break;
     }
     case 'action': {
-      if (ev.verb && ev.target) {
+      // S043 (D-024): action stream is suppressed in live mode for the same
+      // reason as intent — keep COMMS for actor-to-actor talk. Replay still
+      // shows it.
+      if (ev.verb && ev.target && !LIVE) {
         const actorKey = instanceKey(ev.actor, ev.instance);
         logChatLine(actorDisplayName(actorKey), `${ev.verb} ${ev.target}`,
                     'action', speakerFor(ev.actor));
@@ -3365,6 +3581,7 @@ function applyEvent(ev, instant=false) {
     case 'despawn-dwarf':
       clearIntent(ev.id, instant);
       despawnDwarf(ev.id);
+      delete subAgentParentSid[ev.id];
       break;
     case 'spawn-gnome':
       spawnGnome(ev);
@@ -3373,6 +3590,7 @@ function applyEvent(ev, instant=false) {
     case 'despawn-gnome':
       clearIntent(ev.id, instant);
       despawnGnome(ev.id);
+      delete subAgentParentSid[ev.id];
       break;
     case 'spawn-penguin':
       spawnPenguin(ev);
@@ -3381,6 +3599,7 @@ function applyEvent(ev, instant=false) {
     case 'despawn-penguin':
       clearIntent(ev.id, instant);
       despawnPenguin(ev.id);
+      delete subAgentParentSid[ev.id];
       break;
     case 'spawn-wisp':   wispActive = true; spawnWisp(ev); break;
     case 'despawn-wisp': wispActive = false; clearIntent('wisp', instant); despawnWisp(); break;
@@ -3395,15 +3614,15 @@ function applyEvent(ev, instant=false) {
 function resetWorld() {
   Object.keys(dwarfNodes).forEach(id => {
     dwarfNodes[id].node.remove();
-    delete dwarfNodes[id]; delete actorPositions[id];
+    delete dwarfNodes[id]; delete actorPositions[id]; delete subAgentParentSid[id];
   });
   Object.keys(gnomeNodes).forEach(id => {
     gnomeNodes[id].node.remove();
-    delete gnomeNodes[id]; delete actorPositions[id];
+    delete gnomeNodes[id]; delete actorPositions[id]; delete subAgentParentSid[id];
   });
   Object.keys(penguinNodes).forEach(id => {
     penguinNodes[id].node.remove();
-    delete penguinNodes[id]; delete actorPositions[id];
+    delete penguinNodes[id]; delete actorPositions[id]; delete subAgentParentSid[id];
   });
   if (wispNode) { wispNode.remove(); wispNode = null; delete actorPositions['wisp']; }
   wispActive = false;
@@ -3517,6 +3736,16 @@ document.querySelectorAll('.log-tab').forEach(tab => {
     else logEl.setAttribute('data-filter', v);
     clearTabUnread(v);
   });
+});
+
+// Wire static jebrim/zezima (baked in HTML, not via spawn function) for the
+// same sprite-as-handle treatment. Sub-agent maps don't apply; baseActorToSid
+// is populated by the switchboard poll once the manifest carries them.
+['jebrim','zezima'].forEach(a => {
+  const g = document.getElementById('actor-' + a);
+  if (!g) return;
+  wrapWander(g);
+  wireSpriteClick(g);
 });
 
 // build world
@@ -3787,6 +4016,30 @@ if (LIVE) {
     const inst = (record.instance && record.instance > 1) ? '·' + record.instance : '';
     return cap + inst;
   }
+  // Update the module-level lookup maps that the sprite engine reads.
+  // Rebuilt on every poll so a session vanishing immediately empties its
+  // entry — gcDeadSprites then despawns the corresponding sprite on the
+  // very next sweep (called from pollSwitchboard, not from render, because
+  // render also re-runs on the 1s age-tick where we don't want to GC).
+  function updateLiveLookup(sessions) {
+    liveSidsSet = new Set();
+    actorInstanceToSid.clear();
+    baseActorToSid.clear();
+    for (const r of sessions) {
+      if (!r.sid8 || !r.actor) continue;
+      // 'ended' sessions stay in the manifest briefly between sidecar fires;
+      // exclude them from "live" so the sprite GC catches them.
+      const derived = deriveState(r);
+      if (derived === 'ended') continue;
+      liveSidsSet.add(r.sid8);
+      const inst = +(r.instance || 1);
+      if (inst > 1) {
+        actorInstanceToSid.set(r.actor + '-' + inst, r.sid8);
+      } else {
+        baseActorToSid.set(r.actor, r.sid8);
+      }
+    }
+  }
   function render(sessions) {
     listEl.innerHTML = '';
     const ordered = sortSessions(sessions);
@@ -3874,9 +4127,37 @@ if (LIVE) {
         setTimeout(() => { row.style.outline = ''; }, 350);
         window.location.href = 'vscode://niksis8.claude-focus/focus?sid8=' + encodeURIComponent(r.sid8);
       });
-      row.title = `${r.session_id || r.sid8}\nproject: ${r.project_dir || '?'}\nstate: ${state}\nclick → focus terminal pane\nshift-click → copy sid8`;
+      row.title = `${r.session_id || r.sid8}\nproject: ${r.project_dir || '?'}\nstate: ${state}\nclick → focus terminal pane\nshift-click → copy sid8\nhover → highlight sprite`;
+
+      // Hover → pulse the corresponding sprite. Reverse interlink to the
+      // sprite-click path; teaches the principal that the row and the sprite
+      // are the same handle on the session.
+      row.addEventListener('mouseenter', () => {
+        const node = findSpriteForSid8(r.sid8, r.actor, r.instance);
+        if (node) {
+          node.classList.remove('pulsing');
+          void node.getBoundingClientRect();   // restart animation
+          node.classList.add('pulsing');
+          setTimeout(() => node.classList.remove('pulsing'), 650);
+        }
+      });
+
       listEl.appendChild(row);
     }
+  }
+
+  // Resolve a switchboard row to its sprite SVG <g>. Mirrors the click
+  // resolution in onSpriteClick but in the opposite direction.
+  function findSpriteForSid8(sid8, actor, instance) {
+    if (!sid8 || !actor) return null;
+    const inst = +(instance || 1);
+    if (inst > 1) return instanceNodes[actor + '-' + inst] || null;
+    // instance 1 — static players are in HTML, others are dynamic singletons
+    if (actor === 'jebrim' || actor === 'zezima') return document.getElementById('actor-' + actor);
+    if (actor === 'braindead') return braindeadNode;
+    if (actor === 'wisp') return wispNode;
+    if (actor === 'guthix') return guthixNode;
+    return null;
   }
   // Cached manifest so the age column can re-render on a 1s tick without a
   // fresh fetch. Otherwise the displayed age only changes every poll cycle.
@@ -3890,7 +4171,11 @@ if (LIVE) {
       if (!res.ok) return;
       const j = await res.json();
       cached = (j && Array.isArray(j.sessions)) ? j.sessions : [];
+      updateLiveLookup(cached);
       render(cached);
+      // GC runs only on fresh poll (not on the 1s age re-render) so a stale
+      // sprite gets at most POLL_MS to fade after its sid disappears.
+      try { gcDeadSprites(); } catch (e) { console.warn('gcDeadSprites failed:', e); }
     } catch (_) {
       // file may not exist yet (sidecar hasn't fired) — silent, retry next tick
     } finally {
@@ -3901,6 +4186,184 @@ if (LIVE) {
   setInterval(pollSwitchboard, POLL_MS);
   // Re-render every second so ages tick without re-fetching.
   setInterval(() => { if (cached.length) render(cached); }, 1000);
+})();
+
+// ─────────────────────────────────────────────────────────────
+//   S043 (D-024): COMMS feed — render inter-session dialogue
+// ─────────────────────────────────────────────────────────────
+// In live mode only. Polls the two comms files mirrored into VIZ_DIR by the
+// status-sidecar hook (sandbox: the python http.server roots here, so files
+// outside this directory aren't reachable; the sidecar copies them in). The
+// chat panel was previously echoing intent + action streams ("Jebrim: Editing
+// X"); that doubled the speech bubbles. Now bubbles carry "what I'm doing" and
+// the chat carries "what we're saying to each other" — the comms-channel posts
+// (OPEN / UPDATE / CLOSING / → @sibling dialogues).
+(function initCommsFeed() {
+  if (!LIVE) return;
+
+  const SOURCES = [
+    {url: 'state-comms-gielinor.md',  origin: 'gielinor'},
+    {url: 'state-comms-braindead.md', origin: 'braindead'},
+  ];
+  const POLL_MS = 3000;
+  // Track last-rendered entry header (timestamp + actor + KIND) per origin
+  // so we don't re-render after a poll. First load uses the tail of each file
+  // as the seen set, so reload doesn't dump history — only NEW entries render.
+  const seen = {gielinor: new Set(), braindead: new Set()};
+  let primed = {gielinor: false, braindead: false};
+
+  // Header pattern: `[timestamp] actor-sid8 KIND`
+  // KIND can be: OPEN | UPDATE | CLOSING | ABANDONED | SCAFFOLD | → @target...
+  const HEADER_RE = /^\[([^\]]+)\]\s+(\S+)\s+(.+)$/;
+
+  function parseHeader(line) {
+    const m = HEADER_RE.exec(line);
+    if (!m) return null;
+    return {ts: m[1], who: m[2], kind: m[3].trim()};
+  }
+
+  // Pull all entries from a parsed file. An entry is a header line followed
+  // by zero or more 2-space-indented body lines, separated from neighbours by
+  // a blank line. Anything that isn't a recognized header is dropped silently
+  // (file headers, > quotes, --- rules, etc).
+  function parseEntries(text) {
+    const lines = text.split(/\r?\n/);
+    const out = [];
+    let cur = null;
+    for (const raw of lines) {
+      const line = raw.replace(/\s+$/, '');
+      if (!line) {
+        if (cur) { out.push(cur); cur = null; }
+        continue;
+      }
+      if (cur) {
+        // Body line — accept anything that isn't itself a header
+        if (HEADER_RE.test(line)) {
+          out.push(cur);
+          const h = parseHeader(line);
+          cur = h ? {...h, body: []} : null;
+        } else {
+          cur.body.push(line.replace(/^ {1,4}/, ''));
+        }
+      } else {
+        const h = parseHeader(line);
+        if (h) cur = {...h, body: []};
+      }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+
+  function classForKind(kind) {
+    if (kind === 'OPEN' || kind === 'SCAFFOLD') return 'comms-open';
+    if (kind === 'UPDATE') return 'comms-update';
+    if (kind === 'CLOSING' || kind === 'ABANDONED') return 'comms-closing';
+    if (kind.startsWith('→') || kind.startsWith('->')) return 'comms-dialog';
+    return 'comms-open';
+  }
+
+  // who is "<actor>-<sid8>" (sometimes bare "<actor>" for pre-protocol entries
+  // or for the dev-brain SCAFFOLD marker). Pull base actor for speaker tag and
+  // sid8 for display disambiguation.
+  function splitWho(who) {
+    const m = /^([a-z][a-z0-9_]*)-([a-f0-9]{8})$/i.exec(who);
+    if (m) return {actor: m[1].toLowerCase(), sid8: m[2]};
+    return {actor: who.toLowerCase(), sid8: ''};
+  }
+
+  // S043 follow-up: fold body[0] into the header so the collapsed view is
+  // informative. New comms discipline targets one-line conversational bodies —
+  // for those the header IS the full content and no ▸ appears. Legacy
+  // multi-paragraph entries get their first line inline (truncated) with ▸
+  // to reveal the rest.
+  const HEADER_PREVIEW_CHARS = 90;
+  function buildHeaderText(entry) {
+    if (entry.body.length === 0) return entry.kind;
+    const first = entry.body[0];
+    const truncated = first.length > HEADER_PREVIEW_CHARS;
+    const preview = truncated
+      ? first.slice(0, HEADER_PREVIEW_CHARS - 1).trimEnd() + '…'
+      : first;
+    return `${entry.kind} — ${preview}`;
+  }
+  function hasHiddenDetail(entry) {
+    if (entry.body.length === 0) return false;
+    if (entry.body.length > 1) return true;
+    return entry.body[0].length > HEADER_PREVIEW_CHARS;
+  }
+
+  function renderEntry(entry, origin) {
+    const {actor, sid8} = splitWho(entry.who);
+    const speaker = ['jebrim','zezima','wisp','braindead','guthix'].includes(actor) ? actor : 'system';
+    const displayName = actor.charAt(0).toUpperCase() + actor.slice(1)
+                      + (sid8 ? ` · ${sid8}` : '');
+    const headerCls = classForKind(entry.kind);
+    const entryId = entryKey(entry);
+    const headerEl = logChatLine(displayName, buildHeaderText(entry), headerCls, speaker);
+    // ▸ marker + click-to-expand only when the header doesn't already carry
+    // everything. Disciplined one-liner entries get no marker.
+    if (hasHiddenDetail(entry) && headerEl) {
+      headerEl.classList.add('comms-toggleable');
+      headerEl.setAttribute('data-comms-entry', entryId);
+      headerEl.addEventListener('click', () => {
+        const open = headerEl.classList.toggle('expanded');
+        document.querySelectorAll(
+          `.comms-body[data-comms-entry="${CSS.escape(entryId)}"]`
+        ).forEach(b => b.classList.toggle('show', open));
+      });
+      for (const line of entry.body) {
+        const li = document.createElement('div');
+        li.className = 'log-entry comms-body';
+        li.setAttribute('data-speaker', speaker);
+        li.setAttribute('data-comms-entry', entryId);
+        li.innerHTML = `<span class="t">·</span>${escapeHtml(line)}`;
+        appendLogEntry(li);
+      }
+    }
+  }
+
+  function entryKey(entry) {
+    return `${entry.ts}|${entry.who}|${entry.kind}`;
+  }
+
+  async function pollOne(src) {
+    try {
+      const res = await fetch(src.url + '?_=' + Date.now(), {cache: 'no-store'});
+      if (!res.ok) return;
+      const text = await res.text();
+      const entries = parseEntries(text);
+      if (!primed[src.origin]) {
+        // First fetch: prime the seen-set with everything currently in the
+        // file. Render only the last 6 entries so the user gets a small
+        // amount of context without a wall of history.
+        const tail = entries.slice(-6);
+        for (const e of entries) seen[src.origin].add(entryKey(e));
+        // Re-render the tail by removing each from seen and letting the next
+        // pass render it — but we want them rendered now, in order, with a
+        // single visible divider. Just render directly:
+        for (const e of tail) renderEntry(e, src.origin);
+        primed[src.origin] = true;
+        return;
+      }
+      for (const e of entries) {
+        const k = entryKey(e);
+        if (seen[src.origin].has(k)) continue;
+        seen[src.origin].add(k);
+        renderEntry(e, src.origin);
+      }
+    } catch (_) {
+      // Mirror file may not exist yet (sidecar hasn't fired) — silent retry.
+    }
+  }
+
+  async function pollAll() {
+    for (const src of SOURCES) {
+      await pollOne(src);
+    }
+  }
+
+  pollAll();
+  setInterval(pollAll, POLL_MS);
 })();
 
 </script>

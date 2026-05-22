@@ -43,9 +43,33 @@ The load order below front-loads only the durable, in-force, identity-shaped mat
 
    g. Check `players/<name>/quest-log/in-progress/`. If any file is present, the player has in-flight quests. Run the **reconciliation prompt** (below) before accepting new input.
 
-   h. **Read `players/<name>/inventory/*-resume.md`** — the resume foreground. Each file corresponds to one in-flight quest and carries the `Where we are` / `Next concrete step` / `Files to read first` state populated by close-session step 3. **This is what the reconciliation prompt surfaces** — not the quest-log file's body, which is the turn-by-turn history. If inventory has no `*-resume.md` files but `quest-log/in-progress/` is non-empty, surface the gap (close-session step 3 didn't populate inventory) and read the quest log directly as a fallback. Note the gap for the next close-session pass.
+   h. **Sibling detection + comms read.** Per [[D-024]] (dev brain). Two ground-truth sources, both required:
 
-   i. **Alching threshold check.** Read `players/<name>/last-alched.md` and count drafts across the player's `examine/drafts/`, `niksis8_character/drafts/`, `bank/drafts/notes/`, `spellbook/drafts/skills/`, `keepsake/proposals/`. If any threshold in `spellbook/rituals/alching.md` § *Recommendation thresholds* is breached, surface a one-line recommendation per `meta/communication-protocol.md` § *Internal rituals stay silent* (the threshold-recommendation exception). The principal decides whether to alch now or later.
+      - **Sidecar manifest** at `~/.claude/status/*.json`. Filter for `state ≠ ended AND last_event_ts < 5 minutes AND actor ∈ {jebrim, zezima, guthix, …}`. Each match is a confirmed-live sibling session — own `sid8` excluded.
+      - **`gielinor/comms/active.md`**. Read the tail. Cross-reference each live `sid8` from the sidecar against the log: any live id with an `OPEN` (or `UPDATE`) but no matching `CLOSING` is in-flight; any id with a stale `OPEN` and no recent sidecar entry is a candidate for `ABANDONED` synthesis (surface, don't auto-synthesize).
+
+      Surface to the principal before posting OPEN if anything looks ambiguous — three fresh respawns within seconds can all see "no siblings" before any posts.
+
+   i. **Read `players/<name>/inventory/*__<sid8>.md` and `*-resume.md`** — the resume foreground. Per [[D-024]]:
+
+      - **Prefer `<topic>__<own-sid8>.md` if present** — this session's own prior inventory state. Read it directly.
+      - **Otherwise list all `<topic>__<sid8>.md` files** for matching topics. Cross-reference each `sid8` against the comms log + sidecar manifest from step h:
+        - Clean `CLOSING` in comms + sidecar `ended` → recoverable; safe to read and adopt.
+        - No `CLOSING` and sidecar shows session ended/stale → crashed; surface the candidate for the principal to authorize adoption.
+        - Live sibling per step h → **don't touch** their inventory. The other session owns it.
+      - **Legacy unsuffixed `<topic>-resume.md` files** (pre-[[D-024]]) are treated as own-session state: read directly. The next close-session pass writes the suffixed form going forward.
+
+      Each file carries the `Where we are` / `Next concrete step` / `Files to read first` state populated by close-session step 3. **This is what the reconciliation prompt surfaces** — not the quest-log file's body, which is the turn-by-turn history. If inventory has no resume files but `quest-log/in-progress/` is non-empty, surface the gap (close-session step 3 didn't populate inventory) and read the quest log directly as a fallback. Note the gap for the next close-session pass.
+
+   j. **Post `OPEN` entry to `gielinor/comms/active.md`.** Per [[D-024]] and `comms/_about.md`. Header `[YYYY-MM-DD HH:MM] <player>-<sid8> OPEN` (use Guthix in consultation/bankstanding mode). Body lines as needed:
+
+      - `Targets:` — what this session intends to work on, named by inventory topic or quest slug.
+      - `Steering clear of:` — surfaces other live siblings have claimed (from step h's read) or shared globals this session won't touch.
+      - `Open to handoff:` — items the principal might pick up from another terminal.
+
+      Skip the post entirely only if the session is **trivially scoped** (e.g., a one-off "show me file X" with no writes). When in doubt, post — the cost is one append.
+
+   k. **Alching threshold check.** Read `players/<name>/last-alched.md` and count drafts across the player's `examine/drafts/`, `niksis8_character/drafts/`, `bank/drafts/notes/`, `spellbook/drafts/skills/`, `keepsake/proposals/`. If any threshold in `spellbook/rituals/alching.md` § *Recommendation thresholds* is breached, surface a one-line recommendation per `meta/communication-protocol.md` § *Internal rituals stay silent* (the threshold-recommendation exception). The principal decides whether to alch now or later.
 
 7. **If dwarf mode:** skip the unfinished-business check. Read the task brief from the principal. Operate within the dwarf write boundary (`meta/modes.md`). Write findings to the inherited player's `quest-log/in-progress/`; return a summary to the principal.
 
@@ -87,9 +111,10 @@ Triggered when a later message addresses a **different** player than the current
    - Optionally, one line for any pending action this session put in flight.
    - **Do not re-read or summarize the quest's existing content.** The hand-off note is a marker, not a recap. The quest's own "Next concrete step" section carries resume context for the next session that lands on it.
 2. **Archive the outgoing actor's per-session intent file.** Move `brain/.claude/intent/<outgoing-actor>-<sid8>.txt` into `brain/.claude/intent/archive/` (preserving the filename). Leaving it in place means two intent files exist for the same `sid8`, which the switchboard's `_detect_actor` reads as ambiguous → `actor: unknown` in the sidebar. The status-sidecar will catch it on the next `UserPromptSubmit` anyway, but moving it here closes the gap within the same turn.
-3. Re-run step 6 of the load order for the new player (read their `CLAUDE.md`, `_about.md`, `persona.md`, `keepsake/current.md`, `examine/confirmed/current.md`, `niksis8_character/confirmed/current.md`).
-3. Check the new player's `quest-log/in-progress/`. If unfinished business → reconciliation prompt. If dwarf mode → task brief from principal.
-4. Acknowledge briefly and continue with the new player as active.
+3. **Comms hand-off.** If the outgoing actor posted an `OPEN` (or `UPDATE`) to `gielinor/comms/active.md` earlier this session and has not yet posted a `CLOSING`, post a `CLOSING` under their identity now — short body, one or two lines on what was completed and what's being handed off. Then re-run step 6.h–6.j of the load order for the new actor (sibling detection + comms read + new `OPEN`). The sibling detection re-read is cheap and catches any sibling who landed in the interval since the original respawn.
+4. Re-run step 6 of the load order for the new player (read their `CLAUDE.md`, `_about.md`, `persona.md`, `keepsake/current.md`, `examine/confirmed/current.md`, `niksis8_character/confirmed/current.md`).
+5. Check the new player's `quest-log/in-progress/`. If unfinished business → reconciliation prompt. If dwarf mode → task brief from principal.
+6. Acknowledge briefly and continue with the new player as active.
 
 Global identity (`examine/`, `niksis8/`, `keepsake/`) is already loaded from the original respawn — do not re-read.
 

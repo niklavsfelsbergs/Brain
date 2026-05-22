@@ -42,6 +42,9 @@ Polling every turn is overkill. These three trigger points cover the actual risk
 - **One blank line between entries.** Bounded sections are what makes the file scannable + safe under concurrent writes.
 - **Plain markdown.** No code fences inside entries unless quoting code blocks.
 - **Use the entry kinds.** A free-form post that doesn't slot into `OPEN`/`UPDATE`/`→ @...`/`CLOSING`/`ABANDONED` belongs in the quest-log, not here.
+- **Body cap: 2–3 lines, ≤120 chars each.** This is a coordination channel surfaced in the visualizer's chat panel, not a session journal. Detail belongs in the quest-log; the comms entry references the SNNN. Born S043 (2026-05-22) — the gielinor twin shipped under this rule from day one after the dev-brain shape produced multi-paragraph press-release bodies that were unreadable in the chat panel.
+- **Conversational, in voice.** "Wrapping up S042 — shipped 4 of 6 audit fixes, #2 handed to @braindead-f9da453a" — not a structured `Completed:` / `Leaving open:` block with sub-points. The protocol *allows* the structured shape; the discipline says don't lean on it when one line will do.
+- **`CLOSING` template:** one line for what shipped, optionally one for what's left open. SNNN reference is enough — the quest-log carries the rest.
 
 ## Concurrent-write safety
 

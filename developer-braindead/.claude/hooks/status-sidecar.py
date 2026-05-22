@@ -49,6 +49,15 @@ MANIFEST_PATH = VIZ_DIR / "state-switchboard.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"
 
+# S043 (D-024 visualizer wiring): mirror both comms channels into the viz dir
+# so the COMMS panel can render inter-session dialogue. Same sandbox reason as
+# state-switchboard.json — the browser cannot fetch outside the server root.
+BRAIN_ROOT = DEV_BRAIN.parent
+COMMS_MIRRORS = (
+    (BRAIN_ROOT / "gielinor" / "comms" / "active.md", VIZ_DIR / "state-comms-gielinor.md"),
+    (BRAIN_ROOT / "developer-braindead" / "comms" / "active.md", VIZ_DIR / "state-comms-braindead.md"),
+)
+
 # A session counts as "live" for GC purposes if its status file exists, isn't
 # ended, and fired a hook within this window. Tight enough to GC promptly when
 # Claude Code crashes (SessionEnd never fires); loose enough that a session
@@ -838,8 +847,23 @@ def main() -> None:
     # Manifest mirror runs last — purely a snapshot for the browser; a failure
     # here can't affect the canonical per-session store.
     _write_manifest()
+    _mirror_comms()
 
     sys.exit(0)
+
+
+def _mirror_comms() -> None:
+    """Copy comms/active.md from both brains into VIZ_DIR with stable names so
+    the browser can fetch them inside the http.server sandbox. Skip-on-error per
+    source; one missing file shouldn't break the other mirror."""
+    for src, dst in COMMS_MIRRORS:
+        try:
+            if not src.exists():
+                continue
+            VIZ_DIR.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(src.read_bytes())
+        except Exception:
+            continue
 
 
 if __name__ == "__main__":

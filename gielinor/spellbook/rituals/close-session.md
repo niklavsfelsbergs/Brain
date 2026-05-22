@@ -27,13 +27,13 @@ Each session that runs close-session gets a sequential ID: `S001`, `S002`, etc. 
 
 **Apply SNNN:**
 
-- A quest file that has **never been closed before** gets its SNNN prepended now (this is its birth-session ID). Filename: `S{NNN}_{YYYY-MM-DD}_{slug}.md`.
-- A quest file already carrying an SNNN keeps it. The SNNN identifies birth, not last touch.
+- A quest file that has **never been closed before** gets its SNNN prepended now (this is its birth-session ID). Filename: `S{NNN}_{sid8}_{slug}.md` per [[D-024]] (dev brain) — the `sid8` (first 8 chars of `CLAUDE_CODE_SESSION_ID`) disambiguates parallel-session SNNN-allocation races. Two sessions racing to S044 both succeed with different sid8 suffixes; SNNN drifts from unique-key to approximate-temporal-ordering, which is acceptable.
+- A quest file already carrying an SNNN keeps it. The SNNN identifies birth, not last touch. **Legacy filenames** (`S{NNN}_{YYYY-MM-DD}_{slug}.md` from before [[D-024]]) keep their existing shape — no renaming pass.
 - Files moved to `completed/` keep their birth-SNNN prefix.
 
 ## Steps
 
-For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-10.
+For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-11.
 
 ### 0. Spawn-decision — principal-self or gnome?
 
@@ -49,11 +49,11 @@ If any fires, spawn a **gnome** with the session-close brief:
 - Players in scope: all players with non-empty `quest-log/in-progress/`.
 - Inputs: which threshold(s) fired (turn count, players touched, drafts pending).
 
-The gnome runs steps 1–9 and returns the structured report (per `spellbook/skills/spawning-gnomes.md`). The principal reviews the report and approves any proposals before the session actually ends.
+The gnome runs steps 1–10 and returns the structured report (per `spellbook/skills/spawning-gnomes.md`). The principal reviews the report and approves any proposals before the session actually ends.
 
-If no threshold fires (light session — typically **< 10 turns AND read-only**), run steps 1–9 personally. Light closes stay with the principal so the procedure doesn't drift.
+If no threshold fires (light session — typically **< 10 turns AND read-only**), run steps 1–10 personally. Light closes stay with the principal so the procedure doesn't drift.
 
-Skip the special-case unscoped step 10 if a gnome ran the close — the gnome handles inbox writes via its own step coverage. If principal-self ran, step 10 below applies.
+Skip the special-case unscoped step 11 if a gnome ran the close — the gnome handles inbox writes via its own step coverage. If principal-self ran, step 11 below applies.
 
 ### 1. Reconcile pending actions
 
@@ -70,9 +70,9 @@ Anything that was drafted in conversation this session but isn't yet on disk:
 
 This closes the "chat-only state is volatile" gap. Drafts that exist only in conversation are lost on session close otherwise.
 
-### 3. Write resume state to `inventory/<quest-slug>-resume.md`
+### 3. Write resume state to `inventory/<quest-slug>-resume__<sid8>.md`
 
-**Per `gielinor/meta/layer-routing.md`, resume state lives in inventory, not in the quest log.** For each in-progress quest this player owns, write (or overwrite) `players/<active>/inventory/<quest-slug>-resume.md` with the next-session prompt:
+**Per `gielinor/meta/layer-routing.md`, resume state lives in inventory, not in the quest log.** For each in-progress quest this player owns, write (or overwrite) `players/<active>/inventory/<quest-slug>-resume__<sid8>.md` (where `<sid8>` is the first 8 chars of `CLAUDE_CODE_SESSION_ID`, per [[D-024]] dev brain) with the next-session prompt:
 
 - **Status:** explicit (`in-progress` or `done`).
 - **Where we are:** one sentence on current state.
@@ -80,11 +80,13 @@ This closes the "chat-only state is volatile" gap. Drafts that exist only in con
 - **Files / paths to read first:** bulleted, ordered by load priority.
 - **Pending drafts:** populated by step 2 if any.
 
-These sections are what `respawn.md`'s reconciliation prompt reads to surface the next move. The respawn ritual reads `inventory/*-resume.md` as the resume foreground; without this file, the next respawn has nothing to surface beyond the turn log.
+These sections are what `respawn.md`'s reconciliation prompt reads to surface the next move. The respawn ritual reads inventory files for the active player as the resume foreground; without this file, the next respawn has nothing to surface beyond the turn log.
 
 **Compact the quest log itself.** Strip any resume-state sections that historically lived at the top of the quest-log file (`Status`, `Where we are`, `Next concrete step`, `Files to read first`) — they belong in inventory now. The quest log keeps narrative + decisions + turn-by-turn log + Pending drafts (if any). Per-turn history is reference; the inventory file is foreground.
 
-**Migration note (sessions opened before 2026-05-21).** Existing in-progress quest files may carry the resume sections at the top. On the first close-session pass after 2026-05-21, lift those sections into a new `inventory/<quest-slug>-resume.md` file, then trim them from the quest log. One-time per quest.
+**Migration note (sessions opened before 2026-05-21).** Existing in-progress quest files may carry the resume sections at the top. On the first close-session pass after 2026-05-21, lift those sections into a new `inventory/<quest-slug>-resume__<sid8>.md` file, then trim them from the quest log. One-time per quest.
+
+**Migration note (sessions opened before [[D-024]], 2026-05-22).** Pre-existing `inventory/<quest-slug>-resume.md` files (no sid8 suffix) stay readable — respawn step 6.i treats them as own-session state. On the next close-session for that quest, write the suffixed shape `<quest-slug>-resume__<sid8>.md`; the unsuffixed predecessor can be moved to `inventory/archive/` once the suffixed version is the live resume surface.
 
 ### 4. Decide: continue or complete the **quest** (not the session)
 
@@ -152,13 +154,30 @@ If this session created any `examine/drafts/`, `niksis8/drafts/`, `niksis8_chara
 
 This is an additional surface event beyond what `meta/drafts-mechanics.md` already specs (`/drafts`, bankstanding, blocking action). Close-session is now a fourth.
 
-### 8. Commit
+### 8. Post `CLOSING` to `gielinor/comms/active.md`
+
+Per [[D-024]] (dev brain) and `comms/_about.md`. For each player who posted an `OPEN` (or `UPDATE`) earlier this session and has not yet posted a `CLOSING`, append now — one entry per actor identity that opened. Skip for Guthix consultation sessions that didn't open (consultation default is chat-only, no comms post). Header:
+
+```
+[YYYY-MM-DD HH:MM] <actor>-<sid8> CLOSING
+```
+
+Body:
+
+- `Completed:` — what shipped this session, in one or two lines.
+- `Leaving open:` — the carried-forward items (typically what step 3's inventory resume files describe in more detail).
+
+If the session opened multiple actors (mid-session player switch, mini-respawn), each one that has an unmatched `OPEN` gets its own `CLOSING`. The dev-brain twin runs the same step against its own `developer-braindead/comms/active.md`.
+
+If the session never posted an `OPEN` (trivially scoped — one-off read, no writes), skip this step. Don't post bare `CLOSING` entries with no matching open.
+
+### 9. Commit
 
 Always commit at session close (unless the working tree is genuinely clean — in which case skip and note it).
 
 **Pre-commit soft-block.** Before staging, run two checks:
 
-1. **Missing inventory resume files.** For each player with files in `quest-log/in-progress/`, confirm a matching `inventory/<quest-slug>-resume.md` exists and is non-empty. If any quest is missing its resume file, **do not auto-commit** — surface the gap, ask the principal whether to (a) write the missing resume file before commit, (b) commit anyway and flag it as deliberate, or (c) abandon the quest into `quest-log/archive/in-progress/`. This is the inventory-empty enforcement clause; it's a proposal-not-a-block (principal can override).
+1. **Missing inventory resume files.** For each player with files in `quest-log/in-progress/`, confirm a matching `inventory/<quest-slug>-resume__<sid8>.md` (or legacy `inventory/<quest-slug>-resume.md` for pre-[[D-024]] quests) exists and is non-empty. If any quest is missing its resume file, **do not auto-commit** — surface the gap, ask the principal whether to (a) write the missing resume file before commit, (b) commit anyway and flag it as deliberate, or (c) abandon the quest into `quest-log/archive/in-progress/`. This is the inventory-empty enforcement clause; it's a proposal-not-a-block (principal can override).
 2. **Orphan untracked quest-log files.** Run `git status --short gielinor/players/*/quest-log/ developer-braindead/quest-log/` and grep for lines starting with `??`. Untracked quest-log files are usually quest narratives written in prior sessions that close-session's `git add` missed — their content is already authoritative on disk but not versioned. **Surface these as part of this commit's scope** unless the principal explicitly excludes one. Born 2026-05-22 (S038) after a `git status` audit revealed `S031_*` and `S034_g2_*` had lived untracked for sessions.
 
 - **Stage scoped.** Prefer `git add gielinor/players/<name>/quest-log/ ...specific paths` over `git add -A`. Verify with `git status` before committing.
@@ -172,7 +191,7 @@ The principal has authorised the close-session commit by making it part of this 
 
 If the tree is clean — read-only session, audit, discussion — skip the commit silently and note "no commit; tree clean" in the close.
 
-### 9. State the close
+### 10. State the close
 
 One or two sentences back to the principal. Include:
 
@@ -182,9 +201,9 @@ One or two sentences back to the principal. Include:
 
 Then wait. The principal closes the conversation.
 
-### 10. Special case: unscoped session
+### 11. Special case: unscoped session
 
-If the session was unscoped (no player ever activated), there is no per-player quest-log to close. The agent writes a single entry to `players/inbox/S{NNN}_{YYYY-MM-DD}_unscoped.md` capturing what happened. Same SNNN rule. Bankstanding triages the inbox later.
+If the session was unscoped (no player ever activated), there is no per-player quest-log to close. The agent writes a single entry to `players/inbox/S{NNN}_{sid8}_unscoped.md` capturing what happened. Same SNNN rule. Bankstanding triages the inbox later. Skip step 8 — wisp sessions don't post to comms.
 
 ## Related
 

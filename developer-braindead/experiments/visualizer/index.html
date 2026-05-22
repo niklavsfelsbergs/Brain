@@ -235,7 +235,8 @@
   @keyframes fadeOut { from{opacity:1;} to{opacity:0;} }
 
   /* Intent speech bubbles (D-010) */
-  .speech-bubble { animation: bubbleIn 360ms ease-out; }
+  /* I3: bubble drop-shadow so the tan body reads on busy backgrounds. */
+  .speech-bubble { animation: bubbleIn 360ms ease-out; filter: drop-shadow(1.5px 2px 2.5px rgba(0,0,0,0.28)); }
   .speech-bubble.fade-out { animation: fadeOut 320ms ease-in forwards; }
   @keyframes bubbleIn {
     0%   { opacity: 0; transform-box: fill-box; }
@@ -409,6 +410,32 @@
     background: linear-gradient(180deg, #4a3520 0%, #2c1f10 100%);
     border: 1px solid #1a0f06;
   }
+  /* I2: jump-to-latest pip, surfaces when user scrolls up. Position covers the
+     scrollbar's lower edge so it's reachable without leaving the panel. */
+  .jump-latest {
+    position: absolute;
+    right: 14px;
+    bottom: 10px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px 4px;
+    font-family: 'VT323', monospace;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: #ffcb46;
+    background: #3a2812;
+    border: 1px solid #0a0604;
+    box-shadow: inset 1px 1px 0 #5a4126, inset -1px -1px 0 #1a0f06, 0 2px 4px rgba(0,0,0,0.4);
+    cursor: pointer;
+    user-select: none;
+    text-transform: uppercase;
+    line-height: 1;
+    transition: color 100ms, background 100ms;
+  }
+  .jump-latest:hover { color: #ffff7a; background: #4a3520; }
+  .jump-latest.visible { display: inline-flex; }
+  .jump-latest .arrow { font-weight: bold; }
   .log-entry {
     padding: 0 0 1px;
     color: #0a0604;
@@ -437,7 +464,7 @@
   .log-entry.narrate,
   .log-entry.system,
   .log-entry.read    { color: #4a3520; font-style: italic; }
-  .log-entry.commit  { color: #6e2c14; border-top: 1px dashed rgba(110,44,20,0.35); margin-top: 3px; padding-top: 3px; }
+  .log-entry.commit  { color: var(--commits-text); border-top: 1px dashed color-mix(in srgb, var(--commits-text) 35%, transparent); margin-top: 3px; padding-top: 3px; }
   .log-entry.session-start { color: #1e5a1e; font-weight: bold; margin-top: 4px; }
 
   /* ─── Live mode adjustments (D-009) ─── */
@@ -509,6 +536,22 @@
   .log-tab[data-tab="braindead"] .dot { background: var(--braindead-dot); color: var(--braindead-text); }
   .log-tab[data-tab="commits"]   .dot { background: var(--commits-dot);   color: var(--commits-text); }
   .log-tab.active .dot { box-shadow: 0 0 5px currentColor, inset 1px 1px 0 rgba(0,0,0,0.4); }
+  /* I4: unread badge on inactive filter tabs. */
+  .log-tab .tab-count {
+    display: none;
+    min-width: 14px;
+    padding: 0 4px;
+    margin-left: 2px;
+    font-size: 11px;
+    line-height: 13px;
+    font-weight: bold;
+    text-align: center;
+    color: #1a0f06;
+    background: #ffcb46;
+    border: 1px solid #1a0f06;
+    border-radius: 7px;
+  }
+  .log-tab .tab-count.has-unread { display: inline-block; }
 
   /* filter — hide non-matching entries when a filter is active */
   .log-scroll[data-filter="jebrim"]    .log-entry:not([data-speaker="jebrim"])    { display: none; }
@@ -974,6 +1017,7 @@
       </div>
     </header>
     <div class="log-scroll" id="logScroll"></div>
+    <button class="jump-latest" id="jumpLatest" type="button"><span class="arrow">↓</span><span id="jumpLatestCount">latest</span></button>
   </div>
 
   <div class="crumb">replay built from <span>git log</span> · iso projection · sessions S001–S007 + Q-007 · <span>experiments/visualizer</span></div>
@@ -2247,6 +2291,90 @@ const TOTAL_MS = 87000;
 const charactersLayer = document.getElementById('characters');
 const particlesLayer  = document.getElementById('particles');
 const logEl = document.getElementById('logScroll');
+const jumpLatestBtn = document.getElementById('jumpLatest');
+const jumpLatestCountEl = document.getElementById('jumpLatestCount');
+// I2: COMMS scroll-lock. When the user scrolls up to read history, suppress
+// the auto-pin-to-bottom behaviour so incoming lines don't yank them back.
+// Surface a "↓ N new" button that snaps to latest and clears the lock.
+let logScrollLocked = false;
+let logUnreadCount = 0;
+const LOG_BOTTOM_THRESHOLD = 12; // px slack: brief overscroll / fractional zoom
+function isLogAtBottom() {
+  return logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - LOG_BOTTOM_THRESHOLD;
+}
+function updateJumpLatestButton() {
+  if (!jumpLatestBtn) return;
+  if (logScrollLocked && logUnreadCount > 0) {
+    jumpLatestCountEl.textContent = `${logUnreadCount} new`;
+    jumpLatestBtn.classList.add('visible');
+  } else if (logScrollLocked) {
+    jumpLatestCountEl.textContent = 'latest';
+    jumpLatestBtn.classList.add('visible');
+  } else {
+    jumpLatestBtn.classList.remove('visible');
+  }
+}
+function scrollLogToLatest() {
+  logScrollLocked = false;
+  logUnreadCount = 0;
+  logEl.scrollTop = logEl.scrollHeight;
+  updateJumpLatestButton();
+}
+function appendLogEntry(li) {
+  logEl.appendChild(li);
+  while (logEl.childNodes.length > 400) logEl.removeChild(logEl.firstChild);
+  bumpTabUnread(li.getAttribute('data-speaker'));
+  if (logScrollLocked) {
+    logUnreadCount++;
+    updateJumpLatestButton();
+  } else {
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+}
+logEl.addEventListener('scroll', () => {
+  const wasLocked = logScrollLocked;
+  logScrollLocked = !isLogAtBottom();
+  if (wasLocked && !logScrollLocked) logUnreadCount = 0;
+  updateJumpLatestButton();
+});
+if (jumpLatestBtn) jumpLatestBtn.addEventListener('click', scrollLogToLatest);
+// I4: per-tab unread counters. When the COMMS panel is filtered to one speaker,
+// matching lines from other speakers are display:none — count them against
+// their tab so the operator sees activity without switching to look.
+const TAB_SPEAKERS = ['jebrim','zezima','dwarves','gnomes','wisp','braindead','commits'];
+const tabUnread = Object.fromEntries(TAB_SPEAKERS.map(s => [s, 0]));
+const tabBadges = {};
+document.querySelectorAll('.log-tab').forEach(tab => {
+  const speaker = tab.dataset.tab;
+  if (TAB_SPEAKERS.includes(speaker)) {
+    const badge = document.createElement('span');
+    badge.className = 'tab-count';
+    tab.appendChild(badge);
+    tabBadges[speaker] = badge;
+  }
+});
+function renderTabBadge(speaker) {
+  const badge = tabBadges[speaker];
+  if (!badge) return;
+  const n = tabUnread[speaker];
+  badge.textContent = n > 0 ? (n > 99 ? '99+' : String(n)) : '';
+  badge.classList.toggle('has-unread', n > 0);
+}
+function bumpTabUnread(speaker) {
+  if (!(speaker in tabUnread)) return;
+  const active = logEl.getAttribute('data-filter');
+  if (!active || active === speaker) return;
+  tabUnread[speaker]++;
+  renderTabBadge(speaker);
+}
+function clearTabUnread(speaker) {
+  if (speaker === 'all') {
+    for (const k of TAB_SPEAKERS) { tabUnread[k] = 0; renderTabBadge(k); }
+  } else if (speaker in tabUnread) {
+    tabUnread[speaker] = 0;
+    renderTabBadge(speaker);
+  }
+}
 const playBtn = document.getElementById('playPause');
 const scrub = document.getElementById('scrub');
 const sessionIdEl = document.getElementById('sessionId');
@@ -2685,7 +2813,13 @@ function updateFocalLabel(dur) {
 // ─────────────────────────────────────────────────────────────
 function setIntent(actor, text, instant=false) {
   text = (text || '').toString().trim();
-  if (!text) { clearIntent(actor, instant); return; }
+  // B4: sub-agent bubbles are task labels seeded on spawn and held until
+  // despawn — an empty setIntent for them is noise, not a clear signal.
+  // For players, an empty intent legitimately ends a narration.
+  if (!text) {
+    if (!isSubAgentActor(actor)) clearIntent(actor, instant);
+    return;
+  }
   if (!actorPositions[actor]) return;
   let entry = intents[actor];
   if (!entry) {
@@ -2730,9 +2864,13 @@ function renderIntent(actor) {
   const pos = actorPositions[actor];
   if (!pos) return;
   const text = entry.text || '';
+  // B8: width cap so a long line can't run off narrow viewports. wrapBubbleText
+  // already caps each line to 50 chars × 6.2px ≈ 310px + padding; this clamps
+  // the rendered rect even if a future wrap setting is wider.
+  const MAX_BUBBLE_W = 300;
   const lines = wrapBubbleText(text, 50);
   const longest = lines.reduce((m, s) => Math.max(m, s.length), 0);
-  const w = Math.max(54, longest * 6.2 + 14);
+  const w = Math.min(MAX_BUBBLE_W, Math.max(54, longest * 6.2 + 14));
   const lineH = 13;
   const padY = 4;
   const h = lines.length * lineH + padY * 2;
@@ -2779,9 +2917,7 @@ function logLine(msg, cls='', speaker='system') {
   // (replay's `t` never advances in live mode, so it would always read 00:00).
   const tStr = (LIVE && currentEventWallTime) ? formatWall(currentEventWallTime) : formatTime(t);
   li.innerHTML = `<span class="t">[${tStr}]</span>${escapeHtml(msg)}`;
-  logEl.appendChild(li);
-  logEl.scrollTop = logEl.scrollHeight;
-  while (logEl.childNodes.length > 400) logEl.removeChild(logEl.firstChild);
+  appendLogEntry(li);
   return li;
 }
 
@@ -2793,9 +2929,7 @@ function logChatLine(actor, body, cls='', speaker='system') {
   li.setAttribute('data-speaker', speaker);
   const tStr = (LIVE && currentEventWallTime) ? formatWall(currentEventWallTime) : formatTime(t);
   li.innerHTML = `<span class="t">[${tStr}]</span><span class="user">${escapeHtml(actor)}</span> ${escapeHtml(body)}`;
-  logEl.appendChild(li);
-  logEl.scrollTop = logEl.scrollHeight;
-  while (logEl.childNodes.length > 400) logEl.removeChild(logEl.firstChild);
+  appendLogEntry(li);
   return li;
 }
 
@@ -2803,7 +2937,17 @@ function logChatLine(actor, body, cls='', speaker='system') {
 // numbered instances. instanceKey() maps (actor, instance) to the state-map
 // key used in actorPositions / currentBuilding / intents — instance 1 keeps
 // the bare actor name so existing static-HTML lookups still resolve.
+// B7: explicit instance === 0 from the hook collides with the base actor and
+// races the static-HTML sprite. Warn once per actor so the upstream bug is
+// visible; coerce to 1 (the existing fall-back) so the render still happens.
+const _instanceZeroWarned = new Set();
 function instanceKey(actor, instance) {
+  if (instance === 0 || instance === '0') {
+    if (!_instanceZeroWarned.has(actor)) {
+      _instanceZeroWarned.add(actor);
+      console.warn(`[visualizer] received instance:0 for actor=${actor}; coercing to 1. Hook should emit instance >= 1.`);
+    }
+  }
   const n = +instance || 1;
   return n <= 1 ? actor : `${actor}-${n}`;
 }
@@ -2839,9 +2983,11 @@ function deriveSpeaker(msg) {
   // and silently drifted once nextId rolled past 3.
   if (/\bD\d+\b|dwarves?|\bspawning D/i.test(msg)) return 'dwarves';
   if (/\bG\d+\b|gnomes?|\bspawning G/i.test(msg)) return 'gnomes';
-  if (activePlayer) return activePlayer;
+  // S026 B3: dev-brain + unscoped are modes, not players. They outrank a stale
+  // activePlayer left over from a prior player session in the same replay.
   if (braindeadActive) return 'braindead';
   if (wispActive) return 'wisp';
+  if (activePlayer) return activePlayer;
   return 'system';
 }
 
@@ -3029,6 +3175,10 @@ function resetWorld() {
   setActivePlayer(null);
   updateFocalLabel();
   logEl.innerHTML = '';
+  logScrollLocked = false;
+  logUnreadCount = 0;
+  updateJumpLatestButton();
+  if (typeof clearTabUnread === 'function') clearTabUnread('all');
   cursor = 0;
   sessionIdEl.textContent = '—';
   sessionMetaEl.textContent = 'awaiting playback · press ▶';
@@ -3044,6 +3194,7 @@ function seekTo(newT) {
     applyEvent(EVENTS[cursor], true); cursor++;
   }
   t = newT; scrub.value = t; updateTicker();
+  updateDayNight();
 }
 
 function tick(now) {
@@ -3055,6 +3206,7 @@ function tick(now) {
       applyEvent(EVENTS[cursor], false); cursor++;
     }
     scrub.value = t; updateTicker();
+    if (!LIVE) updateDayNight();
   }
   requestAnimationFrame(tick);
 }
@@ -3093,6 +3245,7 @@ document.querySelectorAll('.log-tab').forEach(tab => {
     const v = tab.dataset.tab;
     if (v === 'all') logEl.removeAttribute('data-filter');
     else logEl.setAttribute('data-filter', v);
+    clearTabUnread(v);
   });
 });
 
@@ -3119,9 +3272,19 @@ const DAY_NIGHT_ANCHORS = [
   { h: 24, r:  60, g:  84, b: 138, a: 0.55 }, // wrap to midnight
 ];
 function lerp(a, b, t) { return a + (b - a) * t; }
+// Hour source differs by mode:
+//   live    → wall clock (the agent really is acting at this hour),
+//   replay  → timeline cursor mapped across TOTAL_MS as one virtual day,
+//             so scrub + autoplay walk the overlay through midnight → noon → dusk.
+function currentHour() {
+  if (LIVE) {
+    const now = new Date();
+    return now.getHours() + now.getMinutes() / 60;
+  }
+  return (t / TOTAL_MS) * 24;
+}
 function dayNightFill() {
-  const now = new Date();
-  const hour = now.getHours() + now.getMinutes() / 60;
+  const hour = currentHour();
   let lo = DAY_NIGHT_ANCHORS[0], hi = DAY_NIGHT_ANCHORS[DAY_NIGHT_ANCHORS.length - 1];
   for (let i = 0; i < DAY_NIGHT_ANCHORS.length - 1; i++) {
     if (hour >= DAY_NIGHT_ANCHORS[i].h && hour <= DAY_NIGHT_ANCHORS[i+1].h) {
@@ -3183,15 +3346,45 @@ if (LIVE) {
   let liveBytes = 0;
   let livePolling = false;
   let liveBootstrapped = false;   // first poll snaps to current state (no animation)
+  // B6: surface fetch/parse trouble. Counter for the brand subtitle; first
+  // few errors get console.warn so the operator can dig in.
+  let livePollErrors = 0;
+  let livePollErrorsLogged = 0;
+  function markLivePollError(err) {
+    livePollErrors++;
+    if (livePollErrorsLogged < 5) {
+      livePollErrorsLogged++;
+      console.warn('[visualizer] live poll error:', err);
+    }
+    const subEl = document.querySelector('.brand-text .sub');
+    if (subEl) subEl.textContent = `LIVE · poll error (${livePollErrors})`;
+  }
+  function clearLivePollError() {
+    if (livePollErrors === 0) return;
+    livePollErrors = 0;
+    const subEl = document.querySelector('.brand-text .sub');
+    if (subEl) subEl.textContent = 'LIVE · self-observation · ndjson stream';
+  }
 
   async function pollLive() {
     if (livePolling) return;
     livePolling = true;
     try {
       const res = await fetch('state.ndjson?_=' + Date.now(), {cache: 'no-store'});
-      if (!res.ok) return;
+      if (!res.ok) { markLivePollError(`HTTP ${res.status}`); return; }
+      clearLivePollError();
       const text = await res.text();
-      if (text.length <= liveBytes) {
+      // B5: detect state.ndjson truncation/rotation. If the file shrank the
+      // recorder reset (manual dev cleanup, log rotation, fresh harness boot);
+      // wipe the world and re-bootstrap from byte 0 so we don't silently swallow
+      // every subsequent event until the new file's length exceeds the old
+      // high-water mark.
+      if (text.length < liveBytes) {
+        resetWorld();
+        liveBytes = 0;
+        liveBootstrapped = false;
+      }
+      if (text.length === liveBytes) {
         liveBootstrapped = true;
         return;
       }
@@ -3219,8 +3412,10 @@ if (LIVE) {
             : 'live mode · polling state.ndjson';
         }
       }
-    } catch (_) {
-      // swallow — state.ndjson may not exist yet, or fetch may race the writer
+    } catch (err) {
+      // state.ndjson may not exist yet, or fetch may race the writer — surface
+      // via the brand subtitle badge and console.warn (first 5 errors only).
+      markLivePollError(err);
     } finally {
       livePolling = false;
     }

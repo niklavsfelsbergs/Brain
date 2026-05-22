@@ -14,10 +14,12 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Visualizer live-mode runtime state (D-009)
+# Visualizer live-mode runtime state (D-009, D-017, D-018)
 developer-braindead/experiments/visualizer/state.ndjson
 developer-braindead/experiments/visualizer/state-actors.json
 developer-braindead/experiments/visualizer/state-dwarves.json
+developer-braindead/experiments/visualizer/state-gnomes.json
+developer-braindead/experiments/visualizer/state-instances.json
 
 # Intent narration sidecars (D-010) — transient agent self-narration
 .claude/intent/*.txt

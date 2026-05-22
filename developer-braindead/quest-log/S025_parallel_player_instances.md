@@ -84,6 +84,21 @@ Principal hard-refreshed the visualizer mid-session and confirmed: second Jebrim
 - `developer-braindead/quest-log/S025_parallel_player_instances.md` (this file)
 - `developer-braindead/respawn.md` (updated at session close)
 
+## Tail observation — parallel-session git-index race
+
+This session's own commit got eaten by Jebrim's parallel session. While I was writing this quest-log entry, Jebrim's session ran a broad `git add` and then `git commit`, which swept up my dev-brain changes alongside his CSV-export work. The combined commit landed as `5ec5c4c "CSV export rework: unified helper + 9 new buttons (quest log)"`, which contains:
+
+- D-017's decision doc, hook changes, visualizer changes, settings.json, respawn.md update, AND this quest-log file (all mine)
+- Plus Jebrim's actual CSV export work in `gielinor/`
+
+The work is safely in the repo, just under a misleading commit message bundled with Jebrim's. No data loss.
+
+**The shape of this race.** D-017 fixed parallel-session visibility *in the visualizer*. It did **not** fix parallel-session interference *at the filesystem / git layer*. Two sessions sharing a working tree share a git index — whichever one calls `git add -A` first sweeps up everything that's staged and stages everything that isn't. The downstream `git commit` then captures whatever's in the index, regardless of authorship intent.
+
+**Worth recording as a `bank/decisions/` candidate at next bankstanding.** Likely shape: *parallel sessions should commit with explicit paths only, never `git add -A` / `git add .`*. The global CLAUDE.md already warns against `git add -A` for a different reason (sensitive file leakage); add this as a second reason. Or: each session writes to a worktree-isolated branch when running in parallel.
+
+**Companion observation about S025 specifically.** It mirrors S024's "watching-it-run finds bugs the audit-and-validate phase missed" pattern at a different layer. The D-017 design was rigorous about which actor owns which sprite — but said nothing about which session owns the git index. The blind spot was real and surfaced only on the commit attempt. Pattern: design docs scope to a layer; cross-layer races only become visible at integration time.
+
 ## Open follow-ups
 
 - Cross-instance dwarf delegation — when jebrim-1 spawns D1 and jebrim-2 spawns D2, the dwarves currently attribute to "jebrim" generically. First cut accepts this; revisit if the pattern matters for cross-reference reasoning.

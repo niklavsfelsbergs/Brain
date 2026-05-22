@@ -19,6 +19,7 @@ Dig through `bi-etl/dags/enterprise_silver/shipping_data_mart/` to extract opera
 - **Committed + pushed.** `picanova/bi-analytics@2406916` — "shipping-agent: data caveats from bi-etl harvest (S031)" (commit subject says S031 because SNNN wasn't computed yet at commit time; close-session resolved to S032).
 - **Late surface — agent hallucination.** Niklāvs pasted output from a running shipping-agent session that described itself with stale pre-cutover language ("silver-layer mart," "7 silver-layer mart tables," "Sendmoments" as entity scope, ORWO missing from priority list). Diagnosed: docs are clean (gold-explicit throughout); the agent freehand-generated from model prior despite docs being correct. Three options offered (re-trigger / harden §11 boot story / both). Parked.
 - **Close.** Niklāvs cued park + close. Next session = shipping-agent audit. Resume files for both quests written. Harvest skill draft captured in `spellbook/drafts/skills/`.
+- **Post-close — relocation.** After the first close commit (`e3ebdc9`), Niklāvs surfaced that NFE's `CLAUDE.md` was contaminating the running shipping-agent's context (root-cause of the hallucination diagnosis). Decision: move the agent out of NFE into a top-level GitHub folder. Copied `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/` → `Documents/GitHub/shipping-agent/`. Verified `.env`, `how_to.md`, reference files, personal folders all carried across. Old location still tracked in bi-analytics-main pending principal-authorized removal. Audit resume updated to point at the new location + carry the relocation action list (git init + GitHub remote + bi-analytics-main rm + scatter-file audit).
 
 ## Pending external actions
 
@@ -31,6 +32,7 @@ None pending. `bi-analytics-main` commit pushed (`2406916`).
 - **D3 — Caveat shape is "what the agent should communicate when answering."** Not "every defensive construct in SQL." The shipping-agent operates under a Direct/Decompose/Clarify mode framework with cost-basis and DQ-uncertainty disclosure rules — caveats had to fit that surface, not be raw mart trivia.
 - **D4 — Harvest stops at batch 2.** Batch 3 (cost_summary aggregation, truck_charges Variant B, post_processing UPDATEs) deferred. Coverage of high-leverage caveats was good enough; diminishing returns expected.
 - **D5 — Hallucination is its own category.** The observed mismatch between clean docs and stale agent output isn't a doc bug — it's an agent-behavior question that becomes part of the next quest's scope (audit).
+- **D6 — Relocate the agent out of NFE.** Post-close, Niklāvs traced the hallucination partly to NFE's `CLAUDE.md` getting walked into the agent's context. Decision: top-level `Documents/GitHub/shipping-agent/` (sibling to `bi-etl/`, `brain/`, `bi-analytics-main/`) — clean perimeter, no parent CLAUDE.md walk. Sibling-folder option chosen over "make it a Picanova repo today" because of close-session timing; repo init queued as a follow-up action on the audit resume.
 
 ## Pending drafts
 

@@ -30,3 +30,4 @@ When this quest is resumed:
 - **Don't re-run batch 1+2 caveats.** They're integrated. Re-route conflict check via grep before adding any new caveats.
 - **bi-etl repo cadence.** Pull `bi-etl` before resuming any SQL-level dig — the mart moves fast (per keepsake pin).
 - **Routing rule first.** Read `shipping-agent/reference/_about.md` before proposing any new docs. The routing rule was the load-bearing miss earlier in this quest.
+- **Agent location.** As of S032 close (2026-05-22), the agent lives at `Documents/GitHub/shipping-agent/` (relocated from `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/`). The bi-analytics-main commit `2406916` for batch 1+2 still lives at the old path in that repo's history; if reopening this quest after the old location is removed, point at the new path.

@@ -8,7 +8,7 @@ Niklāvs queued a general audit of the `shipping-agent/` package at the close of
 
 ## Location
 
-**The agent now lives at `Documents/GitHub/shipping-agent/`** (relocated at S032 close, 2026-05-22). The move was a copy — the old location at `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/` is **still present and tracked in bi-analytics-main**, pending principal-authorized removal. See *Pending actions* below.
+**The agent now lives at `Documents/GitHub/shipping-agent/`** (relocated at S032 close, 2026-05-22) and is its own git repo at **https://github.com/niklavsfelsbergs/shipping-agent** (initial commit `ba3d998` on `main`). The old location at `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/` is **still present and tracked in bi-analytics-main**, pending principal-authorized removal. See *Pending actions* below.
 
 ## Next concrete step
 
@@ -62,12 +62,19 @@ Don't propose fixes during pass 1 — that biases the reading. Pass 2 is where t
 
 ## Pending actions (from the relocation)
 
-These need to happen before or during the audit — non-blocking on the audit itself, but worth doing early:
+Done at S032 close (kept here for traceability — `~~strikethrough~~` = done):
 
-1. **Initialize the new location as a git repo.** `cd Documents/GitHub/shipping-agent && git init && git branch -M main`. Stage everything respecting `.gitignore` (personal folders + `.env` + cruft like `__pycache__`, loose CSVs at root, `data/`). First commit: `Initial commit — extracted from bi-analytics-main/NFE`.
-2. **Create the GitHub remote.** Suggested: `picanova/shipping-agent` (private). Empty repo on github.com, then `git remote add origin ... && git push -u origin main`.
-3. **Remove the old location from `bi-analytics-main`.** `git rm -r NFE/projects/3_shipping_data_mart/shipping-agent`, commit (`Move shipping-agent out to its own repo`), push. **Do this only after** the new repo is pushed and confirmed working, so there's no window where the agent has no canonical home.
-4. **Audit the new top level for leftover scatter.** The copy carried over `__pycache__/`, `data/`, `canvas_qty_cost.csv`, `fuel_share_3carriers.csv` at the package root — those are §8-violation files that should either be gitignored or relocated to `scratchpad/` before first commit. Per `how_to.md` §8 "Don't scatter files outside the personal folders."
+1. ~~**Initialize the new location as a git repo.**~~ DONE — `git init -b main`; initial commit `ba3d998`.
+2. ~~**Create the GitHub remote.**~~ DONE — repo at `niklavsfelsbergs/shipping-agent` (personal account, not Picanova org). Remote added, pushed.
+4. ~~**Audit the new top level for leftover scatter.**~~ DONE — added 4 entries to `.gitignore` (`.claude/settings.local.json` + `canvas_qty_cost.csv` + `fuel_share_3carriers.csv` + `data/`). All four were ad-hoc query outputs from before the workbench/ pattern was in force; kept local. The `data/cost_ratio_trend.sql` is well-formed and gold-schema-aware — flagged for possible promotion into `skills/` or `memory/` if it earns it during normal use.
+
+Still pending — principal-authorized when ready:
+
+3. **Remove the old location from `bi-analytics-main`.** `git rm -r NFE/projects/3_shipping_data_mart/shipping-agent`, commit (`Move shipping-agent out to its own repo`), push. **Safe to do now** — the new repo is pushed and working. Held only because it's a destructive action on a shared repo and the principal hasn't explicitly green-lit it.
+
+Possible audit-time consideration:
+
+- **Org vs personal account.** Repo lives at `niklavsfelsbergs/shipping-agent` (personal). If Picanova ownership matters (other analysts using it, succession, governance), transfer to the `picanova` org via GitHub settings → Transfer ownership. Low-priority unless the team grows around the tool.
 
 ## Birth-session SNNN
 

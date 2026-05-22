@@ -59,6 +59,16 @@
     --braindead-bandage: #d8c89c;
     --braindead-goggle: #cf9a2c;
     --braindead-hammer: #5a4530;
+    /* Guthix — S028 bankstanding deity. Forest-green palette, lore-aligned. */
+    --guthix-robe: #2f6a44;
+    --guthix-robe-dk: #143b22;
+    --guthix-robe-lt: #4e9968;
+    --guthix-trim: #d6c98b;
+    --guthix-skin: #d8b890;
+    --guthix-beard: #ecf2dc;
+    --guthix-staff: #6a4626;
+    --guthix-gem: #8af0c6;
+    --guthix-aura: #5fe0a4;
     /* Gnomes — housekeeper sub-agents. Distinct from dwarves: smaller body,
        tall pointy hat in cool tones (vs dwarves' warm tones), earth-tone vest,
        scroll instead of hammer. Three hat colors cycle by spawn order. */
@@ -79,6 +89,7 @@
     --gnomes-text: #5b3d6e;      --gnomes-dot: #c8a8e0;      --gnomes-swatch: #8b6caf;
     --wisp-text: #8a7020;        --wisp-dot: #fff4c8;
     --braindead-text: #1a6660;   --braindead-dot: #7fa6a0;
+    --guthix-text: #1f7045;      --guthix-dot: #8af0c6;     --guthix-swatch: #2f6a44;
     --commits-text: #6e2c14;     --commits-dot: #ff9344;
   }
 
@@ -261,6 +272,15 @@
   .wisp-glow { filter: url(#wispGlow); }
   @keyframes wisp-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);} }
   .wisp-bob { animation: wisp-float 2200ms ease-in-out infinite; }
+
+  /* S028: Guthix floats higher and slower than the wisp — gravity-defying
+     instead of restless. Deeper amplitude, deliberate pace; reads as
+     overseeing rather than darting. */
+  .guthix-glow { filter: url(#guthixGlow); }
+  @keyframes guthix-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+  .guthix-bob { animation: guthix-float 3800ms ease-in-out infinite; }
+  /* Guthix doesn't walk — suppress the step cycle even when .walking lands. */
+  .guthix-actor.walking .guthix-bob { animation: guthix-float 3800ms ease-in-out infinite; }
 
   .tower-aura { animation: aura 2600ms ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
   @keyframes aura { 0%,100%{opacity:0.35; transform:scale(1);} 50%{opacity:0.7; transform:scale(1.15);} }
@@ -456,6 +476,7 @@
   .log-entry[data-speaker="dwarves"]   .user { color: var(--dwarves-text); }
   .log-entry[data-speaker="wisp"]      .user { color: var(--wisp-text); }
   .log-entry[data-speaker="braindead"] .user { color: var(--braindead-text); }
+  .log-entry[data-speaker="guthix"]    .user { color: var(--guthix-text); }
   .log-entry[data-speaker="gnomes"]    .user { color: var(--gnomes-text); }
   /* Body text stays black for all chat lines */
   .log-entry.intent,
@@ -534,6 +555,7 @@
   .log-tab[data-tab="gnomes"]    .dot { background: var(--gnomes-dot);    color: var(--gnomes-text); }
   .log-tab[data-tab="wisp"]      .dot { background: var(--wisp-dot);      color: var(--wisp-text); }
   .log-tab[data-tab="braindead"] .dot { background: var(--braindead-dot); color: var(--braindead-text); }
+  .log-tab[data-tab="guthix"]    .dot { background: var(--guthix-dot);    color: var(--guthix-text); }
   .log-tab[data-tab="commits"]   .dot { background: var(--commits-dot);   color: var(--commits-text); }
   .log-tab.active .dot { box-shadow: 0 0 5px currentColor, inset 1px 1px 0 rgba(0,0,0,0.4); }
   /* I4: unread badge on inactive filter tabs. */
@@ -559,6 +581,7 @@
   .log-scroll[data-filter="dwarves"]   .log-entry:not([data-speaker="dwarves"])   { display: none; }
   .log-scroll[data-filter="wisp"]      .log-entry:not([data-speaker="wisp"])      { display: none; }
   .log-scroll[data-filter="braindead"] .log-entry:not([data-speaker="braindead"]) { display: none; }
+  .log-scroll[data-filter="guthix"]    .log-entry:not([data-speaker="guthix"])    { display: none; }
   .log-scroll[data-filter="commits"]   .log-entry:not([data-speaker="commits"])   { display: none; }
   .log-scroll[data-filter="gnomes"]    .log-entry:not([data-speaker="gnomes"])    { display: none; }
 
@@ -569,6 +592,7 @@
   .log-entry[data-speaker="wisp"]      .t::before { content: "● "; color: var(--wisp-text); }
   .log-entry[data-speaker="braindead"] .t::before { content: "● "; color: var(--braindead-text); }
   .log-entry[data-speaker="gnomes"]    .t::before { content: "● "; color: var(--gnomes-text); }
+  .log-entry[data-speaker="guthix"]    .t::before { content: "● "; color: var(--guthix-text); }
   .log-entry[data-speaker="commits"]   .t::before { content: "● "; color: var(--commits-text); }
 
   @media (max-width: 900px) {
@@ -638,6 +662,11 @@
           <!-- Wisp glow filter -->
           <filter id="wispGlow" x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <!-- S028 Guthix aura — gentler blur than wisp, layered behind the sprite. -->
+          <filter id="guthixGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2.2"/>
             <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
           <!-- Tower aura -->
@@ -852,6 +881,43 @@
             <line x1="-10.4" y1="3.5" x2="-8.5" y2="3.5" stroke="#3d597b" stroke-width="0.3"/>
           </g>
 
+          <!-- S028 Guthix — bankstanding deity. Hooded green robe, white beard,
+               wooden staff with green gem. Floats; no ground shadow. -->
+          <g id="guthix">
+            <!-- aura backdrop (rendered behind via feGaussianBlur filter) -->
+            <circle cx="0" cy="-4" r="17" fill="var(--guthix-aura)" opacity="0.10"/>
+            <circle cx="0" cy="-4" r="12" fill="var(--guthix-aura)" opacity="0.16"/>
+            <!-- robe outer silhouette: pointed hood tapering down -->
+            <polygon points="0,-20 -7.5,-9 -9.5,7 9.5,7 7.5,-9"
+                     fill="var(--guthix-robe)"
+                     stroke="var(--guthix-robe-dk)" stroke-width="0.5"/>
+            <!-- inner hood shadow (frames the face) -->
+            <polygon points="0,-16 -4.5,-9 4.5,-9" fill="var(--guthix-robe-dk)"/>
+            <!-- robe centre seam -->
+            <rect x="-0.6" y="-9" width="1.2" height="16" fill="var(--guthix-robe-dk)"/>
+            <!-- robe lighter highlight strips -->
+            <polygon points="-7.5,-9 -5.5,-9 -7.5,7 -9.5,7" fill="var(--guthix-robe-lt)" opacity="0.55"/>
+            <!-- robe bottom trim -->
+            <rect x="-9.5" y="5"   width="19" height="2" fill="var(--guthix-robe-dk)"/>
+            <rect x="-9.5" y="6.4" width="19" height="0.6" fill="var(--guthix-trim)"/>
+            <!-- face peek (in shadow) -->
+            <rect x="-2.2" y="-12.5" width="4.4" height="3.5" fill="var(--guthix-skin)"/>
+            <!-- glowing eyes (green) -->
+            <rect x="-1.8" y="-11" width="1.2" height="1" fill="var(--guthix-gem)"/>
+            <rect x="0.6"  y="-11" width="1.2" height="1" fill="var(--guthix-gem)"/>
+            <!-- beard hanging from face down to chest -->
+            <polygon points="-3,-9 -2.5,-3 -1,-1 1,-1 2.5,-3 3,-9"
+                     fill="var(--guthix-beard)"/>
+            <rect x="-1.2" y="-2" width="2.4" height="2" fill="var(--guthix-beard)"/>
+            <!-- staff (held in right hand, extends above and below body) -->
+            <rect x="9"   y="-15" width="1.4" height="22" fill="var(--guthix-staff)"/>
+            <rect x="9"   y="-15" width="1.4" height="1.4" fill="#4a3018"/>
+            <!-- staff orb (green gem with bright core) -->
+            <circle cx="9.7" cy="-16.5" r="2.2" fill="var(--guthix-gem)" opacity="0.55"/>
+            <circle cx="9.7" cy="-16.5" r="1.4" fill="var(--guthix-gem)"/>
+            <circle cx="9.4" cy="-16.8" r="0.6" fill="#ffffff" opacity="0.85"/>
+          </g>
+
         </defs>
 
         <!-- void backdrop (corners + bottom) -->
@@ -979,6 +1045,7 @@
         <div class="row"><span class="swatch" style="background:var(--gnomes-swatch)"></span> Gnomes — housekeeping sub-agents</div>
         <div class="row"><span class="swatch" style="background:var(--wisp-core)"></span> Wisp — unscoped/system</div>
         <div class="row"><span class="swatch" style="background:var(--braindead-robe)"></span> Braindead — dev-brain construction crew</div>
+        <div class="row"><span class="swatch" style="background:var(--guthix-swatch)"></span> Guthix — bankstanding deity</div>
       </div>
 
       <div class="bldg-tooltip" id="bldgTooltip"></div>
@@ -1013,6 +1080,7 @@
         <span class="log-tab"        data-tab="gnomes"  role="tab"><span class="dot"></span>GNOMES</span>
         <span class="log-tab"        data-tab="wisp"      role="tab"><span class="dot"></span>WISP</span>
         <span class="log-tab"        data-tab="braindead" role="tab"><span class="dot"></span>BRAINDEAD</span>
+        <span class="log-tab"        data-tab="guthix"    role="tab"><span class="dot"></span>GUTHIX</span>
         <span class="log-tab"        data-tab="commits"   role="tab"><span class="dot"></span>COMMITS</span>
       </div>
     </header>
@@ -2397,6 +2465,17 @@ let wispNode = null;
 let wispActive = false;
 let braindeadNode = null;
 let braindeadActive = false;
+let guthixNode = null;
+let guthixActive = false;
+
+// S028: actors that float above buildings instead of standing on them. Y-offset
+// from the building's stand point. moveActor honours this so a floater glides
+// between buildings without dropping to ground level.
+const ACTOR_Y_OFFSET = {
+  guthix: -48,
+};
+// S028: actors that don't walk — suppress the step animation + dust trail.
+const NON_WALKING_ACTORS = new Set(['guthix']);
 let currentSession = null;
 let dwarfCount = 0;
 let gnomeCount = 0;
@@ -2404,7 +2483,7 @@ let activePlayer = null;
 const actorPositions = {};
 const actorMoveTimers = {};
 const currentBuilding = {};
-const intents = {};   // actorKey -> {text, node}  (actorKey from instanceKey())
+const intents = {};   // actorKey -> {text, subtask, node}  (actorKey from instanceKey())
 const speechLayer = document.getElementById('speech-bubbles');
 // D-017: parallel-instance bookkeeping. instanceLastEventAt is keyed by the
 // same instanceKey() as actorPositions; updated on every event with an actor.
@@ -2448,31 +2527,36 @@ function moveActor(actorId, toKey, duration) {
   const b = STAND[toKey];
   if (!b) return;
   const j = jitter(actorId, toKey);
-  const tx = b.x + j.dx, ty = b.y + j.dy * 0.5;
-  const fromPos = actorPositions[actorId] || {x: b.x, y: b.y};
+  // S028: floaters glide above the building instead of standing on it. Y-offset
+  // applies on every move so the float position is preserved across hops.
+  const yOff = ACTOR_Y_OFFSET[actorId] || 0;
+  const tx = b.x + j.dx, ty = b.y + j.dy * 0.5 + yOff;
+  const fromPos = actorPositions[actorId] || {x: b.x, y: b.y + yOff};
   actorPositions[actorId] = {x: tx, y: ty};
 
   const el = document.getElementById('actor-' + actorId);
   if (!el) return;
 
   el.style.transition = `transform ${duration}ms cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
-  el.classList.add('walking');
-
-  const steps = Math.max(2, Math.floor(duration / 240));
-  for (let i = 1; i <= steps; i++) {
-    const frac = i / steps;
-    const dt = (i / steps) * duration;
-    setTimeout(() => {
-      spawnDust(
-        fromPos.x + (tx - fromPos.x) * frac,
-        fromPos.y + (ty - fromPos.y) * frac + 4
-      );
-    }, dt);
+  const nonWalker = NON_WALKING_ACTORS.has(actorId);
+  if (!nonWalker) {
+    el.classList.add('walking');
+    const steps = Math.max(2, Math.floor(duration / 240));
+    for (let i = 1; i <= steps; i++) {
+      const frac = i / steps;
+      const dt = (i / steps) * duration;
+      setTimeout(() => {
+        spawnDust(
+          fromPos.x + (tx - fromPos.x) * frac,
+          fromPos.y + (ty - fromPos.y) * frac + 4
+        );
+      }, dt);
+    }
+    if (actorMoveTimers[actorId]) clearTimeout(actorMoveTimers[actorId]);
+    actorMoveTimers[actorId] = setTimeout(() => {
+      el.classList.remove('walking');
+    }, duration);
   }
-  if (actorMoveTimers[actorId]) clearTimeout(actorMoveTimers[actorId]);
-  actorMoveTimers[actorId] = setTimeout(() => {
-    el.classList.remove('walking');
-  }, duration);
 
   el.setAttribute('transform', `translate(${tx},${ty})`);
 }
@@ -2626,6 +2710,9 @@ function ensureActorExists(actor, atKey, instance) {
   } else if (actor === 'wisp') {
     wispActive = true;
     spawnWisp({at: atKey || 'quest-hall'});
+  } else if (actor === 'guthix') {
+    guthixActive = true;
+    spawnGuthix({at: atKey || 'lorebook-library'});
   } else {
     // B10: unknown actor with no spawn path — bubbles/moves would otherwise
     // be dropped silently. Surface so adding a third player surfaces here
@@ -2743,6 +2830,37 @@ function despawnWisp() {
   delete actorPositions['wisp'];
 }
 
+// S028: Guthix the bankstanding deity. Spawn position floats high above the
+// chosen building (default lorebook-library — he surveys decisions). No ground
+// shadow on the sprite; the float keyframe + ACTOR_Y_OFFSET keep him airborne.
+function spawnGuthix(ev) {
+  const at = (ev && ev.at) || 'lorebook-library';
+  const b = STAND[at];
+  if (!b) return;
+  const yOff = ACTOR_Y_OFFSET['guthix'] || -48;
+  const x = b.x, y = b.y + yOff;
+  actorPositions['guthix'] = {x, y};
+  currentBuilding['guthix'] = at;
+  if (guthixNode) guthixNode.remove();
+  const g = document.createElementNS(svgNS, 'g');
+  g.setAttribute('class', 'actor guthix-actor fade-in');
+  g.setAttribute('id', 'actor-guthix');
+  g.setAttribute('data-actor', 'guthix');
+  g.setAttribute('transform', `translate(${x},${y})`);
+  g.style.transition = 'transform 2200ms cubic-bezier(0.55,0.05,0.45,0.95)';
+  g.innerHTML = `<g class="guthix-bob"><g class="guthix-glow"><use href="#guthix"/></g></g>`;
+  charactersLayer.appendChild(g);
+  guthixNode = g;
+}
+
+function despawnGuthix() {
+  if (!guthixNode) return;
+  guthixNode.classList.add('fade-out');
+  setTimeout(() => { if (guthixNode) guthixNode.remove(); guthixNode = null; }, 500);
+  delete actorPositions['guthix'];
+  delete currentBuilding['guthix'];
+}
+
 function setActivePlayer(p) {
   activePlayer = p;
   const j = document.getElementById('actor-jebrim');
@@ -2830,9 +2948,21 @@ function setIntent(actor, text, instant=false) {
       ? 'none'
       : 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95), opacity 360ms';
     speechLayer.appendChild(g);
-    entry = intents[actor] = {node: g};
+    entry = intents[actor] = {node: g, subtask: ''};
   }
   entry.text = text;
+  renderIntent(actor);
+}
+
+// S028: subtask is the hook-authored medium-cadence channel — natural-language
+// micro-step shown as a muted secondary line under the intent. Lives on the
+// same `intents[actor]` entry as the intent itself; no separate node. Drops
+// when the actor has no bubble (no intent yet) — subtask is a secondary
+// signal, not a bubble-creator.
+function setSubtask(actor, text) {
+  const entry = intents[actor];
+  if (!entry) return;
+  entry.subtask = text || '';
   renderIntent(actor);
 }
 
@@ -2864,23 +2994,36 @@ function renderIntent(actor) {
   const pos = actorPositions[actor];
   if (!pos) return;
   const text = entry.text || '';
+  const subtask = entry.subtask || '';
   // B8: width cap so a long line can't run off narrow viewports. wrapBubbleText
   // already caps each line to 50 chars × 6.2px ≈ 310px + padding; this clamps
   // the rendered rect even if a future wrap setting is wider.
   const MAX_BUBBLE_W = 300;
   const lines = wrapBubbleText(text, 50);
-  const longest = lines.reduce((m, s) => Math.max(m, s.length), 0);
+  // S028: subtask occupies line 2 only when intent fits on line 1. Intent wins
+  // ties because it carries the scope; if the agent wrote a verbose intent,
+  // they've already told you what's happening underneath.
+  let subtaskLine = '';
+  if (subtask && lines.length === 1) {
+    subtaskLine = subtask.length > 50 ? subtask.slice(0, 49) + '…' : subtask;
+  }
+  const renderedLines = subtaskLine ? [...lines, subtaskLine] : lines;
+  const longest = renderedLines.reduce((m, s) => Math.max(m, s.length), 0);
   const w = Math.min(MAX_BUBBLE_W, Math.max(54, longest * 6.2 + 14));
   const lineH = 13;
   const padY = 4;
-  const h = lines.length * lineH + padY * 2;
+  const h = renderedLines.length * lineH + padY * 2;
   const yOff = -34;        // above head, clears the focal label
   const half = w / 2;
   const topY = yOff - h;
   const baseY = topY + padY + 10;   // first-line baseline (font-size 11)
-  const tspans = lines.map((s, i) =>
-    `<tspan x="0" y="${baseY + i * lineH}">${escapeHtml(s)}</tspan>`
-  ).join('');
+  const tspans = renderedLines.map((s, i) => {
+    const isSubtask = !!subtaskLine && i === renderedLines.length - 1;
+    const styling = isSubtask
+      ? ` fill="rgba(31,21,12,0.58)" font-style="italic"`
+      : '';
+    return `<tspan x="0" y="${baseY + i * lineH}"${styling}>${escapeHtml(s)}</tspan>`;
+  }).join('');
   entry.node.setAttribute('transform', `translate(${pos.x},${pos.y})`);
   entry.node.innerHTML = `
     <rect x="${-half}" y="${topY}" width="${w}" height="${h}" rx="5" ry="5"
@@ -2974,7 +3117,7 @@ function speakerFor(id) {
   if (!id) return 'system';
   if (/^D\d+$/i.test(id)) return 'dwarves';
   if (/^G\d+$/i.test(id)) return 'gnomes';
-  if (['jebrim','zezima','wisp','braindead'].includes(id)) return id;
+  if (['jebrim','zezima','wisp','braindead','guthix'].includes(id)) return id;
   return 'system';
 }
 
@@ -2983,6 +3126,10 @@ function deriveSpeaker(msg) {
   // and silently drifted once nextId rolled past 3.
   if (/\bD\d+\b|dwarves?|\bspawning D/i.test(msg)) return 'dwarves';
   if (/\bG\d+\b|gnomes?|\bspawning G/i.test(msg)) return 'gnomes';
+  // S028: Guthix outranks all other modes when active — bankstanding is the
+  // top-level ritual, so its voice should not be shadowed by a stale braindead
+  // or activePlayer.
+  if (guthixActive) return 'guthix';
   // S026 B3: dev-brain + unscoped are modes, not players. They outrank a stale
   // activePlayer left over from a prior player session in the same replay.
   if (braindeadActive) return 'braindead';
@@ -3061,8 +3208,9 @@ function applyEvent(ev, instant=false) {
         const j = jitter(actorKey, ev.to);
         const el = document.getElementById('actor-' + actorKey);
         if (el && b) {
-          actorPositions[actorKey] = {x: b.x + j.dx, y: b.y + j.dy * 0.5};
-          setActorTransform(el, b.x + j.dx, b.y + j.dy * 0.5, false);
+          const yOff = ACTOR_Y_OFFSET[actorKey] || 0;
+          actorPositions[actorKey] = {x: b.x + j.dx, y: b.y + j.dy * 0.5 + yOff};
+          setActorTransform(el, b.x + j.dx, b.y + j.dy * 0.5 + yOff, false);
         }
         if (actorKey === activePlayer) updateFocalLabel();
       } else {
@@ -3074,9 +3222,11 @@ function applyEvent(ev, instant=false) {
       // old building while the sprite walks away.
       if (intents[actorKey]) renderIntent(actorKey);
       // D-014: muted-italic chat line on building change.
+      // S028: floaters drift instead of walking.
       {
         const label = (BUILDINGS[ev.to] && BUILDINGS[ev.to].label) || ev.to;
-        logLine(`* ${actorDisplayName(actorKey)} walks to ${label}`,
+        const verb = NON_WALKING_ACTORS.has(actorKey) ? 'drifts to' : 'walks to';
+        logLine(`* ${actorDisplayName(actorKey)} ${verb} ${label}`,
                 'narrate', speakerFor(ev.actor));
       }
       break;
@@ -3097,6 +3247,14 @@ function applyEvent(ev, instant=false) {
         logChatLine(actorDisplayName(actorKey), `${ev.verb} ${ev.target}`,
                     'action', speakerFor(ev.actor));
       }
+      break;
+    }
+    case 'subtask': {
+      // S028: medium-cadence micro-step. Updates the secondary bubble line
+      // only — does NOT append to COMMS (keeps chat as the audit-trail channel
+      // and avoids doubling content the action line already carries).
+      const actorKey = instanceKey(ev.actor, ev.instance);
+      if (ev.text) setSubtask(actorKey, ev.text);
       break;
     }
     case 'despawn-instance': {
@@ -3132,6 +3290,8 @@ function applyEvent(ev, instant=false) {
     case 'despawn-wisp': wispActive = false; clearIntent('wisp', instant); despawnWisp(); break;
     case 'spawn-braindead':   braindeadActive = true; spawnBraindead(ev); break;
     case 'despawn-braindead': braindeadActive = false; clearIntent('braindead', instant); despawnBraindead(); break;
+    case 'spawn-guthix':      guthixActive = true; spawnGuthix(ev); if (ev.intent) setIntent('guthix', ev.intent, instant); break;
+    case 'despawn-guthix':    guthixActive = false; clearIntent('guthix', instant); despawnGuthix(); break;
     case 'commit':       logLine(ev.msg, 'commit', 'commits'); break;
   }
 }
@@ -3149,6 +3309,8 @@ function resetWorld() {
   wispActive = false;
   if (braindeadNode) { braindeadNode.remove(); braindeadNode = null; delete actorPositions['braindead']; }
   braindeadActive = false;
+  if (guthixNode) { guthixNode.remove(); guthixNode = null; delete actorPositions['guthix']; }
+  guthixActive = false;
   Object.keys(intents).forEach(a => {
     intents[a].node.remove();
     delete intents[a];

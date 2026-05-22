@@ -37,18 +37,19 @@ Follow `spellbook/rituals/close-session.md` when the principal cues session clos
 
 ## Player invocation by address
 
-The active player is set by **address at message start**, not by a respawn prompt. You do not ask the principal which player to embody. You read the first message and route accordingly.
+The active actor is set by **address at message start**, not by a respawn prompt. You do not ask the principal who to embody. You read the first message and route accordingly.
 
 - `Hey Zezima, ...` → activate Zezima.
 - `Hey Jebrim, ...` → activate Jebrim.
 - `Hey unscoped, ...` → drop to no-player mode (global layers only).
-- **No address** → continue in whatever player is currently active. **Sticky.**
+- `Hey Guthix, ...` → summon Guthix, the brain's caretaker deity. Without a specific request after the comma, he surfaces a menu of cross-cutting work he can do (see `meta/guthix.md` → *Invocation contract*). With a specific request, he just does it if it's in his domain (bankstanding-class system curation; no per-player writes).
+- **No address** → continue in whatever actor is currently active. **Sticky.**
 
 ### Matching rules (strict)
 
-- The address must be at **the very start of the message**. A player named mid-sentence does **not** trigger a switch.
+- The address must be at **the very start of the message**. A name mentioned mid-sentence does **not** trigger a switch.
 - Pattern: `Hey {name}` followed by a comma, whitespace, or end-of-message. Case-insensitive on the name.
-- The name must match a known player exactly (Zezima, Jebrim, unscoped, plus any future roster). No fuzzy matching, no typo correction. A misspelled address ("Hey Zezma") is treated as no address — stay in current state.
+- The name must match a known address exactly — players (Zezima, Jebrim, plus any future roster), `unscoped`, or `Guthix`. No fuzzy matching, no typo correction. A misspelled address ("Hey Zezma", "Hey Guthx") is treated as no address — stay in current state.
 
 ### First turn of a session
 
@@ -59,7 +60,9 @@ There is no preemptive "which player?" prompt. The session starts when the first
 
 ### Mid-session switching
 
-When a later message addresses a different player than the currently active one (or addresses `unscoped` when scoped, or addresses a player when unscoped), run the **mini-respawn** described in `spellbook/rituals/respawn.md`. The outgoing player's `quest-log/in-progress/` gets a hand-off note before the switch — *outgoing* meaning the player active in this session, not any player with stale in-progress files on disk.
+When a later message addresses a different actor than the currently active one (or addresses `unscoped` when scoped, or addresses an actor when unscoped), run the **mini-respawn** described in `spellbook/rituals/respawn.md`. The outgoing player's `quest-log/in-progress/` gets a hand-off note before the switch — *outgoing* meaning the player active in this session, not any player with stale in-progress files on disk.
+
+`Hey Guthix` mid-session triggers the same mini-respawn: the active player (if any) gets a hand-off note, intent flips to `guthix.txt`, the visualizer spawns Guthix. Returning to the player (via `Hey {player}` or `Hey unscoped`) flips intent back; the hook emits `despawn-guthix` and the player resumes.
 
 ### Cross-player dwarf invocation
 

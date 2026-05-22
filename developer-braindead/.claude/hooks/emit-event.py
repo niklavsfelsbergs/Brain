@@ -36,6 +36,14 @@ INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 # construction crew — duplicate dev-brain sessions are weird; treat as 1.
 PLAYER_ACTORS = {"jebrim", "zezima"}
 
+# S028: any non-player actor that may carry a per-session intent-file suffix
+# (`<actor>-<sid8>.txt`). Players already get suffix stripping; these get it
+# too so the hook resolves the bare actor name regardless of which filename
+# variant the agent used. Pre-S028 fix: braindead-ed610cbe.txt was being
+# treated as a unique actor by the visualizer, so dev-brain bubbles never
+# rendered for sessions using the per-session filename pattern.
+NON_PLAYER_SUFFIX_ACTORS = {"braindead", "guthix", "wisp"}
+
 # Sub-agent kinds. spawn-time selection from tool_input.subagent_type; tool-call
 # attribution from payload.agent_type. Both reach into the same per-kind state
 # (id prefix, color palette, event names, chat speaker).
@@ -86,10 +94,18 @@ NARRATION_PATH = REPO_ROOT / ".claude" / "narration.txt"
 NARRATION_MAX_LEN = 200
 
 ACTION_TARGET_MAX = 80
+SUBTASK_MAX_LEN = 80
 
 ACTIVE_MODE_FRAGMENT = "/.claude/active-mode.txt"
 ACTIVE_MODE_PATH = REPO_ROOT / ".claude" / "active-mode.txt"
 DEV_BRAIN_MODE = "dev-brain"
+
+# S028: Guthix is the bankstanding deity. Appears when the agent writes intent
+# to guthix.txt; departs when intent flips back to a player/braindead/wisp or
+# the session ends. Session ownership tracked via _guthix_session_id in
+# state-actors.json (parallel to braindead's _mode_session_id).
+GUTHIX_ACTOR = "guthix"
+GUTHIX_DEFAULT_BUILDING = "lorebook-library"
 
 # Claude Code passes a stable UUID per top-level session in every hook payload.
 # We stamp it onto each emitted event so the recency walk can distinguish
@@ -352,9 +368,14 @@ def infer_dwarf_parent() -> tuple[str, str]:
     be this session's recent actor."""
     if is_dev_brain_session():
         return ("braindead", "braindead-workshop")
+    if is_guthix_session():
+        return (GUTHIX_ACTOR, GUTHIX_DEFAULT_BUILDING)
     actor, at = _walk_recent_actor(session_id=_SESSION_ID)
     if actor:
         return (actor, at or "quest-hall")
+    disk_actor = _session_actor_from_disk()
+    if disk_actor:
+        return (disk_actor, "quest-hall")
     actors = load_json(ACTORS_PATH, {})
     return ("wisp", get_actor_building(actors, "wisp", _SESSION_ID) or "quest-hall")
 
@@ -497,6 +518,47 @@ def is_dev_brain_session() -> bool:
     return actors.get("_mode_session_id") == _SESSION_ID
 
 
+def is_guthix_session() -> bool:
+    """S028: True when this hook invocation's session is currently bankstanding
+    (intent file is guthix.txt). Session-gated like is_dev_brain_session — a
+    parallel non-bankstanding session sharing this state.ndjson must not
+    re-attribute its own work to Guthix."""
+    if not _SESSION_ID:
+        return False
+    actors = load_json(ACTORS_PATH, {})
+    return actors.get("_guthix_session_id") == _SESSION_ID
+
+
+def _session_actor_from_disk() -> str | None:
+    """S028 follow-up: recover the session's actor by inspecting
+    `.claude/intent/<actor>-<sid8>.txt` on disk. The intent file outlives
+    state.ndjson, so this survives a live-mode truncation/reset cycle.
+
+    Returns the actor name if exactly one per-session intent file matches
+    this session's sid8 prefix; None otherwise. A session can only be in one
+    mode at a time, so multiple matches is anomalous — fall through to other
+    fallbacks rather than guess.
+
+    Sessions writing to bare `<actor>.txt` (no session suffix) are not
+    detectable here — bare files have no ownership and could be shared across
+    parallel sessions. The protocol mandates per-session naming for that
+    reason; see `gielinor/meta/communication-protocol.md`."""
+    if not _SESSION_ID:
+        return None
+    short = _SESSION_ID[:8]
+    intent_dir = REPO_ROOT / ".claude" / "intent"
+    if not intent_dir.exists():
+        return None
+    candidates = PLAYER_ACTORS | NON_PLAYER_SUFFIX_ACTORS | {GUTHIX_ACTOR}
+    matches = []
+    for actor in candidates:
+        if (intent_dir / f"{actor}-{short}.txt").exists():
+            matches.append(actor)
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
 def handle_active_mode_write(needle: str) -> bool:
     """If needle is .claude/active-mode.txt, detect mode transition and emit
     spawn-braindead / despawn-braindead as needed. Returns True if handled."""
@@ -602,6 +664,119 @@ def _pretty_target_path(fp: str) -> str:
     return Path(fp).name[:ACTION_TARGET_MAX]
 
 
+# Subtask channel (S028). The visualizer has two pre-existing channels feeding
+# the COMMS panel — intent (agent voice, slow, scope) and action (hook voice,
+# fast, raw tool call). The middle band is missing: when the agent doesn't
+# update intent for a stretch, the bubble freezes even while tool calls fire
+# underneath. `subtask` fills that gap — hook-authored, natural-language,
+# medium-cadence. Each tool call gets one subtask phrase synthesized from the
+# tool name + args; the visualizer renders it as a muted secondary line under
+# the intent.
+#
+# Debouncing lives in the visualizer (long-lived JS, real in-memory state) not
+# the hook (fresh process per tool call). Hook emits every call at full
+# fidelity; the visualizer drops bursts.
+
+BASH_SUBTASK_TABLE: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"^\s*git\s+(status|diff|log|show|blame)\b"), "checking git {verb}"),
+    (re.compile(r"^\s*git\s+add\b"),    "staging changes"),
+    (re.compile(r"^\s*git\s+commit\b"), "committing changes"),
+    (re.compile(r"^\s*git\s+push\b"),   "pushing changes"),
+    (re.compile(r"^\s*git\s+(pull|fetch)\b"), "{verb}ing from remote"),
+    (re.compile(r"^\s*git\b"),          "running git"),
+    (re.compile(r"^\s*(ls|cd|pwd|mkdir|cp|mv|rm)\b"), "navigating files"),
+    (re.compile(r"^\s*(cat|head|tail|less|more)\b"), "reading output"),
+    (re.compile(r"^\s*(python|python3|node|npm|yarn|pnpm|rg|jq|curl|wget|gh)\b"),
+        "running {tool}"),
+    (re.compile(r"^\s*echo\b"), "writing sidecar"),
+]
+
+
+def bash_subtask(cmd: str) -> str:
+    """Pattern-match the first verb of a Bash command to a natural-language
+    micro-step phrase. Falls back to a generic phrase rather than dumping the
+    raw command — that's the audit's deferred I12 ("action target
+    prettification") landing as foundation work for subtask."""
+    if not cmd:
+        return ""
+    for regex, template in BASH_SUBTASK_TABLE:
+        m = regex.search(cmd)
+        if not m:
+            continue
+        if "{verb}" in template:
+            return template.format(verb=m.group(1))
+        if "{tool}" in template:
+            return template.format(tool=m.group(1))
+        return template
+    return "running shell command"
+
+
+def _basename(p: str) -> str:
+    if not p:
+        return ""
+    return Path(p).name or p
+
+
+def _hostname(url: str) -> str:
+    if not url:
+        return ""
+    try:
+        from urllib.parse import urlparse
+        h = urlparse(url).hostname or ""
+        return h
+    except Exception:
+        return ""
+
+
+def subtask_for(tool_name: str, tool_input: dict) -> str:
+    """Synthesize a natural-language micro-step phrase from a tool call.
+    Returns '' when no useful phrase can be made."""
+    if tool_name == "Read":
+        return f"reading {_basename(tool_input.get('file_path') or '')}".strip()
+    if tool_name == "Edit":
+        return f"editing {_basename(tool_input.get('file_path') or '')}".strip()
+    if tool_name == "Write":
+        return f"writing {_basename(tool_input.get('file_path') or '')}".strip()
+    if tool_name == "MultiEdit":
+        return f"editing {_basename(tool_input.get('file_path') or '')}".strip()
+    if tool_name == "NotebookEdit":
+        return f"editing {_basename(tool_input.get('notebook_path') or '')}".strip()
+    if tool_name == "Glob":
+        pat = (tool_input.get("pattern") or "").strip()
+        return f"globbing `{pat}`" if pat else "globbing"
+    if tool_name == "Grep":
+        pat = (tool_input.get("pattern") or "").strip()
+        return f"searching for `{pat}`" if pat else "searching"
+    if tool_name == "Bash":
+        return bash_subtask((tool_input.get("command") or "").strip())
+    if tool_name in ("Task", "Agent"):
+        desc = (tool_input.get("description") or "").strip()
+        return f"spawning dwarf — {desc}" if desc else "spawning dwarf"
+    if tool_name == "WebFetch":
+        host = _hostname(tool_input.get("url") or "")
+        return f"fetching {host}" if host else "fetching a page"
+    if tool_name == "WebSearch":
+        q = (tool_input.get("query") or "").strip()
+        return f"searching: {q}" if q else "searching the web"
+    return ""
+
+
+def emit_subtask(wall: str, actor: str, tool_name: str, tool_input: dict) -> None:
+    """Append a `subtask` event to the stream. No-op when no actor or no
+    phrase can be synthesized."""
+    if not actor:
+        return
+    text = subtask_for(tool_name, tool_input)
+    if not text:
+        return
+    append({
+        "wallTime": wall, "source": "hook",
+        "type": "subtask",
+        "actor": actor,
+        "text": text[:SUBTASK_MAX_LEN],
+    })
+
+
 def action_verb_and_target(tool_name: str, tool_input: dict) -> tuple[str, str]:
     """D-014: map a tool call to a (verb, target) pair for the `action` event.
     Returns ("", "") for tools that should not emit (e.g., Read)."""
@@ -643,8 +818,13 @@ def current_main_actor() -> str:
     actor, _ = _walk_recent_actor(session_id=_SESSION_ID)
     if actor:
         return actor
+    disk_actor = _session_actor_from_disk()
+    if disk_actor:
+        return disk_actor
     if is_dev_brain_session():
         return "braindead"
+    if is_guthix_session():
+        return GUTHIX_ACTOR
     return "wisp"
 
 
@@ -697,13 +877,15 @@ def handle_bash(payload: dict) -> None:
         return
     sub, _st, _kind = attribute_to_subagent(payload)
     actor = sub["id"] if sub else current_main_actor()
+    wall = now_iso()
     append({
-        "wallTime": now_iso(), "source": "hook",
+        "wallTime": wall, "source": "hook",
         "type": "action",
         "actor": actor,
         "verb": verb,
         "target": target,
     })
+    emit_subtask(wall, actor, "Bash", tool_input)
 
 
 def handle_session_end(payload: dict) -> None:
@@ -713,6 +895,26 @@ def handle_session_end(payload: dict) -> None:
     sid = payload.get("session_id") or _SESSION_ID
     if not sid:
         return
+    # S028: if this session owned Guthix, fade him out cleanly. Without this,
+    # a bankstanding session that closes (rather than flipping intent back to
+    # a player) leaves the marker stale and the sprite persistent until idle
+    # despawn fires.
+    actors = load_json(ACTORS_PATH, {})
+    if actors.get("_guthix_session_id") == sid:
+        wall0 = now_iso()
+        append({
+            "wallTime": wall0, "source": "hook",
+            "type": "despawn-guthix",
+        })
+        append({
+            "wallTime": wall0, "source": "hook",
+            "type": "log",
+            "msg": "Guthix recedes — the brain is tended",
+            "cls": "session-start",
+            "speaker": "guthix",
+        })
+        actors.pop("_guthix_session_id", None)
+        save_json(ACTORS_PATH, actors)
     state = load_json(INSTANCES_PATH, {})
     wall = now_iso()
     matcher = payload.get("matcher") or payload.get("reason") or "other"
@@ -784,6 +986,56 @@ def _reemit_intent_after_move(actor: str, wall: str) -> None:
     })
 
 
+def _handle_guthix_lifecycle(actor: str) -> None:
+    """S028: emit spawn-guthix / despawn-guthix events around intent writes.
+    Called from handle_intent_write before the intent event is appended.
+
+    - intent for guthix in a session that wasn't bankstanding → spawn-guthix,
+      stamp _guthix_session_id.
+    - intent for any other actor in a session that was bankstanding → despawn-
+      guthix, clear _guthix_session_id.
+
+    Session-gated: only this session's transition fires events. A parallel
+    session whose intent file is bare guthix.txt would not also flip the
+    marker out from under THIS session."""
+    if not _SESSION_ID:
+        return
+    actors = load_json(ACTORS_PATH, {})
+    owner = actors.get("_guthix_session_id")
+    wall = now_iso()
+    if actor == GUTHIX_ACTOR and owner != _SESSION_ID:
+        # Newly arriving — spawn.
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "spawn-guthix",
+            "at": GUTHIX_DEFAULT_BUILDING,
+        })
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "log",
+            "msg": "Guthix descends to tend the brain",
+            "cls": "session-start",
+            "speaker": "guthix",
+        })
+        actors["_guthix_session_id"] = _SESSION_ID
+        save_json(ACTORS_PATH, actors)
+    elif actor != GUTHIX_ACTOR and owner == _SESSION_ID:
+        # Bankstanding ended in this session — despawn.
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "despawn-guthix",
+        })
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "log",
+            "msg": "Guthix recedes — the brain is tended",
+            "cls": "session-start",
+            "speaker": "guthix",
+        })
+        actors.pop("_guthix_session_id", None)
+        save_json(ACTORS_PATH, actors)
+
+
 def handle_intent_write(needle: str) -> bool:
     """If needle is .claude/intent/<actor>.txt or
     .claude/intent/<actor>-<sid>.txt, emit an intent event and return True.
@@ -806,12 +1058,21 @@ def handle_intent_write(needle: str) -> bool:
     base = name[:-4].strip().lower()
     if not base:
         return True
-    # Split off the per-session suffix when it follows a known player name.
+    # Split off the per-session suffix when it follows a known actor name.
+    # Covers PLAYER_ACTORS (jebrim, zezima) and NON_PLAYER_SUFFIX_ACTORS
+    # (braindead, guthix, wisp) — anything else stays as-is.
     actor = base
     if "-" in base:
         prefix, _ = base.rsplit("-", 1)
-        if prefix in PLAYER_ACTORS:
+        if prefix in PLAYER_ACTORS or prefix in NON_PLAYER_SUFFIX_ACTORS:
             actor = prefix
+    # S028: Guthix lifecycle runs BEFORE the intent event lands so the
+    # spawn-guthix event precedes the first intent — the visualizer needs the
+    # sprite to exist before the bubble attaches.
+    try:
+        _handle_guthix_lifecycle(actor)
+    except Exception as e:
+        print(f"emit-event: guthix lifecycle failed: {e}", file=sys.stderr)
     text = ""
     try:
         intent_path = REPO_ROOT / s
@@ -871,6 +1132,7 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
                 "verb": verb,
                 "target": target,
             })
+        emit_subtask(wall, sub["id"], tool_name, tool_input)
         return
 
     # Main-thread path — attribute to the active player as before.
@@ -881,6 +1143,8 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
     if actor == m.get("defaultActor", "wisp"):
         if is_dev_brain_session():
             actor = "braindead"
+        elif is_guthix_session():
+            actor = GUTHIX_ACTOR
         else:
             # Path didn't identify a player (wildcard glob like
             # `players/*/quest-log/*`, or a path outside any player root).
@@ -889,6 +1153,10 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
             recent, _ = _walk_recent_actor(session_id=_SESSION_ID)
             if recent:
                 actor = recent
+            else:
+                disk_actor = _session_actor_from_disk()
+                if disk_actor:
+                    actor = disk_actor
     actors = load_json(ACTORS_PATH, {})
     if get_actor_building(actors, actor, _SESSION_ID) != building:
         append({
@@ -909,6 +1177,7 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
             "verb": verb,
             "target": target,
         })
+    emit_subtask(wall, actor, tool_name, tool_input)
 
 
 def _subagent_default() -> dict:
@@ -1008,6 +1277,7 @@ def handle_task_pre(payload: dict) -> None:
         "cls": "system",
         "speaker": cfg["speaker"],
     })
+    emit_subtask(wall, parent, "Task", tool_input)
 
 
 def handle_task_post(payload: dict) -> None:

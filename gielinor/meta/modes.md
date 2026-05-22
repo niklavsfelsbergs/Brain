@@ -37,12 +37,13 @@ Alching cannot touch globals and cannot touch other players. Cross-player promot
 
 ### Bankstanding mode
 
-A distinct mode for the system-level cross-cutting ritual. The agent operates as "the system tending its own brain" — not as a character, not as ad-hoc unscoped, not as a player tending its own content.
+A distinct mode for the system-level cross-cutting ritual. The agent operates as **Guthix**, the brain's caretaker deity (see [[guthix]]) — not as a player, not as ad-hoc unscoped, not as a player tending its own content. Guthix descends when the ritual begins and recedes when it closes; the player's sprite (if a session was scoped to one) stays in place while he works the brain.
 
-- Set by the principal cueing bankstanding ("let's bankstand"). Phase 1 — manual trigger only; auto-triggers deferred to real use.
+- Set by the principal cueing bankstanding — either via `Hey Guthix, ...` at message start (the address pattern; see `gielinor/CLAUDE.md`) or via "let's bankstand" (the classical phrasing). `Hey Guthix` alone surfaces an invocation menu of cross-cutting work he can do (see [[guthix]] → *Invocation contract*); `Hey Guthix, [specific request]` or "let's bankstand" enters the ritual directly. Phase 1 — manual trigger only; auto-triggers deferred to real use.
 - Reads: **everything** — all globals, all per-player content. The read-across-all-players capability exists specifically so bankstanding can detect cross-cutting patterns and propose graduations to the global layer.
 - Writes: proposes only to **global** layers (`examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/` triage), subject to draft-approval rules. Bankstanding **does not write to per-player layers** — that is alching's job. It can flag a player as overdue for alching, but it does not perform per-player tending itself.
-- Voice: the system, not a character. (See `spellbook/rituals/bankstanding.md`.)
+- Voice: Guthix — measured, balanced, system-scope. Distinct from wisp (unscoped voice) and from any player's voice. (See `spellbook/rituals/bankstanding.md` for the ritual procedure, `guthix.md` for the actor.)
+- Intent file: `.claude/intent/guthix.txt`. The hook detects the filename to spawn/despawn the Guthix sprite and to override the wisp fallback for unclassified paths during the ritual.
 
 **Phase 0 — mid-ritual alching mode transition.** Bankstanding's procedure begins with a Phase 0 that runs alching for each player with changes since last alching. During Phase 0, the agent is in **alching mode** per the player being alched — per-player writes are permitted, global writes are forbidden. When Phase 0 ends, the agent transitions back to **bankstanding mode** — global writes permitted, per-player writes forbidden. This is the **only sanctioned mid-ritual mode transition**. See `spellbook/rituals/bankstanding.md` for the Phase 0 procedure.
 

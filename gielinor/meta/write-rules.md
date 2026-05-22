@@ -37,6 +37,8 @@ Three principal-only rituals each have a bounded write surface, layered on top o
 
 Dwarves can run none of these rituals. Gnomes can run **session-close**, **alching** (per-player), and **drafts-triage** when spawned by the principal at the ritual's step 0 spawn-decision; bankstanding stays principal-only at the top level (though it can spawn gnomes for its Phase 0 alching loop). See `modes.md` and `spellbook/skills/spawning-gnomes.md` for the gnome write surface and spawn heuristic.
 
+**Voice per ritual.** Bankstanding is performed in the voice of **Guthix**, the brain's caretaker deity (see [[guthix]]) — not the active player and not the wisp. Alching is performed in the voice of the active player. Session-close, drafts-triage, and respawn carry the voice of whichever actor is active when they run (the player, Braindead, or — if unscoped — wisp). Voice is orthogonal to write-reach; it determines the actor on whose intent file the agent speaks and which sprite the visualizer renders.
+
 ## What's enforced vs guided
 
 **Hooks enforce (architectural):**

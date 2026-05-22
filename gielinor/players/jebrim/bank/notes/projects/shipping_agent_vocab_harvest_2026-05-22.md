@@ -1,6 +1,8 @@
 # Shipping-agent vocab harvest — 2026-05-22 (S029)
 
-> Recon harvest from NFE + `shipping_topics/` for things to teach the shipping agent. Six trip-up rules + glossary + paste-ready proposal for `shipping-agent/reference/` and `how_to.md`. Sibling to [[shipping_mart_cost_vocabulary_2026-05-22]] and [[shipping_costs_monitoring_nextjs_vocab]].
+**As of:** 2026-05-22 (S029 — applied to shipping-agent same day).
+
+> Recon harvest from NFE + `shipping_topics/` for things to teach the shipping agent. Six trip-up rules + glossary + negative-space. Sibling to [[shipping_mart_cost_vocabulary_2026-05-22]] and [[shipping_costs_monitoring_nextjs_vocab]].
 
 **Source paths walked (via Explore dwarves):**
 
@@ -142,56 +144,9 @@ State these as "the agent should not lean on these framings" — they don't appe
 
 ---
 
-## § 4 — Proposal — text to apply to the shipping-agent docs
+## § 4 — Application status
 
-### A. Add to `how_to.md` §0 cross-cutting rules (six rules, paste-ready)
-
-> **N. TCG scope.** `TCG` means `source_system IN ('Picturator', 'PicaAPI')` — nothing else. PCS is cost-only with no revenue and small sample — do not report standalone. Rewallution is small PL dropshipping — surface only when explicitly asked. ORWO is a separate entity (acquired); never include in a TCG headline.
->
-> **N+1. Shipping cost excludes tax, customs, and duties.** Use `final_shipping_cost_eur` / `total_eur` — both already exclude `tax_eur` and `customs_duties_eur`. When pulling raw `fact_shipment_invoice_lines`, filter `charge_bucket NOT IN ('tax', 'customs_duties')`. The UPS `Manual Bill` / `838xxx` invoice stream is customs/duty/VAT recharges, NOT freight — already routed to the excluded buckets.
->
-> **N+2. `invoice_source` granularity.** `dhl_orwo` and `ups_orwo` are distinct invoice sources from `dhl` and `ups` — bulk-bill allocation, where one carrier invoice line splits across tied shipments. Group by `shipping_provider_group` for "what's <carrier> costing us." Group by `invoice_source` only for reconciliation, coverage, or invoice-completeness audits. Never filter `invoice_source = 'dhl'` and call it total DHL spend.
->
-> **N+3. `db_schenker` 100% unclassified by design.** DBS doesn't send consistent `charge_description`s; partial mapping was rejected in favor of conservative 100% unclassified bucketing. When asked, state the rule — this is a decision, not a defect.
->
-> **N+4. Oversize surcharge sub-types — heuristic by cost magnitude.** The mart does not distinguish between sub-types in `oversize_overweight_eur`. When asked which type a given surcharge is:
->
-> | Carrier | Surcharge magnitude | Likely sub-type |
-> |---|---|---|
-> | UPS | > €500 | Over max limits |
-> | UPS | > €100 | Large package |
-> | UPS | smaller | AHS / weight |
-> | Other | any | AHS / weight |
->
-> Flag the inference — this is guidance, not deterministic.
->
-> **N+5. `% invoiced` thresholds by recency.** Current month-to-date / current week: low `% invoiced` (e.g. 20–28%) is expected; carrier invoice lag is days-to-weeks. **Past 30 days from today:** if `% invoiced < ~95%` on the slice, treat as a coverage problem — investigate the wiring (missing `invoice_source`, ETL gap, classification miss). Don't flag a fresh window as defective.
-
-(Insertion point: §0 cross-cutting rules. Current numbering runs through rule 7 plus the §11 cost-basis rule from `shipping_mart_cost_vocabulary_2026-05-22`. These become rules 8–13 unless rules have been added since.)
-
-### B. Add to `reference/glossary.md` (or wherever team-vocabulary lives)
-
-Use the entries in § 2 above. Suggested grouping:
-
-- Corporate identity (TCG, ORWO, Picanova).
-- Source systems with surfacing rules (PCS, Rewallution).
-- Carriers / service tiers (FXEHD, FXESPPS, e-PAQ Elite DDP, OML, AHS).
-- Acronyms (MD, CMH, PHX, FIF Report, Manual Bill, Sperrgut).
-- ORWO product lines (DD Kalender, Premium Kalender, Digitaldruck).
-- Customers (tassenlibling, Rossmann, Pictrs, myposter, sendmoments).
-- Operational vocabulary (Variant B, Phase 0–5, feed freshness, promise flag, carrier shift, V1-stable/V1-active-build).
-
-### C. Add to `reference/` a `not-modeled.md` (negative space, optional)
-
-§ 3 above — the things the mart deliberately doesn't model. Saves the agent from leaning on framings (incoterms, returns, industry acronyms) that aren't in the data.
-
----
-
-## § 5 — Why this note exists in Jebrim's bank
-
-The six trip-ups and glossary are durable mart knowledge — Jebrim should know them as part of the shipping-mart vocabulary, alongside [[shipping_mart_cost_vocabulary_2026-05-22]] and [[shipping_costs_monitoring_nextjs_vocab]]. The proposal section is captured here because the shipping-agent docs can only be edited from `bi-analytics-main` — the next session in that repo applies it.
-
-Promote during alching when (a) the proposal has been applied to the shipping-agent docs and the trip-ups + glossary are the surviving content, or (b) the proposal sits unapplied long enough that Jebrim needs the vocabulary as durable knowledge regardless.
+Applied 2026-05-22 (S029) to `shipping-agent/how_to.md` §0 (rules 12–15 + rule 9 tightening) and `shipping-agent/reference/known-dq.md` (db_schenker section). Original proposal text in git history — commit `c48bac6` (bi-analytics-main).
 
 ## § 6 — Related
 

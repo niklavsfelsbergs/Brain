@@ -1,5 +1,7 @@
 # Shipping Data Mart — coverage audit (2026-05-21)
 
+**As of:** 2026-05-21 (S023 — pre-cutover, pulled costs from `fact_shipment_cost_summary.total_eur`. Cost-column wiring on `fact_shipments` landed 2026-05-22; re-verify holes against gold before quoting).
+
 **Source of truth (external):** `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/reference/coverage-audit.md` — durable mart-wide cost & revenue coverage matrix with regenerate-on-demand probes.
 
 **Quest:** S023 — `players/jebrim/quest-log/in-progress/S023_2026-05-21_shipping-mart-coverage-audit.md`.

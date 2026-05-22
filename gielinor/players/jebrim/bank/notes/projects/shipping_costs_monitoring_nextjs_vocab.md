@@ -1,6 +1,8 @@
 # Shipping Costs Monitoring (nextjs) — vocabulary
 
-> Drafted 2026-05-22 (S026). Term glossary for the `shipping_costs_monitoring_nextjs` app post-mart-cutover. The architecture lives in the app's own `CLAUDE.md` + `README.md`; this note pins the *language*. Deep references: `players/jebrim/quest-log/in-progress/S026_d{1,2,3}_*.md`.
+**As of:** 2026-05-22 (S026 — dashboard cutover branch in flight; re-verify cost-basis and alert wiring before quoting as canonical).
+
+> Term glossary for the `shipping_costs_monitoring_nextjs` app post-mart-cutover. The architecture lives in the app's own `CLAUDE.md` + `README.md`; this note pins the *language*. Deep references: `players/jebrim/quest-log/in-progress/S026_d{1,2,3}_*.md`.
 
 ## Routing
 

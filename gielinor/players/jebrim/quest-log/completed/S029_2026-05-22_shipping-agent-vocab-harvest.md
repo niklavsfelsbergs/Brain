@@ -3,9 +3,9 @@
 **Opened:** 2026-05-22, Jebrim active.
 **Ask:** "Dig through the NFE repo to pick up slang regarding shipping and some other interesting stuff. I'm looking for things I should teach the shipping agent."
 
-## Where we are
+## Status
 
-Recon complete. Synthesized into a single bank draft + paste-ready proposal text for the shipping-agent docs.
+**Closed** 2026-05-22 — vocab harvest landed, six trip-up rules applied to `shipping-agent/how_to.md`, db_schenker DQ note applied to `known-dq.md`, alching ritual run on Jebrim's full draft surface (16 items landed).
 
 ## Turn log
 
@@ -43,12 +43,28 @@ Recon complete. Synthesized into a single bank draft + paste-ready proposal text
   - Rule 15 added: oversize-surcharge sub-type heuristic (UPS >€500 / >€100 / smaller-or-other).
 - **T8.** Applied to `shipping-agent/reference/known-dq.md`:
   - New section: "Charge classification — `db_schenker` 100% `'unclassified'` by design." Stamped 2026-05-22.
+- **T9 (commit).** Brain `4647581` (S029 bank draft + quest-log) + bi-analytics-main `c48bac6` (shipping-agent rules) — both pushed.
+- **T10–T20 (alching).** Principal-self alching (gnome agent unavailable due to active-mode mismatch from parallel session). 13 pending drafts triaged:
+  - **Step 1 — identity drafts:** 6 promoted to confirmed (4 examine + 1 niksis8_character + 1 keepsake pin). 2 new meta-rules surfaced mid-pass and promoted (`drafts-need-lead-with-concrete-example`, `bank-notes-need-as-of-date`).
+  - **Step 2 — bank drafts:** 5/5 promoted with as-of stamps + applied-proposal sections trimmed.
+  - **Step 3 — quest-log compression:** no new bank candidates.
+  - **Step 3a — self-observation sweep:** at cap (4 meta-rules from mid-pass).
+  - **Step 4 — current.md budgets:** all under.
+  - **Step 5 — rejected/ patterns:** 2 niksis8_character rejections share layer-routing pattern → flagged for next bankstanding.
+  - **Step 6 — skill graduation:** 2/2 spellbook skill drafts promoted (`coverage-questions-time-and-source-axis`, `structural-restructure-mechanism-over-shape`).
+  - **Step 7 — `last-alched.md`** bumped to 2026-05-22.
+
+## Decisions made during alching
+
+- Drafting protocol formalized in `examine/confirmed/2026-05-22-drafts-need-lead-with-concrete-example.md`: drafts (a) lead with concrete BEFORE/AFTER example, (b) state rule in 1–3 sentences, (c) cap ~20 lines for confirmed entries, (d) when surfaced for review, follow fixed order: nutshell → recommendation+why → content → decide.
+- Bank notes need prominent `**As of:** YYYY-MM-DD` stamp at top — `examine/confirmed/2026-05-22-bank-notes-need-as-of-date.md`. Applied retroactively to all 5 bank drafts promoted this pass.
+- Quest-log presence rule refined from "always on turn 1" to "open or resume when substantive work crystallizes" (shape B over shape A) — `examine/confirmed/2026-05-21-quest-log-opening-when-work-is-in-additional-working-dir.md`.
 
 ## Open
 
 - ORWO trip-up parked, not lost — revisit once ORWO V1-active-build closes.
-- Shipping-agent edits are uncommitted in `bi-analytics-main` working tree. Commit + push happens in a bi-analytics session, not here.
-- Bank draft `shipping_agent_vocab_harvest_2026-05-22.md` § 4 proposal block now matches what's deployed — proposal section can be marked applied at next alching.
+- 2 niksis8_character rejections (`escalates-symptom-to-system`, `prefers-evidence-over-premature-infrastructure`) flagged for next bankstanding — both likely belong in global `niksis8/`, not Jebrim's character layer.
+- examine/confirmed/current.md and niksis8_character/confirmed/current.md are empty despite ~8 confirmed entries each — user-curated rollup; flagged for principal decision next session.
 
 ## Related
 

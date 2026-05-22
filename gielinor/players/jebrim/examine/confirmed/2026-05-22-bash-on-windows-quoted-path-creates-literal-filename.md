@@ -1,26 +1,19 @@
-# Bash echo + quoted Windows path = literal filename, not a write
+# Bash on Windows: quoted Windows path = literal filename
 
-**Anchor (S027, 2026-05-22).** Twice this session I tried to write the Jebrim intent sidecar using:
+## Before / after
 
-```bash
-echo "Drafting shipping cost vocab" > "C:\Users\niklavs.felsbergs\Documents\GitHub\brain\.claude\intent\jebrim.txt"
-```
+**Before (S027):** tried to write an intent sidecar with
 
-Bash on Windows (git-bash / cygwin layer) did not resolve the quoted Windows-style path to a Win32 filesystem path. Instead, the colon got encoded as Unicode U+F03A (private-use area), backslashes were preserved, and the whole string became a single literal filename at the **current working directory** — landing as `CUsersniklavs.felsbergsDocumentsGitHubbrain.claudeintentjebrim.txt` at the brain root rather than as `.claude/intent/jebrim.txt`.
+    echo "..." > "C:\Users\.../intent/jebrim.txt"
 
-The intended visualizer sidecar was never written; the bubble didn't update. The stray file then sat at brain root and the delete attempt was correctly blocked by `block-deletes.py` (architectural guarantee). Principal had to clean it up outside Claude.
+Bash didn't resolve the quoted Windows path. The colon got encoded as Unicode U+F03A, backslashes were preserved, and the whole string became a single literal filename at the current working directory — landing as `CUsersniklavs.felsbergs...intentjebrim.txt` at brain root instead of `.claude/intent/jebrim.txt`. The intent file never updated; principal had to clean up outside Claude.
+
+**After:** for any file write to a Windows path, use **Write** (clean — harness handles the path) or **PowerShell** (`Set-Content -LiteralPath "C:\..." -Value "..."`). Bash stays for genuinely POSIX work.
 
 ## The rule
 
-When writing intent sidecars (or any small file at a Windows path) from this brain's working directory, **do not use Bash `echo > "C:\..."`**. Use one of:
+Don't use `echo > "C:\..."` in Bash. Available ≠ preferred — the CLAUDE.md says "Shell: PowerShell; Bash also available," and the Bash path has a Windows-specific failure mode.
 
-- **Write tool** with the absolute path as `file_path`. Cleanest — the harness handles the path correctly.
-- **PowerShell** `Set-Content -LiteralPath "C:\..." -Value "..."` or `"text" | Out-File -LiteralPath "C:\..." -Encoding utf8`.
+## Anchor
 
-The pattern that *does* work in Bash on this machine is forward-slash + lowercase drive: `echo "x" > "/c/Users/.../intent/jebrim.txt"`. But it's quietly different from PowerShell semantics and easy to get wrong; the Write tool is the safer default.
-
-## Why this drafted as examine vs reference
-
-It's a self-observation about how I operate (tool selection, not knowledge about a thing). The CLAUDE.md preamble already says "Shell: PowerShell — Bash is also available via the Bash tool for POSIX scripts." The lesson is that "available" ≠ "preferred for Windows paths" — Bash should be reserved for genuinely POSIX-shape work, and file writes to Windows paths should go through Write or PowerShell.
-
-Promote on next examine review.
+S027, twice this session before the lesson stuck.

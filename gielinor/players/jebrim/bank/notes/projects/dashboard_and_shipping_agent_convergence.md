@@ -1,6 +1,8 @@
 # Shipping-costs dashboard ↔ shipping-agent — interrelation & convergence
 
-> Drafted 2026-05-22 (S026). How the two surfaces over the shipping data mart relate today, where they diverge, and the convergence directions Niklavs has affirmed.
+**As of:** 2026-05-22 (S026 — dashboard-side cutover in-progress; convergence directions open). Re-verify before relying on cost-basis alignment, coverage-hole-reporting status, or "long-term direction" framing.
+
+How the two surfaces over the shipping data mart relate today, where they diverge, and the convergence directions Niklavs has affirmed.
 
 ## The two surfaces
 

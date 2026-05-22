@@ -438,7 +438,8 @@ def gc_stale_subagents(kind: str) -> None:
     parallel session whose dwarves never returned cleanly still gets its
     leaked entries swept here even when this hook fires under a different
     session."""
-    STALE_SEC = 3600  # 1 hour
+    STALE_SEC = 3600     # foreground: 1 hour (PostToolUse never landed)
+    IDLE_BG_SEC = 300    # background: 5 min since last sub-agent activity
     cfg = ROLE_CONFIG[kind]
     st = load_json(cfg["state_path"], _subagent_default())
     by_session = st.get("bySession") or {}
@@ -455,17 +456,28 @@ def gc_stale_subagents(kind: str) -> None:
             continue
         stale = []
         for tui, entry in list(by_tui.items()):
-            wt = _parse_iso(entry.get("spawnedAt", ""))
+            spawned = _parse_iso(entry.get("spawnedAt", ""))
+            active = _parse_iso(entry.get("lastActiveAt", ""))
             # Entries without spawnedAt predate the B7 fix; treat them as fresh
             # on this pass (they'll be cleaned up next time once a fresh spawn
             # updates the file format, or by hand). Avoids a one-time GC storm.
-            if wt and (now - wt).total_seconds() > STALE_SEC:
-                stale.append((tui, entry))
+            if not spawned:
+                continue
+            # S028 follow-up: background tasks use a shorter idle threshold
+            # against last sub-agent activity. Foreground keeps the 1h
+            # never-landed-Post fallback. Use the freshest of (spawnedAt,
+            # lastActiveAt) so an active sub-agent stays alive regardless of
+            # how long ago it was spawned.
+            ref = active if (active and active > spawned) else spawned
+            background = bool(entry.get("background"))
+            threshold = IDLE_BG_SEC if background else STALE_SEC
+            if (now - ref).total_seconds() > threshold:
+                stale.append((tui, entry, background))
         if not stale:
             continue
         by_agent = sub.setdefault("byAgentId", {})
         pending = sub.setdefault("pendingAgentBind", [])
-        for tui, entry in stale:
+        for tui, entry, background in stale:
             by_tui.pop(tui, None)
             for aid, t in list(by_agent.items()):
                 if t == tui:
@@ -477,16 +489,21 @@ def gc_stale_subagents(kind: str) -> None:
                 "type": cfg["despawn_event"],
                 "id": entry["id"],
             })
+            reason = (
+                f"idle {IDLE_BG_SEC // 60}m (background)"
+                if background
+                else f"no PostToolUse, GC after {STALE_SEC // 60}m"
+            )
             append({
                 "wallTime": wall, "source": "hook",
                 "type": "log",
-                "msg": f"* {entry['id']} timed out (no PostToolUse, GC after {STALE_SEC // 60}m)",
+                "msg": f"* {entry['id']} timed out ({reason})",
                 "cls": "system",
                 "speaker": cfg["speaker"],
             })
             print(
                 f"emit-event: GC stale {kind} {entry['id']} "
-                f"(tool_use_id={tui}, session={sid})",
+                f"(tool_use_id={tui}, session={sid}, background={background})",
                 file=sys.stderr,
             )
         dirty = True
@@ -956,27 +973,41 @@ def _intent_file_candidates(actor: str, session_id: str | None) -> list[Path]:
     return out
 
 
+_STALE_INTENT_SEC = 300   # 5 minutes — intent files older than this are stale
+
+
 def _reemit_intent_after_move(actor: str, wall: str) -> None:
     """After a player actor moves, re-emit their current intent file content
     so the visualizer bubble reappears at the new building. The visualizer
     clears player intents on building change (clearIntent in move handler);
     without this, the bubble stays gone until the actor's next intent write,
-    which can be a long silence while the actor is actively running tools."""
+    which can be a long silence while the actor is actively running tools.
+
+    S028 follow-up: skip the re-emit when the intent file is stale (older
+    than _STALE_INTENT_SEC). Otherwise a bare-file intent set hours ago by a
+    long-gone session keeps getting resurrected on every move event from
+    *other* sessions sharing the file (e.g., wisp.txt is shared across all
+    unscoped sessions). The bubble locks on the old text indefinitely. With
+    the staleness check, an abandoned intent ages out naturally."""
+    import time
     name = (actor or "").strip().lower()
     if not name:
         return
     text = ""
+    fresh = False
     for p in _intent_file_candidates(name, _SESSION_ID):
         if not p.exists():
             continue
         try:
+            age = time.time() - p.stat().st_mtime
             raw = p.read_text(encoding="utf-8").strip()
         except Exception:
             continue
         if raw:
             text = raw.splitlines()[0].strip()
+            fresh = age <= _STALE_INTENT_SEC
             break
-    if not text:
+    if not text or not fresh:
         return
     append({
         "wallTime": wall, "source": "hook",
@@ -1249,9 +1280,22 @@ def handle_task_pre(payload: dict) -> None:
     # D-018: per-session binding registries — pendingAgentBind for THIS session
     # is the only queue eligible to claim THIS session's first sub-call.
     sub = _session_substate(st, _SESSION_ID)
+    # S028 follow-up: detect run_in_background. Background Task calls return
+    # the handle to the parent immediately, so PostToolUse fires ~300ms after
+    # PreToolUse — long before the sub-agent's actual work completes. If we
+    # despawn on Post for these, the sprite vanishes before the visualizer's
+    # 1800ms fade-in animation finishes; the dwarf is invisible. Flag the
+    # spawn so handle_task_post skips the despawn and the 1h GC handles
+    # cleanup instead.
+    background = bool(
+        tool_input.get("run_in_background")
+        or tool_input.get("runInBackground")
+    )
     # B7: spawnedAt is the GC anchor; used by gc_stale_subagents to find
     # entries whose PostToolUse never landed.
     entry = {"id": sub_id, "color": color, "at": at, "spawnedAt": now_iso()}
+    if background:
+        entry["background"] = True
     if tool_use_id:
         sub["byToolUseId"][tool_use_id] = entry
         # Queue this spawn so the first sub-call carrying `agent_id` can claim
@@ -1290,6 +1334,15 @@ def handle_task_post(payload: dict) -> None:
     gc_stale_subagents(kind)
     st = load_json(cfg["state_path"], _subagent_default())
     sub = _session_substate(st, _SESSION_ID)
+
+    # S028 follow-up: for background tasks the Post fires when the parent gets
+    # its handle back, not when the sub-agent's actual work completes. Peek at
+    # the entry first; if it's flagged background, leave it in place and skip
+    # the despawn — the 1h gc_stale_subagents sweep will clean it eventually.
+    if tool_use_id and tool_use_id in sub["byToolUseId"]:
+        peek = sub["byToolUseId"].get(tool_use_id)
+        if peek and peek.get("background"):
+            return
 
     entry = None
     if tool_use_id and tool_use_id in sub["byToolUseId"]:
@@ -1393,6 +1446,18 @@ def attribute_to_subagent(payload: dict):
             file=sys.stderr,
         )
         return None, None, None
+    # S028 follow-up: stamp last-activity so the idle-despawn GC can find
+    # background sub-agents that have gone quiet. Persisted so the next hook
+    # invocation reads it. Cheap — single write per sub-agent tool call.
+    entry["lastActiveAt"] = now_iso()
+    save_json(cfg["state_path"], st)
+    # Also fire the idle sweep so a long-running session whose Tasks all
+    # already despawned doesn't hold zombie background entries forever.
+    # Cheap because gc_stale_subagents walks one role's state only.
+    try:
+        gc_stale_subagents(kind)
+    except Exception as e:
+        print(f"emit-event: gc from attribute failed: {e}", file=sys.stderr)
     return entry, st, kind
 
 
@@ -1409,6 +1474,17 @@ def main() -> None:
 
     tool_name = payload.get("tool_name", "")
     hook_event = payload.get("hook_event_name", "")
+
+    # S028 follow-up: idle-despawn sweep runs on every hook invocation, not
+    # just sub-agent activity. Without this, a session whose dwarves all
+    # finish and then does plain Edit/Bash/Read work would never trigger a
+    # GC pass — idle background dwarves (and their bubbles) would linger
+    # indefinitely. Cheap: two state-file reads per hook fire.
+    for _kind in ROLE_CONFIG:
+        try:
+            gc_stale_subagents(_kind)
+        except Exception as e:
+            print(f"emit-event: top-level gc {_kind} failed: {e}", file=sys.stderr)
 
     # D-017: SessionEnd is a best-effort signal that fires on graceful exits
     # (prompt_input_exit, clear, resume, logout, other matchers). NOT

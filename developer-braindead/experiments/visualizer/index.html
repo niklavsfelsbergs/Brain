@@ -2476,6 +2476,52 @@ const ACTOR_Y_OFFSET = {
 };
 // S028: actors that don't walk — suppress the step animation + dust trail.
 const NON_WALKING_ACTORS = new Set(['guthix']);
+
+// S028 follow-up: gather slots — actors at the same building cluster instead
+// of overlapping. Each actor takes a slot at arrival; existing residents keep
+// their slots, so the cluster grows outward as more actors gather. Slot 0 is
+// the canonical stand point; subsequent slots fan out around it in iso-aware
+// proportions (wider horizontal than vertical because the world is iso-tilted).
+const GATHER_SLOTS = [
+  // dx/dy: sprite position offset from STAND. bubbleY: vertical offset for
+  // this slot's speech bubble (more negative = higher above head). Back-row
+  // slots get higher bubbles so the cluster's bubbles fan upward instead of
+  // stacking on top of each other.
+  { dx: 0,    dy: 0,    bubbleY: -34 },  // 0: center
+  { dx: -34,  dy: 8,    bubbleY: -34 },  // 1: front-left
+  { dx: 34,   dy: 8,    bubbleY: -34 },  // 2: front-right
+  { dx: -22,  dy: -14,  bubbleY: -56 },  // 3: back-left (higher bubble)
+  { dx: 22,   dy: -14,  bubbleY: -56 },  // 4: back-right (higher bubble)
+  { dx: -58,  dy: -2,   bubbleY: -42 },  // 5: far-left
+  { dx: 58,   dy: -2,   bubbleY: -42 },  // 6: far-right
+  { dx: 0,    dy: -24,  bubbleY: -72 },  // 7: directly back (highest bubble)
+  { dx: -46,  dy: 14,   bubbleY: -28 },  // 8: front-far-left (lower bubble)
+  { dx: 46,   dy: 14,   bubbleY: -28 },  // 9: front-far-right
+];
+const actorSlot = {};  // actorKey -> slot index at current building
+
+function assignGatherSlot(actorKey, atKey) {
+  // Free any prior slot — the actor is arriving fresh.
+  delete actorSlot[actorKey];
+  // Find which slots are taken at this building by other actors.
+  const occupied = new Set();
+  for (const k of Object.keys(currentBuilding)) {
+    if (k !== actorKey && currentBuilding[k] === atKey && actorSlot[k] !== undefined) {
+      occupied.add(actorSlot[k]);
+    }
+  }
+  // Take the lowest free slot. If we somehow exceed the table size, wrap —
+  // visible overlap at 10+ actors per building is acceptable degradation.
+  let slot = 0;
+  while (occupied.has(slot)) slot++;
+  actorSlot[actorKey] = slot;
+  const def = GATHER_SLOTS[slot % GATHER_SLOTS.length] || GATHER_SLOTS[0];
+  return { dx: def.dx, dy: def.dy };
+}
+
+function freeGatherSlot(actorKey) {
+  delete actorSlot[actorKey];
+}
 let currentSession = null;
 let dwarfCount = 0;
 let gnomeCount = 0;
@@ -2526,7 +2572,7 @@ function setActorTransform(el, x, y, withTransition=true) {
 function moveActor(actorId, toKey, duration) {
   const b = STAND[toKey];
   if (!b) return;
-  const j = jitter(actorId, toKey);
+  const j = assignGatherSlot(actorId, toKey);
   // S028: floaters glide above the building instead of standing on it. Y-offset
   // applies on every move so the float position is preserved across hops.
   const yOff = ACTOR_Y_OFFSET[actorId] || 0;
@@ -2576,7 +2622,8 @@ function spawnDust(x, y) {
 
 function spawnDwarf(ev) {
   const b = STAND[ev.at];
-  const j = jitter(ev.id, ev.at);
+  currentBuilding[ev.id] = ev.at;
+  const j = assignGatherSlot(ev.id, ev.at);
   const x = b.x + j.dx, y = b.y + j.dy * 0.5;
   actorPositions[ev.id] = {x, y};
 
@@ -2624,13 +2671,16 @@ function despawnDwarf(id) {
   setTimeout(() => entry.node.remove(), 500);
   delete dwarfNodes[id];
   delete actorPositions[id];
+  delete currentBuilding[id];
+  freeGatherSlot(id);
   dwarfCount = Math.max(0, dwarfCount - 1);
   updateTicker();
 }
 
 function spawnGnome(ev) {
   const b = STAND[ev.at];
-  const j = jitter(ev.id, ev.at);
+  currentBuilding[ev.id] = ev.at;
+  const j = assignGatherSlot(ev.id, ev.at);
   const x = b.x + j.dx, y = b.y + j.dy * 0.5;
   actorPositions[ev.id] = {x, y};
 
@@ -2685,6 +2735,8 @@ function despawnGnome(id) {
   setTimeout(() => entry.node.remove(), 500);
   delete gnomeNodes[id];
   delete actorPositions[id];
+  delete currentBuilding[id];
+  freeGatherSlot(id);
   gnomeCount = Math.max(0, gnomeCount - 1);
   updateTicker();
 }
@@ -2740,10 +2792,10 @@ function spawnPlayerInstance(actor, instance, at) {
   if (document.getElementById('actor-' + actorKey)) return;
   const atKey = at || currentBuilding[actor] || 'inbox-square';
   const b = STAND[atKey] || STAND['inbox-square'];
-  const j = jitter(actorKey, atKey);
+  currentBuilding[actorKey] = atKey;
+  const j = assignGatherSlot(actorKey, atKey);
   const x = b.x + j.dx, y = b.y + j.dy * 0.5;
   actorPositions[actorKey] = {x, y};
-  currentBuilding[actorKey] = atKey;
   const tintClass = `tint-${((inst - 2) % 3) + 2}`;   // tint-2, tint-3, tint-4 cycle
   const g = document.createElementNS(svgNS, 'g');
   g.setAttribute('class', `actor player parallel-instance ${tintClass} fade-in`);
@@ -2778,16 +2830,17 @@ function despawnPlayerInstance(actorKey) {
   delete actorPositions[actorKey];
   delete currentBuilding[actorKey];
   delete instanceLastEventAt[actorKey];
+  freeGatherSlot(actorKey);
   clearIntent(actorKey, true);
 }
 
 function spawnBraindead(ev) {
   const at = ev.at || 'braindead-workshop';
   const b = STAND[at] || STAND['braindead-workshop'];
-  const j = jitter('braindead', at);
+  currentBuilding['braindead'] = at;
+  const j = assignGatherSlot('braindead', at);
   const x = b.x + j.dx, y = b.y + j.dy * 0.5;
   actorPositions['braindead'] = {x, y};
-  currentBuilding['braindead'] = at;
   if (braindeadNode) braindeadNode.remove();
   const g = document.createElementNS(svgNS, 'g');
   g.setAttribute('class', 'actor braindead-actor fade-in');
@@ -2806,17 +2859,21 @@ function despawnBraindead() {
   setTimeout(() => { if (braindeadNode) braindeadNode.remove(); braindeadNode = null; }, 500);
   delete actorPositions['braindead'];
   delete currentBuilding['braindead'];
+  freeGatherSlot('braindead');
 }
 
 function spawnWisp(ev) {
   const b = STAND[ev.at];
-  actorPositions['wisp'] = {x: b.x, y: b.y - 36};
+  currentBuilding['wisp'] = ev.at;
+  const j = assignGatherSlot('wisp', ev.at);
+  const x = b.x + j.dx, y = b.y + j.dy * 0.5 - 36;
+  actorPositions['wisp'] = {x, y};
   if (wispNode) wispNode.remove();
   const g = document.createElementNS(svgNS, 'g');
   g.setAttribute('class', 'actor wisp-actor fade-in');
   g.setAttribute('id', 'actor-wisp');
   g.setAttribute('data-actor', 'wisp');
-  g.setAttribute('transform', `translate(${b.x},${b.y - 36})`);
+  g.setAttribute('transform', `translate(${x},${y})`);
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
   g.innerHTML = `<g class="wisp-bob"><g class="wisp-glow"><use href="#wisp"/></g></g>`;
   charactersLayer.appendChild(g);
@@ -2828,6 +2885,8 @@ function despawnWisp() {
   wispNode.classList.add('fade-out');
   setTimeout(() => { if (wispNode) wispNode.remove(); wispNode = null; }, 500);
   delete actorPositions['wisp'];
+  delete currentBuilding['wisp'];
+  freeGatherSlot('wisp');
 }
 
 // S028: Guthix the bankstanding deity. Spawn position floats high above the
@@ -2838,9 +2897,10 @@ function spawnGuthix(ev) {
   const b = STAND[at];
   if (!b) return;
   const yOff = ACTOR_Y_OFFSET['guthix'] || -48;
-  const x = b.x, y = b.y + yOff;
-  actorPositions['guthix'] = {x, y};
   currentBuilding['guthix'] = at;
+  const j = assignGatherSlot('guthix', at);
+  const x = b.x + j.dx, y = b.y + j.dy * 0.5 + yOff;
+  actorPositions['guthix'] = {x, y};
   if (guthixNode) guthixNode.remove();
   const g = document.createElementNS(svgNS, 'g');
   g.setAttribute('class', 'actor guthix-actor fade-in');
@@ -2859,6 +2919,7 @@ function despawnGuthix() {
   setTimeout(() => { if (guthixNode) guthixNode.remove(); guthixNode = null; }, 500);
   delete actorPositions['guthix'];
   delete currentBuilding['guthix'];
+  freeGatherSlot('guthix');
 }
 
 function setActivePlayer(p) {
@@ -2951,7 +3012,7 @@ function setIntent(actor, text, instant=false) {
     entry = intents[actor] = {node: g, subtask: ''};
   }
   entry.text = text;
-  renderIntent(actor);
+  relayoutBubbles();
 }
 
 // S028: subtask is the hook-authored medium-cadence channel — natural-language
@@ -2963,7 +3024,100 @@ function setSubtask(actor, text) {
   const entry = intents[actor];
   if (!entry) return;
   entry.subtask = text || '';
-  renderIntent(actor);
+  relayoutBubbles();
+}
+
+// S028 follow-up: compute each bubble's dimensions (replicating renderIntent's
+// width/height math without rendering). Returns null if the bubble has no
+// position or empty text.
+function bubbleDims(actor) {
+  const entry = intents[actor];
+  if (!entry) return null;
+  const pos = actorPositions[actor];
+  if (!pos) return null;
+  const text = entry.text || '';
+  if (!text) return null;
+  const subtask = entry.subtask || '';
+  const lines = wrapBubbleText(text, 50);
+  let subtaskLine = '';
+  if (subtask && lines.length === 1) {
+    subtaskLine = subtask.length > 50 ? subtask.slice(0, 49) + '…' : subtask;
+  }
+  const renderedLines = subtaskLine ? [...lines, subtaskLine] : lines;
+  const longest = renderedLines.reduce((m, s) => Math.max(m, s.length), 0);
+  const w = Math.min(300, Math.max(54, longest * 6.2 + 14));
+  const lineH = 13;
+  const padY = 4;
+  const h = renderedLines.length * lineH + padY * 2;
+  return { pos, w, h };
+}
+
+// S028 follow-up: bubble layout pass — sprites already gather without
+// overlap, but bubbles are 60–300px wide while sprites are ~20px, so bubbles
+// still collide. This greedy pass walks every visible bubble left-to-right;
+// each one starts at its slot's natural Y offset, then is pushed upward
+// (above any already-placed bubble it would intersect) until it has room.
+// Result: bubbles stack vertically when they'd otherwise fight horizontally.
+// Stores the resolved Y offset on `intents[actor].layoutYOff` for renderIntent
+// to read.
+function relayoutBubbles() {
+  const PAD = 4;
+  const MAX_PUSH_ITER = 16;
+  // Collect each bubble's natural starting state.
+  const list = [];
+  for (const actor of Object.keys(intents)) {
+    const dims = bubbleDims(actor);
+    if (!dims) continue;
+    const slotIdx = actorSlot[actor];
+    const slotDef = (slotIdx != null) ? GATHER_SLOTS[slotIdx % GATHER_SLOTS.length] : null;
+    const naturalYOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -34;
+    list.push({
+      actor,
+      cx: dims.pos.x,
+      pointerY: dims.pos.y + naturalYOff,  // bubble pointer Y (absolute)
+      w: dims.w,
+      h: dims.h,
+      spriteY: dims.pos.y,
+    });
+  }
+  // Left-to-right traversal — bubbles further right resolve against bubbles
+  // already placed to their left.
+  list.sort((a, b) => a.cx - b.cx);
+  const placed = [];
+  for (const b of list) {
+    let iter = 0;
+    while (iter < MAX_PUSH_ITER) {
+      const top = b.pointerY - b.h;
+      const bottom = b.pointerY;
+      const left = b.cx - b.w / 2;
+      const right = b.cx + b.w / 2;
+      let conflict = null;
+      for (const p of placed) {
+        const pTop = p.pointerY - p.h;
+        const pBottom = p.pointerY;
+        const pLeft = p.cx - p.w / 2;
+        const pRight = p.cx + p.w / 2;
+        const horizOverlap = (right > pLeft + PAD) && (left < pRight - PAD);
+        const vertOverlap  = (bottom > pTop + PAD) && (top < pBottom - PAD);
+        if (horizOverlap && vertOverlap) {
+          conflict = p;
+          break;
+        }
+      }
+      if (!conflict) break;
+      // Push above the conflicting bubble's top edge.
+      b.pointerY = (conflict.pointerY - conflict.h) - PAD;
+      iter++;
+    }
+    placed.push(b);
+  }
+  // Apply resolved offsets back to the intent entries and re-render.
+  for (const b of placed) {
+    const entry = intents[b.actor];
+    if (!entry) continue;
+    entry.layoutYOff = b.pointerY - b.spriteY;
+  }
+  for (const b of placed) renderIntent(b.actor);
 }
 
 // D-014: word-wrap intent text into ≤2 lines for the bubble. ~50 chars per
@@ -3013,7 +3167,18 @@ function renderIntent(actor) {
   const lineH = 13;
   const padY = 4;
   const h = renderedLines.length * lineH + padY * 2;
-  const yOff = -34;        // above head, clears the focal label
+  // Bubble Y offset preference: laid-out offset from relayoutBubbles wins
+  // (resolves bubble-vs-bubble collisions). Falls back to the slot's natural
+  // bubbleY when no layout has run yet, then to -34 (default above-head) for
+  // actors with no slot (e.g., sub-agents whose slot lookup keys differ).
+  let yOff;
+  if (entry.layoutYOff != null) {
+    yOff = entry.layoutYOff;
+  } else {
+    const slotIdx = actorSlot[actor];
+    const slotDef = (slotIdx != null) ? GATHER_SLOTS[slotIdx % GATHER_SLOTS.length] : null;
+    yOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -34;
+  }
   const half = w / 2;
   const topY = yOff - h;
   const baseY = topY + padY + 10;   // first-line baseline (font-size 11)
@@ -3046,10 +3211,13 @@ function clearIntent(actor, instant=false) {
   delete intents[actor];
   if (instant) {
     entry.node.remove();
-    return;
+  } else {
+    entry.node.classList.add('fade-out');
+    setTimeout(() => { entry.node.remove(); }, 360);
   }
-  entry.node.classList.add('fade-out');
-  setTimeout(() => { entry.node.remove(); }, 360);
+  // S028 follow-up: one fewer bubble — let neighbours descend toward their
+  // natural slot positions.
+  relayoutBubbles();
 }
 
 function logLine(msg, cls='', speaker='system') {
@@ -3205,7 +3373,7 @@ function applyEvent(ev, instant=false) {
       }                                    // dwarf + gnome bubbles persist for the whole task
       if (instant) {
         const b = STAND[ev.to];
-        const j = jitter(actorKey, ev.to);
+        const j = assignGatherSlot(actorKey, ev.to);
         const el = document.getElementById('actor-' + actorKey);
         if (el && b) {
           const yOff = ACTOR_Y_OFFSET[actorKey] || 0;
@@ -3217,10 +3385,12 @@ function applyEvent(ev, instant=false) {
         moveActor(actorKey, ev.to, dur);
         if (actorKey === activePlayer) updateFocalLabel(dur);
       }
-      // Drag any active bubble along with the actor (renderIntent reads the
-      // updated actorPositions). Without this, the bubble would stay at the
-      // old building while the sprite walks away.
-      if (intents[actorKey]) renderIntent(actorKey);
+      // Drag any active bubble along with the actor (relayoutBubbles reads
+      // the updated actorPositions). Without this, the bubble would stay at
+      // the old building while the sprite walks away. relayout instead of a
+      // single renderIntent — neighbouring bubbles may need to re-resolve
+      // collisions now that this sprite has moved.
+      relayoutBubbles();
       // D-014: muted-italic chat line on building change.
       // S028: floaters drift instead of walking.
       {
@@ -3319,6 +3489,9 @@ function resetWorld() {
   // keys in place, so scrub-back retained stale building tracking for actors
   // no longer present. Re-seed jebrim/zezima below.
   Object.keys(currentBuilding).forEach(k => delete currentBuilding[k]);
+  // S028 follow-up: clear gather-slot assignments so re-seeded actors get
+  // fresh slots at their starting buildings.
+  Object.keys(actorSlot).forEach(k => delete actorSlot[k]);
   // B12: clear currentEventWallTime — survived reset and tinted timestamps
   // in live mode with the last-seen wall clock until a new event arrived.
   currentEventWallTime = null;
@@ -3334,6 +3507,11 @@ function resetWorld() {
   actorPositions['zezima'] = {x: zs.x - 30, y: zs.y};
   currentBuilding['jebrim'] = 'inbox-square';
   currentBuilding['zezima'] = 'keepsake-vault';
+  // Seed slot assignments for the static-HTML actors so the next arrival at
+  // their building knows their slot is taken (slot 0 = center, where the
+  // static HTML positions them).
+  actorSlot['jebrim'] = 0;
+  actorSlot['zezima'] = 0;
   setActivePlayer(null);
   updateFocalLabel();
   logEl.innerHTML = '';
@@ -3482,6 +3660,38 @@ function despawnIdleInstances() {
     const last = instanceLastEventAt[actorKey] || 0;
     if (last && last < cutoff) {
       despawnPlayerInstance(actorKey);
+    }
+  }
+  // S028 follow-up: non-player actors (wisp, braindead, guthix) have no
+  // intrinsic lifecycle event under normal operation — they spawn via
+  // ensureActorExists self-heal or explicit spawn events but never get a
+  // matching despawn unless a mode transition fires one. Without this sweep
+  // they linger forever, locking on stale intents from long-gone sessions.
+  if (wispActive) {
+    const last = instanceLastEventAt['wisp'] || 0;
+    if (last && last < cutoff) {
+      wispActive = false;
+      clearIntent('wisp', false);
+      despawnWisp();
+      delete instanceLastEventAt['wisp'];
+    }
+  }
+  if (braindeadActive) {
+    const last = instanceLastEventAt['braindead'] || 0;
+    if (last && last < cutoff) {
+      braindeadActive = false;
+      clearIntent('braindead', false);
+      despawnBraindead();
+      delete instanceLastEventAt['braindead'];
+    }
+  }
+  if (guthixActive) {
+    const last = instanceLastEventAt['guthix'] || 0;
+    if (last && last < cutoff) {
+      guthixActive = false;
+      clearIntent('guthix', false);
+      despawnGuthix();
+      delete instanceLastEventAt['guthix'];
     }
   }
 }

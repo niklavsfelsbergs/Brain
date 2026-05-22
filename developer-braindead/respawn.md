@@ -6,7 +6,7 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-22 (end of [[S028]] — subtask channel + Guthix).
+**Last updated.** 2026-05-22 (end of [[S028]] continuation — deities scaffold + bubble layout + background-dwarf lifecycle).
 
 ## Where we are
 
@@ -38,7 +38,19 @@ Shipped end-to-end:
 
 ## Next concrete step — START HERE
 
-**Step 1 — Live test Guthix end-to-end.** Open the visualizer in live mode and cue bankstanding via either entry route:
+**Step 1 — Scale up the whole map.** Principal's close ask: *"We need to give the map room to breathe. Lets make the scale of everything bigger so the agents have more room to spread out."* With 7+ background dwarves clustering at one building plus the parent + bubbles, even after the gather-slot + bubble-layout work the map feels cramped. The world geometry (`TILE_W`, `TILE_H`, building footprints, STAND positions, viewport crop in `buildGround`, the iso transformation in `isoToScreen`) all assume a tighter scale. Worth a focused pass:
+
+- Increase `TILE_W` / `TILE_H` proportionally (current values define base tile size).
+- Scale building dimensions to match — they're drawn at fixed sizes in their respective spawn-building functions / SVG definitions.
+- Re-test STAND positions and `GATHER_SLOTS` offsets — the current ±58px far-side slots may need to grow with the world.
+- Consider whether sprites themselves scale too, or just the world (probably keep sprites at current size; the cluster gets more room).
+- Adjust viewport crop in `buildGround` and the SVG viewBox so the bigger world still fills the visible frame.
+- Watch out for the path-map polylines (`path-map.json`) — they may need scaling too if they exist in pixel coordinates rather than building-relative.
+- Cross-cutting test: scrub the demo timeline + run live and verify everything still places correctly.
+
+The whole change probably touches `experiments/visualizer/index.html` only (no hook changes needed; building keys and event shapes unchanged).
+
+**Step 2 — Live test Guthix end-to-end.** Open the visualizer in live mode and cue bankstanding via either entry route:
 
 - `Hey Guthix` (alone or with `, what can you do`) → expect the menu surface.
 - `Hey Guthix, [specific request]` → expect direct execution.
@@ -51,42 +63,45 @@ Watch for:
 - "Guthix drifts to X" chat lines (not "walks to").
 - COMMS tab `GUTHIX` collects his lines; filter works.
 - Despawn fires cleanly when intent flips back to a player or session ends.
+- Bubble fan-up + gather-slot clustering work cleanly with multiple actors at the same building.
+- Background dwarves stay visible while working; despawn after ~5min idle.
 
-Tune if needed: float amplitude, Y-offset, robe colors, staff position.
+Tune if needed: float amplitude, Y-offset, robe colors, staff position, gather-slot offsets, bubble-layout `PAD`, idle-despawn threshold `IDLE_BG_SEC`.
 
-**Step 2 — Subtask debounce decision.** After a few minutes of real work observed, decide whether to ship slice 4. Default to no debounce if the bubble feels alive without strobing.
+**Step 3 — Subtask debounce decision.** After a few minutes of real work observed, decide whether to ship slice 4. Default to no debounce if the bubble feels alive without strobing.
 
-**Step 3 — Replay-mode demo arcs.** Deferred subtask + Guthix demos in the EVENTS array. Restructure a session arc to include intent + subtask + action together (subtask demo) and a bankstanding arc with `spawn-guthix` / `despawn-guthix` (Guthix demo).
+**Step 4 — Replay-mode demo arcs.** Deferred subtask + Guthix demos in the EVENTS array. Restructure a session arc to include intent + subtask + action together (subtask demo) and a bankstanding arc with `spawn-guthix` / `despawn-guthix` (Guthix demo).
 
-**Step 4 — Recover Jebrim session 58f8e88a.** That session is using bare `jebrim.txt` (pre-D-018-chunk-3 pattern). Disk fallback doesn't recover bare files. Either (a) nudge that window so it writes its intent again and the hook lands an event, or (b) wait for its next respawn — it'll re-read the tightened protocol and start using `jebrim-58f8e88a.txt`. Disk-fallback will cover it from then on.
+**Step 5 — Recover Jebrim session 58f8e88a.** That session is using bare `jebrim.txt` (pre-D-018-chunk-3 pattern). Disk fallback doesn't recover bare files. Either (a) nudge that window so it writes its intent again and the hook lands an event, or (b) wait for its next respawn — it'll re-read the tightened protocol and start using `jebrim-58f8e88a.txt`. Disk-fallback will cover it from then on.
 
-**Step 5 — Drafts triage** (carried S018 → S019 → S020 → S021 → S022 → S026 → S027):
+**Step 6 — Drafts triage** (carried S018 → S019 → S020 → S021 → S022 → S026 → S027):
 
 - `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — promote to `lorebook/decisions/D-NNN_*.md`.
 - `gielinor/players/jebrim/keepsake/proposals/2026-05-21_eu-tender-2026.md`.
 - `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md` (Jebrim alching).
 - `gielinor/players/jebrim/niksis8_character/drafts/` (S017-era + 2026-05-21-prefers-evidence-over-premature-infrastructure).
 
-**Step 6 — Audit follow-up notes** (carried from S027):
+**Step 7 — Audit follow-up notes** (carried from S027):
 
 - `bank/decisions/`: *recon dwarves should cross-check audit findings against intervening commits before bundling.* Three closed-but-reported items across S021 and S027.
 - B1 day/night cadence — 87s/day may be too fast.
 - B9 hook D-018 read race — separate session at the hook level.
 
-**Step 7 — First live gnome spawn** (carried S020+). Validates the boundary cascade + session-scoped substates under sub-agent activity. Candidate: Jebrim alching gnome.
+**Step 8 — First live gnome spawn** (carried S020+). Validates the boundary cascade + session-scoped substates under sub-agent activity. Candidate: Jebrim alching gnome.
 
-**Step 8 — Q-008 visualizer aliveness pick** (carried). Step 2 (subtask debounce) now subsumes the urgency of this somewhat.
+**Step 9 — Q-008 visualizer aliveness pick** (carried). Step 3 (subtask debounce) now subsumes the urgency of this somewhat.
 
 ## Open at the start of next session
 
-- **Live test Guthix** — Step 1. First action.
-- **Subtask debounce decision** — Step 2.
-- **Replay demos** — Step 3.
-- **Jebrim 58f8e88a recovery** — Step 4 (probably resolves itself by next respawn of that session).
-- **Drafts triage backlog** — Step 5.
-- **Audit follow-up notes** — Step 6.
-- **First live gnome spawn** — Step 7.
-- **Q-008 pick** — Step 8.
+- **Scale up the map** — Step 1. First action.
+- **Live test Guthix** — Step 2.
+- **Subtask debounce decision** — Step 3.
+- **Replay demos** — Step 4.
+- **Jebrim 58f8e88a recovery** — Step 5 (probably resolves itself by next respawn of that session).
+- **Drafts triage backlog** — Step 6.
+- **Audit follow-up notes** — Step 7.
+- **First live gnome spawn** — Step 8.
+- **Q-008 pick** — Step 9.
 - §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations

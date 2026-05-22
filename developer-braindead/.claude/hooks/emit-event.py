@@ -231,8 +231,17 @@ def resolve_instance(actor: str, session_id: str | None) -> int:
     Non-instanced actors (wisp, guthix, dwarves, gnomes) always return 1 —
     they don't fork into parallel sprites.
 
-    Persists assignments in state-instances.json so a hook re-invocation in the
-    same session lands on the same instance number. Schema:
+    Slot-reclaiming allocation. When a session ends and its byId entry is
+    deleted, the slot becomes free. New sessions take the lowest free slot
+    in `[1, max(byId.values()) + 1]` rather than monotonically incrementing
+    `next` forever. Without this, the visible instance ticker drifts up
+    indefinitely (braindead-17 with only four live sessions, observed in
+    the wild) and never returns to ·1 ·2 ·3 ·4 as the principal expects.
+
+    `next` is kept as a high-water mark for diagnostics; not load-bearing.
+
+    Persists assignments in state-instances.json so a hook re-invocation in
+    the same session lands on the same instance number. Schema:
         { "<actor>": { "next": <int>, "byId": { "<session_id>": <int> } } }
     """
     if not actor or actor not in INSTANCED_ACTORS:
@@ -244,10 +253,19 @@ def resolve_instance(actor: str, session_id: str | None) -> int:
     by_id = entry.get("byId") or {}
     if session_id in by_id:
         return int(by_id[session_id])
-    n = int(entry.get("next") or 1)
+    in_use = set()
+    for v in by_id.values():
+        try:
+            in_use.add(int(v))
+        except (TypeError, ValueError):
+            continue
+    n = 1
+    while n in in_use:
+        n += 1
     by_id[session_id] = n
     entry["byId"] = by_id
-    entry["next"] = n + 1
+    # high-water mark; never decreases, useful for diagnostics
+    entry["next"] = max(int(entry.get("next") or 1), n + 1)
     state[actor] = entry
     save_json(INSTANCES_PATH, state)
     return n

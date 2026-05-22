@@ -46,6 +46,15 @@ DEV_BRAIN = HERE.parent.parent.parent
 VIZ_DIR = DEV_BRAIN / "experiments" / "visualizer"
 MANIFEST_PATH = VIZ_DIR / "state-switchboard.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
+ACTORS_PATH = VIZ_DIR / "state-actors.json"
+
+# A session counts as "live" for GC purposes if its status file exists, isn't
+# ended, and fired a hook within this window. Tight enough to GC promptly when
+# Claude Code crashes (SessionEnd never fires); loose enough that a session
+# parked on a Stop for a long lunch doesn't get its sprite swept. The sidebar's
+# own idle threshold is 5 min — GC sits an order of magnitude beyond that so
+# the two judgments don't collide.
+LIVE_SESSION_SEC = 60 * 60
 
 # Same intent length cap as the visualizer hook so a sidebar can render
 # sidecar intent inline without re-truncating.
@@ -84,45 +93,98 @@ def _project_dir() -> Path | None:
         return None
 
 
-def _detect_actor(project_dir: Path | None, sid8: str) -> tuple[str, str]:
-    """Look for <project_dir>/.claude/intent/<actor>-<sid8>.txt. Returns
-    (actor, intent_first_line). Falls back to ("unknown", "") when no
-    per-session intent file exists yet — early in a session the sidecar may
-    fire before the agent has written intent. The next event updates the
-    status file with the resolved actor.
+def _actor_from_instances(session_id_full: str) -> str:
+    """Read state-instances.json and find which actor's byId map registered
+    this session. Used as a fallback when no intent file exists for the
+    session — emit-event.py registers an instance for every action it
+    attributes to an actor, so any session that's done any work will have an
+    entry here even if it never wrote intent narration.
 
-    Scans the intent dir for any `*-<sid8>.txt` rather than enumerating known
-    actor names. Avoids the hand-sync drift hazard with emit-event.py's roster
-    when new players land. If exactly one file matches, the prefix is the
-    actor name. Multiple matches is anomalous (a session can only be one
-    actor at a time) — return unknown and let the next event re-detect."""
+    Returns "" if no match or multiple ambiguous matches. The multi-match
+    case picks the actor with the highest instance number — newer = more
+    recently allocated = more likely to be the current actor — which is a
+    heuristic that handles mid-session player switches without timestamps."""
+    try:
+        state = json.loads(INSTANCES_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return ""
+    candidates: list[tuple[int, str]] = []
+    for actor_name, entry in (state or {}).items():
+        if not isinstance(entry, dict):
+            continue
+        by_id = entry.get("byId") or {}
+        v = by_id.get(session_id_full)
+        if v is None:
+            continue
+        try:
+            inst = int(v)
+        except (TypeError, ValueError):
+            inst = 0
+        candidates.append((inst, actor_name))
+    if not candidates:
+        return ""
+    candidates.sort(reverse=True)
+    return candidates[0][1]
+
+
+def _detect_actor(project_dir: Path | None, sid8: str, session_id_full: str = "") -> tuple[str, str]:
+    """Resolve `(actor, intent_first_line)` for a session, in priority order:
+
+    1. Exactly one intent file `<actor>-<sid8>.txt` in the project's intent
+       dir → that actor + the file's first line as intent.
+    2. Multiple intent files → newest by mtime wins. Covers the window
+       between a mid-session player switch and the mini-respawn's intent
+       archive step (or the next periodic GC sweep).
+    3. No intent file → fall back to `state-instances.json` byId lookup
+       (`_actor_from_instances`). emit-event.py registers an instance on
+       every action, so any session that's done any work is reachable from
+       here even when intent narration is missing.
+    4. Nothing matches anywhere → ("unknown", "").
+
+    Empty `session_id_full` skips step 3 (the lookup needs the full id; sid8
+    isn't enough). Callers that have only sid8 still benefit from steps 1+2.
+    """
     if not project_dir:
         return ("unknown", "")
     intent_dir = project_dir / ".claude" / "intent"
-    if not intent_dir.exists():
-        return ("unknown", "")
-    matches: list[tuple[str, Path]] = []
-    try:
-        for p in intent_dir.glob(f"*-{sid8}.txt"):
-            if not p.is_file():
-                continue
-            name = p.stem
-            if not name.endswith(f"-{sid8}"):
-                continue
-            actor = name[:-(len(sid8) + 1)]
-            if actor:
-                matches.append((actor, p))
-    except Exception:
-        return ("unknown", "")
-    if len(matches) != 1:
-        return ("unknown", "")
-    actor, p = matches[0]
-    try:
-        raw = p.read_text(encoding="utf-8").strip()
-    except Exception:
-        raw = ""
-    first = raw.splitlines()[0].strip()[:INTENT_MAX_LEN] if raw else ""
-    return (actor, first)
+    matches: list[tuple[str, Path, float]] = []
+    if intent_dir.exists():
+        try:
+            for p in intent_dir.glob(f"*-{sid8}.txt"):
+                if not p.is_file():
+                    continue
+                name = p.stem
+                if not name.endswith(f"-{sid8}"):
+                    continue
+                actor = name[:-(len(sid8) + 1)]
+                if not actor:
+                    continue
+                try:
+                    mtime = p.stat().st_mtime
+                except Exception:
+                    mtime = 0.0
+                matches.append((actor, p, mtime))
+        except Exception:
+            matches = []
+
+    if matches:
+        # Newest by mtime wins. Single-match case naturally collapses to the
+        # one entry; multi-match takes the most recently written intent.
+        matches.sort(key=lambda t: t[2], reverse=True)
+        actor, p, _ = matches[0]
+        try:
+            raw = p.read_text(encoding="utf-8").strip()
+        except Exception:
+            raw = ""
+        first = raw.splitlines()[0].strip()[:INTENT_MAX_LEN] if raw else ""
+        return (actor, first)
+
+    # No intent file — try the instance map as the last resort.
+    if session_id_full:
+        fallback = _actor_from_instances(session_id_full)
+        if fallback:
+            return (fallback, "")
+    return ("unknown", "")
 
 
 def _detect_instance(actor: str, session_id: str) -> int:
@@ -331,6 +393,35 @@ def _write_manifest() -> None:
                     continue
                 if j.get("state") == "ended":
                     continue
+                # Real-time actor refresh. The status file's `actor` was set
+                # by whichever sidecar fire wrote it last — typically
+                # UserPromptSubmit, which fires BEFORE the agent has had a
+                # chance to write its intent file for this turn. The result:
+                # `actor=unknown` lands in the status file at the start of a
+                # working turn and sticks until Stop fires at the end.
+                #
+                # The manifest, however, is rewritten on every fire from ANY
+                # session — so we can re-detect each session's actor against
+                # its intent dir at write-time and surface a freshly-resolved
+                # value without touching the canonical status file (which
+                # would race with the owning session's writes).
+                #
+                # Carry the prior `actor` if detection comes up empty — don't
+                # regress a session from "braindead" back to "unknown" just
+                # because the intent file briefly didn't match (e.g., during
+                # a mid-turn dedupe).
+                try:
+                    proj = j.get("project_dir") or ""
+                    s8 = j.get("sid8") or ""
+                    sfull = j.get("session_id") or ""
+                    if proj and s8:
+                        refreshed_actor, refreshed_intent = _detect_actor(Path(proj), s8, sfull)
+                        if refreshed_actor != "unknown":
+                            j["actor"] = refreshed_actor
+                            if refreshed_intent:
+                                j["intent"] = refreshed_intent
+                except Exception as e:
+                    print(f"status-sidecar: manifest actor refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
                 sessions.append(j)
         sessions.sort(key=lambda x: x.get("last_event_ts") or 0, reverse=True)
         out = {
@@ -411,6 +502,166 @@ def _sweep_stale() -> None:
         print(f"status-sidecar: sweep failed: {e}", file=sys.stderr)
 
 
+def _live_session_ids() -> tuple[set[str], set[str]]:
+    """Walk STATUS_DIR and return (live_full_session_ids, live_sid8_prefixes).
+    "Live" means the status file's state != "ended" and last_event_ts is within
+    LIVE_SESSION_SEC. Status files for sessions that died without firing
+    SessionEnd will linger as "working" or "waiting_for_user" until the time
+    bound elides them — that's the safety net for crash-exit zombies.
+
+    Returns empty sets on any read failure so GC callers fail safe (do nothing
+    rather than over-prune)."""
+    full: set[str] = set()
+    short: set[str] = set()
+    if not STATUS_DIR.exists():
+        return (full, short)
+    cutoff = time.time() - LIVE_SESSION_SEC
+    try:
+        for p in STATUS_DIR.iterdir():
+            if not p.is_file() or p.suffix != ".json":
+                continue
+            try:
+                j = json.loads(p.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if not isinstance(j, dict):
+                continue
+            if j.get("state") == "ended":
+                continue
+            ts = j.get("last_event_ts") or 0
+            try:
+                ts = float(ts)
+            except (TypeError, ValueError):
+                ts = 0.0
+            if ts < cutoff:
+                continue
+            sid = j.get("session_id") or ""
+            sid8 = j.get("sid8") or sid[:8]
+            if sid:
+                full.add(sid)
+            if sid8:
+                short.add(sid8)
+    except Exception as e:
+        print(f"status-sidecar: live-set scan failed: {e}", file=sys.stderr)
+    return (full, short)
+
+
+def _gc_state_actors(live_full: set[str]) -> None:
+    """Strip dead session_ids from `state-actors.json`. Targets:
+      - any `byId` map whose key isn't in `live_full`;
+      - top-level scalar keys (wisp, guthix) when no `_<actor>_session_id`
+        owner is live;
+      - `_mode_session_id` / `_guthix_session_id` when the named session is
+        dead (emit-event.py's `handle_session_end` clears these on clean
+        exit; the GC catches crash-exit cases).
+
+    Skips the write entirely if nothing changes — cheap no-op on the common
+    path. Errors swallowed."""
+    if not ACTORS_PATH.exists():
+        return
+    try:
+        actors = json.loads(ACTORS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    if not isinstance(actors, dict):
+        return
+
+    dirty = False
+
+    # Top-level session-id markers: drop if dead.
+    for marker in ("_mode_session_id", "_guthix_session_id"):
+        sid = actors.get(marker)
+        if sid and sid not in live_full:
+            actors.pop(marker, None)
+            dirty = True
+
+    # Top-level scalar actors (wisp, guthix at building). Only `guthix` is
+    # GC'd here — it has an owner marker (`_guthix_session_id` set in
+    # emit-event.py `_emit_guthix_transition`), so absence of the marker
+    # after the session-marker pass above is unambiguous proof of a zombie.
+    # `wisp` has no owner-marker concept (it's the global default actor); a
+    # stale wisp scalar just gets overwritten on the next unscoped move
+    # event and doesn't accumulate, so leave it alone.
+    if isinstance(actors.get("guthix"), str) and "_guthix_session_id" not in actors:
+        actors.pop("guthix", None)
+        dirty = True
+
+    # byId maps under each actor: drop entries whose session isn't live.
+    # Drop the actor key entirely if its byId empties out.
+    for actor_name in list(actors.keys()):
+        if actor_name.startswith("_"):
+            continue
+        entry = actors.get(actor_name)
+        if not isinstance(entry, dict):
+            continue
+        by_id = entry.get("byId")
+        if not isinstance(by_id, dict):
+            continue
+        before = len(by_id)
+        new_by_id = {sid: bldg for sid, bldg in by_id.items() if sid in live_full}
+        if len(new_by_id) != before:
+            entry["byId"] = new_by_id
+            dirty = True
+        if not new_by_id:
+            actors.pop(actor_name, None)
+            dirty = True
+
+    if not dirty:
+        return
+    try:
+        _atomic_write_json(ACTORS_PATH, actors)
+    except Exception as e:
+        print(f"status-sidecar: state-actors GC write failed: {e}", file=sys.stderr)
+
+
+def _gc_intent_files(project_dir: Path | None, live_short: set[str], current_sid8: str) -> None:
+    """Archive intent files for sessions that aren't live anymore. Bare files
+    (`<actor>.txt` with no `-<sid8>` suffix) are also archived — they predate
+    D-018's per-session mandate and are no longer load-bearing.
+
+    Move into `<intent_dir>/archive/` — per archive-discipline.md nothing is
+    deleted. The hook fires often enough that scanning the whole dir on each
+    UserPromptSubmit is fine; the dir is tiny in practice."""
+    if not project_dir:
+        return
+    intent_dir = project_dir / ".claude" / "intent"
+    if not intent_dir.exists():
+        return
+    archive = intent_dir / "archive"
+    try:
+        for p in intent_dir.iterdir():
+            if not p.is_file():
+                continue
+            if p.name == ".gitkeep":
+                continue
+            if p.suffix != ".txt":
+                continue
+            name = p.stem
+            # Per-session pattern: <actor>-<8hex>
+            sid8 = ""
+            if len(name) >= 9 and name[-9] == "-":
+                tail = name[-8:]
+                if all(c in "0123456789abcdef" for c in tail):
+                    sid8 = tail
+            if sid8:
+                # Always keep the current session's file even if it predates
+                # the first hook fire (live_short may not include current_sid8
+                # on the very first UserPromptSubmit of a new session).
+                if sid8 == current_sid8 or sid8 in live_short:
+                    continue
+            # Move to archive.
+            try:
+                archive.mkdir(parents=True, exist_ok=True)
+                dst = archive / p.name
+                if dst.exists():
+                    dst = archive / f"{p.stem}.{int(time.time())}{p.suffix}"
+                p.replace(dst)
+            except Exception as e:
+                print(f"status-sidecar: intent archive failed for {p.name}: {e}", file=sys.stderr)
+    except Exception as e:
+        print(f"status-sidecar: intent GC failed: {e}", file=sys.stderr)
+
+
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
@@ -428,7 +679,7 @@ def main() -> None:
     sid8 = sid[:8]
 
     project_dir = _project_dir()
-    actor, intent = _detect_actor(project_dir, sid8)
+    actor, intent = _detect_actor(project_dir, sid8, sid)
 
     now_ts = time.time()
     out_path = STATUS_DIR / f"{sid8}.json"
@@ -497,6 +748,21 @@ def main() -> None:
     # session's own status from landing.
     _sweep_stale()
     _sweep_stale_tmp()
+
+    # Cross-session zombie GC. Gated on UserPromptSubmit because it's the
+    # lowest-frequency event we register (one per turn) and because by then
+    # this session's own status file has just been refreshed — so the GC's
+    # ground-truth scan can't accidentally classify the current session as
+    # dead. Skip on Stop/SessionEnd: Stop fires twice per turn and SessionEnd
+    # is already on the cleanup path for the ending session.
+    if hook_event == "UserPromptSubmit":
+        live_full, live_short = _live_session_ids()
+        if sid:
+            live_full.add(sid)
+        if sid8:
+            live_short.add(sid8)
+        _gc_state_actors(live_full)
+        _gc_intent_files(project_dir, live_short, sid8)
 
     # Manifest mirror runs last — purely a snapshot for the browser; a failure
     # here can't affect the canonical per-session store.

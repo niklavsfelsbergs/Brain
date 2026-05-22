@@ -86,7 +86,8 @@ Triggered when a later message addresses a **different** player than the current
    - One line: today's date, the trigger message, the incoming mode/player.
    - Optionally, one line for any pending action this session put in flight.
    - **Do not re-read or summarize the quest's existing content.** The hand-off note is a marker, not a recap. The quest's own "Next concrete step" section carries resume context for the next session that lands on it.
-2. Re-run step 6 of the load order for the new player (read their `CLAUDE.md`, `_about.md`, `persona.md`, `keepsake/current.md`, `examine/confirmed/current.md`, `niksis8_character/confirmed/current.md`).
+2. **Archive the outgoing actor's per-session intent file.** Move `brain/.claude/intent/<outgoing-actor>-<sid8>.txt` into `brain/.claude/intent/archive/` (preserving the filename). Leaving it in place means two intent files exist for the same `sid8`, which the switchboard's `_detect_actor` reads as ambiguous → `actor: unknown` in the sidebar. The status-sidecar will catch it on the next `UserPromptSubmit` anyway, but moving it here closes the gap within the same turn.
+3. Re-run step 6 of the load order for the new player (read their `CLAUDE.md`, `_about.md`, `persona.md`, `keepsake/current.md`, `examine/confirmed/current.md`, `niksis8_character/confirmed/current.md`).
 3. Check the new player's `quest-log/in-progress/`. If unfinished business → reconciliation prompt. If dwarf mode → task brief from principal.
 4. Acknowledge briefly and continue with the new player as active.
 

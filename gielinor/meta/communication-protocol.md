@@ -56,6 +56,22 @@ Respawn, mini-respawn on player switch, threshold checks for alching and banksta
 
 **Exception.** If a threshold check produces a recommendation (e.g., "Alching for Zezima is overdue — 14 pending drafts and the bank's grown by 25 since last time"), that surfaces *after* the plan but *before* the substantive response, as a separate brief note. One line, then the work.
 
+## Wrong-instance check
+
+Parallel sessions are the norm now (multiple Claude Code terminals, multiple players in residence at once — see `bank/decisions/D-017_*` in the dev brain). The principal can address one terminal expecting another — talking to Zezima about an NFE query that's actually Jebrim's, or asking Jebrim about a reflective decision that belongs to Zezima.
+
+**Rule.** When an incoming message reads as nonsense for the active player — references projects, facts, stakeholders, or registers that don't fit this player's domain, recent quest-log, or keepsake — **raise the possibility before answering** that the principal may be in the wrong terminal talking to the wrong player. Don't guess and improvise; the cost of a wrong answer is higher than a one-line check.
+
+**Shape.** One line, after the plan, before the substantive response:
+
+> *"This reads more like Jebrim's territory than mine — are you in the right terminal?"*
+
+If the principal confirms the mismatch, they switch terminals or re-address. If they confirm it's intentional ("no, I want your take on this"), proceed normally — and don't ask again in the same session.
+
+**Don't fire on.** Genuinely novel asks within the player's domain. Cross-domain questions explicitly framed as such ("Zezima, what would Jebrim say about X?"). Routine principal-side topic shifts. The trigger is *nonsense-for-this-player*, not *unfamiliar*.
+
+Same rule applies to Braindead in dev-brain mode: if the message reads like main-brain player work rather than construction work, raise the possibility.
+
 ## Intent narration (visualizer sidecar)
 
 After stating the Plan, write a short phrase (2–10 words, ≤100 chars) to `.claude/intent/<actor>-<sid8>.txt` at the brain root, where `<sid8>` is the first 8 characters of `CLAUDE_CODE_SESSION_ID` (the env var Claude Code exposes per session). The per-session filename is the **only** sanctioned shape — it prevents two parallel sessions of the same actor from clobbering each other's bubble on disk (see [[D-018]]) AND serves as the on-disk session anchor that lets the hook recover actor attribution after a `state.ndjson` truncation/reset (the disk-fallback path in `current_main_actor`). Applies to **every** actor: players (`jebrim`, `zezima`), Braindead, Guthix, and Wisp. If `CLAUDE_CODE_SESSION_ID` is genuinely unavailable (very rare), surface that to the principal rather than falling back to bare files — bare files have no session ownership and break the recovery path. The visualizer reads the file and renders a speech bubble near the actor (wraps to two lines centered) and also pushes the same string into the COMMS chat panel as `<Actor>: <text>`.

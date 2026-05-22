@@ -3055,10 +3055,30 @@ function spawnBraindead(ev) {
   braindeadNode = g;
 }
 
-function despawnBraindead() {
+// Local-capture pattern: the setTimeout closure must hold `g` (the node being
+// despawned) rather than reading `braindeadNode` at fire time. Without this,
+// a fresh spawnBraindead within the 500ms fade window — or, more commonly, a
+// bootstrap replay of state.ndjson that fires N historical spawn/despawn pairs
+// synchronously and ends on a spawn — queues setTimeouts that read whichever
+// node `braindeadNode` happens to point at when they fire, and clobber the
+// latest live sprite. The identity check (`braindeadNode === g`) before
+// nulling preserves a fresh spawn that landed during the fade. `instant=true`
+// (passed from bootstrap-replay applyEvent) finalizes immediately so no
+// timeouts are ever queued during replay. Parallel-instance despawns
+// (despawnPlayerInstance) already use this pattern; the singletons missed it.
+function despawnBraindead(instant = false) {
   if (!braindeadNode) return;
-  braindeadNode.classList.add('fade-out');
-  setTimeout(() => { if (braindeadNode) braindeadNode.remove(); braindeadNode = null; }, 500);
+  const g = braindeadNode;
+  const finalize = () => {
+    g.remove();
+    if (braindeadNode === g) braindeadNode = null;
+  };
+  if (instant) {
+    finalize();
+  } else {
+    g.classList.add('fade-out');
+    setTimeout(finalize, 500);
+  }
   delete actorPositions['braindead'];
   delete currentBuilding['braindead'];
   freeGatherSlot('braindead');
@@ -3084,10 +3104,20 @@ function spawnWisp(ev) {
   wispNode = g;
 }
 
-function despawnWisp() {
+// See despawnBraindead for the local-capture / instant-aware rationale.
+function despawnWisp(instant = false) {
   if (!wispNode) return;
-  wispNode.classList.add('fade-out');
-  setTimeout(() => { if (wispNode) wispNode.remove(); wispNode = null; }, 500);
+  const g = wispNode;
+  const finalize = () => {
+    g.remove();
+    if (wispNode === g) wispNode = null;
+  };
+  if (instant) {
+    finalize();
+  } else {
+    g.classList.add('fade-out');
+    setTimeout(finalize, 500);
+  }
   delete actorPositions['wisp'];
   delete currentBuilding['wisp'];
   freeGatherSlot('wisp');
@@ -3119,10 +3149,20 @@ function spawnGuthix(ev) {
   guthixNode = g;
 }
 
-function despawnGuthix() {
+// See despawnBraindead for the local-capture / instant-aware rationale.
+function despawnGuthix(instant = false) {
   if (!guthixNode) return;
-  guthixNode.classList.add('fade-out');
-  setTimeout(() => { if (guthixNode) guthixNode.remove(); guthixNode = null; }, 500);
+  const g = guthixNode;
+  const finalize = () => {
+    g.remove();
+    if (guthixNode === g) guthixNode = null;
+  };
+  if (instant) {
+    finalize();
+  } else {
+    g.classList.add('fade-out');
+    setTimeout(finalize, 500);
+  }
   delete actorPositions['guthix'];
   delete currentBuilding['guthix'];
   freeGatherSlot('guthix');
@@ -3861,11 +3901,11 @@ function applyEvent(ev, instant=false) {
       delete subAgentParentSid[ev.id];
       break;
     case 'spawn-wisp':   wispActive = true; spawnWisp(ev); break;
-    case 'despawn-wisp': wispActive = false; clearIntent('wisp', instant); despawnWisp(); break;
+    case 'despawn-wisp': wispActive = false; clearIntent('wisp', instant); despawnWisp(instant); break;
     case 'spawn-braindead':   braindeadActive = true; spawnBraindead(ev); break;
-    case 'despawn-braindead': braindeadActive = false; clearIntent('braindead', instant); despawnBraindead(); break;
+    case 'despawn-braindead': braindeadActive = false; clearIntent('braindead', instant); despawnBraindead(instant); break;
     case 'spawn-guthix':      guthixActive = true; spawnGuthix(ev); if (ev.intent) setIntent('guthix', ev.intent, instant); break;
-    case 'despawn-guthix':    guthixActive = false; clearIntent('guthix', instant); despawnGuthix(); break;
+    case 'despawn-guthix':    guthixActive = false; clearIntent('guthix', instant); despawnGuthix(instant); break;
     case 'commit':       logLine(ev.msg, 'commit', 'commits'); break;
   }
 }

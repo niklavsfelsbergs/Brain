@@ -117,16 +117,34 @@ Principal approved `go all` + chose option (i) for 1a. Executed:
 - **D1 was outdated.** Reported 5+ ready drafts; on-disk reality was 3. Skills graduation IS working; identity-layer promotion was the broken half.
 - **Untracked existing files surfaced.** `git status` shows pre-existing `S031_*` and `S034_g2_*` in-progress quest-log files as `??` (never git-added). Quest-log narrative survives in working tree but isn't versioned. Worth surfacing in Phase 2 — close-session step 8 evidently misses files that close-session itself didn't write.
 
-## What remains for Phase 2 (deferred)
+## Phase 2 — shipped (a + b + c + d)
 
-- `/drafts` lightweight command — y/n/edit batched triage. The flow walked manually here is exactly the right shape.
-- Close-session step 4 auto-complete-done discretion — "no pending action + last turn says ship/complete" → propose move to principal at close.
-- Close-session step 8 — also catch `??` quest-log files (untracked siblings of moved files).
-- Guthix discoverability heuristic in `meta/communication-protocol.md`.
-- Turn-reflexive bank capture (Jebrim's "B" root cause). Hardest, lowest urgency.
+Principal picked **(b)** for `/drafts` scope ("active player + globals; exclude Guthix"), then **(a)** for the option cascade ("ship 2b + 2c + 2d in same session").
+
+**2a — `/drafts` command + drafts-triage ritual.**
+
+- `.claude/commands/drafts.md` (new) — slash command Claude Code reads when user types `/drafts`. Tight prompt; defers behavior to the ritual.
+- `gielinor/spellbook/rituals/drafts-triage.md` (new, ~140 lines) — full procedure: scope-by-mode (player + globals, excludes Guthix and other players); recommendation rubric (y/n/edit); verdict-execution table mapping each layer to its promotion path; discipline notes. Parallels `alching.md` shape but narrower — single-axis hygiene tool, doesn't update `last-alched.md`.
+- `gielinor/meta/drafts-mechanics.md` edited — replaced "to be designed against real use" stub with pointer to the ritual; also fixed the line about respawn reading `current.md` (stale after Phase 1a).
+
+**2b — close-session step 4 agent-initiative scan.**
+
+Added a paragraph to `gielinor/spellbook/rituals/close-session.md` step 4: agent scans **every** in-flight quest (not just session-touched ones) for done-but-not-moved signal — "Pending external actions: None pending," last turn reads as shipping, inventory resume status says done. Proposes batch list to principal for per-line approval (`1y 2y 3n`). Boundary clearly stated: propose only, never auto-complete. This is the Phase 1 cleanup mechanism formalized.
+
+**2c — close-session step 8 orphan-quest-log catch.**
+
+Added a second pre-commit check to step 8: `git status --short` on quest-log paths, grep `??`, surface as part of commit scope. Anchored to today's S031/S034_g2 discovery. Now close-session won't leave untracked quest narratives drifting across sessions.
+
+**2d — Guthix routing heuristic in communication-protocol.md.**
+
+New section before "Intent narration": when an incoming message reads system-scope rather than player-domain, agent surfaces one line suggesting flip to Guthix consultation. Trigger patterns explicit ("what do I have on X across the brain," "we are underutilizing X" — exactly this session's opening prompt to Jebrim), don't-fire-on cases explicit, scope explicit (player + unscoped modes only). The heuristic surfaces the option without forcing the switch. Same shape as the existing wrong-instance check.
+
+## What remains (deferred)
+
+- **Turn-reflexive bank capture** (Jebrim's "B" root cause). Hardest, lowest urgency. Reach for it once the new `/drafts` + close-session-step-4 mechanisms have run for a few sessions and the promote/consult tempo is verifiably back.
 
 ## Session disposition
 
-Awaiting principal cue:
-- Commit Phase 1 (scope: respawn.md + 8 quest moves + 3 promotions + 2 resume writes + S038 entry + OPEN_brain-underutilization-frame)?
-- Continue into Phase 2 (`/drafts` command first), or close session?
+Phase 1 committed at `150e238`. Phase 2 ready to commit — scope: 2 new files (`.claude/commands/drafts.md`, `spellbook/rituals/drafts-triage.md`), 3 edits (`meta/drafts-mechanics.md`, `spellbook/rituals/close-session.md`, `meta/communication-protocol.md`), plus this S038 update.
+
+Next: commit + close session.

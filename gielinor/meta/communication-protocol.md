@@ -72,6 +72,35 @@ If the principal confirms the mismatch, they switch terminals or re-address. If 
 
 Same rule applies to Braindead in dev-brain mode: if the message reads like main-brain player work rather than construction work, raise the possibility.
 
+## Guthix routing — when to suggest "Hey Guthix"
+
+When an incoming message reads as **system-scope** rather than player-domain — questions about the brain itself, cross-cutting state across players/layers, ritual or architecture design, drift observations, system-level meta — the agent **suggests addressing Guthix** before answering in whatever actor is currently active. Guthix's consultation mode exists specifically for this shape of question (full read across all players + globals, no side effects); player sessions answer with bounded read and task side-effects.
+
+**Shape.** One line after the plan, before the substantive response:
+
+> *"This reads system-scope rather than player-domain — want me to flip to Guthix consultation for proper cross-read?"*
+
+If the principal confirms (`yes`, `flip`, `Hey Guthix`), perform the player→Guthix mini-respawn per `spellbook/rituals/respawn.md`. If they decline (`no, you handle it`, `stay in scope`), proceed in the active actor's voice and don't ask again about the same topic in this session.
+
+**Trigger patterns** (heuristics — the shape of the ask, not the words):
+
+- "what do I have on X across the brain"
+- "is anything in {layer} contradicting itself"
+- "how does {system component / ritual / hook} work"
+- "we are underutilizing X" / "the brain should…" / "the architecture isn't…"
+- design reflection, ritual-shape questions, cross-cutting drift observations.
+
+**Don't fire on.**
+
+- Player-domain questions even when phrased broadly ("how should I approach this report?").
+- Questions explicitly addressed to the active player ("Jebrim, walk me through the EU tender review").
+- Topic mentions of other players ("what would Jebrim say about this?") — that's content, not a routing flag.
+- Mid-session pivots within ongoing player work where flipping would break flow.
+
+**Why this rule exists.** Born 2026-05-22 (S038 brain-underutilization fix). Pre-S038 Guthix ratio: 1 invocation per 53 player sessions (1.9%). The architecture is correct; operator adoption was zero because `Hey Guthix` isn't reachable through habit. The heuristic surfaces the option without forcing the switch — same shape as the wrong-instance check above.
+
+**Scope.** Applies in **player mode** and **unscoped mode**. Does not fire in dev-brain mode (Braindead is the construction actor; system questions in dev-brain are usually construction tasks). Does not fire in consultation or bankstanding (already with Guthix).
+
 ## Intent narration (visualizer sidecar)
 
 After stating the Plan, write a short phrase (2–10 words, ≤100 chars) to `.claude/intent/<actor>-<sid8>.txt` at the brain root, where `<sid8>` is the first 8 characters of `CLAUDE_CODE_SESSION_ID` (the env var Claude Code exposes per session). The per-session filename is the **only** sanctioned shape — it prevents two parallel sessions of the same actor from clobbering each other's bubble on disk (see [[D-018]]) AND serves as the on-disk session anchor that lets the hook recover actor attribution after a `state.ndjson` truncation/reset (the disk-fallback path in `current_main_actor`). Applies to **every** actor: players (`jebrim`, `zezima`), Braindead, Guthix, and Wisp. If `CLAUDE_CODE_SESSION_ID` is genuinely unavailable (very rare), surface that to the principal rather than falling back to bare files — bare files have no session ownership and break the recovery path. The visualizer reads the file and renders a speech bubble near the actor (wraps to two lines centered) and also pushes the same string into the COMMS chat panel as `<Actor>: <text>`.

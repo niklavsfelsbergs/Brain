@@ -38,7 +38,7 @@ Deferred to real use. The exact threshold ("when should I bother writing this do
 - bankstanding is happening, or
 - a draft is *blocking* an action (e.g., the agent wants to act on a self-observation that hasn't been confirmed yet — it surfaces the draft and asks for a ruling).
 
-The respawn ritual reads `confirmed/current.md`, not `drafts/`.
+The respawn ritual reads every `.md` in `confirmed/` — atomic confirmed entries plus the optional `current.md` executive summary. Drafts are not read at respawn (see `spellbook/rituals/respawn.md` steps 4, 5, 6.e, 6.f).
 
 ## File naming
 
@@ -46,7 +46,17 @@ Use slug filenames with a date prefix so chronological order is preserved and th
 
 ## `/drafts` command
 
-To be designed against real use. Initial shape: list pending drafts grouped by layer with one-line summaries; the principal triages each. Exact mechanics deferred.
+Implemented as a slash command at `.claude/commands/drafts.md`, backed by the ritual at `spellbook/rituals/drafts-triage.md`. The lightweight promotion gate — invocable any time, scoped to the active player's drafts + global identity drafts. Excludes Guthix layers (bankstanding territory) and other players (their own alching).
+
+Behavior in short:
+
+1. Survey all pending drafts in scope, numbered consecutively across layers.
+2. Surface each with one-line claim, anchor, and agent recommendation (y/n/edit + reason).
+3. Principal triages in batch (`1y 2y 3n 4: edit "..."`); generic affirmation (`yes`, `go`) resolves to "approve every `y` recommendation."
+4. Agent executes via `git mv` (Bash bypasses the `confirmed/` write hook for player-owned moves); surfaces user-only layers (keepsake pins, lorebook decisions) for principal-side writes.
+5. Does not update `last-alched.md` — this is partial-promotion, not full alching.
+
+See `spellbook/rituals/drafts-triage.md` for the full procedure including scope-by-mode, recommendation rubric, and the verdict-execution table.
 
 ## Related
 

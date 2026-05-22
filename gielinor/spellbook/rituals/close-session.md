@@ -95,6 +95,19 @@ The trigger for moving to `completed/` is **quest close**, not session close. Se
 
 A quest is done when its "Next concrete step" is "none — quest closed." Multi-session quests stay in `in-progress/` across many closes; the existence of an inventory resume file is the cheap signal that more work is queued.
 
+**Agent-initiative scan for stale-done quests.** Before defaulting to "continue," the agent scans **every** in-flight quest the active player owns (not just the ones touched this session) for done-but-not-moved signal:
+
+- "Pending external actions" line reads *"None pending."* (or equivalent).
+- Last few turns / last decision line read as shipping, completing, delivering — not as handing-off or carrying-forward.
+- Inventory resume file (if present) status reads `done` or describes a clean ship.
+- No fresh activity since a prior session, AND this session didn't reopen it.
+
+For each quest that fires this signal, propose to principal: *"S023 reads complete (no pending actions; audit shipped per resume file) — move to completed/?"* List multiple candidates as a batch with a one-line reason each. The principal approves per-line (`1y 2y 3n`) or in bulk (`all y`). Per approval: execute the complete-flow above.
+
+**Why this exists.** Born 2026-05-22 (S038 brain-underutilization fix). Before this scan, the principal had to remember to cue "this quest is done" per-quest, which they didn't — Jebrim accumulated 5 stale-done quests over 18 in-progress entries before bulk cleanup. The agent has full read of each quest body and the resume file; it can propose the moves the principal would have eventually cued.
+
+**Boundary.** Propose only. The agent never auto-completes a quest. Principal approval per-line, every time.
+
 ### 5. Inventory hygiene
 
 The player's `inventory/` is volatile by design — but as of 2026-05-21 it's also the **primary resume surface**. The hygiene rule splits accordingly:
@@ -143,7 +156,10 @@ This is an additional surface event beyond what `meta/drafts-mechanics.md` alrea
 
 Always commit at session close (unless the working tree is genuinely clean — in which case skip and note it).
 
-**Pre-commit soft-block.** Before staging, run one more check: for each player with files in `quest-log/in-progress/`, confirm a matching `inventory/<quest-slug>-resume.md` exists and is non-empty. If any quest is missing its resume file, **do not auto-commit** — surface the gap, ask the principal whether to (a) write the missing resume file before commit, (b) commit anyway and flag it as deliberate, or (c) abandon the quest into `quest-log/archive/in-progress/`. This is the inventory-empty enforcement clause; it's a proposal-not-a-block (principal can override).
+**Pre-commit soft-block.** Before staging, run two checks:
+
+1. **Missing inventory resume files.** For each player with files in `quest-log/in-progress/`, confirm a matching `inventory/<quest-slug>-resume.md` exists and is non-empty. If any quest is missing its resume file, **do not auto-commit** — surface the gap, ask the principal whether to (a) write the missing resume file before commit, (b) commit anyway and flag it as deliberate, or (c) abandon the quest into `quest-log/archive/in-progress/`. This is the inventory-empty enforcement clause; it's a proposal-not-a-block (principal can override).
+2. **Orphan untracked quest-log files.** Run `git status --short gielinor/players/*/quest-log/ developer-braindead/quest-log/` and grep for lines starting with `??`. Untracked quest-log files are usually quest narratives written in prior sessions that close-session's `git add` missed — their content is already authoritative on disk but not versioned. **Surface these as part of this commit's scope** unless the principal explicitly excludes one. Born 2026-05-22 (S038) after a `git status` audit revealed `S031_*` and `S034_g2_*` had lived untracked for sessions.
 
 - **Stage scoped.** Prefer `git add gielinor/players/<name>/quest-log/ ...specific paths` over `git add -A`. Verify with `git status` before committing.
 - **Subject:** `S{NNN}: <one-line summary>`. Under 70 chars.

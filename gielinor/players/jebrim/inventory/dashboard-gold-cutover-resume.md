@@ -1,6 +1,6 @@
 # Dashboard gold cutover — resume
 
-**Status:** queued. Handover written 2026-05-22 (post-S028 close). Next session opens the quest, runs the apply.
+**Status:** in-progress. Quest opened 2026-05-22 — `quest-log/in-progress/2026-05-22_dashboard-gold-cutover.md`. Three dwarves spawned in parallel (D1 SQL+pipeline, D2 UI, D3 audit+backtest).
 **Player:** Jebrim.
 **Repo / branch:** `bi-analytics/`, branch `shipping-mart-cutover` (already in flight — 13+ commits ahead of main, the cutover work continues there).
 **Companion work:** the shipping-agent cutover landed earlier in S028 (`bi-analytics-main` `7e74670`). This dashboard cutover brings the dashboard into alignment with the agent's gold-only contract.
@@ -83,6 +83,9 @@ Niklavs framed the work in three points + answered a list of clarifications duri
 
 - **Items query / `dw.dim_products` removal** (Q1). Principal: "lets defer until we add the shop order group." Waiting on `shop_order_group` migration into `shipping_mart.fact_shipment_orderitems`. Until then, `query_mart_items.sql` keeps the `dw.dim_products` JOIN. When the migration lands, drop the JOIN and use the gold column directly.
 - **ORWO expected-cost migration into the mart.** The mart populates `expected_shipping_cost_eur` for Picturator/PicaAPI but not ORWO. Post-cutover, ORWO rows have NULL `expected_shipping_cost`; if mart's `final_shipping_cost_eur` covers via `avg` they're costed, otherwise uncosted. When ORWO procedure migrates to the mart, the dashboard already handles it (just pulls `expected_shipping_cost_eur` directly).
+- **CSV export rework** (2026-05-22, parked during dashboard gold cutover). `OutliersTable.tsx` CSV download headers (`"Cost","Expected"`) were left intact during Phase D to avoid breaking downstream CSV consumers — vocab inconsistent with the gold rename ("Estimated" would match). Principal: "we will rework the export in general, we can make it better now, park it." When the broader export rework opens, align the vocab.
+- **`?bs=` URL emission** (2026-05-22, parked during dashboard gold cutover). D2's `coerceCostBasisParam` shim is purely defensive — no tab actually emits cost-basis into URL today (state lives in tab-local React/sessionStorage). When the broader shareable-links story opens (likely alongside the agent ↔ dashboard convergence quest), wire one or more tabs to round-trip cost-basis through `?bs=`. Principal: "park it."
+- **`backtest.py` signal-density tuning** (D3 flag, 2026-05-22). Constants `MIN_ABS_CHANGE_EUR=0.50` and `MIN_SHIPMENTS=100` kept as-is through the cutover. Cost-basis distribution may have shifted post-cutover (ORWO rows now NULL where the inline CASE used to fill). Principal: "keep as is." Re-evaluate from observation if signal density looks off; not blocking.
 
 ## Next concrete step
 

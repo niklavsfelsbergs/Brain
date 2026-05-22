@@ -6,54 +6,54 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-22 (end of [[S025]] tail — D-018 drafted as follow-up to the session's git-index race).
+**Last updated.** 2026-05-22 (end of dev-brain session that shipped [[D-018]] chunks 1–3 and prepped the S026 visualizer audit).
 
 ## Where we are
 
-[[S025]] designed and shipped [[D-017]] end-to-end in one session: visualizer renders parallel sessions of the same player as distinct tinted sprites with per-instance bubbles and COMMS prefixes. Hook stamps `instance` on every event from a player-class actor; state-instances.json registry maps `(actor, session_id) → instance`. Validated live on first run — two parallel Jebrim sessions appeared correctly. First tint pass too subtle (+25°), bumped to +140°/+220°/+80° for clear differentiation.
+This dev-brain session **shipped [[D-018]] chunks 1–3 end-to-end** and **prepped the S026 visualizer audit**.
 
-**Tail incident.** While committing S025, Jebrim's parallel session ran a broad `git add` that swept up the D-017 work into his "CSV export rework" commit (`5ec5c4c`). No data lost, attribution muddled. This was the fifth parallel-session shared-state race in a row (S014, S022, S023, S024, S025). Drafted [[D-018]] as the structural response — per-session sidecars + discipline rules instead of more attribution band-aids.
+D-018 ships:
+- **Chunk 1** (commit `0873ae0`) — `state-actors.json` re-keyed for player-class actors: jebrim/zezima get nested `{ byId: { sessionId: building } }` via new `get_actor_building` / `set_actor_building` helpers. Wisp, braindead, and `_mode*` keys stay flat. Legacy strings still read transparently.
+- **Chunk 2** (same commit) — `state-dwarves.json` / `state-gnomes.json` re-keyed: top-level shape now `{ nextId, bySession }`. `nextId` stays globally monotonic (parallel sessions can't both spawn "D1"); `byToolUseId` / `pendingQueue` / `byAgentId` / `pendingAgentBind` partitioned per session. `attribute_to_subagent` and `gc_stale_subagents` updated accordingly.
+- **Chunk 3** (commit `5172257`) — `gielinor/meta/communication-protocol.md` mandates `<actor>-<sid8>.txt` intent filenames using `CLAUDE_CODE_SESSION_ID`. Hook's dual-read fallback in `_intent_file_candidates` stays for sessions without the env var.
+
+**Bug confirmation under live observation.** A screenshot mid-session showed two parallel Jebrims with **identical bubble text** ("CSV rework home - synthesis, awaiting smoke") after a move. Root-caused live to exactly the on-disk file race D-018 predicted: both Jebrims write to bare `jebrim.txt`, then `_reemit_intent_after_move` falls through to bare and re-emits whichever session wrote most recently. Chunk 3 fix lands but won't take effect for those running Jebrim sessions until their next turn re-reads `meta/`.
+
+S026 audit prep:
+- Three Explore dwarves walked `experiments/visualizer/index.html` (3249 lines) in parallel — D1 architecture & rendering, D2 event dispatch & state shapes, D3 CSS / UX / visual polish.
+- Synthesized into `bank/research/visualizer-audit-S026-prep.md`: 9 bugs ranked by severity, 10 improvements ranked by payoff, 6 open questions for the running-app verification phase.
+- Recommended start order documented; B1 (day/night ignores replay timeline) + B3 (Braindead COMMS gap, S021 C2 still open) + I1 (centralize actor color taxonomy, S021 C1 still open) + I2 (scroll-lock on COMMS) lead.
+
+Prior context that still matters:
+- [[S025]] shipped [[D-017]] end-to-end: visualizer renders parallel sessions of the same player as distinct tinted sprites with per-instance bubbles and COMMS prefixes. Open follow-ups from D-017 (none blocking): cross-instance dwarf delegation, accessibility check of tint palette, active-player as `Set`, sprite stacking at 3+ instances per building.
+- The S014 → S025 parallel-session race pattern (six incidents by now) is what D-018 closes. Success criterion: "bug surface from parallel-session shared-state races stays flat for 3+ sessions of mixed work."
 
 Open follow-ups from D-017 (none blocking): cross-instance dwarf delegation, accessibility check of tint palette, active-player as `Set` instead of single value, sprite stacking at 3+ instances per building.
 
-[[S024]] shipped the first wave of [[Q-008]] visualizer aliveness work plus one bug surfaced and fixed under live observation:
+[[S024]]'s aliveness pass (idle breath SMIL, ambient particles, day/night overlay, reduced-motion gating, intent re-emit on move) is in place. Aliveness options **4 (NPC wanderers) and 5 (trail echoes) deferred** without committed trigger.
 
-- **Idle sprite breath.** Vertical scale (1 → 0.95 → 1) via inline SMIL `<animateTransform>` on each player's `.bob` group. Switched from CSS to SMIL after the `.actor .bob` descendant selector silently refused to animate while the wisp's direct-class `.wisp-bob` worked fine — root cause not pinned. Final form reads as breath, not float: head compresses ~1.5px, feet drift ~0.35px (imperceptible).
-- **Ambient particles.** Forge smoke at braindead-workshop, candle-flicker on lit lorebook-library windows, parchment-flutter on three inbox-square bulletin notes. Keepsake-vault's gem-shine already covered.
-- **Day/night hue overlay.** Fullscreen `<rect>` below the vignette, `mix-blend-mode: multiply`, JS interpolates four hour-keyed anchor tints, refreshed every 60s.
-- **Reduced-motion gate.** New animations zeroed and overlay hidden under `@media (prefers-reduced-motion: reduce)`.
-- **Bug fix — intent re-emit on move.** Visualizer clears player intents on building change, and the hook only emits intent events on intent-file writes — so a working session that calls tools without updating its intent file silently loses its bubble after the first move. Fixed in `emit-event.py` with `_reemit_intent_after_move()` called right after every main-actor move event. Sub-agents skip (no intent file).
-
-Aliveness options **4 (NPC wanderers) and 5 (trail echoes) deferred** without committed trigger — neither on critical path.
-
-[[S023]]'s "watching-it-run finds bugs the audit-and-validate phase missed" pattern reinforced — the intent silence only surfaced under sustained live observation, not the build phase. **Four-incident pattern** now (S014, S022, S023, S024).
-
-The first **live gnome spawn** is still deferred.
+The first **live gnome spawn** is still deferred — now folded into Step 2.
 
 ## Next concrete step — START HERE
 
-**Step 1 — D-018 implementation (NEW, from [[S025]]).** D-018 is drafted but not implemented. It commits to per-session sidecars for Category-A shared state and discipline rules for the git layer. The first concrete chunks are:
+**Step 1 — Visualizer audit (NEW).** Read `bank/research/visualizer-audit-S026-prep.md` first. It's the primer this session produced via three parallel Explore dwarves (D1 architecture, D2 event dispatch + state, D3 CSS/UX). The doc covers how the renderer works (engine, 14 event types, in-memory state shapes, layer model, CSS systems, modes), 9 bugs ranked by severity with `file:line` refs, 10 improvements with payoff estimates, and 6 open questions that need running-app verification. Recommended start order is at the bottom of the prep doc — B1 day/night-in-replay, B3 Braindead COMMS, I1 color taxonomy, I2 scroll-lock first.
 
-- Re-key `state-actors.json` to `(actor, sessionId) → building` for player-class actors. Visualizer + hook both touched.
-- Re-key `state-dwarves.json` / `state-gnomes.json` to be session-scoped so two parallel sessions don't collide on D1/G1.
-- Decide whether to deprecate the bare `intent/<actor>.txt` fallback now or wait for full migration.
+D-018 chunks 1–3 are **shipped this session** (commits `0873ae0` and `5172257`). Hook-side state files now session-isolate per D-018 Category A; `meta/communication-protocol.md` mandates per-session intent filenames. Parallel Jebrim sessions still running at session-close will keep clobbering each other's bubble until their next turn re-reads `meta/`.
 
-Read `bank/decisions/D-018_parallel_session_substrate_isolation.md` first. Each chunk is a separate commit; the schema reads need to handle old + new shapes for backwards compat during rollout.
+**Step 2 — first live gnome spawn (carried from S020 / S021 / S022 / S023 / S024 / S025).** Still the natural validation event for the boundary hook (S020's env→payload-field fix), the visualizer's gnome render path, and audit fixes that only fire under sub-agent activity. The session-gating from [[S023]], the intent-re-emit from [[S024]], the instance-routing from [[S025]], and the session-scoped substates from D-018 are all dependencies to test under sub-agent activity. Audit open question #6 in the S026 prep doc — no `state-gnomes.json` exists on disk yet because gnomes haven't been spawned. Combined-test candidate: a Jebrim alching gnome.
 
-**Step 2 — first live gnome spawn (carried from S020 / S021 / S022 / S023 / S024).** Still the natural validation event for the boundary hook (S020's env→payload-field fix), the visualizer's gnome render path, and audit fixes that only fire under sub-agent activity. The session-gating from [[S023]], the intent-re-emit from [[S024]], and the instance-routing from [[S025]] are all dependencies to test under sub-agent activity. Combined-test candidate: a Jebrim alching gnome. Note D-018's open question — if `state-gnomes.json` gets re-keyed first, this gets cleaner.
-
-**Step 2 — drafts triage** (carried from S018 → S019 → S020 → S021 → S022). Several drafts still await ruling:
+**Step 3 — drafts triage** (carried from S018 → S019 → S020 → S021 → S022). Several drafts still await ruling:
 
 - `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — promote to `lorebook/decisions/D-NNN_*.md` to canonicalize the S018 audit's structural decisions.
 - `gielinor/players/jebrim/keepsake/proposals/2026-05-21_eu-tender-2026.md` (still untouched).
-- `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md` — awaits Jebrim skills-promotion at first Jebrim alching (covered by Step 1 if the gnome runs).
-- `gielinor/players/jebrim/niksis8_character/drafts/` (S017-era + `2026-05-21-prefers-evidence-over-premature-infrastructure.md`) — also covered by Step 1 if the gnome runs.
+- `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md` — awaits Jebrim skills-promotion at first Jebrim alching (covered by Step 2 if the gnome runs).
+- `gielinor/players/jebrim/niksis8_character/drafts/` (S017-era + `2026-05-21-prefers-evidence-over-premature-infrastructure.md`) — also covered by Step 2 if the gnome runs.
 
-**Step 3 — D-014 + S015 browser verification** (carried from S017). Subsumed by Step 1's combined test if the visualizer is open in live mode while the gnome runs.
+**Step 4 — D-014 + S015 browser verification** (carried from S017). Subsumed by Step 2's combined test if the visualizer is open in live mode while the gnome runs.
 
-**Step 4 — narration channel shakedown** (carried from S021/S022). Used heavily across opens; a deliberate stress test still warrants its own session.
+**Step 5 — narration channel shakedown** (carried from S021/S022). Used heavily across opens; a deliberate stress test still warrants its own session.
 
-**Step 5 — pick from [[Q-008]]** when ready to make the world feel alive. Recommendation in the entry: idle sprite breath + per-building ambient particles first, gated behind `prefers-reduced-motion`.
+**Step 6 — pick from [[Q-008]]** when ready to make the world feel alive. Recommendation in the entry: NPC wanderers + trail echoes (the two not yet shipped by S024).
 
 Other live threads (carried, lower priority):
 
@@ -79,11 +79,12 @@ Iteration menu (deferred, no priority assigned):
 
 ## Open at the start of next session
 
-- **First live gnome spawn** — Step 1. Validates the whole S020 cascade plus the S022/S023 attribution-gating under sub-agent activity.
-- **Drafts triage** — Step 2.
-- **D-014 + S015 browser verification** — Step 3.
-- **Narration shakedown** — Step 4.
-- **[[Q-008]] pick** — Step 5.
+- **S026 visualizer audit** — Step 1. Read `bank/research/visualizer-audit-S026-prep.md` and execute the recommended start order.
+- **First live gnome spawn** — Step 2. Validates the S020 cascade + D-018 session-scoped substates under sub-agent activity.
+- **Drafts triage** — Step 3.
+- **D-014 + S015 browser verification** — Step 4. Subsumed by Step 2 if the visualizer is open during the gnome run.
+- **Narration shakedown** — Step 5.
+- **[[Q-008]] pick** — Step 6.
 - §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations
@@ -143,18 +144,20 @@ From [[S003]]–[[S007]]: **structure-first, content earns its way in.** **Build
 ## Files to read first
 
 1. `respawn.md` (this file)
-2. `quest-log/S023_visualizer_ticker_and_cross_session_attribution.md` — the session that just closed.
-3. `quest-log/S022_visualizer_audit_fixes.md` — the previous session; S023 builds on its cross-session attribution work.
-4. `bank/research/visualizer-audit-S021.md` — the audit that drove S022. Historical record.
-5. `bank/open-questions/Q-008_visualizer_aliveness.md` — parked.
-6. `developer-braindead/.claude/hooks/emit-event.py` + `experiments/visualizer/index.html` — the patched targets.
-7. `gielinor/.claude/hooks/gnome-write-boundary.py` + `dwarf-write-boundary.py` + `block-sub-spawn.py` — boundary hooks, still untested in the wild.
-8. `gielinor/spellbook/skills/spawning-gnomes.md` — gnome operating spec.
-9. `gielinor/.claude/agents/gnome.md` — agent config.
-10. `gielinor/meta/modes.md` — principal/dwarf/gnome axis.
-11. `gielinor/spellbook/rituals/close-session.md` + `alching.md` — step 0 spawn-decisions.
-12. `bank/decisions/D-014_visualizer_chat_panel.md`, `D-015_jebrim_layer_audit_outcomes.md`, `D-016_gnomes_subagent.md` — prior decisions.
-13. `bank/plan.md` — current mission state.
+2. `bank/research/visualizer-audit-S026-prep.md` — **the primer for Step 1**. How the visualizer works, 9 bugs with line refs, 10 improvements, 6 open questions.
+3. `bank/decisions/D-018_parallel_session_substrate_isolation.md` — shipped this session; reference for the per-session substrate model.
+4. `experiments/visualizer/index.html` — the audit target (3249 lines).
+5. `developer-braindead/.claude/hooks/emit-event.py` — the event producer feeding the visualizer; updated this session with D-018 changes.
+6. `bank/research/visualizer-audit-S021.md` — prior audit; C1 (color taxonomy) and C2 (Braindead COMMS) are still open and appear as I1 and B3 in the S026 prep.
+7. `bank/open-questions/Q-008_visualizer_aliveness.md` — parked.
+8. `gielinor/.claude/hooks/gnome-write-boundary.py` + `dwarf-write-boundary.py` + `block-sub-spawn.py` — boundary hooks, still untested in the wild.
+9. `gielinor/spellbook/skills/spawning-gnomes.md` — gnome operating spec.
+10. `gielinor/.claude/agents/gnome.md` — agent config.
+11. `gielinor/meta/modes.md` — principal/dwarf/gnome axis.
+12. `gielinor/meta/communication-protocol.md` — updated this session to mandate per-session intent filenames.
+13. `gielinor/spellbook/rituals/close-session.md` + `alching.md` — step 0 spawn-decisions.
+14. `bank/decisions/D-014_visualizer_chat_panel.md`, `D-016_gnomes_subagent.md`, `D-017_parallel_player_instances.md` — prior decisions.
+15. `bank/plan.md` — current mission state.
 
 ## Note on the visualizer's engine
 

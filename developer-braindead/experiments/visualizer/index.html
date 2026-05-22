@@ -3099,6 +3099,15 @@ function despawnPenguin(id) {
 // exists yet for that (actor, instance), spawn it as a tinted secondary sprite.
 function ensureActorExists(actor, atKey, instance) {
   if (!actor) return;
+  // Strip `-<sid8>` suffix on legacy events that leaked the per-session intent
+  // filename as an actor name (pre-S028 emit-event.py didn't strip braindead
+  // suffixes). parseInstanceKey's regex only catches digit suffixes, so hex
+  // sid8s like "braindead-ed610cbe" fall through here as their own actor.
+  const SID8_SUFFIX_ACTORS = ['jebrim','zezima','braindead','guthix','wisp'];
+  const m = /^([a-z][a-z0-9_]+)-([0-9a-f]{8})$/i.exec(actor);
+  if (m && SID8_SUFFIX_ACTORS.includes(m[1].toLowerCase())) {
+    actor = m[1].toLowerCase();
+  }
   const inst = +instance || 1;
   // D-017/D-019: instance > 1 → parallel-instance sprite (tinted, with badge).
   // Player-class + braindead are the eligible actors. Wisp/Guthix never fork.
@@ -3190,7 +3199,7 @@ function despawnPlayerInstance(actorKey) {
   delete currentBuilding[actorKey];
   delete instanceLastEventAt[actorKey];
   freeGatherSlot(actorKey);
-  clearIntent(actorKey, true);
+  clearIntent(actorKey, false);
 }
 
 function spawnBraindead(ev) {
@@ -4007,7 +4016,6 @@ function seekTo(newT) {
     applyEvent(EVENTS[cursor], true); cursor++;
   }
   t = newT; scrub.value = t; updateTicker();
-  updateDayNight();
 }
 
 function tick(now) {
@@ -4019,7 +4027,6 @@ function tick(now) {
       applyEvent(EVENTS[cursor], false); cursor++;
     }
     scrub.value = t; updateTicker();
-    if (!LIVE) updateDayNight();
   }
   requestAnimationFrame(tick);
 }
@@ -4070,54 +4077,6 @@ buildFlora();
 buildBuildings();
 buildLabels();
 wireBuildingTooltips();
-
-// ─────────────────────────────────────────────────────────────
-//   Day/night hue overlay — Q-008 (3)
-//   Interpolates between four anchor tints across the wall clock.
-//   With mix-blend-mode multiply, dark anchors strongly tint the
-//   map; near-white anchors leave it almost untouched.
-// ─────────────────────────────────────────────────────────────
-const DAY_NIGHT_ANCHORS = [
-  { h:  0, r:  60, g:  84, b: 138, a: 0.55 }, // midnight — deep cool blue
-  { h:  6, r: 246, g: 200, b: 154, a: 0.32 }, // dawn — warm orange-pink
-  { h: 12, r: 255, g: 250, b: 240, a: 0.04 }, // noon — near transparent
-  { h: 18, r: 236, g: 155, b: 111, a: 0.30 }, // dusk — warm amber
-  { h: 24, r:  60, g:  84, b: 138, a: 0.55 }, // wrap to midnight
-];
-function lerp(a, b, t) { return a + (b - a) * t; }
-// Hour source differs by mode:
-//   live    → wall clock (the agent really is acting at this hour),
-//   replay  → timeline cursor mapped across TOTAL_MS as one virtual day,
-//             so scrub + autoplay walk the overlay through midnight → noon → dusk.
-function currentHour() {
-  if (LIVE) {
-    const now = new Date();
-    return now.getHours() + now.getMinutes() / 60;
-  }
-  return (t / TOTAL_MS) * 24;
-}
-function dayNightFill() {
-  const hour = currentHour();
-  let lo = DAY_NIGHT_ANCHORS[0], hi = DAY_NIGHT_ANCHORS[DAY_NIGHT_ANCHORS.length - 1];
-  for (let i = 0; i < DAY_NIGHT_ANCHORS.length - 1; i++) {
-    if (hour >= DAY_NIGHT_ANCHORS[i].h && hour <= DAY_NIGHT_ANCHORS[i+1].h) {
-      lo = DAY_NIGHT_ANCHORS[i]; hi = DAY_NIGHT_ANCHORS[i+1]; break;
-    }
-  }
-  const span = hi.h - lo.h || 1;
-  const t = (hour - lo.h) / span;
-  const r = Math.round(lerp(lo.r, hi.r, t));
-  const g = Math.round(lerp(lo.g, hi.g, t));
-  const b = Math.round(lerp(lo.b, hi.b, t));
-  const a = lerp(lo.a, hi.a, t).toFixed(3);
-  return `rgba(${r},${g},${b},${a})`;
-}
-function updateDayNight() {
-  const el = document.getElementById('day-night');
-  if (el) el.setAttribute('fill', dayNightFill());
-}
-updateDayNight();
-setInterval(updateDayNight, 60 * 1000); // refresh every minute
 
 // ─────────────────────────────────────────────────────────────
 //   D-017 — idle-despawn timer for parallel player instances
@@ -4389,18 +4348,29 @@ if (LIVE) {
       intent.textContent = (r.intent || '').replace(/^﻿/, '') || '—';
       row.appendChild(intent);
 
-      // Click → copy sid8 to clipboard. Phase 3 will replace this with a
-      // window-focus call; for now the sid8 is the lookup key the operator
-      // needs to find the right terminal manually.
-      row.addEventListener('click', () => {
-        if (navigator.clipboard && r.sid8) {
-          navigator.clipboard.writeText(r.sid8).then(() => {
-            row.style.outline = '2px solid #ffcb46';
-            setTimeout(() => { row.style.outline = ''; }, 350);
-          }).catch(() => {});
+      // Click → fire claude-focus:// URL scheme. The OS hands the URL to
+      // focus-window.ps1 (registered via register-claude-focus.ps1), which
+      // walks up the process tree from the session's recorded claude_pid to
+      // the owning VS Code window and SetForegroundWindow's it. Shift-click
+      // falls back to copying sid8 to the clipboard.
+      row.addEventListener('click', (ev) => {
+        if (!r.sid8) return;
+        if (ev.shiftKey) {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(r.sid8).then(() => {
+              row.style.outline = '2px solid #ffcb46';
+              setTimeout(() => { row.style.outline = ''; }, 350);
+            }).catch(() => {});
+          }
+          return;
         }
+        // Brief visual ack so the user sees something happened — the actual
+        // focus latency (~200ms PowerShell startup) is hidden by the OS.
+        row.style.outline = '2px solid #2e7a2e';
+        setTimeout(() => { row.style.outline = ''; }, 350);
+        window.location.href = 'claude-focus://' + encodeURIComponent(r.sid8);
       });
-      row.title = `${r.session_id || r.sid8}\nproject: ${r.project_dir || '?'}\nstate: ${state}\nclick to copy sid8`;
+      row.title = `${r.session_id || r.sid8}\nproject: ${r.project_dir || '?'}\nstate: ${state}\nclick → focus VS Code window\nshift-click → copy sid8`;
       listEl.appendChild(row);
     }
   }

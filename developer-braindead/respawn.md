@@ -6,9 +6,13 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-22 (end of [[S034]] — Guthix consultation mode landed; [[D-022]] captured. Doc-only change across nine `gielinor/` files plus dev-brain artifacts). **S034 consultation mode untested live (Step 7 now covers both consultation and bankstanding); sidecar registration shape still pending (Step 1).**
+**Last updated.** 2026-05-22 (end of [[S033]] + [[S034]] + [[S037]] — three parallel dev-brain closes. S033 shipped a visualizer audit + 12 fixes; S034 expanded Guthix into consultation mode; S037 built switchboard Phase 3 click-to-focus. Sidecar registrations now live at the option-1 shape; cross-verify next session that the three closes didn't collide on shared surfaces.).
 
 ## Where we are
+
+[[S037]] landed Phase 3 of the terminal switchboard ([[D-020]]) — click-to-focus from the visualizer sidebar to a VS Code window. New mechanism: `status-sidecar.py` walks the process tree via `CreateToolhelp32Snapshot` ctypes on first fire and records `claude_pid_chain` (every ancestor up to depth 20). New `focus-window.ps1` (~150 lines, pure ASCII) iterates the chain to find the first live `Code.exe` with `MainWindowHandle != 0` and brings it forward with `SetForegroundWindow` + `AttachThreadInput`. New `register-claude-focus.ps1` registers the `claude-focus://<sid8>` URL scheme in HKCU; sidebar row click now does `window.location.href = 'claude-focus://' + sid8` (shift-click falls back to copy-sid8). Settings.json sidecar registration also re-enabled at the option-1 shape — `UserPromptSubmit` + `Stop` + `SessionEnd` (3 fires/turn). The terminal-rendering glitch from S032 did not recur in fresh terminals; Step 0 obsolete. Mechanism self-tested via the log (`SetForegroundWindow returned True` against this session's chain); visual confirmation against a *second* VS Code window still pending — with only one VS Code window open the focus call is a no-op. Quest-log entry in `quest-log/in-progress/S037_*.md` carries the open items.
+
+[[S033]] audited the visualizer (live mode + hooks) and shipped 12 fixes across three files. **index.html**: deleted dead day-night code from S031 (`DAY_NIGHT_ANCHORS` / `currentHour` / `dayNightFill` / `updateDayNight`); `despawnPlayerInstance` fades bubble alongside sprite instead of snapping; `ensureActorExists` strips legacy `<actor>-<8hex>` suffix so `braindead-ed610cbe`-shaped historical events resolve to bare `braindead`. **emit-event.py**: `BASH_SUBTASK_TABLE`'s `echo` pattern requires `>` redirect to `.claude/<sidecar>`; `handle_session_end` clears the ending session's keys from every `state-actors.json` `byId` map (was accumulating dead entries) and clears `_mode_session_id` when owned. **status-sidecar.py**: `_detect_actor` scans `*-<sid8>.txt` instead of hardcoded roster; intent carry-forward only when prev actor matches; new `_sweep_stale_tmp()` cleans `<base>.<ext>.tmp.<digits>` leftovers; `_detect_instance(actor, sid)` pulls real instance from `state-instances.json` so sidebar renders Braindead·2 vs Braindead·1; `_write_manifest` excludes `state == "ended"`. Deferred per ruling: state.ndjson unbounded growth (#4), gc_stale_subagents per-call cost (#12). **Live-verification of the new turn-resolution switchboard UX + Braindead·1/·2 disambiguation is the load-bearing next step (folded into S037's Step 1b).** Quest entry in `quest-log/S033_visualizer_audit_live_mode_and_hooks.md`.
 
 [[S034]] expanded Guthix from a ritual-only voice to a two-mode deity: **consultation** (default residence — general questions, cross-cutting lookups, system-shaped reflection) and **bankstanding** (the ritual). Same actor, same sprite; different write authority. Wisp shrinks to "session that has truly had no prompt yet" — any substantive question without a player address now routes to Guthix consultation. Nine doc files in `gielinor/` touched: `meta/guthix.md` (major rewrite), `meta/modes.md` (lifted to five session modes), `CLAUDE.md`, `meta/write-rules.md`, `meta/layer-routing.md`, `meta/communication-protocol.md`, `spellbook/rituals/bankstanding.md`, `deities/_about.md`, `deities/guthix/_about.md`. Decision is [[D-022]]; live test pending (Step 7). No hooks, no visualizer, no code — discipline change on top of existing `guthix.txt` machinery. The S032 origin story ("Hey Guthix" used as a general design surface) was itself the use case that motivated this — the architecture now matches the principal's mental model.
 
@@ -34,15 +38,20 @@ Carried forward — [[S031]], [[S030]], [[S029]] context preserved below:
 
 ## Next concrete step — START HERE
 
-**Step 0 — Open a fresh VS Code terminal.** The current terminal's render state is corrupted (DEC Special Graphics escape sequence stuck without reset). Close the broken tab, open a new one with `` Ctrl+Shift+` ``. The corruption is Claude Code's chat-stream rendering only; shell commands and file I/O are unaffected. **Confirm before doing other work** that Claude Code text renders cleanly in the new terminal.
+**Step 0 — Open a fresh VS Code terminal.** ~~Carried from S032.~~ ✅ Confirmed in S037: the terminal-rendering corruption did not recur in fresh terminals. This step is now obsolete; remove next pass.
 
-**Step 1 — Decide the status-sidecar registration shape (D-020 Phase 1 wrap-up).** Three options:
+**Step 1 — Sidecar registration shape decision.** ✅ Landed in S037 as **option 1** (`UserPromptSubmit` + `Stop` + `SessionEnd`). `_comment_status_sidecar` in `brain/.claude/settings.json` documents the rationale inline. Hot-reload confirmed working — first user prompt after the edit populated the new fields without a Claude Code restart. Lorebook draft on hook-fire-rate-as-budget still pending — write it next bankstanding pass alongside the ASCII-PS lesson from S037.
 
-1. **Re-enable with lower-frequency design (preferred).** Register for `UserPromptSubmit` + `Stop` + `SessionEnd` only. Three fires per turn instead of 2N+3 — well below `emit-event.py`'s rate. UserPromptSubmit sets `state=working` at turn start; Stop sets `state=waiting_for_user` at turn end; SessionEnd sets `state=ended`. Loses per-tool-call age granularity but the switchboard UX only needs turn-resolution freshness.
-2. **Leave fully paused.** Sidebar would stale-out quickly because only SessionEnd fires; useful only as a "session-ended log." Unsatisfying.
-3. **Revert further** — remove the SessionEnd registration too, and consider whether the sidecar wants a different transport (e.g., periodic batched write driven by a single long-running process rather than per-event subprocess spawns).
+**Step 1b — Live-confirm D-020 Phase 3 click-to-focus (carried from S037).** Mechanism is in place but only validated against a single VS Code window so far (where the focus call is a no-op visually). The real test:
 
-Recommendation: **option 1**, with the lesson codified in [[D-020]] + a lorebook draft.
+- Open a second VS Code window (`Ctrl+Shift+N`, or right-click → New Window).
+- Start a fresh `claude` session in it; send any prompt to populate `claude_pid_chain` in its status file.
+- From *this* window's visualizer (`http://localhost:8765/?live=1`), click that other session's row in the switchboard pane.
+- Expected: this window stays, the other window jumps forward.
+- If it works: write the D-020 doc update (§"Hook wiring" registration shape + §"Phase build order" Phase 3 done + new §"Process tree walk" section) and close S037.
+- If it doesn't: tail `~/.claude/status/focus.log` for which Code.exe HWND it targeted. Likely culprit if multiple Code.exe siblings: the chain captures one of them but `SetForegroundWindow` lands on the wrong one — disambiguation logic needed.
+
+Old-format sessions (any whose last hook fired before the S037 edit) have only `claude_pid`, no chain. Either send a prompt in them (re-fires the sidecar) or just spawn fresh ones.
 
 **Step 2 — Verify S031's lane-based bubble layout** (carried from S031). Open the visualizer in live mode and trigger a multi-sprite cluster (2–3 dwarves at the same building, or Jebrim + dwarves at quest-hall). Watch:
 
@@ -70,7 +79,7 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 
 **Step 5 — Cross-repo sidecar rollout (D-020 follow-up).** To get true cross-machine session visibility, move the status-sidecar hook registration from `brain/.claude/settings.json` to `~/.claude/settings.json` (user-level). The status file path is already designed for this; only the registration needs to migrate. Separate decision — sanity-check Step 1's lower-frequency design first.
 
-**Step 6 — Phase 3 of D-020 (VS Code click-to-focus).** Deferred until Phase 2's UX is lived-with for a week. If alt-tab from the sidebar list proves sufficient, Phase 3 stays unbuilt. If not, the "one-VS-Code-window-per-session" convention flavor is the lowest-effort path — set `$Host.UI.RawUI.WindowTitle = "claude-$sid8-<actor>"` in `$PROFILE`, then a PowerShell helper using `user32.dll`'s `FindWindow` + `SetForegroundWindow` brings the matching window forward on row click.
+**Step 6 — D-020 Phase 3 (VS Code click-to-focus).** ~~Deferred.~~ Built in S037 — see Step 1b above for live-confirmation. The window-title-matching plan in the original design didn't pan out (`$Host.UI.RawUI.WindowTitle` in VS Code's integrated terminal sets the *tab* title, not the *window* title); pivoted to process-tree walk via `CreateToolhelp32Snapshot`. Worked first try on the chain-walk path. Remaining: live multi-window confirmation + doc update of D-020.
 
 **Step 7 — Live test Guthix end-to-end** (carried from S028, extended by [[S034]]). Replay-mode demos worked; live-mode demo still pending for both modes:
 
@@ -102,13 +111,12 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 
 ## Open at the start of next session
 
-- **Fresh terminal first** — Step 0. Confirm Claude Code text renders cleanly before anything else.
-- **Sidecar registration shape decision** — Step 1.
+- **Live-confirm click-to-focus with a second VS Code window** — Step 1b. The big remaining S037 item.
+- **D-020 doc update** — once Step 1b passes: §"Hook wiring" + §"Phase build order" + new §"Process tree walk" section.
 - **Verify S031 lane-based bubble layout** — Step 2. Still untested visually.
 - **Live test penguins** — Step 3.
 - **Parallel Braindead visual tuning** — Step 4 (function validated by S032).
 - **Cross-repo sidecar rollout** — Step 5.
-- **D-020 Phase 3 click-to-focus** — Step 6 (deferred, decide after living with Phase 2).
 - **Live test Guthix** — Step 7 (now covers both consultation [[S034]] and bankstanding).
 - **Subtask debounce** — Step 8.
 - **Replay demos** — Step 9.
@@ -122,6 +130,14 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 - §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations
+
+From [[S037]] (new): **Windows PowerShell 5.1 reads `.ps1` files as cp1252 unless a UTF-8 BOM is present.** A single em-dash in a `Write-Log` string broke the parse — the three UTF-8 bytes got read as three cp1252 characters, swallowing the closing quote and cascading errors through the rest of the file. **Discipline: pure ASCII for `.ps1` scripts, or write with UTF-8 BOM.** Worth a lorebook draft paired with the hook-fire-rate-as-budget lesson (both Windows substrate gotchas).
+
+From [[S037]] (new): **walking the process tree at hook fire time is the right shape for "I need an ancestor PID later" on Windows.** `os.getppid()` from a hook subprocess points at a short-lived wrapper (two layers of `bash.exe` on this machine) that exits seconds after the hook returns. `Get-Process -Id <dead>` returns nothing; PIDs may get recycled. Capturing the full ancestor chain *while everyone is still alive* via `CreateToolhelp32Snapshot` sidesteps all of it. Same pattern fits other instrumentation that needs to retain process-tree facts across time.
+
+From [[S037]] (new): **"it works in the log" ≠ "the user saw it work."** First user feedback was "still just opens a terminal" — the focus mechanism was correct end-to-end, but with one VS Code window the visible effect was zero. Build the visible-effect setup *into the test plan*, not after.
+
+From [[S037]] (new): **the conhost flash is the protocol handler's tax, not a script bug.** Browser-triggered local actions via a URL scheme always flash a conhost briefly even with `-WindowStyle Hidden`. Plan for it explicitly; suppression would require switching the handler to `wscript.exe` or a compiled launcher.
 
 From [[S034]] (new): **a four-bullet refusal list is a signal that the actor's role is too narrow.** Guthix's pre-S034 "What he refuses" had four items; post-S034 it has one ("won't write into a player's house"). When an actor declines a category of work, ask whether the role definition is the cause before defending the boundary.
 

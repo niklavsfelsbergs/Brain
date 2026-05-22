@@ -723,7 +723,11 @@ BASH_SUBTASK_TABLE: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^\s*(cat|head|tail|less|more)\b"), "reading output"),
     (re.compile(r"^\s*(python|python3|node|npm|yarn|pnpm|rg|jq|curl|wget|gh)\b"),
         "running {tool}"),
-    (re.compile(r"^\s*echo\b"), "writing sidecar"),
+    # `echo ... > .claude/<sidecar>` is the only echo-pattern we want to
+    # surface as "writing sidecar." Plain `echo "hello"` should fall through to
+    # the generic phrase — labelling every echo as a sidecar write was
+    # misleading.
+    (re.compile(r"^\s*echo\b[^|]*?>+\s*[\'\"]?(?:[\w./\\-]*[\\/])?\.claude[\\/]"), "writing sidecar"),
 ]
 
 
@@ -975,6 +979,36 @@ def handle_session_end(payload: dict) -> None:
         # (Reusing low-numbered slots is a separate optimization.)
         state[actor] = entry
     save_json(INSTANCES_PATH, state)
+
+    # S033 finding #5: clear this session's byId entries from state-actors.json.
+    # Without this, byId accumulates dead session IDs forever (8 dead Braindead
+    # sessions + 6 dead Jebrim sessions observed in the wild). Reload because
+    # the guthix block above may have written; safe re-read.
+    actors = load_json(ACTORS_PATH, {})
+    dirty = False
+    for actor_name, entry in list(actors.items()):
+        if not isinstance(entry, dict):
+            continue
+        by_id = entry.get("byId")
+        if not isinstance(by_id, dict):
+            continue
+        if sid in by_id:
+            del by_id[sid]
+            entry["byId"] = by_id
+            actors[actor_name] = entry
+            dirty = True
+    # S033 finding #7: clear _mode_session_id when this session owns it. Without
+    # this, a crashed dev-brain session leaves _mode="dev-brain" with a stale
+    # _mode_session_id pointing at the dead session; the next active-mode write
+    # short-circuits in handle_active_mode_write without emitting a spawn event.
+    if actors.get("_mode_session_id") == sid:
+        actors.pop("_mode_session_id", None)
+        # _mode itself isn't cleared — if the session crashed mid-dev-brain, the
+        # next dev-brain session writing the same value will short-circuit but
+        # at least take ownership of the marker via the existing stamp path.
+        dirty = True
+    if dirty:
+        save_json(ACTORS_PATH, actors)
 
 
 def _intent_file_candidates(actor: str, session_id: str | None) -> list[Path]:

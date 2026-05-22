@@ -14,7 +14,7 @@ Pinned 2026-05-22 (S028, post gold cutover). Supersedes 2026-05-21 pin.
 
 Cutover from `enterprise_silver.*` landed 2026-05-22 — old silver facts are **gone** (not deprecated views). `map_shipment_key` and `dim_shipping_providers` are not needed — their data lives on `shipping_mart.fact_shipments` directly. `fact_truck_charges` is out of scope.
 
-**Shipping-agent (standalone).** Lives at `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/` today, but **relocatable** — designed to run anywhere with its own `.env` and `harness/`. Entry doc: `shipping-agent/README.md` (human) + `shipping-agent/how_to.md` (AI-facing rules + §1 "Where to find things" index). Reference content in `shipping-agent/reference/`; query methodology in `shipping-agent/skills/`.
+**Shipping-agent (standalone).** Lives at `Documents/GitHub/shipping-agent/` (relocated 2026-05-22 out of NFE — escaped CLAUDE.md walk). Self-contained — runs anywhere with its own `.env` and `harness/`. Entry doc: `shipping-agent/README.md` (human) + `shipping-agent/how_to.md` (AI-facing rules + §1 "Where to find things" index). Reference content in `shipping-agent/reference/`; query methodology in `shipping-agent/skills/`.
 
 **Connection.** Local `.env` in `shipping-agent/` with the `ship_mart_ro` user (read-only, gold-only). `harness/db.py` loads from the local `.env` only — does not walk up. Smoke-test: `python harness/connect_redshift.py --query "SELECT 1"`.
 

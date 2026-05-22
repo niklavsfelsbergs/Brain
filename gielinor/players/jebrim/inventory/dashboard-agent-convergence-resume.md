@@ -2,6 +2,8 @@
 
 **Status:** parked. No work started yet. Created S026 (2026-05-22) to hold the convergence intent in inventory until a session picks it up.
 
+**Related near-term work (handover queued):** `inventory/dashboard-gold-cutover-resume.md` (post-S028) — dashboard gets cut over to gold + aligned to the agent's cost-basis vocabulary as a prerequisite to convergence. That work is mechanical and scoped; this convergence quest covers the broader long-term direction (URL emission, shared definitions, dashboard ad-hoc layer) and stays parked until the principal opens it.
+
 **Quest goal:** align the shipping-costs monitoring dashboard and the shipping-agent so they tell consistent stories from the same mart. Specifically: deference flow (agent defers to dashboard for operational vocab), URL routing (agent can emit dashboard URLs), and shared definitions where it matters (cost basis, alert types, coverage semantics).
 
 ## Where we are

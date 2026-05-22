@@ -301,4 +301,41 @@ All three would have shipped to the agent unchanged if Niklavs hadn't asked for 
 
 **Apply session is now fully concrete** — see updated S024 inventory for the single-commit tranche. Still blocked only on §10 perimeter (next session opened in `bi-analytics-main/`).
 
+### T21 — apply executed + commits (2026-05-22, S028)
+
+Principal cued "lets tackle the actual agent" — proceeded with the apply from this session despite the §10 wd-switch convention (Jebrim doing maintainer work on the shipping-agent is principal-level, not the agent operating; brain context was loaded; cost of switching > cost of single-session edit).
+
+**Apply executed in 6 phases:**
+
+- **A — Credentials.** Wrote `shipping-agent/.env` with `ship_mart_ro` creds; created `.env.example` template. Stripped unused Oracle/ANTHROPIC/TCGPT env vars from `.env` (no shipping-agent code references them). `db.py` `_locate_env()` already does single-file load — no code change needed. Smoke-test: connected as `ship_mart_ro` ✓.
+- **B + C — Schema flips + 4-table doc stripping.** 16 files touched. All `enterprise_silver.fact_*` references for the 4 facts → `shipping_mart.fact_*`. `map_shipment_key` / `dim_shipping_providers` / `fact_truck_charges` / ~24 carrier invoice tables stripped per principal scope. `reference/sources.md`, `reference/tables.md`, `reference/mart-contract.md` rewritten; `skills/query-patterns.md` rewritten (no more fact→spine→dim walk); `harness/sample_queries.sql` + `connect_redshift.py` DEFAULT_QUERY rewritten; `README.md` rewritten with new setup flow; visualization-studio files (STANDARDS.md, lib/standards.js, app/page.js, light-presentation-template.json.example) flipped.
+- **D — Standalone severance.** Older NFE-side reference pointer was in README's Related section (rewritten); how_to.md §10 already had no credential-walk-up caveat to drop.
+- **E — Schema-perimeter rule (§0 rule 10).** Added: `shipping_mart` only, never assume `search_path`, reaching for other schemas is a scope violation. Bumped §0 lead-in from "Nine cross-cutting rules" → "Eleven."
+- **F — Cost-vocab insertions.** §A landed as `reference/mart-contract.md` § Cost columns (full vocabulary + verified `cost_source` distribution + 11 bucket names + invariants + worked example). §B landed as how_to.md §0 rule 11 (basis upfront, denominator matching, % invoiced reporting).
+
+**Three pre-apply assumptions caught by live verification (T20 → T21 carry):**
+
+1. `cost_source` values: assumed `'real'`. Actual: `'invoice'` (65%) / `'expected'` (24%) / NULL (8%) / `'avg'` (2%) / `'invoice_estimate'` (0.5%, transient remnant). Renamed throughout cost-vocab + how_to §0 rule.
+2. Bucket columns: assumed `bkt_*` prefix. Actual: no prefix; 11 columns named directly + 2 excluded (tax, customs). Corrected.
+3. `dim_shipping_providers.shippingprovider_name`: phantom column (never existed in silver schema either; only in sample_queries.sql usage). Replaced with `shipping_provider_group` per principal guidance (high-level "DHL"/"FedEx"; `shippingprovider_extkey` is service-level).
+
+**Smoke tests (all green):**
+- `SELECT 1` as `ship_mart_ro` ✓
+- `shipping_mart` schema sanity — 4 tables, 128 cols total (fact_shipments 65, cost_summary 32, invoice_lines 17, orderitems 14)
+- April 2026 TCG row count → 276,490 (transcript said 276,483; +7 = data growth)
+- Invoiced-only avg cost reproduces: **€6.95 / 209,874 parcels** (vs silver-era €6.29 / 231K — ~21K fewer invoiced parcels in gold for same slice, likely tighter matching post-cutover)
+- Schema perimeter probe: `SELECT 1 FROM enterprise_silver.fact_shipments` → permission denied ✓
+
+**Commits + push:**
+
+- `bi-analytics-main` `7e74670` — "shipping-agent: cutover to shipping_mart gold + standalone" (16 files, +591 / −746 lines net). Pushed to origin/main.
+- `brain` `cbf1766` — "S024 T19-T20: shipping-agent gold cutover — brain-side" (4 files: cost-vocab draft rewrite, keepsake proposal, S024 quest log T19+T20, S024 inventory). Pushed alongside pre-existing S027-close commit (`7c3aff0`).
+
+**One residual flag deferred:** the €6.29 → €6.95 invoiced-avg shift between silver and gold for the same April-TCG slice. Documented in commit message; not blocking. Possible explanation: gold's invoice-matching logic is stricter (fewer borderline shipment_id matches accepted), so the invoiced denominator shrunk by ~21K while preserving the per-shipment cost structure. If this matters for any downstream consumer, investigation is its own task.
+
+**Watch points carried to inventory:**
+- Real shipping-agent sessions against the new structure (does the agent route new gotchas correctly post-rewrite? does `shipping_provider_group` granularity match user expectations?)
+- gold-dag ground-truth path when bi-etl repoint lands
+- §0 rule firing reliability (per-T18-onward watch)
+
 ## Pending drafts

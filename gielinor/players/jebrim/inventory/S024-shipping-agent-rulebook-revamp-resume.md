@@ -30,97 +30,36 @@ shipping-agent/
 
 Each file declares audience (AI / AI + analyst / human) and stability (STABLE / LIVE). LIVE files carry `last-verified` stamps + re-verify probes.
 
-## Pending apply — standalone cutover, gold-verified (T19 + T20, 2026-05-22) — primary tranche
+**Tranche C — gold cutover + standalone** (T19–T21, S028, 2026-05-22). One commit to `bi-analytics-main` (`7e74670`) + one to brain (`cbf1766`). Schema cutover from `enterprise_silver.fact_*` → `shipping_mart.fact_*` across the 4 gold facts; spine + dim data denormalized into `fact_shipments` (no joins outside `shipping_mart`); standalone posture (local `.env` with `ship_mart_ro`, no walk-up, agent folder relocatable). Doc rewrites strip silver/bronze lineage (4-table scope only): `reference/sources.md`, `tables.md`, `mart-contract.md`, `coverage-audit.md`, `known-dq.md`, `skills/query-patterns.md`, `README.md`, `harness/sample_queries.sql`, `connect_redshift.py` DEFAULT_QUERY, `harness/db.py` docstring, `visualization-studio/{STANDARDS.md, lib/standards.js, app/page.js, content/light-presentation-template.json.example}`. Added §0 rule 10 (schema perimeter) + rule 11 (cost-basis disclosure / denominator matching / % invoiced reporting). Cost-vocab apply folded in (T16/T18 sharpening landed as `mart-contract.md` § Cost columns + how_to.md §0 rule 11 + worked-example block).
 
-**Blocked on:** next session opened in `bi-analytics-main/` working dir (or worktree-equivalent). All three repos present locally; blocker is §10 perimeter discipline, not machine state.
+## Cutover applied — bi-analytics-main 7e74670 (T21, S028, 2026-05-22)
 
-**Scope (locked in T20).** Agent operates on **4 gold facts only** — `shipping_mart.fact_shipments`, `shipping_mart.fact_shipment_cost_summary`, `shipping_mart.fact_shipment_orderitems`, `shipping_mart.fact_shipment_invoice_lines`. No spine join (denormalized into fact). No dim join (denormalized into fact). No source-side lineage in agent docs (defer to bi-etl). No `enterprise_silver.*` references anywhere. Standalone — relocatable to any folder with its own `.env` + `harness/`.
+The standalone gold cutover and cost-vocab apply **landed in a single bi-analytics-main commit** (`7e74670`, pushed). The brain-side companion is `cbf1766` (this repo). Both pushed.
 
-### Apply tranche — single bi-analytics-main session, single commit
+**What landed:** 16 files in bi-analytics-main (`.env.example` + `README.md` + `how_to.md` + `harness/{db.py,connect_redshift.py,sample_queries.sql}` + `reference/{mart-contract,tables,sources,coverage-audit,known-dq}.md` + `skills/query-patterns.md` + `visualization-studio/{STANDARDS.md,lib/standards.js,app/page.js,content/light-presentation-template.json.example}`). Net +591 / −746 lines (4-table scope is a strict simplification).
 
-**A. Credentials + standalone.**
+**Smoke-test baseline (verified, post-cutover):**
+- Connection as `ship_mart_ro` ✓
+- 4 tables in `shipping_mart`: `fact_shipments` 65 cols, `fact_shipment_cost_summary` 32, `fact_shipment_invoice_lines` 17, `fact_shipment_orderitems` 14 (128 total)
+- April 2026 TCG row count: 276,490 (matches transcript's 276,483; +7 data growth)
+- Invoiced-only avg cost April 2026 TCG: **€6.95 / 209,874 invoiced parcels** (vs silver-era €6.29 / ~231K — ~21K fewer invoiced parcels in gold for same slice)
+- Permission denied on `enterprise_silver.fact_shipments` confirms `ship_mart_ro` boundary
 
-- Create `shipping-agent/.env` with `ship_mart_ro` creds (REDSHIFT_USER / REDSHIFT_PASSWORD). `.env.example` template alongside (no secrets).
-- Verify `.gitignore` covers `.env` (already gitignored per S024 T17 discussion).
-- `harness/db.py` already loads from local `.env` only via `find_dotenv()` walk — but it currently *would* walk up to `NFE/.env` if local is missing. Tighten to explicit `load_dotenv(BASE_DIR / ".env")` only — no walk-up. (Sole code change in the harness.)
-- Smoke-test: `python harness/connect_redshift.py --query "SELECT 1"`.
+## Watch points (carried forward)
 
-**B. Schema flips — only the 4 facts.**
+The cutover apply is done; what's next is **monitoring real shipping-agent sessions** against the new structure. Specific regressions to scan for in coming sessions:
 
-15 files reference `enterprise_silver.{fact_shipments|fact_shipment_cost_summary|fact_shipment_orderitems|fact_shipment_invoice_lines}` (16 hits total; one is historical generated query under `visualization-studio/content/generated/claude/20260522-082530--*/query.sql` — leave). Flip those 15 to `shipping_mart.*`.
+1. **`shipping_provider_group` granularity.** First post-cutover carrier-breakdown query should confirm the group field gives Niklavs the granularity he expects. If too coarse, agent may need to surface `shippingprovider_extkey` selectively. (Silver-era queries used a phantom `shippingprovider_name` that never actually existed.)
+2. **Cost-basis rule firing.** The T18→T20 sharpening landed as how_to.md §0 rule 11. If a fresh cost-question transcript still produces a basis-less headline or a mismatched denominator after the apply, the wording isn't the issue — §0 rule priority/structure is. Don't redesign yet; need a real post-apply incident first.
+3. **Schema-perimeter rule firing.** §0 rule 10 (no joins outside `shipping_mart`). `ship_mart_ro` enforces this at the DB layer (permission denied) — should never trip in practice, but if the agent reaches for `enterprise_silver.*` in a query, that's worth flagging as the rule not landing.
+4. **The €6.95 vs €6.29 invoiced-avg shift.** Documented in commit message + T21 entry. Likely gold's invoice-matching is stricter; consumers downstream of the silver-era number may need a heads-up. Not load-bearing for the agent itself.
+5. **Gold-dag ground-truth path.** Currently still at `bi-etl/dags/enterprise_silver/shipping_data_mart/` transitionally per principal (T19). Re-pin keepsake when bi-etl repoints.
+6. **Routing failures.** When a new gotcha surfaces mid-session, does it land in the right post-cutover file? `mart-contract.md` STABLE, `coverage-audit.md` / `known-dq.md` LIVE with stamps. If `how_to.md` starts growing past ~400 lines, the discipline didn't hold.
+7. **Live-vs-stable contamination.** `mart-contract.md` is STABLE — if dated observations start landing there, separation is collapsing.
+8. **Stamp drift.** LIVE entries without `last-verified` stamps. Or stamps that don't refresh when entries update.
+9. **Phase 1 watch-list (still live).** Pre-action narration creeping back, auto-breakouts by sub-platform, latency creep, scope-perimeter reaches.
 
-**Plus** all 28 distinct `enterprise_silver.*` references across shipping-agent get stripped or replaced per the table below — not just the 4 facts. This is what "4-table scope" requires.
-
-| Silver reference | What happens |
-|---|---|
-| `enterprise_silver.fact_{shipments,shipment_cost_summary,shipment_orderitems,shipment_invoice_lines}` | Rename to `shipping_mart.fact_*` |
-| `enterprise_silver.map_shipment_key` | **Drop.** Data is on `shipping_mart.fact_shipments` (`source_system`, `shippingprovider_extkey`, `shop_ordernumber`, `trackingnumber`, `source_order_id`, `shop_order_created_date`). Update every query to use fact columns; drop the spine join. |
-| `enterprise_silver.dim_shipping_providers` | **Drop.** Data is on `shipping_mart.fact_shipments` (`shipping_provider_id`, `shipping_provider_group` [carrier name, high-level — "DHL", "FedEx"], `shippingprovider_extkey` [service-level]). Drop the dim join; replace `d.shippingprovider_name` references with `f.shipping_provider_group`. Note: `service_type`, `truck_provider`, `has_truck_cost` are gone — confirmed not used in user-facing queries. |
-| `enterprise_silver.fact_truck_charges` | **Drop.** Not in gold; internal plumbing only. Remove from presence-check queries, source-maturity tables, etc. |
-| `enterprise_silver.shipping_charge_bucket_mapping` | **Drop reference.** Lineage info, not queryable. Strip from `reference/sources.md` mentions. |
-| `enterprise_silver.{dhl,fedex,ups,maersk,gls,dpd,…}_invoices` (~24 carrier-specific tables) | **Drop all.** Source-side lineage tables — agent never queried them, only documented. Per principal scope: lineage defers to bi-etl docs, not agent. Strip from `reference/sources.md` and `reference/tables.md`. |
-| `enterprise_silver.{pcs_orders,pcs_sentparcels,pcs_truckloads,pcs_parcel_reorder_flags,rew_orders,dpd_poland_struct,db_schenker_lines}` | **Drop all.** Same as above — source-side, not queryable from `ship_mart_ro`, not in agent scope. |
-
-**C. Doc stripping for 4-table scope.**
-
-- `reference/sources.md` — major rewrite. Currently documents 23 carrier-specific invoice schemas + bronze→silver pipeline per source. Strip all of this. Replace with a thin section: "The mart aggregates ~28 source-side invoice schemas via bi-etl. The agent does not query source-side tables directly — for lineage understanding, see bi-etl `dags/enterprise_silver/shipping_data_mart/`." Keep the source-systems concept (ORWO / Picturator / PicaAPI / PCS / Rewallution) since `source_system` is a column on `fact_shipments` — but document as values of the fact column, not as upstream sources.
-- `reference/tables.md` — strip the `map_shipment_key`, `dim_shipping_providers`, `fact_truck_charges` sections entirely. Strip the "Sources used" / bronze-pipeline content from each fact section. Keep grain, scope, key cols, NULL semantics, gotchas for the 4 facts only.
-- `reference/mart-contract.md` — STABLE contract for the 4 facts. Add the new cost-columns subsection (per cost-vocab §A, rewritten in T20). Drop any pipeline / lineage references.
-- `reference/coverage-audit.md` — review for silver references; flip / drop as needed. The coverage matrix itself stays (covers the 4 facts).
-- `reference/known-dq.md` — same review pass.
-- `skills/query-patterns.md` — drop the spine + dim join example; replace with a 4-fact join pattern (typical `fact_shipments` ⟕ `fact_shipment_cost_summary` ⟕ `fact_shipment_orderitems`).
-- `harness/sample_queries.sql` — rewrite all 5 sample queries. Drop presence-check on `fact_truck_charges`/`map_shipment_key`/`dim_shipping_providers`. Update query 2 to use `fact_shipments.source_system` directly. Update query 3 to use `fact_shipments.shipping_provider_group`. Remove obsolete NOTE about `real_shipping_cost_eur` being NULL (no longer true).
-- `harness/db.py` — update the example docstring SQL from `SELECT * FROM enterprise_silver.fact_shipments LIMIT 10` to `SELECT * FROM shipping_mart.fact_shipments LIMIT 10`.
-- `README.md` § Connecting — rewrite for new `ship_mart_ro` local-`.env` flow. Strip three `enterprise_silver.` references.
-- `visualization-studio/STANDARDS.md` and `lib/standards.js` and `app/page.js` — update silver references.
-
-**D. Standalone severance.**
-
-- `how_to.md` §10 — drop any caveat exempting credential walk-up. With local `.env` and the tightened `db.py`, §10 is literally true.
-- `how_to.md` and `README.md` — drop the older NFE-side reference pointer (`bi-analytics-main/NFE/.claude/reference/shipping-data-mart/`). Relocatable goal forbids external dependencies.
-
-**E. Schema-perimeter rule (§0 new cross-cutting).**
-
-Add a new numbered §0 rule:
-
-> **N. Schema perimeter — `shipping_mart` only.** All queries qualify as `shipping_mart.<table>` (never assume `search_path` defaults). The agent's surface is the 4 facts: `fact_shipments`, `fact_shipment_cost_summary`, `fact_shipment_orderitems`, `fact_shipment_invoice_lines`. Reaching for `enterprise_silver.*`, `enterprise_bronze.*`, or any other schema is a scope violation (and `ship_mart_ro` would deny it anyway). For source/lineage understanding, defer to bi-etl docs — not in agent scope. Future extension to raw invoices may broaden scope; if so, it lands as an explicit rule change, not ad-hoc reach.
-
-**F. Cost-vocab doc edits (T16/T18/T20 rewrite, folded into same commit).**
-
-Three insertions (text in `bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md` post-T20 rewrite):
-
-1. **`reference/mart-contract.md` § Cost columns — invoiced vs expected vs final.** Source: §A of cost-vocab draft. Includes the cost-columns table, the `cost_source` distribution table (verified 2026-05-22), When-to-use list, and cost-bucket grain section (11 buckets named directly, tax+customs excluded from total_eur). Qualify table names as `shipping_mart.fact_*`. Mark LIVE, `last-verified: 2026-05-22`.
-2. **`how_to.md` §0 cost-rule.** Source: §B of cost-vocab draft (~180 words). Five sub-rules: state basis upfront, match denominators to numerators, default to invoiced-only headline, report % invoiced euro-weighted, flag bucket breakdowns as invoiced-only. Uses `cost_source = 'invoice'` (not `'real'`).
-3. **Worked-example block.** Fold into `reference/mart-contract.md` or `skills/query-patterns.md`. Three SQL patterns showing wrong vs right denominators for "avg shipping cost per parcel" (€5.24 wrong / €6.29 invoiced-only / €X population-weighted), using `shipping_mart.*` qualification and `cost_source = 'invoice'`.
-
-### Smoke tests (post-apply)
-
-- **Connection:** `python harness/connect_redshift.py --query "SELECT 1"` — returns 1 row.
-- **Schema sanity (4 tables present):** `python harness/connect_redshift.py --query "SELECT table_name, COUNT(*) AS col_count FROM information_schema.columns WHERE table_schema = 'shipping_mart' GROUP BY 1 ORDER BY 1"` — returns the 4 fact tables with their column counts (fact_shipments: 66, fact_shipment_cost_summary: 32, fact_shipment_invoice_lines: 17, fact_shipment_orderitems: 13).
-- **April 2026 TCG row count:** `python harness/connect_redshift.py --query "SELECT COUNT(*) FROM shipping_mart.fact_shipments WHERE shop_order_created_date >= DATE '2026-04-01' AND shop_order_created_date < DATE '2026-05-01' AND source_system IN ('Picturator', 'PicaAPI', 'PCS')"` — should match S027's ~276K TCG-April figure.
-- **Cost-basis re-run of the T18 anchor:** `python harness/connect_redshift.py --query "SELECT SUM(real_shipping_cost_eur) / NULLIF(COUNT(*), 0) AS avg_invoiced_eur FROM shipping_mart.fact_shipments WHERE shop_order_created_date >= DATE '2026-04-01' AND shop_order_created_date < DATE '2026-05-01' AND source_system IN ('Picturator', 'PicaAPI', 'PCS') AND cost_source = 'invoice'"` — should match the €6.29 figure (within rounding).
-- **Schema-perimeter probe:** `python harness/connect_redshift.py --query "SELECT 1 FROM enterprise_silver.fact_shipments LIMIT 1"` — should return permission-denied. Confirms `ship_mart_ro` boundary.
-
-### What this tranche does NOT include
-
-- Locating the gold-dag ground-truth path in bi-etl. The repoint is in flight per principal; path stays at `bi-etl/dags/enterprise_silver/shipping_data_mart/` until the move. Re-pin the keepsake when the path moves.
-- Future extension to raw-invoice access. Out of scope per principal — "maybe in the future."
-- A `MUST` block / pre-query checklist for the cost-vocab rule, even though T18 flagged it. Wait for post-apply real incident before redesigning §0's structure.
-
-### Brain-side outputs landed (S028)
-
-- `bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md` — full rewrite for gold (T20).
-- `players/jebrim/keepsake/proposals/2026-05-22_shipping-data-mart-routing-post-cutover.md` — tightened with 4-table scope + denormalization confirmation (T20).
-- S024 quest log T19 (proposal) + T20 (verification + scope narrowing).
-- This inventory section.
-
-### Open question deferred (not blocking apply)
-
-- Will `shipping_provider_group` give Niklavs the carrier-breakdown granularity he typically wants? Sample queries previously used `dim_shipping_providers.shippingprovider_name` (phantom column — never existed). Best guess: `shipping_provider_group` is the right axis for user-facing "cost by carrier" answers (~30-40 distinct values, high-level). If finer granularity is needed, fall back to `shippingprovider_extkey` (service-level). Verify on first post-cutover carrier-breakdown query.
-
-### Watch on next shipping-agent session against new rule
-
-The T18 sharpening was prompted by a failure of the T16 rule to fire. If a fresh transcript still produces a basis-less headline or a mismatched denominator after the rule lands, the issue isn't the wording — it's that §0 rules don't fire reliably when the agent is mid-query. Possible follow-up: move the most behavioral sub-rules to a higher-priority surface (top of §0, or a dedicated `MUST` block), and/or add a pre-query checklist for cost questions. Don't redesign yet; need a real post-apply incident first.
+When new friction surfaces, the move is the same: principal flags via screenshot, Jebrim diagnoses root cause, proposes targeted fix, edits.
 
 ## Parked ideas
 
@@ -129,15 +68,7 @@ The T18 sharpening was prompted by a failure of the T16 rule to fire. If a fresh
 
 ## Next concrete step
 
-Watch for residual friction in real shipping-agent sessions against the new structure. Specific regressions to scan for:
-
-1. **Routing failures** (the load-bearing risk). When a new gotcha surfaces mid-session, does the agent (or you, when editing later) put it in the right file? Or does it default back to `how_to.md`? If `how_to.md` starts growing past ~400 lines again, the discipline didn't hold.
-2. **Live-vs-stable contamination.** `mart-contract.md` is STABLE — if dated observations start landing in it, the separation is collapsing.
-3. **Stamp drift.** LIVE entries without `last-verified` stamps. Or stamps that aren't refreshed when the entry is updated.
-4. **Path anchoring failures in harness scripts.** Smoke test passed locally; any subsequent script that gets added needs `BASE_DIR = Path(__file__).resolve().parent.parent` (one parent more than the old root-level convention).
-5. **Phase 1 watch-list (still live).** Pre-action narration creeping back, auto-breakouts by sub-platform, latency creep, scope-perimeter reaches (currently 3 incidents; a 4th means rewriting `.claude/settings.json` deny patterns to handle absolute paths).
-
-When new friction surfaces, the move is the same: principal flags via screenshot, Jebrim diagnoses the root cause, proposes the targeted fix, edits.
+S024 has no further work of its own — Tranche C (the gold cutover) closed the active apply backlog. The thread stays in-progress to absorb post-cutover friction. **Wait for real shipping-agent sessions against the post-cutover structure**; route incidents per the watch points above. Adjacent thread to consider re-opening: alching to triage the S023 parked 7-item proposal + S026's two drafts + this session's outputs (keepsake proposal awaiting pin).
 
 ## Files / paths to read first
 
@@ -149,7 +80,8 @@ When new friction surfaces, the move is the same: principal flags via screenshot
 ## Pending drafts
 
 - `gielinor/players/jebrim/spellbook/drafts/skills/structural-restructure-mechanism-over-shape.md` (S025 harvest) — methodology: when restructuring, lead with mechanisms (routing, budgets, live-vs-stable, stamps, harvest) before shape. Anchor: S024 T14. Surface at next alching.
-- `gielinor/players/jebrim/bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md` (S027 / S024 T16-T16b harvest) — durable column model for `real_shipping_cost_eur` / `expected_shipping_cost_eur` / `avg_shipping_cost_eur` / `final_shipping_cost_eur`, cost-bucket grain rule (buckets are invoiced-only), and the doc-edit proposal text for `reference/mart-contract.md` + `how_to.md` §0. Surface at next alching; archive the proposal section once applied to the shipping-agent docs.
+- `gielinor/players/jebrim/bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md` (S024 T16/T18/T20 harvest, rewritten for gold) — durable column model for `real_shipping_cost_eur` / `expected_shipping_cost_eur` / `avg_shipping_cost_eur` / `final_shipping_cost_eur` + `cost_source` (gold values `'invoice'`/`'expected'`/`'avg'`/NULL with verified distribution), 11-bucket grain rule, % invoiced reporting rule, disclosure/denominator rules. **Proposal text already applied to shipping-agent docs (T21).** At next alching: archive the proposal section, promote the column-vocabulary remainder to `bank/notes/`.
+- `gielinor/players/jebrim/keepsake/proposals/2026-05-22_shipping-data-mart-routing-post-cutover.md` (S024 T19/T20) — supersedes current `Shipping Data Mart — routing` pin in `keepsake/current.md`. Reflects 4-table scope, denormalized spine + dim, gold-verified `cost_source` distribution, schema-perimeter discipline. Awaiting principal pin into `current.md`.
 - `gielinor/players/jebrim/examine/drafts/2026-05-22-bash-on-windows-quoted-path-creates-literal-filename.md` (S027 harvest) — self-observation: writing intent sidecar files with `Bash echo "..." > "C:\path\file.txt"` on Windows produces a literal filename with the colon encoded as U+F03A, not a write to the intended path. Use the Write tool or PowerShell `Set-Content` instead. Anchor: S027 stray-file incident at brain root.
 
 ## Parked items from earlier S023 alching walk

@@ -23,6 +23,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 # User-global so a single switchboard view sees every Claude Code session on
 # the machine, regardless of which repo opened them. See D-020 §"The contract"
@@ -187,31 +188,37 @@ def _detect_actor(project_dir: Path | None, sid8: str, session_id_full: str = ""
     return ("unknown", "")
 
 
-def _detect_instance(actor: str, session_id: str) -> int:
+def _detect_instance(actor: str, session_id: str) -> Optional[int]:
     """S033 finding #2: read the visualizer's state-instances.json to surface
     the real instance number in the switchboard manifest. The previous
     behavior — `prev.get("instance") or 1` — meant two parallel Braindead
     sessions both rendered as 'Braindead' in the sidebar (instance 1) with
     no way to distinguish them.
 
-    Returns 1 when actor isn't instanced (wisp, guthix, dwarves) or the
-    instance map doesn't have this session yet. emit-event.py is the writer;
-    this is a read-only consumer."""
+    Returns `None` when we can't determine the instance positively — actor
+    is non-instanced (wisp, guthix), the map can't be read, or this session
+    isn't yet stamped in byId. Callers fall through to whatever prior value
+    they have (S040 audit fix: the previous "return 1 on failure" version
+    silently regressed real instance N→1 inside _write_manifest's per-row
+    refresh, collapsing all parallel Braindeads to instance:1 in the
+    sidebar). emit-event.py is the writer; this is a read-only consumer."""
     if not actor or actor in ("unknown", "wisp", "guthix"):
-        return 1
+        return None
     try:
         state = json.loads(INSTANCES_PATH.read_text(encoding="utf-8"))
     except Exception:
-        return 1
+        return None
     entry = state.get(actor)
     if not isinstance(entry, dict):
-        return 1
+        return None
     by_id = entry.get("byId") or {}
     v = by_id.get(session_id)
+    if v is None:
+        return None
     try:
-        return int(v) if v else 1
+        return int(v)
     except (TypeError, ValueError):
-        return 1
+        return None
 
 
 def _detect_host() -> str:
@@ -422,6 +429,25 @@ def _write_manifest() -> None:
                                 j["intent"] = refreshed_intent
                 except Exception as e:
                     print(f"status-sidecar: manifest actor refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
+                # S040 audit fix: also re-detect instance per row at write
+                # time. The status file's `instance` was stamped at its own
+                # sidecar fire — which for a session whose first event was
+                # UserPromptSubmit (before emit-event.py ever wrote an
+                # instance assignment) lands as 1. Without this refresh all
+                # parallel Braindead sessions render as Braindead·1 in the
+                # sidebar even after `state-instances.json` carries the
+                # correct N. _detect_instance returns None when uncertain
+                # (non-instanced actor / sid not in map yet), so we only
+                # override when we have a positive answer.
+                try:
+                    sfull = j.get("session_id") or ""
+                    actor_for_inst = j.get("actor") or ""
+                    if sfull and actor_for_inst:
+                        refreshed_inst = _detect_instance(actor_for_inst, sfull)
+                        if refreshed_inst is not None:
+                            j["instance"] = refreshed_inst
+                except Exception as e:
+                    print(f"status-sidecar: manifest instance refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
                 sessions.append(j)
         sessions.sort(key=lambda x: x.get("last_event_ts") or 0, reverse=True)
         out = {
@@ -614,6 +640,50 @@ def _gc_state_actors(live_full: set[str]) -> None:
         print(f"status-sidecar: state-actors GC write failed: {e}", file=sys.stderr)
 
 
+def _gc_state_instances(live_full: set[str]) -> None:
+    """S040 audit fix: strip dead session_ids from `state-instances.json.byId`.
+    `_gc_state_actors` already handles `state-actors.json`; this is its sibling
+    for the instance map.
+
+    Without this, the only path that cleans byId was emit-event.py's
+    `handle_session_end` — which doesn't fire on crash. Dead sessions linger
+    indefinitely, the `next` high-water drifts up over time, and slot reclaim
+    (S039) operates against a polluted byId. Symptom: a fresh Braindead session
+    spawns as instance·5 even though only one session is live, because byId
+    still carries 1/2/3/4 from prior crashed sessions.
+
+    Keeps `next` and the actor entry itself — only prunes byId. Skips the
+    write if nothing changes. Errors swallowed."""
+    if not INSTANCES_PATH.exists():
+        return
+    try:
+        state = json.loads(INSTANCES_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    if not isinstance(state, dict):
+        return
+
+    dirty = False
+    for actor_name, entry in state.items():
+        if not isinstance(entry, dict):
+            continue
+        by_id = entry.get("byId")
+        if not isinstance(by_id, dict):
+            continue
+        before = len(by_id)
+        new_by_id = {sid: inst for sid, inst in by_id.items() if sid in live_full}
+        if len(new_by_id) != before:
+            entry["byId"] = new_by_id
+            dirty = True
+
+    if not dirty:
+        return
+    try:
+        _atomic_write_json(INSTANCES_PATH, state)
+    except Exception as e:
+        print(f"status-sidecar: state-instances GC write failed: {e}", file=sys.stderr)
+
+
 def _gc_intent_files(project_dir: Path | None, live_short: set[str], current_sid8: str) -> None:
     """Archive intent files for sessions that aren't live anymore. Bare files
     (`<actor>.txt` with no `-<sid8>` suffix) are also archived — they predate
@@ -762,6 +832,7 @@ def main() -> None:
         if sid8:
             live_short.add(sid8)
         _gc_state_actors(live_full)
+        _gc_state_instances(live_full)
         _gc_intent_files(project_dir, live_short, sid8)
 
     # Manifest mirror runs last — purely a snapshot for the browser; a failure

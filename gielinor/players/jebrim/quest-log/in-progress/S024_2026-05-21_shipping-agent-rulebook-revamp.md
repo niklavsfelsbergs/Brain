@@ -191,6 +191,114 @@ The whole session ran without an in-brain quest-log entry. Per `gielinor/meta/de
 
 This entry is the retroactive open. The turn log above is reconstructed from in-context recall (no transcript), so it captures shape and decisions but not every micro-action. The harvest below records the lesson.
 
-## Pending drafts
+### T18 — cost-basis disclosure + denominator-matches-numerator (2026-05-22, S028)
 
-- `spellbook/drafts/skills/structural-restructure-mechanism-over-shape.md` — methodology: when restructuring an information architecture, lead with mechanisms (routing, budgets, live-vs-stable, stamps, harvest) before shape (where files live). Anchor: T14 how_to.md split. Surface at next alching.
+Principal flagged a real shipping-agent transcript that exposed two gaps in the T16 cost-vocab rule:
+
+**Failure 1 — reactive disclosure.** Agent answered "€5.24 per parcel for TCG in April 2026 — €1.45M total spend across ~276K parcels" without naming the cost basis. Principal had to ask: "is this based on real or also expected cost?" Agent then disclosed "Real cost only." Correct, but reactive. The T16 rule didn't make basis-upfront unmissable.
+
+**Failure 2 — wrong-denominator average framed as a "floor."** Agent's query was `SUM(c.total_eur) / NULLIF(COUNT(DISTINCT f.shipment_id), 0)` with `LEFT JOIN fact_shipment_cost_summary` — numerator restricts to invoiced rows (because `total_eur` is NULL for non-invoiced), denominator counts all parcels. Produced €5.24 and called it "a floor, not a final number." When asked to restrict to invoiced parcels: €6.29.
+
+The "floor" framing is the load-bearing bug. €5.24 is not a floor — it's `real_per_shipment × (% shipments invoiced)`, a single number with two distortions baked in. Leading with it anchors the principal on a value below any plausible truth. The right answer leads with €6.29 (invoiced-only) and optionally surfaces a population-weighted final-cost average alongside.
+
+**Sharpening landed in `bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md`.** Two new sections inserted before "The reporting rule — % invoiced":
+
+- **"Cost basis disclosure — state upfront, not on follow-up."** Three bases named (invoiced-only / final / estimated-only), why upfront matters (basis frames trust), 2026-05-22 anchor, wording template.
+- **"Average denominators — must match numerator scope."** Valid-pairings table (real → invoiced; final → costed); invalid-pairing table (real → all); the "floor framing is wrong" reasoning; 2026-05-22 anchor; operational shape (default invoiced-only, surface population-weighted final when <95% invoiced, lead with final on recent windows where lag is expected).
+
+**§B doc-edit proposal expanded** from ~110 words to ~180 — now reads as five sub-rules under one numbered §0 entry: (1) open with basis, (2) match denominators, (3) default to invoiced-only headline, (4) report % invoiced, (5) flag bucket breakdowns as invoiced-only. Added a worked-example block showing the wrong shape vs the two right shapes using the April 2026 numbers, suggested as a `reference/mart-contract.md` or `skills/query-patterns.md` reference.
+
+**Status:** still blocked on next session in `bi-analytics-main/` working dir for the doc-edit apply. Inventory updated.
+
+**Pattern worth flagging.** The T16 rule existed and the agent still produced the wrong shape. Two reads:
+
+1. Rules buried inside §0 don't fire reliably when the agent is mid-query. The new wording leads with the most behavioral sub-rules (basis upfront, denominator matching) before the calculation-detail sub-rule (% invoiced formula).
+2. A worked example is load-bearing for arithmetic rules in a way prose isn't. Added the wrong/right shapes as a concrete reference. Without it, the agent has to re-derive the right denominator each time.
+
+Both worth carrying into how skills/rules get written generally — possible spellbook/drafts/skills/ entry: "arithmetic-rules-need-worked-examples-not-prose." Not drafting yet; waits for a second occurrence of the same shape.
+
+### T19 — standalone cutover proposal (2026-05-22, S028)
+
+Principal surfaced two coupled changes plus an explicit posture goal:
+
+1. **Gold layer landed as `shipping_mart` schema.** Replaces `enterprise_silver.*` for the four canonical facts: `fact_shipments`, `fact_shipment_cost_summary`, `fact_shipment_orderitems`, `fact_shipment_invoice_lines`.
+2. **`ship_mart_ro` read-only user restored** (was deprovisioned mid-S022 per old keepsake). New creds.
+3. **Posture goal: agent can be moved anywhere.** Standalone = relocatable. The shipping-agent folder should run with only its own `.env` and `harness/` — no walk-ups to parent `.env`, no reaches to NFE-side reference content.
+
+**Local-repo verification (T19).** All three repos present locally (`bi-analytics-main`, `bi-analytics`, `bi-etl`). Concrete state:
+
+- 16 shipping-agent files reference `enterprise_silver.{fact_shipments|fact_shipment_cost_summary|fact_shipment_orderitems|fact_shipment_invoice_lines}` — the cutover change surface. Includes one historical generated query (`visualization-studio/content/generated/claude/20260522-082530--uk-2026-tcg-shipping-export/query.sql`) — historical artifact, leave it; the other 15 flip.
+- No `.env` or `.env.example` in `shipping-agent/` — credential decoupling needs to create both.
+- bi-etl `dags/` has only `enterprise_silver/` and `enterprise_bronze/` — **no `enterprise_gold/` or `shipping_mart/` folder**. The gold-layer ground truth is not in bi-etl. Open question: Glue / dbt / separate repo / different folder name?
+
+**Proposed change surface (presented to principal):**
+
+- **A. Credentials / config** — create `shipping-agent/.env` + `.env.example`; verify `.gitignore`; tighten `harness/db.py` to explicit single-file load (no walk-up).
+- **B. Schema flips** — 15 files (excl. historical generated query): `mart-contract.md`, `tables.md`, `sources.md`, `coverage-audit.md`, `known-dq.md`, `query-patterns.md`, `README.md`, `harness/connect_redshift.py`, `harness/db.py`, `harness/sample_queries.sql`, `visualization-studio/STANDARDS.md`, `visualization-studio/lib/standards.js`, `visualization-studio/app/page.js`, `visualization-studio/content/light-presentation-template.json.example`, `visualization-studio/content/generated/claude/20260521-120000--tcg-2025-shipments-by-country/{spec.json,query.sql,index.html}`. Carefulness rule: only the four named facts flip; `map_shipment_key`, `dim_*` stay where they are.
+- **C. Standalone severance** — `how_to.md` §10 caveat (drop credential exemption), older NFE-side reference pointer (drop entirely; relocatable goal forbids), `README.md` § Connecting (rewrite setup).
+- **D. Behavioral rule** — new §0 cross-cutting on schema discipline (qualify as `shipping_mart.<table>`, never assume `search_path`).
+- **E. Brain-side** — keepsake proposal, cost-vocab cutover-tag, this quest-log entry, S024 inventory update.
+
+**Principal cued:** start brain-side (E), then bi-analytics-main session for A–D in one tranche, fold T16/T18 cost-vocab apply into the same commit.
+
+**Brain-side outputs (this session):**
+
+- `players/jebrim/keepsake/proposals/2026-05-22_shipping-data-mart-routing-post-cutover.md` — supersedes the 2026-05-21 routing pin. Captures new schema, local-env connection, standalone posture, ground-truth-TBD placeholder, plus the four open items for the apply session (`ship_mart_ro` grants on silver dims, whether old `enterprise_silver.fact_*` linger as deprecated views, bucket-grain survival, bi-etl gold path).
+- Cost-vocab draft (`bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md`) — added schema-cutover note at the top. Unqualified `fact_*` references stay unqualified in the draft (schema-agnostic); the apply qualifies them as `shipping_mart.<table>` in `reference/mart-contract.md`.
+- This T19 entry.
+- S024 inventory updated with cutover-apply tranche.
+
+**Open items deferred to apply session (verify during the cutover):**
+
+1. `ship_mart_ro` grant scope — does the user have SELECT on `enterprise_silver.map_shipment_key`, `enterprise_silver.dim_*`? If not, every join breaks; need either grants on silver or confirmation that gold brought dims along.
+2. Old `enterprise_silver.fact_*` for the four tables — gone, or kept as deprecated views/aliases? Affects whether the schema-discipline rule has lower stakes during transition.
+3. Bucket grain + `cost_source` flag survived cutover unchanged? T16/T18 cost-vocab assumes yes.
+4. bi-etl ground-truth path for the gold layer — not in `dags/`. Surface during the apply.
+
+**Pattern noted (not drafted yet).** Two changes landed near-simultaneously that should have been independent: schema cutover (technical) and standalone posture (architectural). They're being treated as one tranche because the credential decoupling has to happen for the agent to actually use the new schema (with the restored user). Worth flagging if this couples again later: standalone posture is a one-time event, but schema cutovers will recur — keep the second one mechanically separable from the first if possible. Not a draft yet; waits for a second occurrence.
+
+### T20 — gold verification + scope narrowing (2026-05-22, S028)
+
+Principal answered the apply-session open questions from T19. Two coupled outcomes: empirical verification against gold + scope narrowing from 7+24 tables to **4 facts only**.
+
+**Gold schema verified via `ship_mart_ro` against `information_schema.columns`** (128 columns across 4 tables). Key findings:
+
+- **`map_shipment_key` fully denormalized into `shipping_mart.fact_shipments`.** All 9 spine columns present on the fact (`shipment_id`, `trackingnumber`, `shop_ordernumber`, `source_system`, `source_order_id`, `shop_order_created_date` [renamed from `order_created_date`], `shippingprovider_extkey`, `updated_at`, `dw_timestamp`). No spine join needed.
+- **`dim_shipping_providers` mostly denormalized.** Present on fact: `shipping_provider_id`, `shippingprovider_extkey`, `shipping_provider_group` (silver: `shippingprovider_group`, gold normalized name). Missing from gold fact: `service_type`, `truck_provider`, `has_truck_cost`. Principal: drop the three missing fields from agent scope (no user-facing query uses them).
+- **`fact_truck_charges` not in gold.** Principal confirmed drop — internal plumbing only.
+- **Carrier name mapping.** `shipping_provider_group` (high-level, e.g. "DHL", "FedEx") is the field for user-facing carrier breakdowns; `shippingprovider_extkey` is service-level (raw external key). Sample silver query referenced `dim_shipping_providers.shippingprovider_name` which doesn't exist in either silver tables.md or gold — phantom column. Use `shipping_provider_group`.
+
+**Cost-vocab assumption corrections from live verification:**
+
+- **`cost_source` values:** assumed `'real'` / `'expected'` / `'avg'`. Actual: `'invoice'` (65.15%), `'expected'` (24.37%), NULL (8.04%), `'avg'` (1.99%), `'invoice_estimate'` (0.45%). The `'real'` → `'invoice'` rename is a value-level rename, not a column rename — `real_shipping_cost_eur` is still the column name. Naming asymmetry to flag.
+- **`'invoice_estimate'`** is a transient remnant being renamed upstream to `'invoice'`. Principal: ignore in docs. Don't add as a fifth category.
+- **NULL `cost_source` at 8%** is larger than original T16/T18 draft assumed when writing the edge-cases section. Worth surfacing in the rule.
+- **Buckets do NOT have `bkt_` prefix.** Gold (and silver — original T16 draft was wrong on this) has 13 bucket columns named directly: `base_rate_eur`, `truck_charges_eur`, `fuel_surcharge_eur`, `remote_area_charges_eur`, `peak_demand_charges_eur`, `oversize_overweight_eur`, `residential_eur`, `discounts_eur`, `credit_note_eur`, `other_eur`, `unclassified_eur`, `tax_eur`, `customs_duties_eur`. Each in `_eur` + `_local` pairs.
+- **Bucket invariant** verified across 200K-row sample: `SUM(11 included buckets in EUR) == total_eur` with max diff 0.00. `tax_eur` and `customs_duties_eur` are **excluded** from `total_eur` (consistent with silver contract).
+- **Cross-row invariant** verified across all 12.03M `cost_source = 'invoice'` rows: `fact_shipment_cost_summary.total_eur == fact_shipments.real_shipping_cost_eur == fact_shipments.final_shipping_cost_eur`.
+
+**Principal scope decisions:**
+
+1. **Agent scope = 4 gold facts only.** No `enterprise_silver.*` references in agent docs at all. Source-side lineage (~24 carrier invoice tables previously documented in `reference/sources.md` etc.) gets stripped — defer to bi-etl docs if lineage understanding is needed. Possible future extension: agent gains access to raw invoices, but not now.
+2. **Drop spine + dim references.** `map_shipment_key`, `dim_shipping_providers`, `fact_truck_charges` — gone from agent docs. Data lives on `fact_shipments` directly.
+3. **Drop missing dim fields.** `service_type`, `truck_provider`, `has_truck_cost` — not in gold, not used.
+4. **Ground-truth path stays** at `bi-etl/dags/enterprise_silver/shipping_data_mart/` transitionally — bi-etl dags being repointed to gold; path will move with them.
+
+**Brain-side outputs landed in T20:**
+
+- `bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md` — full rewrite (not just qualification). Reflects actual gold values, 11-bucket invariant with correct column names, `'invoice'` value rename, NULL-at-8% edge case, defensive SQL, naming-asymmetry flag, gold-verified `cost_source` distribution table.
+- `players/jebrim/keepsake/proposals/2026-05-22_shipping-data-mart-routing-post-cutover.md` — tightened with 4-table scope, denormalization confirmation, gold-verified `cost_source` values, schema-perimeter rule.
+- This T20 entry.
+- S024 inventory updated with the full concrete apply plan (next entry below in S024 quest-log timeline).
+
+**Pattern noted (worth holding for skill-draft consideration).** The T20 verification exposed three layers of "stuff we assumed without checking":
+
+1. `cost_source` values (`'real'` vs `'invoice'` — wrong from S001 forward).
+2. Bucket column shape (`bkt_*` prefix — wrong from the original cost-vocab sketch).
+3. Phantom column `dim_shipping_providers.shippingprovider_name` referenced in sample_queries.sql but never existed in documented schema.
+
+All three would have shipped to the agent unchanged if Niklavs hadn't asked for verification. **Skill candidate:** "verify mart contracts against `information_schema` before promoting any rule that depends on a column name or enum value." Not drafting yet — waits for a second occurrence of "assumed-vs-actual" gap.
+
+**Apply session is now fully concrete** — see updated S024 inventory for the single-commit tranche. Still blocked only on §10 perimeter (next session opened in `bi-analytics-main/`).
+
+## Pending drafts

@@ -33,3 +33,9 @@
 [2026-05-23] jebrim-1cf1eb75 CLOSING
   Completed: Slack MCP live (S047 — korotovsky cookie-auth, authed as niklavs.felsbergs @ The Customization Group; read tools surfaced; posting disabled by config; voice rule pinned to memory). Voice cues + install gotchas captured in bank/drafts/notes/workflow/slack-mcp-install.md. Outlook MCP (S040) re-engaged briefly for recall.
   Leaving open: S040 still in-progress at portal.azure.com self-serve check Step 1 (sign-in pending). S047 proposed to move to completed; follow-ups parked (rotate leaked tokens, enable posting, graduate install pattern to skill).
+
+[2026-05-23] guthix-0cfe8854 OPEN
+  Bankstanding B-003. Globals only — drafts/proposals/inbox triage + cross-player synthesis read. Not touching per-player houses. Live sibling: braindead-17e701eb (dev-brain). Phase 0 will flag Jebrim (7 drafts + 5 new in-progress quests since 2026-05-22 alching) for principal call — default ritual is skip mid-quest. Zezima still pre-operational.
+
+[2026-05-23] jebrim-91ee1383 OPEN
+  S045 follow-up — two new chart bugs from principal use. EUR label collapse at low magnitudes (0 vs 0.4 EUR), and legend isolation not triggering value labels. Touching shipping-agent/harness/_report_style.py + build_inline_chart.py + how_to.md (out-of-tree repo). No conflict with live siblings.

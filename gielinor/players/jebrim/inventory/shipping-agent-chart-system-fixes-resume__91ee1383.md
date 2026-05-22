@@ -7,6 +7,17 @@
 
 Two bugs in `shipping-agent/harness/build_inline_chart.py` diagnosed and fixed; styling centralized into `_report_style.py` (new `style_axes` + `resolve_format_for_series` helpers); `--focus` flag added to highlight one series in a colored line chart with value labels; `how_to.md` §7 Mode 2 *Direct value labels* rule extended to cover focused line charts. Patched chart re-rendered and JSON-verified — datetime x-axis no longer leaks `,.0f`, multi-series legend now renders.
 
+**2026-05-23 follow-up (this session):** Principal hit two more bugs during real use. Both fixed:
+
+1. **EUR labels collapsed at low magnitudes** — `,.0f` made 0 EUR and 0.4 EUR indistinguishable. `format_value` for `eur` is now magnitude-aware: ≥1000 → 0 dec, 100–999 → 1 dec, <100 → 2 dec. Smoke-tested with mixed-magnitude carriers; €1,250 / €180.5 / €0.40 all render correctly.
+2. **Legend isolation didn't show value labels** — clicking through the legend to isolate one line left it bare. Fix in two parts: text is now pre-computed on every trace in the `--color` branch (was previously only set on `--focus`); a small post-render JS block listens to `plotly_legendclick` / `plotly_legenddoubleclick` and flips the trace mode to `lines+markers+text` whenever exactly one trace is visible, back to `lines+markers` otherwise. Verified post-script and pre-populated text via grep on rendered HTML.
+
+`how_to.md` §7 Mode 2 *Direct value labels* extended again to cover legend-isolation + a new *Magnitude-aware EUR precision* bullet documents the rule.
+
+Files touched in `shipping-agent/` this session: `harness/_report_style.py`, `harness/build_inline_chart.py`, `how_to.md`. Still uncommitted in that repo.
+
+`build_report.py` has the same multi-series pattern without pre-computed text and no JS; follow-up if Mode 3 reports show the same isolation gap.
+
 Four files modified in `shipping-agent/` (uncommitted in that repo). Brain side will commit the close-session writes.
 
 ## Next concrete step

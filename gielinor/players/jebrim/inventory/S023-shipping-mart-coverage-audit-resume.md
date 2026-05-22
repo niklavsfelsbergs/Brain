@@ -50,6 +50,24 @@ If `/drafts` is run at next respawn, expect to triage the four brain-side drafts
 - The skill draft and bank breadcrumb are observation-backed (per drafts-mechanics); promote them during alching only after a second occasion reproduces the pattern.
 - Don't re-quote the audit numbers from memory after >1 month — regenerate via the probes in `reference/coverage-audit.md`.
 
+## Parked alching proposal (2026-05-21, post-S023 close)
+
+Principal cued alching after the S023 close commit, walked the surface, then parked the decisions for later. The proposal below is the alching walk's output — re-surface and triage when the principal picks this back up. No moves executed.
+
+| # | File | Recommended action |
+|---|---|---|
+| 1 | `examine/drafts/2026-05-21-defensive-rules-need-counter-pressure-rules.md` (S022, untriaged) | **Reject + re-route to** `spellbook/drafts/skills/balance-defensive-with-counter-pressure-rules.md` — content is procedural methodology, not self-observation; parallels `investigate-before-specialize`. |
+| 2 | `examine/drafts/2026-05-21-cross-project-read-context-as-advantage.md` (S023) | **Approve into `examine/confirmed/`** — but tighten to "claim + anchor + rule" per [[D-017]] feedback rule. Current draft is ~600 words; confirmed wants ~150. |
+| 3 | `niksis8_character/drafts/2026-05-21-niklavs-verifies-agent-claims-by-cross-checking.md` (S023) | **Reject** with re-route note — universal Niklavs observation (would hold for any player), belongs in global `niksis8/drafts/`. Consistent with the two S021 rejections. |
+| 4 | `bank/drafts/notes/projects/shipping_mart_coverage_audit_2026-05-21.md` (S023) | **Promote** to `bank/notes/projects/`. No contradictions with existing notes. |
+| 5 | *(new draft to write)* `examine/drafts/2026-05-21-niksis8-character-drafts-tend-to-be-universal.md` | **Write the meta-discipline draft** — three niksis8_character rejections in 12 hours, all same reason. Rule: "before drafting niksis8_character, ask would this be true for any player Niklavs interacts with?" |
+| 6 | `spellbook/drafts/skills/coverage-questions-time-and-source-axis.md` (S023) | **Hold in drafts/** — promote when a second coverage question reuses it. |
+| 7 | `last-alched.md` | Update to `2026-05-21 (second alching, post-S023, principal-self)` on completion. |
+
+Steps that **did not surface action** this pass: keepsake budget (under), keepsake/proposals/ (empty), step 3 quest-log compression (no new graduations), step 3a self-observation sweep (S023 already harvested via T6), step 4 budgets (all under).
+
+The pattern from step 5 ("niksis8_character keeps catching universal-Niklavs observations") is the most load-bearing finding — flagging it for next bankstanding regardless of whether item 5 lands as a draft.
+
 ## Open meta-questions for next session
 
 - Is the shipping-agent currently configured to re-run `coverage-audit.md`'s probes on cue, or does that take a manual ask? (Affects how the "last verified" stamp gets maintained.)

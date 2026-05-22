@@ -220,6 +220,72 @@ Decisions D3 made on the spot:
 
 15 files; 2 new, 13 modified. tsc-clean. No commits.
 
+## T11 — pipeline crash on `cost_source` schema drift; fix landed (principal)
+
+Niklavs ran `pipeline.py --refresh-full` post-CSV-commits. All 9 monthly chunks pulled from the mart cleanly, then `pl.read_parquet(spill_paths)` failed:
+
+```
+polars.exceptions.SchemaError: extra column in file outside of expected schema: cost_source
+```
+
+Root cause: pandas drops all-NULL empty-result columns. Older months' `cost_source` came back all-NULL upstream (mart only recently started populating it), so pandas dropped the column → polars `from_pandas` didn't have it → that chunk's spilled parquet lacked the column. Newer months had data → their spills had `cost_source`. `pl.read_parquet` choked on the schema mismatch across chunks.
+
+**Class of bug already known:** the bucket-cols block at `_pull_query` (~L285-290) does the same kind of force-cast for all-NULL float columns. `cost_source` just hadn't been covered yet because it only just landed in D1's pipeline plumbing.
+
+Fix: in `_pull_query` (`pipeline.py:285-300`), after the bucket-col cast, materialize `cost_source` as a `pl.Utf8` NULL column when missing; force-cast to `pl.Utf8` when present. Both branches.
+
+Next: clear `data/_pull_spill/*.parquet` (stale from crashed run), re-run `pipeline.py --refresh-full`. Once it lands, commit the fix and move on to Phase F + smoke 4 / parity check.
+
+## T12 — pipeline.py fix committed (principal)
+
+`python pipeline.py --refresh-full` landed cleanly. `total_rows = 13,581,867` (+450K vs pre-cutover 13,131,306, tracks with Picturator-Wolfen dedup removal). `baseline_weeks = 5` ✓. Fix committed as `eb1c2ea` on `shipping-mart-cutover`.
+
+## T13 — Phase F + smoke 4 / parity check (principal)
+
+Deleted `data/issues.parquet` for clean-baseline reset; alerts.parquet left as-is (verified it doesn't hold frozen-baseline state — only read once for a backward-compat summary block, written fresh each run).
+
+`python pipeline.py` (cache mode, no Redshift pull) rebuilt downstream in 140.6s. Post-reset signals:
+- Issues: 161 total (49 active, 112 resolved, 6 suppressed) — clean baseline.
+- Alerts: 3166 (vs pre-cutover 2,485) — up ~700, expected from baseline reset, one resolution cycle of "new" re-fires acceptable per principal.
+- Daily summary: 1,317,250 (vs 1,281,937 pre-cutover, tracks).
+
+**Smoke 4 / cost-basis parity check: ✅ PASSED.**
+
+Direct polars query against `raw.parquet` (April 2026, source ∈ {Picturator, PicaAPI, PCS}, `cost_source IN ('invoice', 'invoice_estimate')`):
+
+| Metric | Agent | Dashboard | Match |
+|---|---|---|---|
+| April 2026 TCG total rows | 276,490 | 276,490 | exact |
+| Invoiced parcels | 209,874 | 209,874 | exact |
+| Avg invoiced cost | €6.95 | €6.9489 | within rounding |
+
+Bonus: `cost_source IN ('invoice', 'invoice_estimate')` rowcount == `shipping_cost IS NOT NULL` rowcount (both 209,874). Gold contract verified: a row has non-null `real_shipping_cost_eur` ⟺ `cost_source` flags invoice-class.
+
+## Cutover status — DONE
+
+All in-scope phases shipped:
+
+| Phase | Status |
+|---|---|
+| A — query_mart.sql rewrite | ✅ shipped (`dee0265`) |
+| B — query_mart_items.sql schema flips | ✅ shipped (`dee0265`) |
+| C — pipeline.py cost_for_routing simplification | ✅ shipped (`dee0265`) |
+| D — UI labels + URL shim | ✅ shipped (`0660a52`) |
+| E — dashboard CLAUDE.md doc note | ✅ shipped (`dee0265`) |
+| F — issues.parquet baseline reset | ✅ done (this turn) |
+| G — audit.py + backtest.py rewrite | ✅ shipped (`0001b36`) |
+| H — pytest tests/ | ✅ 82/82 passed |
+| Smoke 4 / parity check | ✅ €6.95 / 209,874 verified |
+| pipeline.py cost_source guard | ✅ shipped (`eb1c2ea`) |
+
+CSV export rework (unparked from Deferred mid-session) also shipped — 4 commits (foundation + helper + 3 dwarf scopes, `6233b4e` / `1d4004a` / `93a51ba` + brain `5ec5c4c`).
+
+## Remaining (post-session)
+
+- **DAG verify** — Airflow refresh DAG runs 08:00 Berlin tomorrow (2026-05-23). Confirm the first scheduled run lands without error against the cutover state.
+- **Quest closure** — move parent quest to `quest-log/completed/`, retire `inventory/dashboard-gold-cutover-resume.md`. Unblocks the parked `dashboard-agent-convergence-resume.md`.
+- **Branch merge** — `shipping-mart-cutover` → `main` (10 commits ahead now). Separate principal action.
+
 ## Pending actions
 
-*(none — CSV rework done; awaiting principal for smoke + commit cadence)*
+No pending external actions. Cutover shipped end-to-end (Phases A-H + smoke 4 parity + CSV rework). The next quest (`main-merge-aws-cutover`) is parked in its own resume file.

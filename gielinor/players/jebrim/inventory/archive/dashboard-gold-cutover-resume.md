@@ -1,6 +1,6 @@
 # Dashboard gold cutover — resume
 
-**Status:** in-progress. Quest opened 2026-05-22 — `quest-log/in-progress/2026-05-22_dashboard-gold-cutover.md`. Three dwarves spawned in parallel (D1 SQL+pipeline, D2 UI, D3 audit+backtest).
+**Status:** DONE (closed at session S030, 2026-05-22). Quest moved to `quest-log/completed/S030_2026-05-22_dashboard-gold-cutover.md`. All in-scope phases shipped (A-H), smoke 4 / parity check passed (€6.95 / 209,874 April-TCG invoiced-only matches the agent), CSV export rework also shipped. This resume file is archived alongside the quest move; the follow-on `main-merge-aws-cutover` work is parked in its own resume file.
 **Player:** Jebrim.
 **Repo / branch:** `bi-analytics/`, branch `shipping-mart-cutover` (already in flight — 13+ commits ahead of main, the cutover work continues there).
 **Companion work:** the shipping-agent cutover landed earlier in S028 (`bi-analytics-main` `7e74670`). This dashboard cutover brings the dashboard into alignment with the agent's gold-only contract.

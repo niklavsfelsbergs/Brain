@@ -1,8 +1,47 @@
 # Shipping-agent personal folders + reproducibility — design plan
 
 **Opened:** 2026-05-22 (handoff from S029).
-**Status:** in-progress — design complete, implementation pending.
+**Status:** in-progress — implementation landed 2026-05-22 (this session), awaiting commit + push.
 **Type:** project (multi-session work in the shipping-agent core).
+
+## Implementation turn-log (2026-05-22, current session)
+
+**T1.** Respawned Jebrim, surfaced resume foreground from `inventory/shipping-agent-personal-folders-resume.md`, principal confirmed "yee lets tackle all the planned changes."
+
+**T2.** State-checked `bi-analytics-main` working tree — confirmed parallel-session artifacts at agent root (`harness/query_to_csv.py`, `query_to_xlsx.py`, root-level CSVs, `data/cost_ratio_trend.*`, `__pycache__/`) and inside `visualization-studio/content/` (untracked chart + bundle outputs). Created 9 tasks.
+
+**T3 (Step 1).** Re-confirmed `visualization-studio/` deletion scope with principal (tracked Next.js app + 5 untracked chart HTML files + 3 untracked bundle folders). Principal: "Yes — delete everything." Removed `visualization-studio/` recursively. Verified absent.
+
+**T4 (Step 2).** Scaffolded the three personal folders with `_about.md` each — `workbench/_about.md` (full structure + per-item template + Tier 1/2 reproducibility + type heuristics), `memory/_about.md` (Tier 3 citation contract + entry shape), `scratchpad/_about.md` (no-tier transient + promotion offer). Added `.gitkeep` files in `workbench/projects/`, `investigations/`, `analysis/`.
+
+**T5 (Step 3).** Updated `.gitignore`. Removed the obsolete `visualization-studio/node_modules/`, `visualization-studio/.next/`, `visualization-studio/.npm-cache/` lines. Added the personal-folders block with allow-listed `_about.md` and `.gitkeep` files.
+
+**T6 (Steps 4–6, 8).** Rewrote `how_to.md` in five surgical edits:
+- §0 intro: "Fifteen cross-cutting rules" → "Twenty-eight cross-cutting rules".
+- §0 added rules 16–28 (scaffolding / saving / reproducibility / session-end / promotion / cleanup) per the design plan's 13 rules.
+- §0 Translation table: added 4 new rows for `workbench/` (+ subfolders), `memory/`, `scratchpad/`, and `sql/`/`outputs/`/etc. inside a workbench item.
+- §0 Output-mode subsection: paths swapped from `visualization-studio/content/charts/claude/` to `workbench/<type>/<slug>/outputs/` (tied) or `scratchpad/` (one-off).
+- §7 rewritten to three modes (dropped Mode 4 Next.js); added a "Where output files land" table; Mode 2 step list updated to pass `--out` to `build_inline_chart.py`; Mode 3 bundle path now `workbench/<type>/<slug>/outputs/<bundle-slug>/`.
+- §8 entirely replaced — naming, destinations, rules, visual system (palette now lives inside the harness scripts as defaults, no more `STANDARDS.md`).
+- §11 added — personal folders + per-item structure + `CLAUDE.md` template + type heuristics + reproducibility tiers + memory-entry shape + reactive boot-story + active-workbench-item tracking.
+
+**T7 (Step 7).** Verification grep found leftover `visualization-studio/` refs in CLAUDE.md / AGENTS.md / GEMINI.md / GROK.md (per-AI pointer shims), README.md (4 refs), and three harness scripts. Surfaced the harness-script question to principal — chosen: "Add `--out` flag (default `scratchpad/`) to all three." Updated:
+- All four AI pointer shims (one-line replacement: visualization-studio paragraph → personal-folders pointer to §7/§8/§11).
+- README.md: opening paragraph, "what this folder is", "how to use it", "files at a glance" table (3 rows: visualization-studio → workbench/_about.md, memory/_about.md, scratchpad/_about.md).
+- `harness/build_inline_chart.py`: `CHARTS_DIR` → `DEFAULT_OUT_DIR = BASE_DIR / "scratchpad"`; added `--out` argparse flag; main() resolves `out_dir` from `args.out` or default.
+- `harness/build_light_html_presentation.py`: `GENERATED_DIR` → `DEFAULT_OUT_DIR`; added `--out`; main() resolves `out_root` and uses it for bundle creation. Kept the "spec already inside bundle" short-circuit logic.
+- `harness/create_timestamped_presentation.py`: top-level docstring marks deprecated (Mode 4 dropped); added `--out` so legacy template runs still work.
+- Final `visualization-studio` grep returns only the deprecation note inside `create_timestamped_presentation.py` (intentional).
+- §1 Where-to-find-things: added 3 rows for memory / workbench / §11 personal-folders; reworded "Routing for new content" to split shared agent docs (maintainer-only) from personal user content (workbench / memory / scratchpad).
+- Syntax-checked all three harness scripts (`ast.parse` clean). `python harness/build_inline_chart.py --help` confirms `--out` wired.
+
+**T8 (Step 9 — pending).** Commit + push. Scope: only paths under `NFE/projects/3_shipping_data_mart/shipping-agent/`. Working-tree has parallel-session changes elsewhere — staging by-path, not `-A`.
+
+**T9 (Step 9 done).** Staged the 41 scoped paths (`git add -u shipping-agent/` for tracked deletions plus the new `_about.md` + `.gitkeep` files). Initial stage failed because `.gitignore` `workbench/**` block was suppressing the subfolder `.gitkeep`s — fixed by adding `!workbench/<sub>/` directory negations before the file negations, then re-staged. Commit `f892257` on `origin/main`, pushed cleanly (GitHub flagged 145 unrelated dependabot vulnerabilities on default branch, unrelated to this work). 41 files changed, +547/-2144.
+
+**T10 (post-implementation: DB Schenker meeting prep).** Principal pivoted to drafting a meeting question on DB Schenker — meeting in 25 min, anchored on `bi-analytics-main/NFE/shipping_topics/38_ups_de_cost_investigation_apr_2026/`. Read project 38 CLAUDE.md (last touched 2026-05-11, ends with "too early to call" post-May-8 routing-change check). Found untracked post-May-11 work: `dbs_carrier_migration.py` + `data/dbs_carrier_migration_since_may9.xlsx` (run 2026-05-15). Recovered the May-15 conclusion from the xlsx: of 523 DBS shipments since May 9, only 13% migrated from UPS, 37% were already DBS, 46% are new baskets with no pre-Dec-8 predecessor → the May-8 routing change probably did *not* dump UPS-DE volume into DBS as intended. Drafted a context-loaded refresh question covering three reads (did UPS-DE drop, where did the flow actually go, what's the cost on the new home) — phrased as scaffolding an investigation at `workbench/investigations/zv-130cm-routing-aftermath/`. **This is the first real-use cue for the new personal-folders model.** Question is in chat for principal to fire at the shipping-agent before the meeting.
+
+**T11 (close-session).** Ran the ritual. Spawn-decision: principal-self (below all thresholds). No pending external actions. Resume file updated. Harvest produced 1 skill draft for Jebrim — "scope creep during plan execution" — capturing the silent-doc-sync vs surface-on-code-change calibration from T7. Surfaced. Committing now.
 
 ## Where we are
 

@@ -84,6 +84,14 @@ See `meta/modes.md` for the dwarf write boundary.
 
 Follow `spellbook/rituals/bankstanding.md` when the principal cues bankstanding. Propose moves; never silently destroy. The principal approves.
 
+## Capturing ideas
+
+When the principal says `note this idea: <text>` anywhere in a message (case-insensitive, colon required), capture it as one file in `brain/ideas/` and move on. Filename: `YYYY-MM-DD-<active-actor>-<slug>.md`. Body is the idea text, no elaboration, no clarifying questions. Acknowledge in one line and return to whatever was active.
+
+When the principal asks *"what ideas have I had"* / *"list my ideas"* / *"show ideas about X"* / *"ideas from {actor}"*, read the folder and surface them grouped by actor, newest first.
+
+`brain/ideas/_about.md` is the canonical spec — file shape, listing behavior, who can write, the manual-promotion path. The trigger is **principal-prompted only**: dwarves, gnomes, and penguins do not capture ideas, and the agent does not preemptively label observations as ideas.
+
 ## The rulebook (imported)
 
 The conventions you operate by:

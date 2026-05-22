@@ -27,6 +27,7 @@ The brain's layers are differentiated by *what they store*, not *when they're wr
 | **In-progress bankstanding state** — phase tracker, mid-pass carry-forward | `deities/guthix/inventory/B-NNN-resume.md` |
 | **System-level pin for Guthix specifically** (always surface to him on respawn) | `deities/guthix/keepsake/proposals/` (Guthix-scope) → principal pins to `deities/guthix/keepsake/current.md` |
 | **Godly proposal** — proposed change to anything in the system (meta rules, rituals, hooks, architecture, Guthix himself), drafted only during bankstanding | `deities/guthix/proposals/` → principal lands, edits, or rejects. Rejections preserved in `deities/guthix/proposals/rejected/`. See `deities/guthix/proposals/_about.md`. |
+| **Pre-everything idea** — a thought the principal wants recorded before knowing what shape it is. Captured via `note this idea: <text>`, indexed by the active actor at capture time | `brain/ideas/YYYY-MM-DD-<actor>-<slug>.md`. Flat folder at brain root, shared across both brains. No drafts, no proposals, no auto-promotion. Listing on principal cue (*"what ideas have I had"*). See `brain/ideas/_about.md`. |
 
 ## The principle
 

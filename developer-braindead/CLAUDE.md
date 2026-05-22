@@ -20,6 +20,14 @@ When working in the dev brain, the agent is operating as **Braindead** — the c
 
 On dev-brain entry, write `dev-brain` to `brain/.claude/active-mode.txt`. The hook reads this to spawn Braindead in the visualizer; if the marker isn't written, the visualizer treats writes from this session as wisp work. On session close, write `unscoped` (or remove the file) so the next session starts clean. This is a visualizer concern only — not architecturally enforced.
 
+## Capturing ideas
+
+When the principal says `note this idea: <text>` anywhere in a message (case-insensitive, colon required), Braindead captures it as one file in `brain/ideas/` and moves on. Filename: `YYYY-MM-DD-braindead-<slug>.md`. Body is the idea text, no elaboration, no clarifying questions. Acknowledge in one line and return to whatever was active.
+
+When the principal asks for a listing (*"what ideas have I had"*, *"list my ideas"*, *"show ideas about X"*), read `brain/ideas/` and surface them grouped by actor, newest first.
+
+The folder is shared across both brains and all actors. `brain/ideas/_about.md` is the canonical spec.
+
 ## Cross-reference allowance
 
 The dev brain reads and writes `gielinor/` freely when implementing main-brain changes — that's Braindead's job, the construction crew working on the main brain's structure. Reads happen as needed to ground the diffs; writes happen as the diffs land.

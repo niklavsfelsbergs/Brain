@@ -6,11 +6,13 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-22 (end of [[S025]] — parallel player instances via D-017).
+**Last updated.** 2026-05-22 (end of [[S025]] tail — D-018 drafted as follow-up to the session's git-index race).
 
 ## Where we are
 
 [[S025]] designed and shipped [[D-017]] end-to-end in one session: visualizer renders parallel sessions of the same player as distinct tinted sprites with per-instance bubbles and COMMS prefixes. Hook stamps `instance` on every event from a player-class actor; state-instances.json registry maps `(actor, session_id) → instance`. Validated live on first run — two parallel Jebrim sessions appeared correctly. First tint pass too subtle (+25°), bumped to +140°/+220°/+80° for clear differentiation.
+
+**Tail incident.** While committing S025, Jebrim's parallel session ran a broad `git add` that swept up the D-017 work into his "CSV export rework" commit (`5ec5c4c`). No data lost, attribution muddled. This was the fifth parallel-session shared-state race in a row (S014, S022, S023, S024, S025). Drafted [[D-018]] as the structural response — per-session sidecars + discipline rules instead of more attribution band-aids.
 
 Open follow-ups from D-017 (none blocking): cross-instance dwarf delegation, accessibility check of tint palette, active-player as `Set` instead of single value, sprite stacking at 3+ instances per building.
 
@@ -30,7 +32,15 @@ The first **live gnome spawn** is still deferred.
 
 ## Next concrete step — START HERE
 
-**Step 1 — first live gnome spawn (carried from S020 / S021 / S022 / S023).** Still the natural validation event for the boundary hook (S020's env→payload-field fix), the visualizer's gnome render path, and audit fixes that only fire under sub-agent activity. The session-gating in [[S023]] and the intent-re-emit-on-move from [[S024]] are dependencies to test under sub-agent activity — gnome spawn carries the parent session's `session_id`, so the gnome's tool calls should still attribute correctly via `agent_id` first, then session_id as fallback. Combined-test candidate: a Jebrim alching gnome.
+**Step 1 — D-018 implementation (NEW, from [[S025]]).** D-018 is drafted but not implemented. It commits to per-session sidecars for Category-A shared state and discipline rules for the git layer. The first concrete chunks are:
+
+- Re-key `state-actors.json` to `(actor, sessionId) → building` for player-class actors. Visualizer + hook both touched.
+- Re-key `state-dwarves.json` / `state-gnomes.json` to be session-scoped so two parallel sessions don't collide on D1/G1.
+- Decide whether to deprecate the bare `intent/<actor>.txt` fallback now or wait for full migration.
+
+Read `bank/decisions/D-018_parallel_session_substrate_isolation.md` first. Each chunk is a separate commit; the schema reads need to handle old + new shapes for backwards compat during rollout.
+
+**Step 2 — first live gnome spawn (carried from S020 / S021 / S022 / S023 / S024).** Still the natural validation event for the boundary hook (S020's env→payload-field fix), the visualizer's gnome render path, and audit fixes that only fire under sub-agent activity. The session-gating from [[S023]], the intent-re-emit from [[S024]], and the instance-routing from [[S025]] are all dependencies to test under sub-agent activity. Combined-test candidate: a Jebrim alching gnome. Note D-018's open question — if `state-gnomes.json` gets re-keyed first, this gets cleaner.
 
 **Step 2 — drafts triage** (carried from S018 → S019 → S020 → S021 → S022). Several drafts still await ruling:
 

@@ -18,7 +18,7 @@ The brain's layers are differentiated by *what they store*, not *when they're wr
 | **System-level self-observation** (about the agent as a whole, not any one player) | `examine/drafts/` (global) → principal approves to `confirmed/` |
 | **Universal Niklavs observation** (true regardless of which player saw it) | `niksis8/drafts/` (global) → principal approves to `confirmed/` |
 | **Cross-player always-surface pin** | `keepsake/proposals/` (global) → principal pins |
-| **Decision about how the agent operates going forward** | `lorebook/drafts/` → principal approves to `lorebook/decisions/D-NNN_*.md` |
+| **Decision about how the agent operates going forward** | `lorebook/drafts/` → principal approves to `lorebook/confirmed/D-NNN_*.md` |
 | **Construction history of the brain itself** (only writeable in dev-brain mode) | `developer-braindead/bank/decisions/D-NNN_*.md` |
 | **Cross-cutting knowledge about the brain itself** — patterns, drift observations, recurrent themes Guthix notices during bankstanding | `deities/guthix/bank/drafts/notes/` → next bankstanding promotes to `deities/guthix/bank/notes/` |
 | **Bankstanding ritual trace** — what one pass covered, proposed, flagged | `deities/guthix/quest-log/in-progress/B-NNN_*.md` → moves to `completed/` on clean ritual close |

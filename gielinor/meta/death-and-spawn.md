@@ -50,4 +50,4 @@ Session-start. Handled by `spellbook/rituals/respawn.md`. See that file for the 
 
 - `spellbook/rituals/respawn.md` for the session-start ritual.
 - `archive-discipline.md` for why "lost" still doesn't mean "deleted" anywhere it can be helped (in-progress quest logs that are abandoned move to `quest-log/archive/in-progress/`, not nowhere).
-- `lorebook/decisions/` for the choice to make confirmed/ durable and drafts/ ephemeral.
+- `lorebook/confirmed/` for the choice to make confirmed/ durable and drafts/ ephemeral.

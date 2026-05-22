@@ -1,6 +1,6 @@
 # Drafts mechanics
 
-For `examine/`, `niksis8/`, `niksis8_character/` (and by extension for `lorebook/decisions/` and `keepsake/` pins, with slightly different folder names).
+For `examine/`, `niksis8/`, `niksis8_character/` (and by extension for `lorebook/confirmed/` and `keepsake/` pins, with slightly different folder names).
 
 ## Flow
 
@@ -13,7 +13,7 @@ For `examine/`, `niksis8/`, `niksis8_character/` (and by extension for `lorebook
 
 For `keepsake/` the equivalent is `keepsake/proposals/` → pinning into `current.md` (the proposal file moves to `keepsake/archive/proposals/` once pinned, so the original proposal is preserved).
 
-For `lorebook/decisions/` the equivalent is `lorebook/drafts/` → `lorebook/decisions/D-NNN_<slug>.md`.
+For `lorebook/confirmed/` the equivalent is `lorebook/drafts/` → `lorebook/confirmed/D-NNN_<slug>.md`.
 
 ## The observation rule
 
@@ -52,4 +52,4 @@ To be designed against real use. Initial shape: list pending drafts grouped by l
 
 - `archive-discipline.md` for what happens to rejected drafts and superseded confirmed entries.
 - `write-rules.md` for the full per-layer picture.
-- `lorebook/decisions/` for the founding choice to gate identity behind drafts.
+- `lorebook/confirmed/` for the founding choice to gate identity behind drafts.

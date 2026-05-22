@@ -105,7 +105,7 @@ Gnomes are **system-namespace**. There is one gnome agent config; the spawn brie
 **A gnome may not:**
 
 - Write to any `confirmed/` path (hook-enforced by `block-confirmed-writes.py`).
-- Write to `lorebook/decisions/` — gnomes draft; principal canonicalizes.
+- Write to `lorebook/confirmed/` — gnomes draft; principal canonicalizes.
 - Touch `keepsake/current.md` — user-only pin surface.
 - Touch `meta/` — user-only rulebook.
 - Touch any file in `spellbook/rituals/` — user-only at every scope.

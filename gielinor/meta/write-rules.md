@@ -48,7 +48,7 @@ Dwarves can run none of these rituals. Gnomes can run **session-close**, **alchi
 - No writes to any `confirmed/` path. Applies across all scopes — global `examine/`, `niksis8/`, `lorebook/`, per-player `examine/`, `niksis8_character/`.
 - No file deletes. The agent moves files into the corresponding `archive/`.
 - Dwarf write boundary (see `modes.md`).
-- Gnome write boundary (see `modes.md` and `spellbook/skills/spawning-gnomes.md`). Gnomes can write across players to drafts/proposals/inventory/quest-log but are blocked from `confirmed/`, `lorebook/decisions/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, and body files.
+- Gnome write boundary (see `modes.md` and `spellbook/skills/spawning-gnomes.md`). Gnomes can write across players to drafts/proposals/inventory/quest-log but are blocked from `confirmed/`, `lorebook/confirmed/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, and body files.
 - No sub-spawning from a dwarf or gnome. Only the principal spawns.
 
 **CLAUDE.md guides (discipline):**
@@ -77,4 +77,4 @@ See [[D-017]] for the founding decision (2026-05-21, S021 alching of Jebrim).
 - `drafts-mechanics.md` for how the drafts flow actually works.
 - `archive-discipline.md` for what "archive only" means structurally.
 - `modes.md` for the dwarf-mode subset.
-- `lorebook/decisions/` for *why* any of this is the way it is.
+- `lorebook/confirmed/` for *why* any of this is the way it is.

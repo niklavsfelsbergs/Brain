@@ -43,6 +43,14 @@
 
 **T11 (close-session).** Ran the ritual. Spawn-decision: principal-self (below all thresholds). No pending external actions. Resume file updated. Harvest produced 1 skill draft for Jebrim — "scope creep during plan execution" — capturing the silent-doc-sync vs surface-on-code-change calibration from T7. Surfaced. Committing now.
 
+**T12 (alching pass).** Light alching pass post-close. Identity drafts empty; bank notes current; budgets fine. Created 1 examine draft (`2026-05-22-check-artifact-mtimes-doc-not-source-of-truth.md`) anchored on T10's project-38 stale-CLAUDE.md catch. Held the scope-creep skill draft in drafts/ — single-occurrence, below the ≥2 threshold. Updated `last-alched.md`. Committed `d53056d`.
+
+**T13 (real-use validation — first instance).** Principal returned from meeting (or partway through) with a real shipping-agent session bug: a basket-build query joined `fact_shipment_orderitems` and `LISTAGG`'d without pre-aggregating by SKU. Output rendered as `CVS0750501F2 x1; CVS0750501F2 x1; ...` instead of `5 x CVS0750501F2`. The other agent caught and fixed in-line, but the gap was that the shipping-agent's docs didn't carry the basket-construction pattern at all. Patched core docs:
+- `skills/query-patterns.md`: new section "Example — building a basket string per shipment (or per order)" with canonical shipment + shop-order SQL, format rules (`; ` separator, `qty x SKU`, desc-by-qty sort), the bucketing rule (default = full SKU), and a rationale paragraph naming the unit-vs-line grain variation by `source_system`.
+- `reference/tables.md`: added gotcha under `fact_shipment_orderitems` — `quantity` per row is not reliable as the per-SKU count; same SKU can appear in multiple rows (unit-level split vs line-level rollup, varies by source); always pre-aggregate `SUM(quantity)` grouped by `(shipment_id, sku)` or `(shop_ordernumber, sku)` before formatting / matching / counting. Cross-references `skills/query-patterns.md`.
+
+This is the **first real-use validation** of the new shipping-agent model — exactly the validation arc the inventory resume predicted ("First real session validates §0 rules 16–28; any rough edge → draft an adjustment"). The rough edge wasn't a §0 rule — it was missing reference content. The model worked correctly (the agent attempted the work, the principal noticed the bug, the maintainer-Jebrim is patching the docs from outside). System loop closing as designed.
+
 ## Where we are
 
 S029 ran a design conversation that landed a complete plan for converting the shipping-agent into a **standalone product** with **personal user folders**. The plan is below — implementation hasn't started. The next session opens fresh in `bi-analytics-main` and does the file work.

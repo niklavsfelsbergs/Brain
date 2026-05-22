@@ -58,7 +58,7 @@ Respawn, mini-respawn on player switch, threshold checks for alching and banksta
 
 ## Intent narration (visualizer sidecar)
 
-After stating the Plan, write a short phrase (2–10 words, ≤100 chars) to `.claude/intent/<actor>.txt` at the brain root. The visualizer reads this and renders a speech bubble near the actor (wraps to two lines centered) and also pushes the same string into the COMMS chat panel as `<Actor>: <text>`.
+After stating the Plan, write a short phrase (2–10 words, ≤100 chars) to `.claude/intent/<actor>-<sid8>.txt` at the brain root, where `<sid8>` is the first 8 characters of `CLAUDE_CODE_SESSION_ID` (the env var Claude Code exposes per session). The per-session filename prevents two parallel sessions of the same player from clobbering each other's bubble on disk (see [[D-018]]). If the env var isn't available, fall back to bare `.claude/intent/<actor>.txt` — the hook still session-stamps the resulting event, so the visualizer routes correctly; only the on-disk file is at risk. The visualizer reads the file and renders a speech bubble near the actor (wraps to two lines centered) and also pushes the same string into the COMMS chat panel as `<Actor>: <text>`.
 
 - **Active actor by mode.** Player session → `<player>.txt` (e.g., `jebrim.txt`, `zezima.txt`). Dev-brain session → `braindead.txt`. Unscoped session → `wisp.txt`.
 - **Tone is functional, not narrative.** "Wrapping up S002", "Drafting D-009", "Bankstanding — phase 0", "Designing intent narration". Verb + noun, present tense. Not "I will now…" or "About to…".

@@ -16,31 +16,38 @@ import numpy as np
 from collections import deque
 
 HERE = Path(__file__).parent
-SRC = HERE / "_source" / "sheet-2026-05-22-v2.png"
+SRC = HERE / "_source" / "sheet-2026-05-22-v4.png"
 
-# Reading order matches the v2 prompt: row 1 actors (5), row 2 sub-agents (3),
-# row 3 buildings A (5), row 4 buildings B (5), row 5 iceberg + tree (2).
+# v4 layout — 6 rows but the last two run into each other in the profile.
+# Row 1: 5 actors, Row 2: 3 sub-agents + 2 trees, Row 3: bush+flower+rock+
+# ground+path, Row 4: 5 buildings, Row 5: 5 buildings, Row 6: iceberg + tree.
 NAMES = [
     ["jebrim", "zezima", "wisp", "braindead", "guthix"],
-    ["dwarf", "gnome", "penguin"],
+    ["dwarf", "gnome", "penguin", "tree-leafy", "tree-pine"],
+    ["bush", "flower", "rock", "ground-tile", "path-tile"],
     ["inbox-square", "meta-town-hall", "lorebook-library", "bank", "examine-hall"],
     ["quest-hall", "spellbook-tower", "keepsake-vault", "inn", "braindead-workshop"],
-    ["iceberg", "tree"],
+    ["iceberg", "tree-small"],
 ]
 
 # Color distance tolerance for "this pixel is background" during flood-fill.
-BG_TOL = 22
+# Bumped 22→60 to eat anti-aliased halos around sprites (mid-grey pixels at
+# the boundary between dark outline and white bg). Risk: light interior
+# highlights might get classified as bg, but the flood-fill is connected so
+# only halo pixels reachable from a corner get caught.
+BG_TOL = 60
 # Row bands hardcoded from inspection of the 2026-05-22 sheet (1536×1024).
 # Auto-detect doesn't work cleanly here: label text bridges rows 2-4 (forcing
 # a high threshold), but the lone tree on row 5 sits below any high threshold.
 # Bands are inclusive y-ranges spanning art + label; LABEL_TRIM_FRAC cuts the
 # label off afterward.
 ROW_Y_RANGES = [
-    (40, 225),   # row 1: 5 actors
-    (280, 445),  # row 2: 3 sub-agents
-    (480, 685),  # row 3: 5 buildings
-    (730, 925),  # row 4: 5 buildings
-    (960, 1075), # row 5: iceberg + tree
+    (46, 243),   # v4 row 1: 5 actors
+    (266, 450),  # v4 row 2: 3 sub-agents + 2 trees
+    (476, 607),  # v4 row 3: bush, flower, rock, ground tile, path tile
+    (623, 819),  # v4 row 4: 5 buildings A
+    (823, 1010), # v4 row 5: 5 buildings B
+    (1015, 1103),# v4 row 6: iceberg + small tree
 ]
 COL_GAP_FRAC = 0.04
 # Min sprite width. Filters narrow noise (e.g., a building spire poking into
@@ -76,20 +83,45 @@ def flood_fill_bg(arr: np.ndarray, tol: int) -> np.ndarray:
     return mask
 
 
-def edge_alpha(arr: np.ndarray, bg: np.ndarray, halo: int = 4, soft_tol: int = 60) -> np.ndarray:
-    """Compute smooth alpha to remove anti-aliased halos at sprite edges.
+def dilate_bg(bg: np.ndarray, n: int) -> np.ndarray:
+    """Expand the bg mask outward by n pixels in 4-connectivity."""
+    h, w = bg.shape
+    out = bg.copy()
+    for _ in range(n):
+        # Shift in 4 directions and OR in
+        nxt = out.copy()
+        nxt[1:, :] |= out[:-1, :]
+        nxt[:-1, :] |= out[1:, :]
+        nxt[:, 1:] |= out[:, :-1]
+        nxt[:, :-1] |= out[:, 1:]
+        out = nxt
+    return out
 
-    For pixels that are NOT in the flood-filled bg but lie within `halo` pixels
-    of one, compute alpha based on color-distance to the nearest seed color.
-    Pixels close to bg color get reduced alpha (eaten into transparency);
-    pixels far from bg keep full alpha. This trims the white/grey halo that
-    flood-fill misses on anti-aliased sprite outlines.
+
+def edge_alpha(arr: np.ndarray, bg: np.ndarray, dilate: int = 2, halo: int = 3, soft_tol: int = 120) -> np.ndarray:
+    """Compute alpha mask that eats the halo around sprites.
+
+    Step 1: dilate the bg mask outward by `dilate` pixels — eats the very edge
+            (the brightest halo pixels) unconditionally.
+    Step 2: for the pixels just inside the dilated boundary, fade alpha based
+            on color-distance to the nearest seed color.
     """
     h, w, _ = arr.shape
     seed_colors = np.array([
         arr[0, 0], arr[0, w - 1], arr[h - 1, 0], arr[h - 1, w - 1]
     ], dtype=np.int16)
-    # Distance transform (cheap): is this fg pixel adjacent to a bg pixel?
+    # Dilate bg to consume halo pixels close to the original bg.
+    bg_dilated = dilate_bg(bg, dilate)
+    fg = ~bg_dilated
+
+    # Min color-distance to any seed color (for the soft-edge band).
+    arr_i = arr.astype(np.int16)
+    dists = np.full((h, w), 1e9, dtype=np.float32)
+    for c in seed_colors:
+        d = np.max(np.abs(arr_i - c), axis=2).astype(np.float32)
+        dists = np.minimum(dists, d)
+
+    # `near_dilated_bg` = pixels within `halo` of the dilated bg (these get soft alpha)
     near_bg = np.zeros((h, w), dtype=bool)
     for dy in range(-halo, halo + 1):
         for dx in range(-halo, halo + 1):
@@ -99,19 +131,11 @@ def edge_alpha(arr: np.ndarray, bg: np.ndarray, halo: int = 4, soft_tol: int = 6
             xs = slice(max(0, dx), min(w, w + dx))
             ys2 = slice(max(0, -dy), min(h, h - dy))
             xs2 = slice(max(0, -dx), min(w, w - dx))
-            near_bg[ys2, xs2] |= bg[ys, xs]
-    fg = ~bg
+            near_bg[ys2, xs2] |= bg_dilated[ys, xs]
     edge_mask = fg & near_bg
-    # Min color-distance to any seed color for edge pixels.
-    arr_i = arr.astype(np.int16)
-    dists = np.full((h, w), 1e9, dtype=np.float32)
-    for c in seed_colors:
-        d = np.max(np.abs(arr_i - c), axis=2).astype(np.float32)
-        dists = np.minimum(dists, d)
-    # alpha = 0 at dist=0 (pure bg), 255 at dist >= soft_tol (pure fg).
+
     soft = np.clip(dists / soft_tol, 0.0, 1.0)
     alpha = (fg.astype(np.uint8)) * 255
-    # Where edge_mask, blend in the soft alpha (only reduces alpha, never adds)
     soft_alpha = (soft * 255).astype(np.uint8)
     alpha = np.where(edge_mask, np.minimum(alpha, soft_alpha), alpha)
     return alpha
@@ -146,7 +170,7 @@ def main() -> None:
     bg = flood_fill_bg(arr, BG_TOL)
     fg = ~bg
     print("computing soft edge alpha…")
-    alpha = edge_alpha(arr, bg, halo=4, soft_tol=60)
+    alpha = edge_alpha(arr, bg, dilate=3, halo=3, soft_tol=140)
 
     # Build RGBA image
     rgba = np.dstack([arr, alpha])

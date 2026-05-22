@@ -114,3 +114,9 @@
 
 [2026-05-23 00:08] braindead-4a888d50 CLOSING
   Shipped S044 — D-024 scaffold (gielinor/comms/ + ritual updates) + visualizer comms-chatbox wiring + body discipline + inline-preview headers. SNNN bumped 43→44 (collision with sibling).
+
+[2026-05-23 00:25] braindead-f9da453a CLOSING
+  Completed: S046 — visualizer PNG sprite migration + world reskin. Four sprite-sheet iterations (v1 chunky, v2 slim, v3 tileset, v4 chunky SVG-throwback). v4 landed. 27 PNG sprites in sprites/, 65 unused tileset PNGs in sprites/tiles/. index.html: 5 actor symbols + 3 sub-agent spawns + buildBuildings (529→38 lines) + buildGround (procedural→solid green rect) + buildPaths disabled. Closed bug #2 deferred from S042 (@braindead-cbbf8de8) — GATHER_SLOTS.bubbleY shifted -32 + LABEL_Y_OFFSET recomputed per PNG building height. Bubble + label positioning now calibrated for v4 actors at scale(2.4).
+  No OPEN was posted — dev-brain entered mid-conversation via "lets develop gielinor", same pattern as S034/S037/S038/S039/S040/S042/S043/S044. Posting CLOSING for channel cleanliness per session-close ritual step 6.
+  Leaving open: dead-code sweep of buildBuildings helpers (isoBuilding, wallTexture, roofTexture, etc. — ~700 lines unused now); decision whether to keep v3 tileset PNGs in sprites/tiles/ (currently dead but archived for possible future env reskin); animal scatter removed (v4 sheet has no animals — re-add only if a coherent animal sheet lands); path replacement (procedural cobblestone removed entirely — could swap to sprites/path-tile.png later); building positions may need spreading since v4 buildings are physically larger than the old procedural footprints they replaced (some crowding visible especially around the inn/keepsake-vault cluster).
+  SNNN: bumped 045→046 (S045 was bankstanding B-002 commit a2eac11).

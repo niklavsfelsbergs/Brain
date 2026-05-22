@@ -1375,34 +1375,20 @@ function jitter(actorId, atKey) {
 // ─────────────────────────────────────────────────────────────
 
 function buildGround() {
-  // S039: replaced procedural iso green diamonds with tiled PNG ground from the
-  // v3 environment sheet. Tiles are 157×115 isometric grass blocks; we lay
-  // them in an iso grid so the diamond surfaces tessellate. The small detail
-  // (tufts, mushrooms, dandelions) keeps its scatter on the overlays layer for
-  // texture variety on top of the base tiles.
+  // S039: solid green ground — the iso-tile approach showed visible seams
+  // between tiles. Single solid rect using the green sampled from
+  // sprites/ground-tile.png. Scatter detail still goes on overlays for
+  // some texture.
   const ground = document.getElementById('ground');
   const overlays = document.getElementById('ground-overlays');
   const svgNS = 'http://www.w3.org/2000/svg';
-  const TW = 210, TH = 90;  // v4 ground-tile native 210×128; diamond face ≈ 90 tall
-  const VISIBLE_H = 128;    // full image height
-  // Iso grid: columns step by (TW/2, TH/2); rows by (-TW/2, TH/2).
-  // Cover the world (1680 × 1148) with a comfortable margin.
-  const range = 18;
-  for (let gy = -range; gy <= range; gy++) {
-    for (let gx = -range; gx <= range; gx++) {
-      const cx = 840 + (gx - gy) * (TW / 2);
-      const cy = 574 + (gx + gy) * (TH / 2);
-      if (cx + TW/2 < -80 || cx - TW/2 > 1760 || cy + VISIBLE_H/2 < -80 || cy - VISIBLE_H/2 > 1228) continue;
-      const im = document.createElementNS(svgNS, 'image');
-      im.setAttribute('href', 'sprites/ground-tile.png');
-      im.setAttribute('x', cx - TW/2);
-      im.setAttribute('y', cy - VISIBLE_H/2);
-      im.setAttribute('width', TW);
-      im.setAttribute('height', VISIBLE_H);
-      im.setAttribute('preserveAspectRatio', 'none');
-      ground.appendChild(im);
-    }
-  }
+  const bg = document.createElementNS(svgNS, 'rect');
+  bg.setAttribute('x', 0);
+  bg.setAttribute('y', 0);
+  bg.setAttribute('width', 1680);
+  bg.setAttribute('height', 1148);
+  bg.setAttribute('fill', '#47771c');
+  ground.appendChild(bg);
 
   // Scatter detail on top — kept from the procedural version. The new
   // ground tiles already have texture, so this is just extra variety.
@@ -1484,7 +1470,9 @@ function buildPaths() {
 
     // Stone diamonds laid along the sampled curve. Skip a few near each end
     // so the path slips under the building plinth rather than colliding.
-    const skip = 1;
+    // S039: bumped skip 1→4 — v4 buildings are larger and the path stones
+    // were drawing on top of the building footprint.
+    const skip = 4;
     for (let i = skip; i < pts.length - skip; i++) {
       const p = pts[i];
       const jitterX = ((i * 17) % 5) - 2;
@@ -1578,10 +1566,10 @@ function buildFlora() {
   const TREE_VARIANTS = ['tree-leafy', 'tree-pine'];
   function placeTree(x, y, layerHint) {
     if (x < 8 || x > 1672 || y < 244 || y > 1137) return;
-    if (!clearOfBuildings(x, y, 120)) return;
+    if (!clearOfBuildings(x, y, 160)) return;  // v4 buildings bigger
     if (!clearOfPond(x, y, 146)) return;
+    if (!clearOfPaths(x, y, 45)) return;       // trees off the paths
     const layer = layerHint || (y > 784 ? front : back);
-    // Deterministic variant pick — same forest every reload.
     const h = ((x * 73856093) ^ (y * 19349663)) >>> 0;
     const variant = TREE_VARIANTS[h % TREE_VARIANTS.length];
     addUse(layer, variant, x, y);
@@ -1628,9 +1616,9 @@ function buildFlora() {
   // S029: bounds scaled 1.4× (30→42, 1170→1638, 180→252, 800→1120).
   function placeIfClear(layer, href, x, y, opts={}) {
     if (x < 42 || x > 1638 || y < 252 || y > 1120) return;
-    if (!clearOfBuildings(x, y, opts.bPad || 84)) return;
+    if (!clearOfBuildings(x, y, opts.bPad || 140)) return;  // v4 buildings ~250 wide
     if (!clearOfPond(x, y, opts.pPad || 126)) return;
-    if (!clearOfPaths(x, y, opts.pathPad || 25)) return;
+    if (!clearOfPaths(x, y, opts.pathPad || 40)) return;    // wider path clearance
     addUse(layer, href, x, y);
   }
 
@@ -1900,19 +1888,20 @@ function buildBuildings() {
 //   over vignette and actors)
 // ─────────────────────────────────────────────────────────────
 
-// Negative = label sits above the building's roof apex (with a little clearance).
+// S039: recomputed from PNG building heights (Y_DROP=60, label sits ~5px above
+// the PNG's top edge). Formula: yoff = 41 - sprite_height (negative = above).
 const LABEL_Y_OFFSET = {
-  'inbox-square':     -70,   // flat platform; sits above bulletin board
-  'meta-town-hall':   -224,  // h+r=146, spire clipped by canvas top
-  'lorebook-library': -185,  // h+r=116
-  'bank':             -204,  // h+r=126
-  'examine-hall':     -109,  // h+r=60
-  'quest-hall':       -216,  // h+r=134
-  'spellbook-tower':  -350,  // h+r=240 (tall tower)
-  'keepsake-vault':   -165,  // h+r=102
-  'inn':              -185,  // h+r=114
-  'braindead-workshop': -91, // h+r=52
-  'iceberg':            -100, // ice peak ~80 above center
+  'inbox-square':       -133,  // h=174
+  'meta-town-hall':     -155,  // h=196
+  'lorebook-library':   -140,  // h=181
+  'bank':               -106,  // h=147
+  'examine-hall':       -152,  // h=193
+  'quest-hall':         -138,  // h=179
+  'spellbook-tower':    -146,  // h=187
+  'keepsake-vault':     -130,  // h=171
+  'inn':                -141,  // h=182
+  'braindead-workshop': -145,  // h=186
+  'iceberg':             -47,  // h=88
 };
 
 function buildLabels() {
@@ -2239,16 +2228,19 @@ const GATHER_SLOTS = [
   // slots get higher bubbles so the cluster's bubbles fan upward instead of
   // stacking on top of each other.
   // All values scaled 1.4× from the original layout when the world grew (S029).
-  { dx: 0,    dy: 0,    bubbleY: -48 },  // 0: center
-  { dx: -48,  dy: 11,   bubbleY: -48 },  // 1: front-left
-  { dx: 48,   dy: 11,   bubbleY: -48 },  // 2: front-right
-  { dx: -31,  dy: -20,  bubbleY: -78 },  // 3: back-left (higher bubble)
-  { dx: 31,   dy: -20,  bubbleY: -78 },  // 4: back-right (higher bubble)
-  { dx: -81,  dy: -3,   bubbleY: -59 },  // 5: far-left
-  { dx: 81,   dy: -3,   bubbleY: -59 },  // 6: far-right
-  { dx: 0,    dy: -34,  bubbleY: -101 }, // 7: directly back (highest bubble)
-  { dx: -64,  dy: 20,   bubbleY: -39 },  // 8: front-far-left (lower bubble)
-  { dx: 64,   dy: 20,   bubbleY: -39 },  // 9: front-far-right
+  // S039: bumped bubbleY by -32 across the board — v4 PNG actors are taller
+  // (sprite top ~-55 from foot vs old ~-40), so previous values landed bubbles
+  // on the chest. New offsets put bubble above the head.
+  { dx: 0,    dy: 0,    bubbleY: -80 },  // 0: center
+  { dx: -48,  dy: 11,   bubbleY: -80 },  // 1: front-left
+  { dx: 48,   dy: 11,   bubbleY: -80 },  // 2: front-right
+  { dx: -31,  dy: -20,  bubbleY: -110 }, // 3: back-left (higher bubble)
+  { dx: 31,   dy: -20,  bubbleY: -110 }, // 4: back-right (higher bubble)
+  { dx: -81,  dy: -3,   bubbleY: -91 },  // 5: far-left
+  { dx: 81,   dy: -3,   bubbleY: -91 },  // 6: far-right
+  { dx: 0,    dy: -34,  bubbleY: -133 }, // 7: directly back (highest bubble)
+  { dx: -64,  dy: 20,   bubbleY: -71 },  // 8: front-far-left (lower bubble)
+  { dx: 64,   dy: 20,   bubbleY: -71 },  // 9: front-far-right
 ];
 const actorSlot = {};  // actorKey -> slot index at current building
 
@@ -2376,10 +2368,55 @@ function wrapWander(g) {
   g.__wanderWrapped = true;
 }
 
+// Counterpart to gcDeadSprites — ensures every live session in the manifest
+// has a sprite on the map. pollLive only applies *new* events from
+// state.ndjson; sessions that spawned before the visualizer opened would
+// otherwise be invisible until a fresh mode-transition event fires. The
+// manifest is the truth source for "who's live now," and the sprite engine
+// matches it both ways (spawnMissingSprites adds; gcDeadSprites removes).
+function spawnMissingSprites() {
+  if (document.body.dataset.mode !== 'live') return;
+  if (!liveSidsSet.size) return;
+  for (const [actor] of baseActorToSid.entries()) {
+    if (actor === 'braindead' && !braindeadActive) {
+      braindeadActive = true;
+      spawnBraindead({at: 'braindead-workshop'});
+    } else if (actor === 'wisp' && !wispActive) {
+      wispActive = true;
+      spawnWisp({at: 'quest-hall'});
+    } else if (actor === 'guthix' && !guthixActive) {
+      guthixActive = true;
+      spawnGuthix({at: 'lorebook-library'});
+    }
+  }
+  for (const [actorKey] of actorInstanceToSid.entries()) {
+    if (instanceNodes[actorKey]) continue;
+    const m = /^([a-z]+)-(\d+)$/.exec(actorKey);
+    if (!m) continue;
+    const actor = m[1], inst = +m[2];
+    const fallback = actor === 'braindead' ? 'braindead-workshop' : 'inbox-square';
+    spawnPlayerInstance(actor, inst, fallback);
+  }
+}
+
+// Static jebrim/zezima sprites used to be always-visible scenic actors. Now
+// that sprites are session handles, hide them when their actor has no live
+// session — a Zezima sprite standing inert with no Zezima session behind it
+// reads as noise. Reappear instantly when a session for that actor spawns.
+function syncStaticPlayerVisibility() {
+  if (document.body.dataset.mode !== 'live') return;
+  if (!liveSidsSet.size) return;
+  ['jebrim', 'zezima'].forEach(a => {
+    const g = document.getElementById('actor-' + a);
+    if (!g) return;
+    g.style.display = baseActorToSid.has(a) ? '' : 'none';
+  });
+}
+
 // Cascade-aware GC. Called after each switchboard poll in live mode. Any
 // sprite whose sid8 isn't in liveSidsSet (or sub-agent whose parent isn't
 // live) fades immediately. Player instance 1 (jebrim/zezima) lives in
-// static HTML and is never despawned by this sweep.
+// static HTML — syncStaticPlayerVisibility handles their hide/show.
 function gcDeadSprites() {
   if (document.body.dataset.mode !== 'live') return;
   if (!liveSidsSet.size) return;  // first-poll safety: sidecar may not have populated yet
@@ -3751,7 +3788,7 @@ document.querySelectorAll('.log-tab').forEach(tab => {
 // build world
 buildGround();
 // buildPond();  // removed — pond was visually noisy; flora fills the gap
-buildPaths();
+// buildPaths();  // S039: paths removed — they overlapped sprites and looked rough
 buildFlora();
 buildBuildings();
 buildLabels();
@@ -4173,9 +4210,20 @@ if (LIVE) {
       cached = (j && Array.isArray(j.sessions)) ? j.sessions : [];
       updateLiveLookup(cached);
       render(cached);
-      // GC runs only on fresh poll (not on the 1s age re-render) so a stale
-      // sprite gets at most POLL_MS to fade after its sid disappears.
+      // Sync sprites with manifest in both directions — spawn missing first
+      // (so newly-discovered live sessions become visible immediately), hide
+      // unsessioned static players, then GC anything that's gone.
+      try { spawnMissingSprites(); } catch (e) { console.warn('spawnMissingSprites failed:', e); }
+      try { syncStaticPlayerVisibility(); } catch (e) { console.warn('syncStaticPlayerVisibility failed:', e); }
       try { gcDeadSprites(); } catch (e) { console.warn('gcDeadSprites failed:', e); }
+      // Snap any existing bubbles to the current sprite positions. spawn/
+      // despawn updates actorPositions but doesn't re-position bubbles,
+      // so an intent that was rendered against an old position would
+      // float in space until a move event triggered relayout. Calling
+      // relayoutBubbles here makes "bubble follows sprite" hold across
+      // the sync path too.
+      try { if (typeof relayoutBubbles === 'function') relayoutBubbles(); }
+      catch (e) { console.warn('relayoutBubbles after sync failed:', e); }
     } catch (_) {
       // file may not exist yet (sidecar hasn't fired) — silent, retry next tick
     } finally {

@@ -23,9 +23,9 @@ The load order below front-loads only the durable, in-force, identity-shaped mat
 
 3. **Read `keepsake/current.md` (global).** Full read. These are the always-surface items; they must be in working context.
 
-4. **Read `examine/confirmed/current.md` (global).** The agent-system self-model.
+4. **Read every `.md` file in `examine/confirmed/` (global).** The agent-system self-model. Each file is an atomic confirmed observation; all are in force. `current.md`, if present, is an optional hand-curated executive summary — read alongside the atomic entries, not in place of them.
 
-5. **Read `niksis8/confirmed/current.md` (global).** Universal facts about Niklavs.
+5. **Read every `.md` file in `niksis8/confirmed/` (global).** Universal facts about Niklavs. Same shape — atomic confirmed observations, `current.md` optional executive summary.
 
 6. **If a player is active, scope them in:**
 
@@ -37,9 +37,9 @@ The load order below front-loads only the durable, in-force, identity-shaped mat
 
    d. Read `players/<name>/keepsake/current.md`.
 
-   e. Read `players/<name>/examine/confirmed/current.md`.
+   e. Read every `.md` file in `players/<name>/examine/confirmed/`. Atomic confirmed observations; `current.md` optional executive summary.
 
-   f. Read `players/<name>/niksis8_character/confirmed/current.md`.
+   f. Read every `.md` file in `players/<name>/niksis8_character/confirmed/`. Same shape.
 
    g. Check `players/<name>/quest-log/in-progress/`. If any file is present, the player has in-flight quests. Run the **reconciliation prompt** (below) before accepting new input.
 

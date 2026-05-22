@@ -1381,11 +1381,17 @@ def handle_task_pre(payload: dict) -> None:
 
     description = tool_input.get("description") or tool_input.get("subagent_type") or "task"
     wall = now_iso()
+    # parentSid8 lets the visualizer route sub-agent clicks back to the spawning
+    # session for click-to-focus (the sub-agent has no terminal of its own).
+    # Same key cascades parent-despawn → sub-agent despawn when the parent's
+    # sid disappears from the switchboard manifest.
+    parent_sid8 = (_SESSION_ID or "")[:8]
     append({
         "wallTime": wall, "source": "hook",
         "type": cfg["spawn_event"],
         "id": sub_id, "color": color, "parent": parent, "at": at,
         "intent": description[:INTENT_MAX_LEN],
+        "parentSid8": parent_sid8,
     })
     append({
         "wallTime": wall, "source": "hook",

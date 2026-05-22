@@ -114,3 +114,18 @@
 
 [2026-05-23 00:08] braindead-4a888d50 CLOSING
   Shipped S044 — D-024 scaffold (gielinor/comms/ + ritual updates) + visualizer comms-chatbox wiring + body discipline + inline-preview headers. SNNN bumped 43→44 (collision with sibling).
+
+[2026-05-23 00:25] braindead-f9da453a CLOSING
+  Completed: S046 — visualizer PNG sprite migration + world reskin. Four sprite-sheet iterations (v1 chunky, v2 slim, v3 tileset, v4 chunky SVG-throwback). v4 landed. 27 PNG sprites in sprites/, 65 unused tileset PNGs in sprites/tiles/. index.html: 5 actor symbols + 3 sub-agent spawns + buildBuildings (529→38 lines) + buildGround (procedural→solid green rect) + buildPaths disabled. Closed bug #2 deferred from S042 (@braindead-cbbf8de8) — GATHER_SLOTS.bubbleY shifted -32 + LABEL_Y_OFFSET recomputed per PNG building height. Bubble + label positioning now calibrated for v4 actors at scale(2.4).
+  No OPEN was posted — dev-brain entered mid-conversation via "lets develop gielinor", same pattern as S034/S037/S038/S039/S040/S042/S043/S044. Posting CLOSING for channel cleanliness per session-close ritual step 6.
+  Leaving open: dead-code sweep of buildBuildings helpers (isoBuilding, wallTexture, roofTexture, etc. — ~700 lines unused now); decision whether to keep v3 tileset PNGs in sprites/tiles/ (currently dead but archived for possible future env reskin); animal scatter removed (v4 sheet has no animals — re-add only if a coherent animal sheet lands); path replacement (procedural cobblestone removed entirely — could swap to sprites/path-tile.png later); building positions may need spreading since v4 buildings are physically larger than the old procedural footprints they replaced (some crowding visible especially around the inn/keepsake-vault cluster).
+  SNNN: bumped 045→046 (S045 was bankstanding B-002 commit a2eac11).
+
+[2026-05-23 — respawn] braindead-a110d573 OPEN
+  Entered mid-conversation via "lets develop gielinor" — Jebrim session pivoted to dev-brain to implement a viz proposal. No OPEN siblings detected at entry (b070e9be is IDLE, no live writers).
+  Target: experiments/visualizer/index.html only. Two surfaces — relayoutBubbles() parent-based grouping (principal+sub-agents vertical stack anchored to principal sprite X) + GATHER_SLOTS.bubbleY -40 lift (helmet clearance).
+
+[2026-05-23] braindead-a110d573 CLOSING
+  Shipped S047 — visualizer cluster-stack (principal at bottom, sub-agents stacked above in reverse spawn order, one trail per stack) + helmet clearance (-40 on all GATHER_SLOTS.bubbleY values, ~65 px gap above sprite head).
+  Surfaced live during testing: parallel-Braindead spawn failure — my own WAITING session has no sprite, intent narration triggers an orphan-clear loop visible as pulsating bubble. Same root family as D-025 #1 but the S042 fix didn't reach the parallel-instance case. Full investigation surface in quest-log/in-progress/S047_a110d573_*.md § "Open — for next session." Carried into respawn.md as Step 0 (block other 0-tier work until it lands).
+  Leaving open: Step 0 spawn bug (high-priority); all prior carries unchanged (Step 1b cross-window focus, Step 2 lane-layout verify [obsolete — replaced by S047 cluster], Step 3 penguin live test, Step 4 parallel-Braindead tint check, Step 5 cross-repo sidecar, Step 7 Guthix live test, drafts triage backlog).

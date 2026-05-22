@@ -230,6 +230,31 @@ def _detect_instance(actor: str, session_id: str) -> Optional[int]:
         return None
 
 
+def _detect_building(actor: str, session_id: str) -> Optional[str]:
+    """Read state-actors.json to surface this session's current building, so
+    the visualizer can render sprites at the right place straight from the
+    manifest — no event-replay needed.
+
+    Instanced actors (jebrim, zezima, braindead) store per-session buildings
+    under `actors[actor].byId[session_id]`. Singletons (wisp, guthix) store
+    their building as a top-level scalar under `actors[actor]`. Returns None
+    when nothing is recorded (the visualizer falls back to the actor's
+    default spawn building)."""
+    if not actor or actor == "unknown":
+        return None
+    try:
+        state = json.loads(ACTORS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    entry = state.get(actor)
+    if isinstance(entry, dict):
+        v = (entry.get("byId") or {}).get(session_id)
+        return v if isinstance(v, str) and v else None
+    if isinstance(entry, str) and entry:
+        return entry
+    return None
+
+
 def _detect_host() -> str:
     """Best-effort terminal substrate detection from env. Phase 3 will use
     this to pick the focus mechanism. Unknown means "we'll figure it out
@@ -457,6 +482,20 @@ def _write_manifest() -> None:
                             j["instance"] = refreshed_inst
                 except Exception as e:
                     print(f"status-sidecar: manifest instance refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
+                # Stamp current building per session so the visualizer can
+                # render sprites at the right place from the manifest alone
+                # (manifest-driven sync, the S044 inversion). Falls through
+                # silently when state-actors.json has no entry yet — the
+                # visualizer's default-spawn-building fallback handles it.
+                try:
+                    sfull = j.get("session_id") or ""
+                    actor_for_bld = j.get("actor") or ""
+                    if sfull and actor_for_bld:
+                        bld = _detect_building(actor_for_bld, sfull)
+                        if bld:
+                            j["building"] = bld
+                except Exception as e:
+                    print(f"status-sidecar: manifest building refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
                 sessions.append(j)
         sessions.sort(key=lambda x: x.get("last_event_ts") or 0, reverse=True)
         out = {

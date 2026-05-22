@@ -254,6 +254,32 @@
   @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
   @keyframes fadeOut { from{opacity:1;} to{opacity:0;} }
 
+  /* S044: sprite state ring + animation, mirroring the switchboard's encoding.
+     The switchboard rows already show WORKING/WAITING/CLOSING/IDLE chips —
+     these rules surface the same state on the sprite itself, so the principal
+     can read state from the map alone. Colors match the sb-row chip palette
+     (green=working, gold=waiting, amber=closing, tan=idle, faded=ended). The
+     ring lives in the actor's drop-shadow filter so it doesn't add DOM. */
+  .actor.state-working    { filter: drop-shadow(0 0 4px rgba( 90,170, 90,0.85)) drop-shadow(0 0 8px rgba( 90,170, 90,0.55)); }
+  .actor.state-waiting_for_user {
+    filter: drop-shadow(0 0 5px rgba(255,200, 80,0.95)) drop-shadow(0 0 10px rgba(255,180, 50,0.65));
+    animation: spriteWaitingPulse 1400ms ease-in-out infinite;
+  }
+  .actor.state-closing {
+    filter: drop-shadow(0 0 4px rgba(230,150, 70,0.85)) drop-shadow(0 0 9px rgba(230,150, 70,0.55));
+    animation: spriteClosingPulse 2200ms ease-in-out infinite;
+  }
+  .actor.state-idle       { filter: grayscale(0.4) brightness(0.85) drop-shadow(0 0 3px rgba(190,160,120,0.6)); opacity: 0.78; }
+  .actor.state-ended      { opacity: 0.4; filter: grayscale(0.8) brightness(0.7); }
+  .actor.state-unknown    { /* no extra treatment — sprite renders as-is */ }
+  @keyframes spriteWaitingPulse {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(255,200, 80,0.7))  drop-shadow(0 0 8px rgba(255,180, 50,0.45)); }
+    50%      { filter: drop-shadow(0 0 8px rgba(255,210,100,1.0))  drop-shadow(0 0 16px rgba(255,180, 50,0.85)); }
+  }
+  @keyframes spriteClosingPulse {
+    0%, 100% { opacity: 1.0; }
+    50%      { opacity: 0.65; }
+  }
   /* Sprite-as-handle (parity with switchboard rows). Live-mode actors with a
      resolvable sid8 get pointer cursor + brief flash on click; the click
      handler fires the same vscode://niksis8.claude-focus URI as the
@@ -2230,17 +2256,20 @@ const GATHER_SLOTS = [
   // All values scaled 1.4× from the original layout when the world grew (S029).
   // S039: bumped bubbleY by -32 across the board — v4 PNG actors are taller
   // (sprite top ~-55 from foot vs old ~-40), so previous values landed bubbles
-  // on the chest. New offsets put bubble above the head.
-  { dx: 0,    dy: 0,    bubbleY: -80 },  // 0: center
-  { dx: -48,  dy: 11,   bubbleY: -80 },  // 1: front-left
-  { dx: 48,   dy: 11,   bubbleY: -80 },  // 2: front-right
-  { dx: -31,  dy: -20,  bubbleY: -110 }, // 3: back-left (higher bubble)
-  { dx: 31,   dy: -20,  bubbleY: -110 }, // 4: back-right (higher bubble)
-  { dx: -81,  dy: -3,   bubbleY: -91 },  // 5: far-left
-  { dx: 81,   dy: -3,   bubbleY: -91 },  // 6: far-right
-  { dx: 0,    dy: -34,  bubbleY: -133 }, // 7: directly back (highest bubble)
-  { dx: -64,  dy: 20,   bubbleY: -71 },  // 8: front-far-left (lower bubble)
-  { dx: 64,   dy: 20,   bubbleY: -71 },  // 9: front-far-right
+  // on the chest. S045: bumped another -40 — the S039 values cleared the head
+  // but the gap was tight; bubbles read as sitting on the helmet, not above
+  // it. New values give ~65 px clearance between sprite head and bubble
+  // bottom.
+  { dx: 0,    dy: 0,    bubbleY: -120 }, // 0: center
+  { dx: -48,  dy: 11,   bubbleY: -120 }, // 1: front-left
+  { dx: 48,   dy: 11,   bubbleY: -120 }, // 2: front-right
+  { dx: -31,  dy: -20,  bubbleY: -150 }, // 3: back-left (higher bubble)
+  { dx: 31,   dy: -20,  bubbleY: -150 }, // 4: back-right (higher bubble)
+  { dx: -81,  dy: -3,   bubbleY: -131 }, // 5: far-left
+  { dx: 81,   dy: -3,   bubbleY: -131 }, // 6: far-right
+  { dx: 0,    dy: -34,  bubbleY: -173 }, // 7: directly back (highest bubble)
+  { dx: -64,  dy: 20,   bubbleY: -111 }, // 8: front-far-left (lower bubble)
+  { dx: 64,   dy: 20,   bubbleY: -111 }, // 9: front-far-right
 ];
 const actorSlot = {};  // actorKey -> slot index at current building
 
@@ -2368,81 +2397,192 @@ function wrapWander(g) {
   g.__wanderWrapped = true;
 }
 
-// Counterpart to gcDeadSprites — ensures every live session in the manifest
-// has a sprite on the map. pollLive only applies *new* events from
-// state.ndjson; sessions that spawned before the visualizer opened would
-// otherwise be invisible until a fresh mode-transition event fires. The
-// manifest is the truth source for "who's live now," and the sprite engine
-// matches it both ways (spawnMissingSprites adds; gcDeadSprites removes).
-function spawnMissingSprites() {
-  if (document.body.dataset.mode !== 'live') return;
-  if (!liveSidsSet.size) return;
-  for (const [actor] of baseActorToSid.entries()) {
-    if (actor === 'braindead' && !braindeadActive) {
-      braindeadActive = true;
-      spawnBraindead({at: 'braindead-workshop'});
-    } else if (actor === 'wisp' && !wispActive) {
-      wispActive = true;
-      spawnWisp({at: 'quest-hall'});
-    } else if (actor === 'guthix' && !guthixActive) {
-      guthixActive = true;
-      spawnGuthix({at: 'lorebook-library'});
-    }
-  }
-  for (const [actorKey] of actorInstanceToSid.entries()) {
-    if (instanceNodes[actorKey]) continue;
-    const m = /^([a-z]+)-(\d+)$/.exec(actorKey);
-    if (!m) continue;
-    const actor = m[1], inst = +m[2];
-    const fallback = actor === 'braindead' ? 'braindead-workshop' : 'inbox-square';
-    spawnPlayerInstance(actor, inst, fallback);
-  }
+// ─────────────────────────────────────────────────────────────
+//   Manifest-driven sprite sync (S044 inversion)
+//
+//   The switchboard manifest is the single source of truth for
+//   "who's on the map." On every poll we walk live sessions, then:
+//
+//     1. Ensure each session has a sprite at its current building.
+//     2. Set each sprite's intent bubble from the session's intent
+//        narration (clear if empty).
+//     3. Despawn any sprite not backed by a live session.
+//     4. Clear orphan intents (bubble with no sprite under it).
+//
+//   In replay mode the event-driven path still runs. In live mode the
+//   manifest sync overrides — intents go stale only when narration goes
+//   stale, sprites only exist when the session does. The screenshots
+//   driving this were classic divergence symptoms: ghost sprites,
+//   bubbles with no owner, intents from sessions that closed minutes
+//   earlier. The fix is to stop maintaining derived state through a
+//   lossy event stream and render the manifest directly.
+// ─────────────────────────────────────────────────────────────
+let switchboardSessions = [];   // last manifest snapshot — populated by updateLiveLookup
+
+// Hoisted from the switchboard IIFE so the manifest-driven sprite sync uses
+// the same state classification the sidebar shows. Both views must agree —
+// principal mental model is "sprite state == switchboard row state."
+const SB_IDLE_AFTER_SEC = 5 * 60;
+const SB_CLOSING_RX = /wrap(ping)?\s*up|clos(e|ing)\s*session|session\s*close/i;
+const SPRITE_STATE_CLASSES = ['state-working', 'state-waiting_for_user', 'state-closing', 'state-idle', 'state-ended', 'state-unknown'];
+function sbAgeSec(record) {
+  if (!record || !record.last_event_ts) return 0;
+  return Math.max(0, (Date.now() / 1000) - record.last_event_ts);
+}
+function deriveSessionState(record) {
+  if (record.state === 'ended') return 'ended';
+  if (record.state === 'waiting_for_user' && sbAgeSec(record) > SB_IDLE_AFTER_SEC) return 'idle';
+  if (record.state === 'working' && SB_CLOSING_RX.test(record.intent || '')) return 'closing';
+  return record.state || 'unknown';
+}
+function setSpriteState(g, state) {
+  if (!g) return;
+  for (const c of SPRITE_STATE_CLASSES) g.classList.remove(c);
+  g.classList.add('state-' + (state || 'unknown'));
 }
 
-// Static jebrim/zezima sprites used to be always-visible scenic actors. Now
-// that sprites are session handles, hide them when their actor has no live
-// session — a Zezima sprite standing inert with no Zezima session behind it
-// reads as noise. Reappear instantly when a session for that actor spawns.
-function syncStaticPlayerVisibility() {
+function defaultBuildingFor(actor) {
+  if (actor === 'braindead') return 'braindead-workshop';
+  if (actor === 'wisp') return 'quest-hall';
+  if (actor === 'guthix') return 'lorebook-library';
+  if (actor === 'jebrim') return 'inbox-square';
+  if (actor === 'zezima') return 'keepsake-vault';
+  return 'inbox-square';
+}
+
+function moveActorIfChanged(actorKey, toBld) {
+  if (!toBld || !STAND[toBld]) return;
+  if (currentBuilding[actorKey] === toBld) return;
+  moveActor(actorKey, toBld, 1800);
+}
+
+function hasSpriteFor(actorKey) {
+  if (actorKey === 'braindead') return braindeadActive && !!braindeadNode;
+  if (actorKey === 'wisp') return wispActive && !!wispNode;
+  if (actorKey === 'guthix') return guthixActive && !!guthixNode;
+  if (actorKey === 'jebrim' || actorKey === 'zezima') {
+    const g = document.getElementById('actor-' + actorKey);
+    return !!(g && g.style.display !== 'none');
+  }
+  if (/^D\d+$/.test(actorKey)) return !!dwarfNodes[actorKey];
+  if (/^G\d+$/.test(actorKey)) return !!gnomeNodes[actorKey];
+  if (/^P\d+$/.test(actorKey)) return !!penguinNodes[actorKey];
+  return !!instanceNodes[actorKey];
+}
+
+// Strip BOM Windows intent files sometimes carry; the bubble layer doesn't
+// strip its input, so a BOM-prefixed intent renders as an invisible glyph
+// that throws off bubble width calculations.
+function cleanIntentText(s) {
+  return (s || '').replace(/^﻿/, '').trim();
+}
+
+function syncSpritesFromManifest() {
   if (document.body.dataset.mode !== 'live') return;
-  if (!liveSidsSet.size) return;
+  if (!switchboardSessions.length) return;
+
+  // Build the canonical per-actorKey snapshot for this poll. We filter out
+  // 'ended' state directly here rather than calling the IIFE-scoped
+  // deriveState — only ended-vs-not matters for sprite presence, and the
+  // sidecar's _write_manifest already excludes ended sessions before they
+  // reach the visualizer.
+  const live = new Map();
+  for (const r of switchboardSessions) {
+    if (!r.sid8 || !r.actor) continue;
+    if (r.state === 'ended') continue;
+    const inst = +(r.instance || 1);
+    const key = instanceKey(r.actor, inst);
+    live.set(key, {
+      actor: r.actor,
+      instance: inst,
+      sid8: r.sid8,
+      building: r.building || defaultBuildingFor(r.actor),
+      intent: cleanIntentText(r.intent),
+      state: deriveSessionState(r),
+    });
+  }
+
+  // Pass 1 — spawn/move every live actor.
+  for (const [key, e] of live.entries()) {
+    if (e.actor === 'braindead') {
+      if (e.instance === 1) {
+        if (!braindeadActive) { braindeadActive = true; spawnBraindead({at: e.building}); }
+        else moveActorIfChanged('braindead', e.building);
+      } else {
+        if (!instanceNodes[key]) spawnPlayerInstance(e.actor, e.instance, e.building);
+        else moveActorIfChanged(key, e.building);
+      }
+    } else if (e.actor === 'wisp') {
+      if (!wispActive) { wispActive = true; spawnWisp({at: e.building}); }
+      else moveActorIfChanged('wisp', e.building);
+    } else if (e.actor === 'guthix') {
+      if (!guthixActive) { guthixActive = true; spawnGuthix({at: e.building}); }
+      else moveActorIfChanged('guthix', e.building);
+    } else if (e.actor === 'jebrim' || e.actor === 'zezima') {
+      if (e.instance === 1) {
+        // Static HTML sprite — reveal and (optionally) move. Currently the
+        // static element has fixed coords; if a session moves it via
+        // moveActor, the new position sticks for the visualizer's lifetime.
+        const g = document.getElementById('actor-' + e.actor);
+        if (g) g.style.display = '';
+        moveActorIfChanged(e.actor, e.building);
+      } else {
+        if (!instanceNodes[key]) spawnPlayerInstance(e.actor, e.instance, e.building);
+        else moveActorIfChanged(key, e.building);
+      }
+    }
+    // Set intent — manifest text wins. Empty intent clears the bubble.
+    if (e.intent) setIntent(key, e.intent, false);
+    else if (intents[key]) clearIntent(key, false);
+
+    // Stamp the session state onto the sprite element so CSS can render
+    // working/waiting/closing/idle differently — same encoding the
+    // switchboard sidebar uses, so a glance at the map tells you the same
+    // story as a glance at the sidebar.
+    let spriteEl = null;
+    if (e.actor === 'braindead' && e.instance === 1) spriteEl = braindeadNode;
+    else if (e.actor === 'wisp') spriteEl = wispNode;
+    else if (e.actor === 'guthix') spriteEl = guthixNode;
+    else if ((e.actor === 'jebrim' || e.actor === 'zezima') && e.instance === 1) {
+      spriteEl = document.getElementById('actor-' + e.actor);
+    } else {
+      spriteEl = instanceNodes[key];
+    }
+    setSpriteState(spriteEl, e.state);
+  }
+
+  // Pass 2 — hide static players whose actor has no live session.
   ['jebrim', 'zezima'].forEach(a => {
+    if (live.has(a)) return;
     const g = document.getElementById('actor-' + a);
-    if (!g) return;
-    g.style.display = baseActorToSid.has(a) ? '' : 'none';
+    if (g) g.style.display = 'none';
+    if (intents[a]) clearIntent(a, false);
   });
-}
 
-// Cascade-aware GC. Called after each switchboard poll in live mode. Any
-// sprite whose sid8 isn't in liveSidsSet (or sub-agent whose parent isn't
-// live) fades immediately. Player instance 1 (jebrim/zezima) lives in
-// static HTML — syncStaticPlayerVisibility handles their hide/show.
-function gcDeadSprites() {
-  if (document.body.dataset.mode !== 'live') return;
-  if (!liveSidsSet.size) return;  // first-poll safety: sidecar may not have populated yet
-  for (const actorKey of Object.keys(instanceNodes)) {
-    if (!actorInstanceToSid.has(actorKey)) {
-      despawnPlayerInstance(actorKey);
-    }
-  }
-  if (braindeadActive && !baseActorToSid.has('braindead')) {
+  // Pass 3 — despawn singletons with no backing session.
+  if (braindeadActive && !live.has('braindead')) {
     braindeadActive = false;
     clearIntent('braindead', false);
     despawnBraindead();
     delete instanceLastEventAt['braindead'];
   }
-  if (wispActive && !baseActorToSid.has('wisp')) {
+  if (wispActive && !live.has('wisp')) {
     wispActive = false;
     clearIntent('wisp', false);
     despawnWisp();
     delete instanceLastEventAt['wisp'];
   }
-  if (guthixActive && !baseActorToSid.has('guthix')) {
+  if (guthixActive && !live.has('guthix')) {
     guthixActive = false;
     clearIntent('guthix', false);
     despawnGuthix();
     delete instanceLastEventAt['guthix'];
   }
+  // Pass 3b — despawn parallel-instance sprites without a backing session.
+  for (const key of Object.keys(instanceNodes)) {
+    if (!live.has(key)) despawnPlayerInstance(key);
+  }
+  // Pass 3c — cascade sub-agents with their parent session.
   for (const id of Object.keys(dwarfNodes)) {
     const psid = subAgentParentSid[id];
     if (psid && !liveSidsSet.has(psid)) {
@@ -2469,6 +2609,15 @@ function gcDeadSprites() {
       delete subAgentParentSid[id];
       delete instanceLastEventAt[id];
     }
+  }
+
+  // Pass 4 — clear orphan intents. Any bubble whose actor has no sprite is
+  // residue from an event the visualizer received before the manifest sync
+  // caught up, or from a despawn path that missed its clearIntent. Belt and
+  // suspenders: even with all the above, a stale intents[] entry rendered
+  // an empty/old bubble in the screenshot that drove this rewrite.
+  for (const actor of Object.keys(intents)) {
+    if (!hasSpriteFor(actor)) clearIntent(actor, false);
   }
 }
 
@@ -3058,6 +3207,10 @@ function setIntent(actor, text, instant=false) {
   }
   if (!actorPositions[actor]) return;
   let entry = intents[actor];
+  // S044: skip when the manifest-driven sync re-asserts the same intent text
+  // we already have. Without this, every 2s poll re-runs relayoutBubbles,
+  // which is cheap but wasteful and could re-trigger CSS transitions.
+  if (entry && entry.text === text) return;
   if (!entry) {
     const g = document.createElementNS(svgNS, 'g');
     g.setAttribute('class', 'speech-bubble fade-in');
@@ -3130,12 +3283,15 @@ function bubbleDims(actor) {
 // Stores the resolved Y offset on `intents[actor].layoutYOff` for renderIntent
 // to read.
 function relayoutBubbles() {
-  // S029: lane-based layout. Bubbles whose sprites cluster within
-  // CLUSTER_RADIUS get tiled horizontally into individual X lanes so each
-  // bubble's diagonal trail lives in its own column and can't cross a
-  // neighbour's rect. Inter-cluster Y overlaps still fall back to upward push.
+  // S045: parent-based grouping. Sub-agents (D/G/P) cluster with their
+  // principal regardless of sprite-proximity; bubbles stack vertically anchored
+  // to the principal sprite's X. Order top→bottom: newest sub-agent, …, oldest
+  // sub-agent, principal. Only the bottom of the stack (the principal, when
+  // present) keeps its thought-trail — siblings above are visually carried by
+  // the stack. Inter-stack collisions still resolve via upward push, but the
+  // push acts on the stack-bottom only and a post-pass re-flows the stack.
+  // Replaces the S029 X-proximity lane tiling.
   const PAD = 12;
-  const CLUSTER_RADIUS = 140;
   const MAX_PUSH_ITER = 16;
   // 1. Snapshot every bubble's natural state.
   const list = [];
@@ -3144,7 +3300,7 @@ function relayoutBubbles() {
     if (!dims) continue;
     const slotIdx = actorSlot[actor];
     const slotDef = (slotIdx != null) ? GATHER_SLOTS[slotIdx % GATHER_SLOTS.length] : null;
-    const naturalYOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -68;
+    const naturalYOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -108;
     list.push({
       actor,
       spriteX: dims.pos.x,
@@ -3154,37 +3310,85 @@ function relayoutBubbles() {
       h: dims.h,
       cx: dims.pos.x,
       pointerY: dims.pos.y + naturalYOff,
+      inMultiCluster: false,
+      isStackBottom: false,
+      suppressTrail: false,
     });
   }
   if (!list.length) return;
-  // 2. Cluster by sprite X-proximity.
-  list.sort((a, b) => a.spriteX - b.spriteX);
-  const clusters = [];
+  // 2. Group by principal. Reverse `baseActorToSid` / `actorInstanceToSid`
+  //    to map a sub-agent's parentSid8 back to its principal actor key.
+  const sidToActor = new Map();
+  for (const [actor, sid] of baseActorToSid.entries()) sidToActor.set(sid, actor);
+  for (const [actorInst, sid] of actorInstanceToSid.entries()) sidToActor.set(sid, actorInst);
+  function principalKeyFor(actorKey) {
+    if (!/^[DGP]\d+$/.test(actorKey)) return actorKey;
+    const parentSid = subAgentParentSid[actorKey];
+    if (!parentSid) return actorKey;
+    return sidToActor.get(parentSid) || actorKey;
+  }
+  const groupsMap = new Map();
   for (const b of list) {
-    const last = clusters[clusters.length - 1];
-    if (last && (b.spriteX - last[last.length - 1].spriteX) < CLUSTER_RADIUS) {
-      last.push(b);
+    const pk = principalKeyFor(b.actor);
+    if (!groupsMap.has(pk)) groupsMap.set(pk, []);
+    groupsMap.get(pk).push(b);
+  }
+  // 3. Lay out each multi-member group as a vertical stack anchored at the
+  //    principal sprite's X. Sort: principal LAST (sorts to bottom of stack);
+  //    sub-agents above in reverse ID order so the newest sub-agent sits at
+  //    the top and the oldest sits just above the principal.
+  const multiMemberGroups = [];
+  for (const [pk, group] of groupsMap.entries()) {
+    if (group.length === 1) continue;
+    group.sort((a, b) => {
+      const aSub = /^[DGP](\d+)$/.exec(a.actor);
+      const bSub = /^[DGP](\d+)$/.exec(b.actor);
+      if (!aSub && bSub) return 1;   // principal sorts last (bottom)
+      if (aSub && !bSub) return -1;
+      if (aSub && bSub) return parseInt(bSub[1], 10) - parseInt(aSub[1], 10);
+      return 0;
+    });
+    // Anchor: principal sprite (even if principal has no bubble of its own).
+    const principalBubble = group.find(b => b.actor === pk);
+    let anchorX, anchorY;
+    if (principalBubble) {
+      anchorX = principalBubble.spriteX;
+      anchorY = principalBubble.spriteY;
     } else {
-      clusters.push([b]);
+      const pos = actorPositions[pk];
+      if (pos) { anchorX = pos.x; anchorY = pos.y; }
+      else {
+        const tail = group[group.length - 1];
+        anchorX = tail.spriteX; anchorY = tail.spriteY;
+      }
     }
-  }
-  // 3. Tile each multi-bubble cluster horizontally above its mean X.
-  for (const cluster of clusters) {
-    if (cluster.length === 1) continue;
-    const meanX = cluster.reduce((s, b) => s + b.spriteX, 0) / cluster.length;
-    const totalW = cluster.reduce((s, b) => s + b.w + PAD, 0) - PAD;
-    let cursor = meanX - totalW / 2;
-    const sharedPointerY = Math.min(...cluster.map(b => b.spriteY + b.naturalYOff));
-    for (const b of cluster) {
-      b.cx = cursor + b.w / 2;
-      b.pointerY = sharedPointerY;
-      cursor += b.w + PAD;
+    const baseYOff = principalBubble ? principalBubble.naturalYOff : -108;
+    // Bottom of stack sits at the principal's natural bubble height.
+    const bottom = group[group.length - 1];
+    bottom.cx = anchorX;
+    bottom.pointerY = anchorY + baseYOff;
+    bottom.inMultiCluster = true;
+    bottom.isStackBottom = true;
+    bottom.suppressTrail = false;
+    // Stack upward. Above-bottom members suppress their trails — the stack
+    // itself does the anchoring.
+    for (let i = group.length - 2; i >= 0; i--) {
+      const below = group[i + 1];
+      group[i].cx = anchorX;
+      group[i].pointerY = below.pointerY - below.h - PAD;
+      group[i].inMultiCluster = true;
+      group[i].isStackBottom = false;
+      group[i].suppressTrail = true;
     }
+    multiMemberGroups.push(group);
   }
-  // 4. Inter-cluster fallback — classic upward push for any remaining overlap.
+  // 4. Inter-stack collision push. Only stack-bottoms (and singletons) take
+  //    part — pushing a non-bottom member individually would break the rigid
+  //    stack; pass 4.5 re-flows from the bottom's new position.
   list.sort((a, b) => a.cx - b.cx);
   const placed = [];
   for (const b of list) {
+    if (b.inMultiCluster && !b.isStackBottom) continue;
     let iter = 0;
     while (iter < MAX_PUSH_ITER) {
       const top = b.pointerY - b.h;
@@ -3207,14 +3411,23 @@ function relayoutBubbles() {
     }
     placed.push(b);
   }
+  // 4.5. Re-flow each multi-member stack upward from its (possibly pushed-up)
+  //      bottom, so siblings remain rigidly stacked.
+  for (const group of multiMemberGroups) {
+    for (let i = group.length - 2; i >= 0; i--) {
+      const below = group[i + 1];
+      group[i].pointerY = below.pointerY - below.h - PAD;
+    }
+  }
   // 5. Apply resolved X + Y offsets back to entries and re-render.
-  for (const b of placed) {
+  for (const b of list) {
     const entry = intents[b.actor];
     if (!entry) continue;
     entry.layoutXOff = b.cx - b.spriteX;
     entry.layoutYOff = b.pointerY - b.spriteY;
+    entry.layoutSuppressTrail = !!b.suppressTrail;
   }
-  for (const b of placed) renderIntent(b.actor);
+  for (const b of list) renderIntent(b.actor);
 }
 
 // D-014: word-wrap intent text into ≤2 lines for the bubble. ~50 chars per
@@ -3291,8 +3504,9 @@ function renderIntent(actor) {
   const h = renderedLines.length * lineH + padY * 2;
   // Bubble Y offset preference: laid-out offset from relayoutBubbles wins
   // (resolves bubble-vs-bubble collisions). Falls back to the slot's natural
-  // bubbleY when no layout has run yet, then to -68 (default above-head) for
+  // bubbleY when no layout has run yet, then to -108 (default above-head) for
   // actors with no slot (e.g., sub-agents whose slot lookup keys differ).
+  // S045: fallback bumped from -68 → -108 to match the -40 lift on GATHER_SLOTS.
   let yOff, xOff;
   if (entry.layoutYOff != null) {
     yOff = entry.layoutYOff;
@@ -3300,7 +3514,7 @@ function renderIntent(actor) {
   } else {
     const slotIdx = actorSlot[actor];
     const slotDef = (slotIdx != null) ? GATHER_SLOTS[slotIdx % GATHER_SLOTS.length] : null;
-    yOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -68;
+    yOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -108;
     xOff = 0;
   }
   const half = w / 2;
@@ -3333,22 +3547,30 @@ function renderIntent(actor) {
   // S029: thought-trail — 4 circles span sprite head (0, -8) → bubble pointer
   // (xOff, yOff). When xOff !== 0 the trail is diagonal; each lane's trail
   // lives in its own X column so no circle crosses another bubble's rect.
+  // S045: non-bottom members of a principal+sub-agents stack suppress their
+  // trail — the stack itself anchors them; only the bottom (principal, or the
+  // oldest sub-agent if no principal bubble) keeps the trail.
   if (entry.leaderNode) {
     const trail = entry.leaderNode;
-    trail.setAttribute('transform', `translate(${pos.x},${pos.y})`);
-    const SPRITE_HEAD_Y = -8;
-    const STOPS = [
-      {t: 0.20, r: 3},
-      {t: 0.45, r: 5},
-      {t: 0.70, r: 7.5},
-      {t: 0.95, r: 10},
-    ];
-    trail.innerHTML = STOPS.map(c => {
-      const cx = c.t * xOff;
-      const cy = SPRITE_HEAD_Y + c.t * (yOff - SPRITE_HEAD_Y);
-      return `<circle cx="${cx}" cy="${cy}" r="${c.r}" fill="rgba(248,238,212,0.96)" stroke="${accent}" stroke-width="2"/>`;
-    }).join('');
-    trail.setAttribute('opacity', '1');
+    if (entry.layoutSuppressTrail) {
+      trail.innerHTML = '';
+      trail.setAttribute('opacity', '0');
+    } else {
+      trail.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+      const SPRITE_HEAD_Y = -8;
+      const STOPS = [
+        {t: 0.20, r: 3},
+        {t: 0.45, r: 5},
+        {t: 0.70, r: 7.5},
+        {t: 0.95, r: 10},
+      ];
+      trail.innerHTML = STOPS.map(c => {
+        const cx = c.t * xOff;
+        const cy = SPRITE_HEAD_Y + c.t * (yOff - SPRITE_HEAD_Y);
+        return `<circle cx="${cx}" cy="${cy}" r="${c.r}" fill="rgba(248,238,212,0.96)" stroke="${accent}" stroke-width="2"/>`;
+      }).join('');
+      trail.setAttribute('opacity', '1');
+    }
   }
 }
 
@@ -4002,37 +4224,22 @@ if (LIVE) {
   const countEl = document.getElementById('sbCount');
   if (!listEl || !countEl) return;
 
-  const IDLE_AFTER_SEC = 5 * 60;   // matches the visualizer despawn timer + D-020
   const POLL_MS = 2000;
   // The session running THIS visualizer instance — try the URL ?sid8=... first
   // (lets the operator label one window as "this"), then fall back to the most-
   // recent intent file's owner. Phase 3 click-to-focus will lean on this.
   const thisSid8 = new URLSearchParams(location.search).get('sid8') || '';
 
-  function ageSec(record) {
-    if (!record || !record.last_event_ts) return 0;
-    return Math.max(0, (Date.now() / 1000) - record.last_event_ts);
-  }
+  // S044: ageSec + deriveState hoisted to module scope as sbAgeSec /
+  // deriveSessionState so the sprite sync uses the same classification.
+  // Alias them locally so the rest of this IIFE keeps its old names.
+  const ageSec = sbAgeSec;
+  const deriveState = deriveSessionState;
   function formatAge(sec) {
     sec = Math.floor(sec);
     if (sec < 60) return sec + 's';
     if (sec < 3600) return Math.floor(sec / 60) + 'm';
     return Math.floor(sec / 3600) + 'h';
-  }
-  // Match the wrap-up narration shapes from communication-protocol.md:
-  // "Wrapping up S042", "Closing session", "Session close", etc.
-  const CLOSING_RX = /wrap(ping)?\s*up|clos(e|ing)\s*session|session\s*close/i;
-  function deriveState(record) {
-    if (record.state === 'ended') return 'ended';
-    if (record.state === 'waiting_for_user' && ageSec(record) > IDLE_AFTER_SEC) return 'idle';
-    // Closing is a labeled phase of working — agent is mid wrap-up ritual.
-    // Detect from the intent string; the sidecar has no closing state of its own.
-    if (record.state === 'working' && CLOSING_RX.test(record.intent || '')) return 'closing';
-    // No working→idle downgrade. Settings register only UserPromptSubmit/Stop/
-    // SessionEnd (S037 budget shape), so a long turn fires zero hooks between
-    // start and Stop — a 17m "working" age is one slow turn, not idleness.
-    // Truly dead sessions get caught by the sidecar's 1h GC, not here.
-    return record.state || 'unknown';
   }
   // Sort order: waiting_for_user first (most urgent), then working, then idle,
   // then ended. Within a state, newest activity first.
@@ -4062,6 +4269,9 @@ if (LIVE) {
     liveSidsSet = new Set();
     actorInstanceToSid.clear();
     baseActorToSid.clear();
+    // Also stash the full session list at module scope so the manifest-driven
+    // sync can render sprites/intents/buildings directly from the manifest.
+    switchboardSessions = sessions.slice();
     for (const r of sessions) {
       if (!r.sid8 || !r.actor) continue;
       // 'ended' sessions stay in the manifest briefly between sidecar fires;
@@ -4210,18 +4420,13 @@ if (LIVE) {
       cached = (j && Array.isArray(j.sessions)) ? j.sessions : [];
       updateLiveLookup(cached);
       render(cached);
-      // Sync sprites with manifest in both directions — spawn missing first
-      // (so newly-discovered live sessions become visible immediately), hide
-      // unsessioned static players, then GC anything that's gone.
-      try { spawnMissingSprites(); } catch (e) { console.warn('spawnMissingSprites failed:', e); }
-      try { syncStaticPlayerVisibility(); } catch (e) { console.warn('syncStaticPlayerVisibility failed:', e); }
-      try { gcDeadSprites(); } catch (e) { console.warn('gcDeadSprites failed:', e); }
-      // Snap any existing bubbles to the current sprite positions. spawn/
-      // despawn updates actorPositions but doesn't re-position bubbles,
-      // so an intent that was rendered against an old position would
-      // float in space until a move event triggered relayout. Calling
-      // relayoutBubbles here makes "bubble follows sprite" hold across
-      // the sync path too.
+      // S044 inversion — the manifest is the truth source. One sync pass
+      // does spawn, move, intent, despawn, and orphan-intent cleanup, then
+      // relayouts bubbles to the resulting sprite positions. Replaces the
+      // earlier spawnMissingSprites + syncStaticPlayerVisibility +
+      // gcDeadSprites trio that ran independently and could leave bubbles
+      // mid-air or sprites without sessions.
+      try { syncSpritesFromManifest(); } catch (e) { console.warn('syncSpritesFromManifest failed:', e); }
       try { if (typeof relayoutBubbles === 'function') relayoutBubbles(); }
       catch (e) { console.warn('relayoutBubbles after sync failed:', e); }
     } catch (_) {

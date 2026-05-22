@@ -237,6 +237,49 @@ def _ppid_chain(start_pid: int) -> list[dict]:
     return chain
 
 
+def _capture_foreground_hwnd(chain: list[dict]) -> int:
+    """Return the foreground top-level HWND iff its owning process is one of
+    the ancestor pids in `chain`. Else 0.
+
+    Called only on UserPromptSubmit. At that moment the user just submitted
+    a prompt from inside this terminal, so the foreground window is the VS
+    Code window hosting this session. Capturing it sidesteps the
+    Electron-window-shares-one-pid problem that defeats the chain-walk
+    disambiguator: with N VS Code windows of the same instance, every
+    integrated terminal's process tree converges on the same Code.exe pid,
+    and `Get-Process.MainWindowHandle` picks arbitrarily among the N HWNDs.
+    Storing the foreground HWND directly avoids the guess.
+
+    Sanity-check: the foreground window's owning pid must be in the
+    ancestor chain. If the user happened to be looking at another app when
+    they submitted (rare — submit requires keyboard focus in the terminal),
+    return 0 instead of poisoning the status file with a wrong HWND."""
+    try:
+        import ctypes
+        from ctypes import wintypes as wt
+
+        user32 = ctypes.windll.user32
+        user32.GetForegroundWindow.restype = ctypes.c_void_p
+        user32.GetWindowThreadProcessId.argtypes = [ctypes.c_void_p, ctypes.POINTER(wt.DWORD)]
+        user32.GetWindowThreadProcessId.restype = wt.DWORD
+
+        hwnd = user32.GetForegroundWindow()
+        if not hwnd:
+            return 0
+        owner_pid = wt.DWORD(0)
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(owner_pid))
+        owner = int(owner_pid.value)
+        if not owner:
+            return 0
+        ancestor_pids = {int(n.get("pid", 0)) for n in (chain or [])}
+        if owner not in ancestor_pids:
+            return 0
+        return int(hwnd)
+    except Exception as e:
+        print(f"status-sidecar: hwnd capture failed: {e}", file=sys.stderr)
+        return 0
+
+
 def _atomic_write_json(path: Path, obj: dict) -> None:
     """Same pattern as emit-event.py's save_json — write to .tmp.<pid>, then
     os.replace onto destination. Crashes leave the previous file intact."""
@@ -415,6 +458,18 @@ def main() -> None:
     # promoted as soon as the map has a real entry.
     instance = _detect_instance(actor, sid) or (prev.get("instance") or 1)
 
+    # Phase 3 HWND disambiguator (carried-forward field). Captured on
+    # UserPromptSubmit only because that's the one event where we know the
+    # user is looking at this terminal's window — keyboard focus in the
+    # terminal is what fires the submit. Other events (PreToolUse / Stop /
+    # SessionEnd) may fire while the user has already switched away.
+    if hook_event == "UserPromptSubmit":
+        claude_hwnd = _capture_foreground_hwnd(claude_pid_chain)
+        if not claude_hwnd:
+            claude_hwnd = int(prev.get("claude_hwnd") or 0)
+    else:
+        claude_hwnd = int(prev.get("claude_hwnd") or 0)
+
     record = {
         "sid8": sid8,
         "session_id": sid,
@@ -430,6 +485,7 @@ def main() -> None:
         "host": prev.get("host") or _detect_host(),
         "claude_pid": claude_pid,
         "claude_pid_chain": claude_pid_chain,
+        "claude_hwnd": claude_hwnd,
     }
 
     try:

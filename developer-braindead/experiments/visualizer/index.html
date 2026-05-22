@@ -4364,13 +4364,19 @@ if (LIVE) {
           }
           return;
         }
-        // Brief visual ack so the user sees something happened — the actual
-        // focus latency (~200ms PowerShell startup) is hidden by the OS.
+        // Brief visual ack so the user sees something happened.
+        // Fires the vscode://niksis8.claude-focus URI handled by the
+        // claude-focus extension (developer-braindead/experiments/
+        // vscode-claude-focus). The OS-level claude-focus:// scheme is
+        // kept registered but no longer wired here — that path can only
+        // disambiguate when multiple VS Code *windows* are open; the
+        // common case is multiple terminal panes inside one window,
+        // which only the extension can resolve.
         row.style.outline = '2px solid #2e7a2e';
         setTimeout(() => { row.style.outline = ''; }, 350);
-        window.location.href = 'claude-focus://' + encodeURIComponent(r.sid8);
+        window.location.href = 'vscode://niksis8.claude-focus/focus?sid8=' + encodeURIComponent(r.sid8);
       });
-      row.title = `${r.session_id || r.sid8}\nproject: ${r.project_dir || '?'}\nstate: ${state}\nclick → focus VS Code window\nshift-click → copy sid8`;
+      row.title = `${r.session_id || r.sid8}\nproject: ${r.project_dir || '?'}\nstate: ${state}\nclick → focus terminal pane\nshift-click → copy sid8`;
       listEl.appendChild(row);
     }
   }

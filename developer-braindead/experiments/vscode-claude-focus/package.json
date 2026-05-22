@@ -1,0 +1,15 @@
+{
+  "name": "claude-focus",
+  "displayName": "Claude Focus",
+  "description": "Focus the VS Code terminal pane belonging to a Claude Code session when its switchboard row is clicked.",
+  "version": "0.0.1",
+  "publisher": "niksis8",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onUri"
+  ],
+  "contributes": {}
+}

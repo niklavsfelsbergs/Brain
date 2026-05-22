@@ -71,6 +71,7 @@ public static class Win32Focus {
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
     [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr hWnd);
+    [DllImport("user32.dll")] public static extern bool IsWindow(IntPtr hWnd);
     [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
     [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();
     [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
@@ -80,19 +81,56 @@ public static class Win32Focus {
 "@ -ErrorAction SilentlyContinue
 
     $target = $null
-    for ($i = 0; $i -lt $chain.Count; $i++) {
-        $node = $chain[$i]
-        $cpid = [int]$node.pid
-        $cname = [string]$node.name
-        $p = Get-Process -Id $cpid -ErrorAction SilentlyContinue
-        if ($p) {
-            Write-Log ("  chain[{0}] pid={1} name={2} live hwnd={3}" -f $i, $cpid, $p.ProcessName, $p.MainWindowHandle)
-            if ($p.ProcessName -eq 'Code' -and $p.MainWindowHandle -ne 0) {
-                $target = $p
-                break
+
+    # Phase 3 disambiguator: prefer the HWND the sidecar captured on the last
+    # UserPromptSubmit. Sibling VS Code windows share one Code.exe pid
+    # (Electron: `File > New Window` adds an HWND, not a pid), so the chain
+    # walk converges on a shared ancestor and Get-Process.MainWindowHandle
+    # picks arbitrarily among the windows. The stored HWND was foreground
+    # when the user last submitted from this terminal -- unambiguously right.
+    $storedHwnd = 0
+    if ($status.PSObject.Properties.Name -contains 'claude_hwnd') {
+        try { $storedHwnd = [int64]$status.claude_hwnd } catch { $storedHwnd = 0 }
+    }
+    if ($storedHwnd -ne 0) {
+        $h = [IntPtr]$storedHwnd
+        if ([Win32Focus]::IsWindow($h)) {
+            $u = 0
+            [void][Win32Focus]::GetWindowThreadProcessId($h, [ref]$u)
+            $p = $null
+            if ($u -ne 0) { $p = Get-Process -Id $u -ErrorAction SilentlyContinue }
+            $title = ''
+            $pname = 'Code'
+            if ($p) { $title = $p.MainWindowTitle; $pname = $p.ProcessName }
+            Write-Log ("using stored hwnd={0} pid={1} title='{2}'" -f $storedHwnd, $u, $title)
+            $target = [pscustomobject]@{
+                Id = $u
+                MainWindowHandle = $h
+                MainWindowTitle = $title
+                ProcessName = $pname
             }
         } else {
-            Write-Log ("  chain[{0}] pid={1} name={2} (dead)" -f $i, $cpid, $cname)
+            Write-Log ("stored hwnd={0} is no longer a window; falling back to chain walk" -f $storedHwnd)
+        }
+    } else {
+        Write-Log "no claude_hwnd in status file (old format or pre-UserPromptSubmit); using chain walk"
+    }
+
+    if (-not $target) {
+        for ($i = 0; $i -lt $chain.Count; $i++) {
+            $node = $chain[$i]
+            $cpid = [int]$node.pid
+            $cname = [string]$node.name
+            $p = Get-Process -Id $cpid -ErrorAction SilentlyContinue
+            if ($p) {
+                Write-Log ("  chain[{0}] pid={1} name={2} live hwnd={3}" -f $i, $cpid, $p.ProcessName, $p.MainWindowHandle)
+                if ($p.ProcessName -eq 'Code' -and $p.MainWindowHandle -ne 0) {
+                    $target = $p
+                    break
+                }
+            } else {
+                Write-Log ("  chain[{0}] pid={1} name={2} (dead)" -f $i, $cpid, $cname)
+            }
         }
     }
 

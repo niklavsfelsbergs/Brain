@@ -42,16 +42,13 @@ Carried forward — [[S031]], [[S030]], [[S029]] context preserved below:
 
 **Step 1 — Sidecar registration shape decision.** ✅ Landed in S037 as **option 1** (`UserPromptSubmit` + `Stop` + `SessionEnd`). `_comment_status_sidecar` in `brain/.claude/settings.json` documents the rationale inline. Hot-reload confirmed working — first user prompt after the edit populated the new fields without a Claude Code restart. Lorebook draft on hook-fire-rate-as-budget still pending — write it next bankstanding pass alongside the ASCII-PS lesson from S037.
 
-**Step 1b — Live-confirm D-020 Phase 3 click-to-focus (carried from S037).** Mechanism is in place but only validated against a single VS Code window so far (where the focus call is a no-op visually). The real test:
+**Step 1b — Click-to-focus, the rest of the cases.** S038 confirmed the **in-window** case (terminal pane focus via `niksis8.claude-focus` VS Code extension) works live. The **cross-window** case (focus a different VS Code window) is still mechanism-only — never lived against a real two-window setup. Remaining work, deferred until the principal actually opens a second window:
 
-- Open a second VS Code window (`Ctrl+Shift+N`, or right-click → New Window).
-- Start a fresh `claude` session in it; send any prompt to populate `claude_pid_chain` in its status file.
-- From *this* window's visualizer (`http://localhost:8765/?live=1`), click that other session's row in the switchboard pane.
-- Expected: this window stays, the other window jumps forward.
-- If it works: write the D-020 doc update (§"Hook wiring" registration shape + §"Phase build order" Phase 3 done + new §"Process tree walk" section) and close S037.
-- If it doesn't: tail `~/.claude/status/focus.log` for which Code.exe HWND it targeted. Likely culprit if multiple Code.exe siblings: the chain captures one of them but `SetForegroundWindow` lands on the wrong one — disambiguation logic needed.
+- Open a second VS Code window (`Ctrl+Shift+N`), start a fresh `claude` session, send any prompt to populate `claude_pid_chain`.
+- From *this* window's visualizer, click that row. With current wiring (`vscode://niksis8.claude-focus/...` only), the extension will surface *"no terminal in this window matches"* — the URI lands on whichever window owns the URI handler, which may not own the target terminal.
+- Wire the cross-window fallback: try `vscode://` first, then `claude-focus://` on failure (or fire both — the OS handler is a no-op when the window is already foreground). Either way involves a small change in `experiments/visualizer/index.html` click handler.
 
-Old-format sessions (any whose last hook fired before the S037 edit) have only `claude_pid`, no chain. Either send a prompt in them (re-fires the sidecar) or just spawn fresh ones.
+Old-format sessions (last hook fired before S037's chain capture) have only `claude_pid`, no chain. Either send a prompt in them or spawn fresh ones.
 
 **Step 2 — Verify S031's lane-based bubble layout** (carried from S031). Open the visualizer in live mode and trigger a multi-sprite cluster (2–3 dwarves at the same building, or Jebrim + dwarves at quest-hall). Watch:
 
@@ -79,7 +76,7 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 
 **Step 5 — Cross-repo sidecar rollout (D-020 follow-up).** To get true cross-machine session visibility, move the status-sidecar hook registration from `brain/.claude/settings.json` to `~/.claude/settings.json` (user-level). The status file path is already designed for this; only the registration needs to migrate. Separate decision — sanity-check Step 1's lower-frequency design first.
 
-**Step 6 — D-020 Phase 3 (VS Code click-to-focus).** ~~Deferred.~~ Built in S037 — see Step 1b above for live-confirmation. The window-title-matching plan in the original design didn't pan out (`$Host.UI.RawUI.WindowTitle` in VS Code's integrated terminal sets the *tab* title, not the *window* title); pivoted to process-tree walk via `CreateToolhelp32Snapshot`. Worked first try on the chain-walk path. Remaining: live multi-window confirmation + doc update of D-020.
+**Step 6 — D-020 Phase 3 (VS Code click-to-focus).** ~~Deferred.~~ Built across S037 (OS-level handler, cross-window) and S038 (extension, in-window). S038 is live-confirmed; S037 still pending a real two-window scenario (see Step 1b). The window-title-matching plan in the original design didn't pan out (`$Host.UI.RawUI.WindowTitle` in VS Code's integrated terminal sets the *tab* title, not the *window* title); pivoted to process-tree walk via `CreateToolhelp32Snapshot` for the OS path, and to `vscode.window.terminals` + `terminal.processId` matching for the in-window path. **Remaining: D-020 doc update** covering both halves — §"Hook wiring" registration shape, §"Phase build order" Phase 3 done, new §"Process tree walk" subsection (S037), new §"In-window focus via extension" subsection (S038, including the `claude_pid_chain` matching rationale).
 
 **Step 7 — Live test Guthix end-to-end** (carried from S028, extended by [[S034]]). Replay-mode demos worked; live-mode demo still pending for both modes:
 
@@ -111,8 +108,8 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 
 ## Open at the start of next session
 
-- **Live-confirm click-to-focus with a second VS Code window** — Step 1b. The big remaining S037 item.
-- **D-020 doc update** — once Step 1b passes: §"Hook wiring" + §"Phase build order" + new §"Process tree walk" section.
+- **Cross-window click-to-focus** — Step 1b. Wire the `vscode://` → `claude-focus://` fallback chain in the switchboard click handler, then live-confirm against a second VS Code window. Defer until the principal actually opens one.
+- **D-020 doc update** — §"Hook wiring" + §"Phase build order" + §"Process tree walk" (S037) + §"In-window focus via extension" (S038). Do this before the next D-020 surface lands.
 - **Verify S031 lane-based bubble layout** — Step 2. Still untested visually.
 - **Live test penguins** — Step 3.
 - **Parallel Braindead visual tuning** — Step 4 (function validated by S032).
@@ -130,6 +127,12 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 - §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations
+
+From [[S038]] (new): **"works in the log" ≠ "user saw it work" — twice in two sessions.** S037 closed on `SetForegroundWindow True` self-tests without checking the user's actual window topology. S038 found click-to-focus was a no-op end-to-end because all sessions share one workspace HWND. The mechanism wasn't wrong; the deployment shape was untested. **Discipline:** a focus/navigation feature must be tested against the user's actual topology, not the design's assumed topology. Pair with the S037 ASCII-PS lesson and the S032 hook-fire-rate lesson as a combined Windows-substrate lorebook draft.
+
+From [[S038]] (new): **OS-level URL schemes hit a ceiling at the window boundary.** Application-internal objects (VS Code terminal panes) have no HWND — `SetForegroundWindow` can't reach them. Protocol handlers (cross-application / cross-window) and extensions (in-application) compose cleanly: handler for the outer layer, extension for the inner. The two URL schemes (`claude-focus://` + `vscode://niksis8.claude-focus`) coexist in the codebase without conflict; chaining them on click is the obvious next move when the principal opens a second VS Code window.
+
+From [[S038]] (new): **`claude_pid_chain` is the right matching surface, not a single PID.** VS Code's `terminal.processId` exposes the shell PID (chain depth ~3 on this machine). Hook fires from deeper. Matching against the whole chain absorbs the depth asymmetry. The chain-capture-at-fire-time pattern from S037 paid off again, for a different reason — generalize: *if you'll need to match a process tree later from a possibly-distant vantage point, capture the whole chain at write time.*
 
 From [[S037]] (new): **Windows PowerShell 5.1 reads `.ps1` files as cp1252 unless a UTF-8 BOM is present.** A single em-dash in a `Write-Log` string broke the parse — the three UTF-8 bytes got read as three cp1252 characters, swallowing the closing quote and cascading errors through the rest of the file. **Discipline: pure ASCII for `.ps1` scripts, or write with UTF-8 BOM.** Worth a lorebook draft paired with the hook-fire-rate-as-budget lesson (both Windows substrate gotchas).
 
@@ -246,8 +249,11 @@ From [[S003]]–[[S007]]: **structure-first, content earns its way in.** **Build
 ## Files to read first
 
 1. `respawn.md` (this file).
-2. `quest-log/S034_guthix_consultation_mode.md` — what just shipped (Guthix two residence modes; doc-only across nine `gielinor/` files).
-3. `bank/decisions/D-022_guthix_consultation_mode.md` — full decision including before/after table, open questions.
+2. `quest-log/S038_vscode_claude_focus_extension.md` — what just shipped (in-window terminal-pane focus via VS Code extension).
+3. `experiments/vscode-claude-focus/extension.js` + `README.md` — the new extension; ~70 lines of JS plus install/verify notes.
+4. `quest-log/in-progress/S037_terminal_switchboard_phase_3_click_to_focus.md` — the OS-level half S038 complements (still in in-progress because its own self-test passed but the multi-window scenario it targets hasn't been lived against).
+5. `quest-log/S034_guthix_consultation_mode.md` — Guthix two residence modes; doc-only across nine `gielinor/` files.
+6. `bank/decisions/D-022_guthix_consultation_mode.md` — full decision including before/after table, open questions.
 4. `gielinor/meta/guthix.md` — the load-bearing spec post-S034 (two residence modes; consultation as default).
 5. `gielinor/meta/modes.md` — five session modes definition; consultation block.
 6. `quest-log/S032_terminal_switchboard_phases_1_and_2.md` — prior session: Phases 1 + 2 of D-020, terminal-rendering diagnosis.

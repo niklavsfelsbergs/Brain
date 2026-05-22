@@ -67,6 +67,7 @@ These extend / clarify rules already in the global `CLAUDE.md`:
 
 1. **No `git add -A` or `git add .` in any agent context.** Always commit with explicit paths. Already user-rule for sensitive-file safety; D-018 adds parallel-session safety as a second reason.
 2. **No staging files outside the agent's own session scope.** A Jebrim session does not stage `developer-braindead/` files. A dev-brain session does not stage `gielinor/players/<other-player>/` files. The principal arbitrates cross-scope commits manually.
+2a. **Use `git commit -- <paths>` form** when other sessions may have staged files in the shared index. `git add <my paths>` followed by plain `git commit` will *still* capture everything currently staged. Confirmed live during the very commit that landed this decision — three of Jebrim's pre-staged file renames came along for the ride. The pathspec on `commit` is the only form that truly scopes the commit.
 3. **Intent files use per-session naming when parallel sessions of the same player are likely.** `<actor>-<sid8>.txt` over `<actor>.txt`. Single-session work can continue using the bare file until the migration is complete.
 4. **State file schemas use `(actor, sessionId)` keying** for any state that's per-actor and per-session. Migration in: `state-actors.json`, `state-dwarves.json`, `state-gnomes.json`, future similar.
 

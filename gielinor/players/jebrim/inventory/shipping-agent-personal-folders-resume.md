@@ -27,6 +27,13 @@
 - **Cross-user permissions / team scope of `memory/`** — still parked. Default to plain markdown until pushback.
 - **`data/` snapshot disk-cost question** — still parked.
 - **`create_timestamped_presentation.py` future.** Marked deprecated. Decide later whether to archive or leave callable for legacy template runs.
+- **🔬 Investigation: `temp%` tracking ↔ missing orderitems (carried in from S030 meeting).** Another shipping-agent session surfaced a correlation: shipments with `trackingnumber LIKE 'temp%'` in `shipping_mart.fact_shipments` have a ~25% missing-orderitems rate vs ~0.08% for real tracking numbers — but the rate is cross-carrier (not Schenker-specific) and varies by source: Picturator `temp*` ~26-30%, PicaAPI `temp*` 40-69% (worst: PicaAPI × MAERSK at 68.8%). The other agent's working theory: `temp*` is a placeholder before the real carrier label is assigned, and orderitems backfill once the real tracking posts — spine lands first, items follow. **Open question:** is that theory correct? Probe ordernumber given by principal: `MFA19911824351` — pull its full data lineage:
+    - `SELECT * FROM shipping_mart.fact_shipments WHERE shop_ordernumber = 'MFA19911824351'` (spine row, current tracking, source_system, dates).
+    - `SELECT * FROM shipping_mart.fact_shipment_orderitems oi JOIN shipping_mart.fact_shipments fs USING (shipment_id) WHERE fs.shop_ordernumber = 'MFA19911824351'` (do items exist now? when do they land if not?).
+    - Trace back to upstream bronze/source if needed — does the same `shop_ordernumber` appear with both a `temp*` and a real tracking number across time? Is there a re-emission pattern from the spine?
+    - Cross-check: take 5-10 `temp%` shipments from May 2026 with missing items, check 24/48/72 hours later — do the items backfill or do they stay missing? If they backfill, it's expected lag; if they stay missing, it's a real DQ issue worth raising with ETL.
+  - **Likely shape:** `workbench/investigations/temp-tracking-missing-orderitems/` once the shipping-agent opens it.
+  - **Side fix the other agent offered but didn't land:** add a `tracking_is_temp` boolean column on the export it was building (so downstream filters can drop `temp%` cleanly), or update the broader DQ reference doc. Principal didn't pick — surface again.
 
 ## Pending drafts
 

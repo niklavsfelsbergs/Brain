@@ -561,6 +561,24 @@
     background: rgba(140, 220, 140, 0.40);
     border-color: #2e7a2e;
   }
+  .sb-row[data-state="closing"] {
+    border-left-color: #c45a18;
+    background: rgba(220, 130, 50, 0.18);
+  }
+  .sb-row[data-state="closing"] .sb-dot {
+    color: #c45a18;
+    background: #f0903c;
+    animation: sbClosingPulse 1800ms ease-in-out infinite;
+  }
+  .sb-row[data-state="closing"] .sb-state {
+    color: #6a2a08;
+    background: rgba(240, 144, 60, 0.40);
+    border-color: #c45a18;
+  }
+  @keyframes sbClosingPulse {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.55; }
+  }
   .sb-row[data-state="idle"] {
     border-left-color: #6a5a40;
     background: rgba(120, 95, 50, 0.14);
@@ -3735,9 +3753,15 @@ if (LIVE) {
     if (sec < 3600) return Math.floor(sec / 60) + 'm';
     return Math.floor(sec / 3600) + 'h';
   }
+  // Match the wrap-up narration shapes from communication-protocol.md:
+  // "Wrapping up S042", "Closing session", "Session close", etc.
+  const CLOSING_RX = /wrap(ping)?\s*up|clos(e|ing)\s*session|session\s*close/i;
   function deriveState(record) {
     if (record.state === 'ended') return 'ended';
     if (record.state === 'waiting_for_user' && ageSec(record) > IDLE_AFTER_SEC) return 'idle';
+    // Closing is a labeled phase of working — agent is mid wrap-up ritual.
+    // Detect from the intent string; the sidecar has no closing state of its own.
+    if (record.state === 'working' && CLOSING_RX.test(record.intent || '')) return 'closing';
     // No working→idle downgrade. Settings register only UserPromptSubmit/Stop/
     // SessionEnd (S037 budget shape), so a long turn fires zero hooks between
     // start and Stop — a 17m "working" age is one slow turn, not idleness.
@@ -3746,8 +3770,8 @@ if (LIVE) {
   }
   // Sort order: waiting_for_user first (most urgent), then working, then idle,
   // then ended. Within a state, newest activity first.
-  const STATE_RANK = { waiting_for_user: 0, working: 1, idle: 2, ended: 3, unknown: 4 };
-  const STATE_LABEL = { waiting_for_user: 'WAITING', working: 'WORKING', idle: 'IDLE', ended: 'ENDED', unknown: '?' };
+  const STATE_RANK = { waiting_for_user: 0, working: 1, closing: 2, idle: 3, ended: 4, unknown: 5 };
+  const STATE_LABEL = { waiting_for_user: 'WAITING', working: 'WORKING', closing: 'CLOSING', idle: 'IDLE', ended: 'ENDED', unknown: '?' };
   function sortSessions(sessions) {
     return sessions.slice().sort((a, b) => {
       const sa = deriveState(a), sb = deriveState(b);

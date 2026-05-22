@@ -68,6 +68,8 @@ When new friction surfaces, the move is the same: principal flags via screenshot
 ## Pending drafts
 
 - `gielinor/players/jebrim/spellbook/drafts/skills/structural-restructure-mechanism-over-shape.md` (S025 harvest) — methodology: when restructuring, lead with mechanisms (routing, budgets, live-vs-stable, stamps, harvest) before shape. Anchor: S024 T14. Surface at next alching.
+- `gielinor/players/jebrim/bank/drafts/notes/projects/shipping_mart_cost_vocabulary_2026-05-22.md` (S027 / S024 T16-T16b harvest) — durable column model for `real_shipping_cost_eur` / `expected_shipping_cost_eur` / `avg_shipping_cost_eur` / `final_shipping_cost_eur`, cost-bucket grain rule (buckets are invoiced-only), and the doc-edit proposal text for `reference/mart-contract.md` + `how_to.md` §0. Surface at next alching; archive the proposal section once applied to the shipping-agent docs.
+- `gielinor/players/jebrim/examine/drafts/2026-05-22-bash-on-windows-quoted-path-creates-literal-filename.md` (S027 harvest) — self-observation: writing intent sidecar files with `Bash echo "..." > "C:\path\file.txt"` on Windows produces a literal filename with the colon encoded as U+F03A, not a write to the intended path. Use the Write tool or PowerShell `Set-Content` instead. Anchor: S027 stray-file incident at brain root.
 
 ## Parked items from earlier S023 alching walk
 

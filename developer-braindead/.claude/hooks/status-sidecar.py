@@ -48,6 +48,16 @@ VIZ_DIR = DEV_BRAIN / "experiments" / "visualizer"
 MANIFEST_PATH = VIZ_DIR / "state-switchboard.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"
+# S052: chat-stream sidecar — mirrors the path emit-event.py writes to.
+CHAT_PATH = VIZ_DIR / "chat.ndjson"
+CHAT_TEXT_MAX = 200
+CHAT_SIZE_MAX = 1_000_000
+CHAT_LINES_MAX = 5000
+CHAT_TAIL_KEEP = 2000
+# Subtitle freshness — intent_text wins as the subtitle when updated within
+# this window, else latest_action prevails.
+SUBTITLE_INTENT_FRESH_SEC = 300
+SUBTITLE_MAX_LEN = 100
 
 # S043 (D-024 visualizer wiring): mirror both comms channels into the viz dir
 # so the COMMS panel can render inter-session dialogue. Same sandbox reason as
@@ -399,6 +409,86 @@ def _load_existing(path: Path) -> dict:
         return {}
 
 
+def _emit_chat_intent(actor: str, sid8: str, instance: Optional[int], text: str) -> None:
+    """S052: append a `kind:"intent"` line to chat.ndjson. Called from main()
+    only when the intent text actually changed from the previous fire, so the
+    chat panel sees one line per intent update (not one per poll). Append-mode
+    open; same atomicity story as state.ndjson."""
+    if not text:
+        return
+    text = text[:CHAT_TEXT_MAX]
+    event = {
+        "ts": time.time(),
+        "actor": actor or "wisp",
+        "instance": instance,
+        "sid8": sid8 or "",
+        "kind": "intent",
+        "text": text,
+    }
+    try:
+        CHAT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with CHAT_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(event, separators=(",", ":")) + "\n")
+    except Exception as e:
+        print(f"status-sidecar: chat intent emit failed: {e}", file=sys.stderr)
+
+
+def _sweep_chat_ndjson() -> None:
+    """S052: keep chat.ndjson bounded. Mirror of emit-event.py's sweep — called
+    once per UserPromptSubmit (low cadence, post-write so a failure can't
+    affect the current turn's records)."""
+    try:
+        if not CHAT_PATH.exists():
+            return
+        size = CHAT_PATH.stat().st_size
+        if size <= 200_000:
+            return
+        try:
+            lines = CHAT_PATH.read_text(encoding="utf-8").splitlines()
+        except Exception:
+            return
+        if size <= CHAT_SIZE_MAX and len(lines) <= CHAT_LINES_MAX:
+            return
+        tail = lines[-CHAT_TAIL_KEEP:]
+        tmp = CHAT_PATH.with_suffix(CHAT_PATH.suffix + f".tmp.{os.getpid()}")
+        tmp.write_text("\n".join(tail) + "\n", encoding="utf-8")
+        os.replace(tmp, CHAT_PATH)
+    except Exception as e:
+        print(f"status-sidecar: chat sweep failed: {e}", file=sys.stderr)
+
+
+def _derive_subtitle(j: dict) -> str:
+    """S052 task 2: derive a ≤100-char subtitle per session record.
+    Priority:
+      1. intent (when last_event_ts is within SUBTITLE_INTENT_FRESH_SEC).
+      2. latest_action.
+      3. empty string.
+    No timestamp field is recorded specifically for `intent`; we use
+    last_event_ts as a proxy — intent typically updates at UserPromptSubmit,
+    which also bumps last_event_ts, so the two move together."""
+    intent = (j.get("intent") or "").strip()
+    last_ts = j.get("last_event_ts") or 0
+    try:
+        last_ts = float(last_ts)
+    except (TypeError, ValueError):
+        last_ts = 0.0
+    fresh = (time.time() - last_ts) <= SUBTITLE_INTENT_FRESH_SEC if last_ts else False
+    chosen = ""
+    if intent and fresh:
+        chosen = intent
+    else:
+        la = (j.get("latest_action") or "").strip()
+        if la:
+            chosen = la
+        elif intent:
+            chosen = intent
+    if not chosen:
+        return ""
+    if len(chosen) > SUBTITLE_MAX_LEN:
+        chosen = chosen[: SUBTITLE_MAX_LEN - 1] + "…"
+    return chosen
+
+
 def _latest_action_for(sid8: str, ndjson_path: Path, max_bytes: int = 256_000) -> Optional[dict]:
     """Walk state.ndjson tail backward for the most recent 'action' event whose
     sessionId starts with sid8. Returns {'text': str, 'ts': float} or None.
@@ -558,6 +648,11 @@ def _write_manifest() -> None:
                             j["latest_action_ts"] = act["ts"]
                 except Exception as e:
                     print(f"status-sidecar: latest_action refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
+                # S052 task 2: derived subtitle for the switchboard row.
+                try:
+                    j["subtitle"] = _derive_subtitle(j)
+                except Exception as e:
+                    print(f"status-sidecar: subtitle derivation failed for {j.get('sid8')}: {e}", file=sys.stderr)
                 sessions.append(j)
         sessions.sort(key=lambda x: x.get("last_event_ts") or 0, reverse=True)
         out = {
@@ -924,6 +1019,19 @@ def main() -> None:
     except Exception as e:
         print(f"status-sidecar: write failed: {e}", file=sys.stderr)
 
+    # S052: emit a chat.ndjson `intent` line whenever the resolved intent text
+    # changes from the previous fire. The status sidecar runs once per Pre/Post
+    # tool call AND on UserPromptSubmit/Stop/SessionEnd, so re-checking here
+    # catches every intent update without the per-poll noise (write is gated
+    # on actual change).
+    try:
+        prev_intent = (prev.get("intent") or "").strip()
+        new_intent = (record.get("intent") or "").strip()
+        if new_intent and new_intent != prev_intent:
+            _emit_chat_intent(record.get("actor") or "wisp", sid8, instance, new_intent)
+    except Exception as e:
+        print(f"status-sidecar: chat intent dispatch failed: {e}", file=sys.stderr)
+
     # Sweep runs after the write so a failure in the sweep can't prevent this
     # session's own status from landing.
     _sweep_stale()
@@ -944,6 +1052,8 @@ def main() -> None:
         _gc_state_actors(live_full)
         _gc_state_instances(live_full)
         _gc_intent_files(project_dir, live_short, sid8)
+        # S052: chat ndjson sweep — once per turn, cheap when file is small.
+        _sweep_chat_ndjson()
 
     # Manifest mirror runs last — purely a snapshot for the browser; a failure
     # here can't affect the canonical per-session store.

@@ -16,6 +16,7 @@ import json
 import os
 import re
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -30,6 +31,16 @@ DWARVES_PATH = VIZ_DIR / "state-dwarves.json"
 GNOMES_PATH = VIZ_DIR / "state-gnomes.json"
 PENGUINS_PATH = VIZ_DIR / "state-penguins.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
+
+# S052: chat.ndjson is the human-language event stream for the chat panel.
+# Append-only NDJSON; one event per line; truncated on growth threshold.
+# Lives in the same viz dir as state.ndjson — the http.server serves both;
+# migration to brain/switchboard/ happens after a sibling strip pass.
+CHAT_PATH = VIZ_DIR / "chat.ndjson"
+CHAT_TEXT_MAX = 200
+CHAT_SIZE_MAX = 1_000_000     # bytes — truncate when exceeded
+CHAT_LINES_MAX = 5000         # lines — truncate when exceeded
+CHAT_TAIL_KEEP = 2000         # lines retained on truncate
 
 # D-017: actors that can run as parallel sessions, each getting its own
 # visualizer sprite. Sub-agents (dwarves, gnomes) have unique IDs already.
@@ -818,6 +829,144 @@ def subtask_for(tool_name: str, tool_input: dict) -> str:
     return ""
 
 
+# S052: chat.ndjson human-language emitter.
+#
+# The hook is a fresh process per tool call, so we can't keep an in-memory
+# debounce dict across invocations the way the visualizer JS can. The simpler
+# implementation specified in the task brief — "let the same call land twice
+# across rapid invocations, log inflation is mild" — is what we do. Truncate
+# pass at write time keeps the file bounded regardless.
+def _humanize_tool_call(tool_name: str, tool_input: dict) -> str:
+    """Synthesize a ≤200-char human-language line for a tool call. Returns ''
+    when nothing useful can be said (caller skips the emit)."""
+    if not tool_name:
+        return ""
+    if tool_name in ("Edit", "MultiEdit"):
+        fp = tool_input.get("file_path") or ""
+        return f"Editing {_basename(fp)}".strip() if fp else "Editing a file"
+    if tool_name == "Write":
+        fp = tool_input.get("file_path") or ""
+        return f"Writing {_basename(fp)}".strip() if fp else "Writing a file"
+    if tool_name == "NotebookEdit":
+        fp = tool_input.get("notebook_path") or ""
+        return f"Editing {_basename(fp)}".strip() if fp else "Editing a notebook"
+    if tool_name == "Read":
+        fp = tool_input.get("file_path") or ""
+        return f"Reading {_basename(fp)}".strip() if fp else "Reading a file"
+    if tool_name == "Bash":
+        cmd = (tool_input.get("command") or "").strip()
+        if not cmd:
+            return "Running a shell command"
+        # Recognized prefixes get nicer phrasing.
+        head = cmd[:80].lower()
+        if head.startswith("git status"):
+            return "Checking git status"
+        if head.startswith("git log"):
+            return "Reviewing git history"
+        if head.startswith("git diff"):
+            return "Reviewing diff"
+        if head.startswith("git commit"):
+            return "Committing changes"
+        if head.startswith("git mv"):
+            return "Moving files (git mv)"
+        if "python -m http.server" in cmd:
+            return "Starting local web server"
+        return f"Running: {cmd[:60]}"
+    if tool_name == "Grep":
+        pat = (tool_input.get("pattern") or "").strip()
+        if not pat:
+            return "Searching"
+        return f"Searching for '{pat[:40]}'"
+    if tool_name == "Glob":
+        pat = (tool_input.get("pattern") or "").strip()
+        if not pat:
+            return "Looking for files"
+        return f"Looking for files matching {pat}"
+    if tool_name in ("Task", "Agent"):
+        sub_type = (tool_input.get("subagent_type") or "dwarf").strip() or "dwarf"
+        desc = (tool_input.get("description") or "").strip()
+        if desc:
+            return f"Spawning {sub_type}: {desc[:80]}"
+        return f"Spawning {sub_type}"
+    return f"Using {tool_name}"
+
+
+def _emit_chat_line(actor: str, sid8: str, kind: str, text: str,
+                    instance: int | None = None) -> None:
+    """Append one NDJSON line to chat.ndjson. Atomic at the OS level via
+    append-mode write; same approach state.ndjson uses (B9 — interleavable
+    appends from parallel sessions, self-heals)."""
+    if not text:
+        return
+    text = text[:CHAT_TEXT_MAX]
+    event = {
+        "ts": time.time(),
+        "actor": actor or "wisp",
+        "instance": instance,
+        "sid8": sid8 or "",
+        "kind": kind,
+        "text": text,
+    }
+    try:
+        CHAT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with CHAT_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(event, separators=(",", ":")) + "\n")
+    except Exception as e:
+        print(f"emit-event: chat write failed: {e}", file=sys.stderr)
+
+
+def emit_chat_action(actor: str, tool_name: str, tool_input: dict) -> None:
+    """Append a human-language action line to chat.ndjson for one tool call.
+    Skips silently when no useful phrase can be made."""
+    text = _humanize_tool_call(tool_name, tool_input)
+    if not text:
+        return
+    sid8 = (_SESSION_ID or "")[:8]
+    instance = None
+    if actor in INSTANCED_ACTORS and _SESSION_ID:
+        try:
+            instance = resolve_instance(actor, _SESSION_ID)
+        except Exception:
+            instance = None
+    _emit_chat_line(actor, sid8, "action", text, instance)
+
+
+def sweep_chat_ndjson() -> None:
+    """Truncate chat.ndjson when it exceeds size or line caps. Keeps the tail
+    CHAT_TAIL_KEEP lines via atomic rewrite. Cheap no-op on the common path."""
+    try:
+        if not CHAT_PATH.exists():
+            return
+        size = CHAT_PATH.stat().st_size
+        over_size = size > CHAT_SIZE_MAX
+        lines: list[str] | None = None
+        if over_size:
+            # If we're past size, definitely truncate without counting lines.
+            try:
+                lines = CHAT_PATH.read_text(encoding="utf-8").splitlines()
+            except Exception:
+                return
+        else:
+            # Cheap line count via reading; only matters when size is in range.
+            # Skip the read entirely if file is tiny.
+            if size < 200_000:
+                return
+            try:
+                lines = CHAT_PATH.read_text(encoding="utf-8").splitlines()
+            except Exception:
+                return
+            if len(lines) <= CHAT_LINES_MAX:
+                return
+        if lines is None:
+            return
+        tail = lines[-CHAT_TAIL_KEEP:]
+        tmp = CHAT_PATH.with_suffix(CHAT_PATH.suffix + f".tmp.{os.getpid()}")
+        tmp.write_text("\n".join(tail) + "\n", encoding="utf-8")
+        os.replace(tmp, CHAT_PATH)
+    except Exception as e:
+        print(f"emit-event: chat sweep failed: {e}", file=sys.stderr)
+
+
 def emit_subtask(wall: str, actor: str, tool_name: str, tool_input: dict) -> None:
     """Append a `subtask` event to the stream. No-op when no actor or no
     phrase can be synthesized."""
@@ -943,6 +1092,8 @@ def handle_bash(payload: dict) -> None:
         "target": target,
     })
     emit_subtask(wall, actor, "Bash", tool_input)
+    # S052: chat-side human-language line for the Bash call.
+    emit_chat_action(actor, "Bash", tool_input)
 
 
 def handle_session_end(payload: dict) -> None:
@@ -1203,6 +1354,19 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
         return
     building, actor = classify(needle, m)
     if not building:
+        # S052: even when the path doesn't classify into a building (Grep on a
+        # repo-wide pattern, Glob with no path, Read outside any mapped layer),
+        # the chat panel still wants a human-language line. Pick actor via the
+        # same recency / disk fallback Bash uses.
+        sub_actor = None
+        try:
+            sub, _st, _kind = attribute_to_subagent(payload)
+            if sub:
+                sub_actor = sub["id"]
+        except Exception:
+            sub_actor = None
+        chat_actor = sub_actor or current_main_actor()
+        emit_chat_action(chat_actor, tool_name, tool_input)
         return
 
     wall = now_iso()
@@ -1234,6 +1398,10 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
                 "target": target,
             })
         emit_subtask(wall, sub["id"], tool_name, tool_input)
+        # S052: chat line for the sub-agent's call. Includes Read (the
+        # state.ndjson action stream skips Read by design, but the chat panel
+        # wants human-language "Reading X" lines for visibility).
+        emit_chat_action(sub["id"], tool_name, tool_input)
         return
 
     # Main-thread path — attribute to the active player as before.
@@ -1279,6 +1447,8 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
             "target": target,
         })
     emit_subtask(wall, actor, tool_name, tool_input)
+    # S052: chat line. Includes Read (see sub-agent branch comment).
+    emit_chat_action(actor, tool_name, tool_input)
 
 
 def _subagent_default() -> dict:
@@ -1401,6 +1571,8 @@ def handle_task_pre(payload: dict) -> None:
         "speaker": cfg["speaker"],
     })
     emit_subtask(wall, parent, "Task", tool_input)
+    # S052: chat line authored by the spawning actor.
+    emit_chat_action(parent, "Task", tool_input)
 
 
 def handle_task_post(payload: dict) -> None:
@@ -1576,6 +1748,13 @@ def main() -> None:
             handle_session_end(payload)
         except Exception as e:
             print(f"emit-event: session-end failed: {e}", file=sys.stderr)
+        # S052: chat ndjson sweep — keep file bounded across long-lived
+        # workspaces. SessionEnd is one of two sanctioned sweep points
+        # (the other is status-sidecar on UserPromptSubmit).
+        try:
+            sweep_chat_ndjson()
+        except Exception as e:
+            print(f"emit-event: chat sweep failed: {e}", file=sys.stderr)
         sys.exit(0)
 
     if tool_name in ("Task", "Agent"):

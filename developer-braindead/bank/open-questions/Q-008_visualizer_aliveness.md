@@ -1,6 +1,6 @@
 # Q-008 — Make the visualizer world feel alive
 
-**Status.** `open` — captured during [[S022]] visualizer audit fixes, parked for a later session. No work started.
+**Status.** `partially-answered` — options 1–3 shipped in [[S024]]. Options 4 (NPC wanderers) and 5 (trail echoes) deferred without committed trigger.
 
 ## The question
 
@@ -49,3 +49,16 @@ This is **deferred design exploration**, not committed work. The audit fixes fro
 When picked up: start with idle sprite breath (#1). It's the smallest possible change, the easiest to verify, and it tells you whether the GPU cost across all the additive layers is going to be a concern.
 
 Related: audit finding I15 (per-building character) in `bank/research/visualizer-audit-S021.md`; [[D-014]] (chat panel + intent bubbles — already adds some motion); [[Q-007]] (the visualizer's founding question).
+
+## Update — [[S024]] (2026-05-22)
+
+Options 1–3 shipped together in one session. What landed:
+
+- **(1) Idle breath.** Initially attempted via CSS but the `.actor .bob` descendant selector didn't take (cause not pinned — `.wisp-bob` direct class worked fine). Pivoted to inline SMIL `<animateTransform type="scale">` on each player's `.bob` group. Final form is a vertical scale (1 → 0.95 → 1) at 2.6s/2.9s cycles, staggered. Reads as breath rather than float because scale-origin is mid-body, so the head compresses ~1.5px and feet drift only ~0.35px.
+- **(2) Ambient particles.** Forge smoke at braindead-workshop; lit candle-flicker windows at lorebook-library (lower-right + upper-left); parchment-flutter on three inbox-square bulletin notes. Keepsake-vault's pre-existing `gem-shine` left alone.
+- **(3) Day/night overlay.** Fullscreen `<rect>` below the vignette, `mix-blend-mode: multiply`, JS interpolates between four anchor tints (midnight cool-blue / dawn warm-pink / noon near-transparent / dusk amber) keyed on wall-clock hour, refreshed every 60s.
+- **Reduced-motion gate.** `@media (prefers-reduced-motion: reduce)` zeroes the new animations and hides the overlay.
+
+Options 4 (NPC wanderers) and 5 (trail echoes) **deferred without committed trigger**. Recommendation when re-picked: only ship (4) after the operating layer stabilizes further and there's a clear use case for "world exists beyond the agent" cues; only ship (5) if motion legibility complaints emerge that (5) would address. Neither is on the critical path.
+
+**Bug surfaced and fixed during the same session.** Live observation showed Jebrim's intent bubble vanished after a `move` event despite his session actively running tools. Cause: visualizer clears player intents on building change, and `action` events don't repop bubbles. Fix: hook now re-emits the actor's intent file content as an `intent` event right after a move (sub-agents skip — no intent file). See [[S024]] for details and the four-incident pattern context.

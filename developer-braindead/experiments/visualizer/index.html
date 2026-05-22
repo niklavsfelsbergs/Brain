@@ -207,8 +207,15 @@
   .actor.player, .actor.dwarf { filter: drop-shadow(0 0 1.2px rgba(0,0,0,0.85)) drop-shadow(0 1px 0 rgba(0,0,0,0.7)); }
   .actor.walking .bob { animation: bob 360ms steps(2) infinite; }
   @keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-2px);} }
-  @keyframes idle-breath { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-1px);} }
-  .actor .bob { animation: idle-breath 2400ms ease-in-out infinite; }
+  /* Idle sprite breath — Q-008 (1). Vertical sway while standing.
+     Three speed buckets staggered via nth-of-type so idle actors don't
+     pulse in lockstep. Direct class selector (not descendant) — matches
+     .wisp-bob which is proven to animate reliably in this engine. */
+  @keyframes idle-breath { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
+  .bob { animation: idle-breath 2600ms ease-in-out infinite; }
+  .actor:nth-of-type(2n)   .bob { animation-duration: 2900ms; animation-delay: -800ms; }
+  .actor:nth-of-type(3n+1) .bob { animation-duration: 2300ms; animation-delay: -500ms; }
+  .actor:nth-of-type(5n+2) .bob { animation-duration: 3100ms; animation-delay: -1300ms; }
   .actor .glow { opacity: 0; transition: opacity 400ms; }
   .actor.active .glow { opacity: 1; }
   .actor.fade-in { animation: fadeIn 500ms ease-out; }
@@ -251,6 +258,56 @@
 
   .gem-shine { animation: shine 2200ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
   @keyframes shine { 0%,100%{opacity:0.6;} 50%{opacity:1;} }
+
+  /* Q-008 (2) ambient particles — candle flicker on library windows.
+     Steps animation so the light reads as a flame, not a smooth fade. */
+  .candle-flicker { animation: candle-flicker 1800ms steps(3) infinite; transform-box: fill-box; transform-origin: center; }
+  .candle-flicker.d1 { animation-delay: -600ms; animation-duration: 2100ms; }
+  .candle-flicker.d2 { animation-delay: -1200ms; animation-duration: 1500ms; }
+  @keyframes candle-flicker { 0%{opacity:0.78;} 25%{opacity:1;} 50%{opacity:0.62;} 75%{opacity:0.92;} 100%{opacity:0.78;} }
+
+  /* Q-008 (2) ambient particles — parchment flutter on bulletin notes.
+     Subtle rotation around the pinned top edge; staggered per note. */
+  .parchment-flutter { animation: parchment-flutter 3200ms ease-in-out infinite; transform-box: fill-box; transform-origin: top center; }
+  .parchment-flutter.d1 { animation-delay: -900ms; animation-duration: 3600ms; }
+  .parchment-flutter.d2 { animation-delay: -1700ms; animation-duration: 2900ms; }
+  @keyframes parchment-flutter {
+    0%,100% { transform: rotate(0deg) translateY(0); }
+    25%     { transform: rotate(1.4deg) translateY(0.4px); }
+    50%     { transform: rotate(-0.6deg) translateY(0.2px); }
+    75%     { transform: rotate(0.8deg) translateY(-0.2px); }
+  }
+
+  /* Q-008 (3) day/night hue overlay — fullscreen rect over the map.
+     Fill is set by JS on a slow interval; CSS transitions smooth the change.
+     mix-blend-mode keeps the underlying art readable, just tinted. */
+  .day-night-overlay {
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    transition: fill 6000ms linear, opacity 6000ms linear;
+  }
+
+  /* Q-008 — gate all additive aliveness on prefers-reduced-motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .bob,
+    .candle-flicker,
+    .parchment-flutter,
+    .forge-smoke {
+      animation: none !important;
+    }
+    .day-night-overlay { display: none; }
+  }
+
+  /* Forge smoke (braindead workshop) — same engine as inn smoke, lighter
+     and slower so the workshop reads as a slow-burning forge, not a hearth. */
+  .forge-smoke { animation: forge-smoke 4200ms linear infinite; transform-box: fill-box; transform-origin: center; }
+  .forge-smoke.d1 { animation-delay: -1400ms; }
+  .forge-smoke.d2 { animation-delay: -2800ms; }
+  @keyframes forge-smoke {
+    0%   { transform: translate(0,0) scale(0.5); opacity: 0; }
+    20%  { opacity: 0.55; }
+    100% { transform: translate(-3px,-22px) scale(1.2); opacity: 0; }
+  }
 
   /* ─── Overlays ─── */
   .ticker {
@@ -813,14 +870,37 @@
         <g id="characters">
           <g class="actor player" id="actor-jebrim" data-actor="jebrim" transform="translate(260, 240)">
             <ellipse class="glow" cx="0" cy="0" rx="26" ry="26" fill="url(#activeGlow)"/>
-            <g class="bob"><use href="#jebrim" transform="scale(1.4)"/></g>
+            <g class="bob">
+              <!-- Idle breath via vertical scale only (scaleY 1 → 0.95 → 1).
+                   Scale origin is .bob's (0,0), which sits ~mid-body, so
+                   the head compresses downward by ~1.5px at peak while
+                   the feet drift up by ~0.35px (essentially imperceptible).
+                   SMIL animateTransform doesn't support type="matrix", so a
+                   true bottom-anchor would need additive composition. -->
+              <animateTransform attributeName="transform" attributeType="XML" type="scale"
+                values="1 1; 1 0.95; 1 1" keyTimes="0; 0.5; 1"
+                dur="2.6s" repeatCount="indefinite" calcMode="spline"
+                keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"/>
+              <use href="#jebrim" transform="scale(1.4)"/>
+            </g>
           </g>
           <g class="actor player" id="actor-zezima" data-actor="zezima" transform="translate(850, 620)">
             <ellipse class="glow" cx="0" cy="0" rx="26" ry="26" fill="url(#activeGlow)"/>
-            <g class="bob"><use href="#zezima" transform="scale(1.4)"/></g>
+            <g class="bob">
+              <animateTransform attributeName="transform" attributeType="XML" type="scale"
+                values="1 1; 1 0.95; 1 1" keyTimes="0; 0.5; 1"
+                dur="2.9s" repeatCount="indefinite" calcMode="spline"
+                keySplines="0.4 0 0.6 1; 0.4 0 0.6 1" begin="-0.8s"/>
+              <use href="#zezima" transform="scale(1.4)"/>
+            </g>
           </g>
           <g id="focal-label" pointer-events="none" opacity="0"></g>
         </g>
+
+        <!-- Day/night hue overlay (Q-008 #3). Fill tinted by wall time via JS;
+             mix-blend-mode in CSS keeps underlying art readable. Sits below the
+             vignette so the corner darkening still reads. -->
+        <rect id="day-night" class="day-night-overlay" x="0" y="0" width="1200" height="820" fill="rgba(255,250,240,0)"/>
 
         <!-- vignette -->
         <rect x="0" y="0" width="1200" height="820" fill="url(#vignette)" pointer-events="none"/>
@@ -1487,11 +1567,11 @@ function buildBuildings() {
       <polygon points="0,-26 12,-32 12,-12 0,-6" fill="var(--wood-dark)"/>
       <polygon points="0,-26 -12,-32 -12,-12 0,-6" fill="var(--wood-mid)"/>
       <rect x="-10" y="-30" width="20" height="3" fill="var(--wood-dark)"/>
-      <!-- paper notes (on the SE/visible face) -->
-      <polygon points="2,-22 5,-23.5 5,-15.5 2,-14" fill="var(--parchment)"/>
-      <polygon points="6,-22.5 9,-24 9,-16 6,-14.5" fill="var(--parchment)"/>
+      <!-- paper notes (on the SE/visible face) — flutter in the breeze -->
+      <polygon class="parchment-flutter" points="2,-22 5,-23.5 5,-15.5 2,-14" fill="var(--parchment)"/>
+      <polygon class="parchment-flutter d1" points="6,-22.5 9,-24 9,-16 6,-14.5" fill="var(--parchment)"/>
       <!-- left side notes -->
-      <polygon points="-2,-22 -5,-23.5 -5,-15.5 -2,-14" fill="var(--parchment-dk)"/>
+      <polygon class="parchment-flutter d2" points="-2,-22 -5,-23.5 -5,-15.5 -2,-14" fill="var(--parchment-dk)"/>
       <!-- post bases -->
       <rect x="-2" y="-12" width="1" height="6" fill="var(--wood-dark)"/>
       <rect x="11" y="-19" width="1" height="6" fill="var(--wood-dark)"/>
@@ -1572,9 +1652,13 @@ function buildBuildings() {
       <polygon points="${swWallPoly(w, d, 0.4, 0.55, 25, 3)}" fill="var(--wood-dark)"/>
       <!-- arched windows SE (lower row) -->
       <polygon points="${seWallPoly(w, d, 0.25, 0.4, 14, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-mid)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 14, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-mid)" stroke-width="0.6"/>
+      <!-- lower-right window: lit, candle behind the glass -->
+      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 14, 24)}" fill="#cf9a2c" stroke="var(--stone-mid)" stroke-width="0.6"/>
+      <polygon class="candle-flicker" points="${seWallPoly(w, d, 0.57, 0.68, 16, 20)}" fill="#ffce5b"/>
       <!-- upper row windows SE -->
-      <polygon points="${seWallPoly(w, d, 0.28, 0.4, 50, 14)}" fill="#3d597b" stroke="var(--stone-mid)" stroke-width="0.5"/>
+      <!-- upper-left window: lit, faintly flickering -->
+      <polygon points="${seWallPoly(w, d, 0.28, 0.4, 50, 14)}" fill="#a87a26" stroke="var(--stone-mid)" stroke-width="0.5"/>
+      <polygon class="candle-flicker d2" points="${seWallPoly(w, d, 0.29, 0.39, 51, 12)}" fill="#ffd97a"/>
       <polygon points="${seWallPoly(w, d, 0.56, 0.68, 50, 14)}" fill="#3d597b" stroke="var(--stone-mid)" stroke-width="0.5"/>
       <!-- books stacked on the SE roof slope (sits at ridge, visible against roof) -->
       <g transform="translate(8, ${-h - r*0.5})">
@@ -1883,6 +1967,14 @@ function buildBuildings() {
       <line x1="${w - 2}" y1="${-h - 4}" x2="${w + 8}" y2="${-h - 18}" stroke="var(--wood-mid)" stroke-width="1"/>
       <!-- a single plank propped against the roof ridge -->
       <line x1="${w + 6}" y1="${-h - 6}" x2="${-2}" y2="${-h - r - 4}" stroke="var(--wood-light)" stroke-width="1.6"/>
+
+      <!-- forge chimney + smoke on SW side of roof. The workshop's a smithing
+           shed; smoke is steady but light, matches braindead's slow tinkering. -->
+      <rect x="${-w + 8}" y="${-h - r + 2}" width="6" height="10" fill="var(--stone-dark)"/>
+      <rect x="${-w + 8}" y="${-h - r + 2}" width="6" height="1.5" fill="#1a0e04"/>
+      <circle class="forge-smoke"    cx="${-w + 11}" cy="${-h - r}" r="2.4" fill="rgba(210,200,185,0.55)"/>
+      <circle class="forge-smoke d1" cx="${-w + 11}" cy="${-h - r}" r="2.4" fill="rgba(210,200,185,0.45)"/>
+      <circle class="forge-smoke d2" cx="${-w + 11}" cy="${-h - r}" r="2.4" fill="rgba(210,200,185,0.5)"/>
 
       <!-- door SW: simple plank door with bandage-wrapped handle -->
       <polygon points="${swWallPoly(w, d, 0.38, 0.55, 0, 22)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
@@ -2889,6 +2981,44 @@ buildFlora();
 buildBuildings();
 buildLabels();
 wireBuildingTooltips();
+
+// ─────────────────────────────────────────────────────────────
+//   Day/night hue overlay — Q-008 (3)
+//   Interpolates between four anchor tints across the wall clock.
+//   With mix-blend-mode multiply, dark anchors strongly tint the
+//   map; near-white anchors leave it almost untouched.
+// ─────────────────────────────────────────────────────────────
+const DAY_NIGHT_ANCHORS = [
+  { h:  0, r:  60, g:  84, b: 138, a: 0.55 }, // midnight — deep cool blue
+  { h:  6, r: 246, g: 200, b: 154, a: 0.32 }, // dawn — warm orange-pink
+  { h: 12, r: 255, g: 250, b: 240, a: 0.04 }, // noon — near transparent
+  { h: 18, r: 236, g: 155, b: 111, a: 0.30 }, // dusk — warm amber
+  { h: 24, r:  60, g:  84, b: 138, a: 0.55 }, // wrap to midnight
+];
+function lerp(a, b, t) { return a + (b - a) * t; }
+function dayNightFill() {
+  const now = new Date();
+  const hour = now.getHours() + now.getMinutes() / 60;
+  let lo = DAY_NIGHT_ANCHORS[0], hi = DAY_NIGHT_ANCHORS[DAY_NIGHT_ANCHORS.length - 1];
+  for (let i = 0; i < DAY_NIGHT_ANCHORS.length - 1; i++) {
+    if (hour >= DAY_NIGHT_ANCHORS[i].h && hour <= DAY_NIGHT_ANCHORS[i+1].h) {
+      lo = DAY_NIGHT_ANCHORS[i]; hi = DAY_NIGHT_ANCHORS[i+1]; break;
+    }
+  }
+  const span = hi.h - lo.h || 1;
+  const t = (hour - lo.h) / span;
+  const r = Math.round(lerp(lo.r, hi.r, t));
+  const g = Math.round(lerp(lo.g, hi.g, t));
+  const b = Math.round(lerp(lo.b, hi.b, t));
+  const a = lerp(lo.a, hi.a, t).toFixed(3);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function updateDayNight() {
+  const el = document.getElementById('day-night');
+  if (el) el.setAttribute('fill', dayNightFill());
+}
+updateDayNight();
+setInterval(updateDayNight, 60 * 1000); // refresh every minute
 
 // init engine
 resetWorld();

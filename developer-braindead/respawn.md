@@ -6,23 +6,27 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-22 (end of [[S023]] — visualizer ticker fix + cross-session attribution gating).
+**Last updated.** 2026-05-22 (end of [[S024]] — Q-008 aliveness options 1–3 + intent re-emit on move).
 
 ## Where we are
 
-[[S023]] caught and fixed three live-observed visualizer bugs in one session — all surfaced while the principal had the visualizer open and was watching things happen, not via static read:
+[[S024]] shipped the first wave of [[Q-008]] visualizer aliveness work plus one bug surfaced and fixed under live observation:
 
-- **Ticker froze for hours.** `updateTicker()` was only reachable from sub-agent spawn/despawn handlers + the `tick()` loop's `if (playing)` branch, which never goes true in LIVE mode. Fixed by calling `updateTicker()` after each poll chunk **and** switching live-mode display to browser wall clock with a 1s `setInterval`, so the clock advances every second whether or not events land.
-- **Cross-session Bash attribution flipped direction from [[S022]].** Recency walk over a shared `state.ndjson` picked whichever session wrote intent most recently, regardless of which session's tool call was firing. Mine got tagged as Jebrim's. Fixed by stamping every emitted event with `sessionId` from the hook payload and filtering the recency walk on it. Threaded through `current_main_actor()` and `infer_dwarf_parent()`.
-- **Dev-brain override hijacked parallel sessions' wildcard-paths.** Jebrim's globs like `gielinor/players/*/quest-log/*` fell through to `defaultActor=wisp`, then the `active-mode==dev-brain` override flipped them to braindead — so Jebrim's wildcard scans drove Braindead's sprite while Jebrim sat parked. Introduced `is_dev_brain_session()` gated on `_mode_session_id` recorded in `state-actors.json` (stamped by the dev-brain session that set the marker). Three callsites swapped to use it. Added a session-filtered recency fallback for wildcard paths so they attribute to whichever player the session has been operating as.
+- **Idle sprite breath.** Vertical scale (1 → 0.95 → 1) via inline SMIL `<animateTransform>` on each player's `.bob` group. Switched from CSS to SMIL after the `.actor .bob` descendant selector silently refused to animate while the wisp's direct-class `.wisp-bob` worked fine — root cause not pinned. Final form reads as breath, not float: head compresses ~1.5px, feet drift ~0.35px (imperceptible).
+- **Ambient particles.** Forge smoke at braindead-workshop, candle-flicker on lit lorebook-library windows, parchment-flutter on three inbox-square bulletin notes. Keepsake-vault's gem-shine already covered.
+- **Day/night hue overlay.** Fullscreen `<rect>` below the vignette, `mix-blend-mode: multiply`, JS interpolates four hour-keyed anchor tints, refreshed every 60s.
+- **Reduced-motion gate.** New animations zeroed and overlay hidden under `@media (prefers-reduced-motion: reduce)`.
+- **Bug fix — intent re-emit on move.** Visualizer clears player intents on building change, and the hook only emits intent events on intent-file writes — so a working session that calls tools without updating its intent file silently loses its bubble after the first move. Fixed in `emit-event.py` with `_reemit_intent_after_move()` called right after every main-actor move event. Sub-agents skip (no intent file).
 
-This is now a **three-incident pattern** (S014, S022, S023): shared global state at brain root is hostile to parallel Claude sessions. The mitigation has stabilized — gate every shared-state read on `_SESSION_ID`. Worth a `bank/decisions/` note next bankstanding.
+Aliveness options **4 (NPC wanderers) and 5 (trail echoes) deferred** without committed trigger — neither on critical path.
 
-The first **live gnome spawn** is still deferred. So is the broader [[Q-008]] "aliveness" backlog.
+[[S023]]'s "watching-it-run finds bugs the audit-and-validate phase missed" pattern reinforced — the intent silence only surfaced under sustained live observation, not the build phase. **Four-incident pattern** now (S014, S022, S023, S024).
+
+The first **live gnome spawn** is still deferred.
 
 ## Next concrete step — START HERE
 
-**Step 1 — first live gnome spawn (carried from S020 / S021 / S022).** Still the natural validation event for the boundary hook (S020's env→payload-field fix), the visualizer's gnome render path, and audit fixes that only fire under sub-agent activity. The session-gating in [[S023]] is the new dependency to test under sub-agent activity — gnome spawn carries the parent session's `session_id`, so the gnome's tool calls should still attribute correctly via `agent_id` first, then session_id as fallback. Combined-test candidate: a Jebrim alching gnome.
+**Step 1 — first live gnome spawn (carried from S020 / S021 / S022 / S023).** Still the natural validation event for the boundary hook (S020's env→payload-field fix), the visualizer's gnome render path, and audit fixes that only fire under sub-agent activity. The session-gating in [[S023]] and the intent-re-emit-on-move from [[S024]] are dependencies to test under sub-agent activity — gnome spawn carries the parent session's `session_id`, so the gnome's tool calls should still attribute correctly via `agent_id` first, then session_id as fallback. Combined-test candidate: a Jebrim alching gnome.
 
 **Step 2 — drafts triage** (carried from S018 → S019 → S020 → S021 → S022). Several drafts still await ruling:
 

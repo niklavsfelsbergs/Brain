@@ -612,6 +612,33 @@ def handle_bash(payload: dict) -> None:
     })
 
 
+def _reemit_intent_after_move(actor: str, wall: str) -> None:
+    """After a player actor moves, re-emit their current intent file content
+    so the visualizer bubble reappears at the new building. The visualizer
+    clears player intents on building change (clearIntent in move handler);
+    without this, the bubble stays gone until the actor's next intent write,
+    which can be a long silence while the actor is actively running tools."""
+    name = (actor or "").strip().lower()
+    if not name:
+        return
+    intent_path = REPO_ROOT / ".claude" / "intent" / f"{name}.txt"
+    if not intent_path.exists():
+        return
+    try:
+        raw = intent_path.read_text(encoding="utf-8").strip()
+    except Exception:
+        return
+    text = raw.splitlines()[0].strip() if raw else ""
+    if not text:
+        return
+    append({
+        "wallTime": wall, "source": "hook",
+        "type": "intent",
+        "actor": name,
+        "text": text[:INTENT_MAX_LEN],
+    })
+
+
 def handle_intent_write(needle: str) -> bool:
     """If needle is .claude/intent/<actor>.txt, emit an intent event and
     return True. Otherwise return False so the normal path-classify flow
@@ -711,6 +738,10 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
         })
         actors[actor] = building
         save_json(ACTORS_PATH, actors)
+        # Re-emit the actor's current intent so the bubble follows to the new
+        # building. Visualizer clears player intents on move; without this, the
+        # bubble stays gone until the actor's next intent file write.
+        _reemit_intent_after_move(actor, wall)
     if emit_action and target:
         append({
             "wallTime": wall, "source": "hook",

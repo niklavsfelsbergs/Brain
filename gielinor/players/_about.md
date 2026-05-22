@@ -28,6 +28,8 @@ players/<name>/
     current.md  proposals/  archive/
   bank/
     _about.md  notes/  archive/
+  research/                       # full research writeups, penguin-authored or principal-authored
+    _about.md  archive/
   quest-log/
     _about.md  in-progress/  completed/  archive/
   spellbook/
@@ -36,7 +38,9 @@ players/<name>/
     _about.md
 ```
 
-`bank/`, `quest-log/`, `spellbook/`, `inventory/` exist *only* per-player — knowledge, episodes, procedures, and working memory are character-bound.
+`bank/`, `research/`, `quest-log/`, `spellbook/`, `inventory/` exist *only* per-player — knowledge, research, episodes, procedures, and working memory are character-bound.
+
+`research/` holds full research writeups (source maps, quoted passages, findings with citations, gaps). It is the **source material** layer. Penguins (the research sub-agent) write here freely; principals can too. During alching, load-bearing distillations get picked from `research/` into `bank/drafts/notes/` and then promoted to `bank/notes/`. The research stays in `research/` as the anchor; the bank holds the picked summaries. See `meta/layer-routing.md` for the picking flow and `spellbook/skills/research.md` for the methodology.
 
 `examine/`, `niksis8_character/`, `keepsake/` exist at both scopes (global and per-player). The per-player versions are scoped to that character's lens.
 

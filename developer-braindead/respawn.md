@@ -6,11 +6,15 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-22 (end of [[S029]] — parallel Braindead instances + dev-to-dev comms channel).
+**Last updated.** 2026-05-22 (end of [[S030]] — penguins: research-operative sub-agent + per-player research/ folder).
 
 ## Where we are
 
-[[S029]] closed the [[D-017]] deferred-Braindead branch and added a coordination layer so parallel dev sessions can declare targets and dialogue. Two coordinated shifts shipped end-to-end:
+[[S030]] shipped the third functional sub-agent role end-to-end. Where dwarves dig in the repo and gnomes tend the brain, **penguins** now go beyond Gielinor's gates — external research via WebSearch/WebFetch, outputs anchored in a new per-player `research/` layer that is distinct from the bank. The trichotomy closes a hole in the model: there was no shape for outward-facing work, and no place for source material that doesn't belong in `bank/notes/` directly. See [[D-021]] for the full design.
+
+Five chunks bundled in one session: role definition docs (modes/write-rules/CLAUDE/players/death-and-spawn/layer-routing), research/ folder template + skill amendment, hook enforcement (penguin-write-boundary.py + block-sub-spawn.py refactor + settings.json wiring), agent config + spawning-penguins skill, and the visualizer (iceberg building at the NE corner, tuxedoed penguin sprite, full ROLE_CONFIG generalization that the gnome-shipped code predicted at line 65). End-to-end untested under live conditions — Step 1.
+
+Carried forward — [[S029]] preserved below for context:
 
 **1. Parallel Braindead instances.** D-017's machinery (per-session sprites, tint variants, instance numbering, 5-min idle-despawn) now extends to Braindead. Mechanical surface area:
 
@@ -32,7 +36,17 @@
 
 ## Next concrete step — START HERE
 
-**Step 1 — Live test parallel Braindead.** The whole shipped surface is untested under two-Braindead conditions. Open a second Claude Code window at this repo, cue *"Lets develop gielinor"*, and watch:
+**Step 0 — Live test penguins (NEW).** Spawn a penguin from a Jebrim session with a small research brief (something with 1–2 real fetches, e.g., *"current state of polars 0.20 changelog"* or *"EU CBAM effective date and applicable goods"*). Watch:
+
+- Task tool with `subagent_type: "penguin"` routes through ROLE_CONFIG; spawn-penguin event lands in state.ndjson with id `P1`, color `penguin-1`, at the parent's building (or iceberg fallback).
+- Penguin sprite renders at the Iceberg — tuxedoed silhouette, scarf in arctic blue, ID badge "P1". COMMS panel shows the PENGUINS tab with the dot.
+- Write attempts: the penguin can write to `players/jebrim/research/<YYYY-MM-DD>-<slug>.md`; any other write path is blocked by `penguin-write-boundary.py` with the expected error.
+- Despawn after Task completes: sprite fades, intent bubble clears, ticker count decrements.
+- Idle-despawn / GC: not yet checked for penguins specifically; the dwarf/gnome 1h sweep should apply since they share `gc_stale_subagents` machinery via ROLE_CONFIG.
+
+Failure modes to watch for: iceberg STAND too close to map edge (sprite or label clipped), tint values producing low contrast against the dark map background, ROLE_CONFIG generalization breaking dwarf or gnome paths (regression check — spawn a dwarf in the same session and confirm it still works).
+
+**Step 1 — Live test parallel Braindead** (carried from S029). The whole shipped surface is untested under two-Braindead conditions. Open a second Claude Code window at this repo, cue *"Lets develop gielinor"*, and watch:
 
 - Sibling detection at respawn — should surface the existing braindead-5de1e12a session (or whichever is live) before plan formation.
 - The new Braindead's `OPEN` entry lands in `comms/active.md` after the plan-nod.
@@ -73,7 +87,8 @@ Tune if needed: tint-2 hue-rotate angle (braindead robe's `--braindead-robe` blu
 
 ## Open at the start of next session
 
-- **Live test parallel Braindead** — Step 1. First action.
+- **Live test penguins** — Step 0. First action.
+- **Live test parallel Braindead** — Step 1.
 - **Scale up the map** — Step 2.
 - **Live test Guthix** — Step 3.
 - **Subtask debounce decision** — Step 4.
@@ -87,7 +102,15 @@ Tune if needed: tint-2 hue-rotate angle (braindead robe's `--braindead-robe` blu
 
 ## Carried-over observations
 
-From [[S029]] (new): **D-017's deferred branches age fast.** Two and a half weeks after D-017 shipped, the deferred Braindead branch closed under principal pressure. Pattern: D-NNN documents with "out of scope for first cut" sections accumulate latent work that becomes load-bearing on a clock the section didn't project. Bankstanding could surface these via a "deferred branches > 30 days" check.
+From [[S030]] (new): **Discipline rules pay off when consulted.** The `players/_about.md` "don't pre-create speculative players" rule stopped a wrong first move and routed the work to the right shape (skill + sub-agent role, not new player). Worth surfacing early when "new player" or "new role" cues land.
+
+From [[S030]] (new): **Predictive comments in code pay off.** `emit-event.py` line 65 (written when gnomes shipped in S019) said *"generalize to a mapping if a third kind lands"*; two sessions later, penguins landed and the comment became a checklist. Do more of this for structures that could obviously grow.
+
+From [[S030]] (new): **Source vs picking — the research/bank split.** Treating research as source material (size optional) and bank notes as picked claims (browsability) gives both layers a clean purpose. The picking-during-alching flow operationalizes the split. Carry this principle to other "size-vs-browsability" tensions if they surface.
+
+From [[S030]] (new): **Five-chunk bundle held together because of pre-flight survey.** Reading modes.md, write-rules.md, layer-routing.md, players/_about.md, the existing hooks, the existing agent config, and the spawning-dwarves/gnomes skills before the first edit gave a complete touch-point map. For large bundles: read the cascade before writing.
+
+From [[S029]] (still relevant): **D-017's deferred branches age fast.** Two and a half weeks after D-017 shipped, the deferred Braindead branch closed under principal pressure. Pattern: D-NNN documents with "out of scope for first cut" sections accumulate latent work that becomes load-bearing on a clock the section didn't project. Bankstanding could surface these via a "deferred branches > 30 days" check.
 
 From [[S029]] (new): **coordination is asymmetric across actor classes.** Parallel Jebrims (D-017) need no comms channel — Jebrim's collision surface is per-player layers, naturally namespaced. Parallel Braindeads need one because Braindead writes to `gielinor/` shared surfaces. Implication: each new instanced actor warrants a separate decision about coordination.
 

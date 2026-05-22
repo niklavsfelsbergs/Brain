@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
-# Architectural guarantee #4: sub-agents cannot spawn further sub-agents.
-# Active when the PreToolUse payload carries agent_type in ("dwarf", "gnome").
+# Architectural guarantee #6: sub-agents cannot spawn further sub-agents.
+# Active when the PreToolUse payload carries agent_type in ("dwarf", "gnome", "penguin").
 # Claude Code populates agent_id + agent_type in the JSON payload when a tool
 # call originates inside a sub-agent context; env vars are NOT propagated, so
 # gating on os.environ would leave the block silently inert.
 # (Original implementation gated on CLAUDE_BRAIN_DWARF/GNOME=1; fixed
-# 2026-05-21 in the [[S020]] dev-brain ratification pass.)
+# 2026-05-21 in the [[S020]] dev-brain ratification pass. Penguins added
+# 2026-05-22 in the S030 penguin-role bundle.)
 #
 # See meta/modes.md.
 
 import json
 import sys
+
+ROLE_PLURALS = {
+    "dwarf": "dwarves",
+    "gnome": "gnomes",
+    "penguin": "penguins",
+}
 
 
 def main() -> None:
@@ -21,12 +28,12 @@ def main() -> None:
         sys.exit(0)
 
     agent_type = payload.get("agent_type")
-    if agent_type not in ("dwarf", "gnome"):
+    if agent_type not in ROLE_PLURALS:
         sys.exit(0)
 
     tool_name = payload.get("tool_name", "")
     if tool_name in ("Agent", "Task"):
-        role = "dwarves" if agent_type == "dwarf" else "gnomes"
+        role = ROLE_PLURALS[agent_type]
         print(
             f"BLOCKED: {role} cannot spawn further sub-agents.\n"
             f"  Return control to the principal to spawn the next agent.\n"

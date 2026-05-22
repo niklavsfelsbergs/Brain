@@ -28,6 +28,7 @@ STATE_PATH = VIZ_DIR / "state.ndjson"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"
 DWARVES_PATH = VIZ_DIR / "state-dwarves.json"
 GNOMES_PATH = VIZ_DIR / "state-gnomes.json"
+PENGUINS_PATH = VIZ_DIR / "state-penguins.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 
 # D-017: actors that can run as parallel sessions, each getting its own
@@ -61,11 +62,11 @@ NON_PLAYER_SUFFIX_ACTORS = {"braindead", "guthix", "wisp"}
 #   - Add matching CSS vars (--<color_prefix>-1..N) in index.html and a sprite
 #     spawner (parallel to spawnDwarf / spawnGnome).
 #   - Update spawn_kind_from_tool_input to route subagent_type strings to the
-#     new kind.
-#   - Update attribute_to_subagent's agent_type dispatch (currently a binary
-#     gnome/else split — generalize to a mapping if a third kind lands).
+#     new kind. Already an "in ROLE_CONFIG" lookup since penguins landed.
+#   - Update attribute_to_subagent's agent_type dispatch. Already an
+#     "in ROLE_CONFIG" lookup since penguins landed.
 #   - Add a COMMS tab + filter + dot CSS for the new speaker (parallel to
-#     dwarves/gnomes blocks in index.html).
+#     dwarves/gnomes/penguins blocks in index.html).
 ROLE_CONFIG = {
     "dwarf": {
         "id_prefix": "D",
@@ -83,6 +84,15 @@ ROLE_CONFIG = {
         "despawn_event": "despawn-gnome",
         "speaker": "gnomes",
         "color_prefix": "gnome",
+        "color_count": 3,
+    },
+    "penguin": {
+        "id_prefix": "P",
+        "state_path": PENGUINS_PATH,
+        "spawn_event": "spawn-penguin",
+        "despawn_event": "despawn-penguin",
+        "speaker": "penguins",
+        "color_prefix": "penguin",
         "color_count": 3,
     },
 }
@@ -1263,11 +1273,14 @@ def _session_substate(state: dict, session_id: str | None) -> dict:
 
 
 def spawn_kind_from_tool_input(tool_input: dict) -> str:
-    """Map a Task tool_input to a ROLE_CONFIG kind. Anything not explicitly
-    'gnome' is treated as a dwarf (general-purpose tasks, claude-code-guide,
-    Explore, etc. all carry dwarf semantics in the visualizer)."""
+    """Map a Task tool_input to a ROLE_CONFIG kind. Subagent_type strings that
+    match a configured kind ('gnome', 'penguin') route there; anything else
+    is treated as a dwarf (general-purpose tasks, claude-code-guide, Explore,
+    etc. all carry dwarf semantics in the visualizer)."""
     sub_type = (tool_input.get("subagent_type") or "").strip().lower()
-    return "gnome" if sub_type == "gnome" else "dwarf"
+    if sub_type in ROLE_CONFIG:
+        return sub_type
+    return "dwarf"
 
 
 def handle_task_pre(payload: dict) -> None:
@@ -1392,18 +1405,19 @@ def handle_task_post(payload: dict) -> None:
 def attribute_to_subagent(payload: dict):
     """If the hook payload carries `agent_id` (sub-agent tool call), return
     the sub-agent entry { id, color, at, spawnedAt } that owns it, plus the
-    state dict and the kind ('dwarf' or 'gnome'). Dispatches on
-    `payload.agent_type`; falls back to dwarf state when agent_type is absent
-    (older Claude Code versions or general-purpose tasks where the field may
-    not be populated). Binds agent_id → spawn tool_use_id on first sighting
-    via LIFO match (S022 / B1 — most-recent spawn wins when ambiguous).
-    Returns (entry, state, kind) on success, (None, None, None) otherwise —
-    caller is responsible for saving `state` if it mutates `entry["at"]`."""
+    state dict and the kind (any key of ROLE_CONFIG — 'dwarf', 'gnome',
+    'penguin'). Dispatches on `payload.agent_type`; falls back to dwarf state
+    when agent_type is absent or unknown (older Claude Code versions or
+    general-purpose tasks where the field may not be populated). Binds
+    agent_id → spawn tool_use_id on first sighting via LIFO match (S022 /
+    B1 — most-recent spawn wins when ambiguous). Returns (entry, state, kind)
+    on success, (None, None, None) otherwise — caller is responsible for
+    saving `state` if it mutates `entry["at"]`."""
     agent_id = payload.get("agent_id")
     if not agent_id:
         return None, None, None
     agent_type = (payload.get("agent_type") or "").strip().lower()
-    kind = "gnome" if agent_type == "gnome" else "dwarf"
+    kind = agent_type if agent_type in ROLE_CONFIG else "dwarf"
     cfg = ROLE_CONFIG[kind]
     st = load_json(cfg["state_path"], _subagent_default())
     # D-018: look up only in THIS session's substate. Sub-agent agent_ids are

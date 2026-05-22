@@ -53,7 +53,7 @@ The four modes are orthogonal to the principal/sub-agent axis below. Bankstandin
 
 This axis describes which side of the invocation the agent is on, and — if it's a sub-agent — which kind. It applies within player mode and within unscoped mode; bankstanding is always principal.
 
-The agent operates in one of three roles per invocation: **principal**, **dwarf**, or **gnome**. Role is orthogonal to player: any player can run as either a principal or a dwarf; gnomes are system-namespace and don't inherit a player (the spawn brief carries player scope as a parameter instead).
+The agent operates in one of four roles per invocation: **principal**, **dwarf**, **gnome**, or **penguin**. Role is orthogonal to player: any player can run as either a principal, a dwarf, or a penguin (those inherit player); gnomes are system-namespace and don't inherit a player (the spawn brief carries player scope as a parameter instead).
 
 ### Principal role
 
@@ -116,24 +116,54 @@ Gnomes are **system-namespace**. There is one gnome agent config; the spawn brie
 
 The boundary is enforced by `.claude/hooks/gnome-write-boundary.py`, gated on PreToolUse payload field `agent_type == "gnome"`. (Same mechanism for the dwarf and sub-spawn hooks. Env-var gating was the S019-shipped design; switched to payload-field gating in S020 after the env-var route was confirmed inert.)
 
+### Penguin role
+
+The agent has been invoked as a **research operative** sub-agent by the principal to gather external information (web, vendor docs, regulatory state, news, anything beyond the gates) and produce a research writeup. Penguins are functional like dwarves but with their own write surface and tool kit aimed at outward-facing work.
+
+System namesake: in RuneScape lore, penguins are intelligence operatives — the KGP (*Komitet Gosudarstvennoy Pingvinnosti*) gathers intel from beyond Gielinor's gates. Here they do the same job: research the outside world and return with anchored findings. See [[guthix]] for the parallel — Guthix is the brain's caretaker deity; penguins are its field researchers.
+
+**A penguin may write to:**
+
+- The active player's `research/` (any subpath). This is the penguin's playground — full research writeups, working notes, source dumps. Write freely; no draft gate inside this folder. Filenames typically `YYYY-MM-DD-<topic-slug>.md`.
+- The active player's `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/archive/` — sibling run-log entry, typically `SNNN_pN_<slug>.md` (pN = penguin 1, 2, ...).
+- The active player's `inventory/` — working state during research.
+
+**A penguin may not:**
+
+- Write to any `confirmed/` path (hook-enforced).
+- Write to `bank/` (notes or drafts). Research output lives in `research/`; **bank notes are picked out of research during alching**, not authored by the penguin. The penguin produces source material; the player (via principal review) distills.
+- Write to any other `drafts/` path. No `examine/drafts/`, no `niksis8_character/drafts/`, no `keepsake/proposals/`, no `lorebook/drafts/`, no `spellbook/drafts/`. Penguins are field operatives, not introspectors.
+- Touch `keepsake/`, `examine/`, `niksis8_character/`, `lorebook/` at any level.
+- Touch `meta/` or any file in `spellbook/rituals/`.
+- Touch any other player's namespace (the active-player scope is set by inheritance — see *Player inheritance* below).
+- Spawn further sub-agents (hook-enforced).
+
+**Tool surface (set in the agent config):** `Read`, `Glob`, `Grep`, `Edit`, `Write`, `WebSearch`, `WebFetch`. No `Bash` by default — research doesn't need shell access; if a brief genuinely needs it, the principal spawns a dwarf in parallel instead of widening the penguin's surface.
+
+The boundary is enforced by `.claude/hooks/penguin-write-boundary.py`, gated on PreToolUse payload field `agent_type == "penguin"`. Same mechanism as the dwarf and gnome hooks.
+
+See `spellbook/skills/research.md` for the methodology and `spellbook/skills/spawning-penguins.md` for the spawn heuristic.
+
 ## Player inheritance
 
-By default, a dwarf inherits the principal's player. A Zezima-spawned dwarf operates in Zezima's namespace — reads from Zezima's `bank/`, writes its quest-log entry to Zezima's `quest-log/`.
+By default, a dwarf or penguin inherits the principal's player. A Zezima-spawned dwarf operates in Zezima's namespace — reads from Zezima's `bank/`, writes its quest-log entry to Zezima's `quest-log/`. A Zezima-spawned penguin writes research into Zezima's `research/`.
 
-**Cross-player invocation** is allowed but must be explicit. The principal names which player the dwarf should embody. Example: Zezima (principal) spawns Jebrim as a dwarf to handle a work-flavored task on the side. The Jebrim-dwarf operates in *Jebrim's* namespace — reads Jebrim's bank, writes its findings to Jebrim's quest-log — and returns a summary to the Zezima-principal. The Zezima-principal then notes in *her* quest-log that she delegated the task.
+**Cross-player invocation** is allowed but must be explicit. The principal names which player the dwarf or penguin should embody. Example: Zezima (principal) spawns Jebrim as a dwarf to handle a work-flavored task on the side. The Jebrim-dwarf operates in *Jebrim's* namespace — reads Jebrim's bank, writes its findings to Jebrim's quest-log — and returns a summary to the Zezima-principal. The Zezima-principal then notes in *her* quest-log that she delegated the task. Same pattern for penguins: *"Hey Zezima, have a penguin look into X for Jebrim"* spawns a Jebrim-scoped penguin whose research lands in Jebrim's `research/`.
 
 **Gnomes do not inherit.** Gnomes are system-namespace; the spawn brief carries the player(s) in scope as a parameter. One gnome can in principle touch multiple players in a single invocation, but the practical default is one gnome per player per alching pass, one gnome for the whole session-close.
 
 ## Principle
 
-Principals are introspective. Dwarves are functional. Gnomes are structural housekeepers.
+Principals are introspective. Dwarves are functional within the repo. Penguins are functional beyond the gates. Gnomes are structural housekeepers.
 
-Principals can change who the agent (or a player) thinks it is. Dwarves can only do the work they were invoked for and leave a trace. Gnomes can walk a ritual's checklist and propose writes inside the housekeeping surface, but they don't introspect and they don't canonicalize.
+Principals can change who the agent (or a player) thinks it is. Dwarves can only do the work they were invoked for within the repo and leave a trace. Penguins can gather and synthesize external information into their own `research/` folder but never canonicalize and never write into the player's bank. Gnomes can walk a ritual's checklist and propose writes inside the housekeeping surface, but they don't introspect and they don't canonicalize.
 
 ## Related
 
-- `write-rules.md` for the full per-layer table; this file documents the dwarf and gnome subsets.
-- `.claude/hooks/dwarf-write-boundary.py`, `.claude/hooks/gnome-write-boundary.py`, and `.claude/hooks/block-sub-spawn.py` for the enforcement.
+- `write-rules.md` for the full per-layer table; this file documents the dwarf, gnome, and penguin subsets.
+- `.claude/hooks/dwarf-write-boundary.py`, `.claude/hooks/gnome-write-boundary.py`, `.claude/hooks/penguin-write-boundary.py`, and `.claude/hooks/block-sub-spawn.py` for the enforcement.
 - `spellbook/rituals/bankstanding.md` for the bankstanding-mode procedure.
 - `spellbook/skills/spawning-gnomes.md` for the gnome operating spec, spawn heuristic, and reporting format.
+- `spellbook/skills/spawning-penguins.md` for the penguin operating spec.
+- `spellbook/skills/research.md` for the research methodology penguins (and principals) use.
 - `lorebook/` for the self-improvement log where mode-shaping changes get recorded.

@@ -98,15 +98,16 @@ The conventions you operate by:
 
 These are in-force every session.
 
-## The five architectural guarantees
+## The six architectural guarantees
 
 Enforced by hooks in `.claude/hooks/`. You cannot bypass them; do not try.
 
 1. **No writes to any `confirmed/` path.** Identity is gated. You propose; the principal approves.
 2. **No deletes — ever.** Move into the corresponding `archive/`. Never `rm`.
-3. **Dwarf write boundary.** Dwarves have a restricted write surface aimed at task-local work (see `meta/modes.md`).
+3. **Dwarf write boundary.** Dwarves have a restricted write surface aimed at task-local work within the repo (see `meta/modes.md`).
 4. **Gnome write boundary.** Gnomes have a restricted write surface aimed at structural housekeeping — drafts, proposals, inventory, quest-log across players, plus globals' drafts. Blocked from `confirmed/`, `lorebook/decisions/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, body files (see `meta/modes.md` and `spellbook/skills/spawning-gnomes.md`).
-5. **No sub-spawning from a dwarf or gnome.** Only the principal spawns sub-agents.
+5. **Penguin write boundary.** Penguins have a restricted write surface aimed at external research — the active player's `research/`, own quest-log entry, and `inventory/`. Blocked from `bank/`, `confirmed/`, all other `drafts/`, `keepsake/`, `lorebook/`, `examine/`, `niksis8_character/`, `meta/`, `spellbook/rituals/`, and other players' namespaces (see `meta/modes.md` and `spellbook/skills/spawning-penguins.md`).
+6. **No sub-spawning from a dwarf, gnome, or penguin.** Only the principal spawns sub-agents.
 
 ## Layer index
 
@@ -124,6 +125,7 @@ Global:
 Per-player (`players/<name>/`):
 
 - `bank/` — semantic memory: what this character knows.
+- `research/` — source material: full research writeups, penguin-authored. Bank notes are picked from here during alching.
 - `quest-log/` — episodic memory: what happened in sessions.
 - `spellbook/` — procedural memory: how this character does things.
 - `inventory/` — working memory: what's carried now (volatile).

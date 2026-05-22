@@ -78,6 +78,17 @@
     --gnome-1: #6b7da6;   /* slate blue */
     --gnome-2: #8b6caf;   /* lavender  */
     --gnome-3: #5d8a7e;   /* sage teal */
+    /* Penguins — research-operative sub-agents. Tuxedoed silhouette (dark
+       back + cream belly + orange beak). KGP intel-operatives from RS lore.
+       Three scarf colors cycle by spawn order. */
+    --penguin-body: #1c1f2c;
+    --penguin-body-dk: #0b0d14;
+    --penguin-belly: #f1e8d4;
+    --penguin-beak: #ffb84a;
+    --penguin-feet: #d88a2a;
+    --penguin-1: #4b6f9c;   /* arctic blue */
+    --penguin-2: #5a8a8a;   /* glacier teal */
+    --penguin-3: #8884a8;   /* dusk violet */
     /* C1 (S022): per-actor chat tints. `-text` reads on the light tan COMMS
        panel; `-dot` reads on the dark frame. Used by chat user-prefix,
        speaker-bullet, tab-dot, and legend so changing the canonical color in
@@ -87,6 +98,7 @@
     --zezima-text: #a44a14;      --zezima-dot: #ffb56b;
     --dwarves-text: #8a5a10;     --dwarves-dot: #ffd24a;     --dwarves-swatch: #cf9a2c;
     --gnomes-text: #5b3d6e;      --gnomes-dot: #c8a8e0;      --gnomes-swatch: #8b6caf;
+    --penguins-text: #1e3a5c;    --penguins-dot: #9bb6d8;    --penguins-swatch: #4b6f9c;
     --wisp-text: #8a7020;        --wisp-dot: #fff4c8;
     --braindead-text: #1a6660;   --braindead-dot: #7fa6a0;
     --guthix-text: #1f7045;      --guthix-dot: #8af0c6;     --guthix-swatch: #2f6a44;
@@ -112,16 +124,11 @@
     display: flex;
     gap: 14px;
     align-items: stretch;
-    min-height: 100vh;
+    height: 100vh;
     box-sizing: border-box;
   }
   /* Header hidden — chat moved to right rail next to the map. */
   .topbar { display: none; }
-
-  /* ─── Header (quest scroll) — hidden in the side-by-side layout. ─── */
-  .topbar {
-    display: none;
-  }
   .topbar::before, .topbar::after {
     content: ""; position: absolute; top: 6px; bottom: 6px;
     width: 2px; background: var(--gold-dk); opacity: 0.5;
@@ -171,9 +178,10 @@
     flex: 1;
     min-width: 0;
     overflow: hidden;
+    display: flex;
   }
   .world::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(216,173,54,0.18); pointer-events: none; z-index: 3; }
-  .map-wrap { position: absolute; top: 6px; right: 6px; bottom: 6px; left: 6px; }
+  .map-wrap { position: relative; flex: 1; min-width: 0; }
   svg.map { display: block; width: 100%; height: 100%; background: #1a140e; shape-rendering: crispEdges; image-rendering: pixelated; }
 
   /* Building hover */
@@ -369,6 +377,186 @@
     display: grid; place-items: center;
   }
 
+  /* ─── Switchboard pane (D-020, Phase 2) ───
+     Right of the COMMS panel. Polls state-switchboard.json (written by
+     status-sidecar.py on every turn-bracketing hook event) and renders one
+     row per live Claude Code session. The point: see at a glance which
+     terminal is waiting for the principal, which is mid-work, which is
+     idle — without alt-tabbing through every window.
+
+     OSRS aesthetic shared with COMMS so the two panes read as siblings.
+     Width 280px; doesn't shrink COMMS, just narrows the map. */
+  .switchboard {
+    margin-top: 0;
+    background: #c8b48a;
+    border: 2px solid #2c1f10;
+    width: 280px;
+    flex-shrink: 0;
+    align-self: stretch;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      inset 0 0 0 1px #8a7048,
+      inset 1px 1px 0 #e0caa0,
+      inset -1px -1px 0 #5a4020,
+      0 6px 16px rgba(0,0,0,0.5);
+    color: #1a0f06;
+    display: flex;
+    flex-direction: column;
+  }
+  .switchboard > header {
+    background: linear-gradient(180deg, #4a3520 0%, #2e2010 100%);
+    border-bottom: 2px solid #0a0604;
+    box-shadow: inset 0 -1px 0 #5a4126, inset 0 1px 0 #7a5e3a;
+    padding: 4px 12px;
+    font-family: 'VT323', 'Jacquard 12', serif;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    color: #ffcb46;
+    text-shadow: 1px 1px 0 #1a0f06;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 30px;
+  }
+  .switchboard > header::before {
+    content: "";
+    width: 7px; height: 7px;
+    background: #5fff5f;
+    box-shadow: 0 0 4px #5fff5f, 1px 1px 0 #1a0f06;
+    animation: pulse 1400ms ease-in-out infinite;
+  }
+  .switchboard .sb-count {
+    margin-left: auto;
+    font-size: 13px;
+    color: #ffcb46;
+    opacity: 0.75;
+    letter-spacing: 0.04em;
+  }
+  .switchboard .sb-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 8px;
+    background: linear-gradient(180deg, #d0bc94 0%, #beaa82 100%);
+    font-family: 'Trebuchet MS', 'Verdana', 'Tahoma', sans-serif;
+  }
+  .switchboard .sb-list::-webkit-scrollbar { width: 10px; }
+  .switchboard .sb-list::-webkit-scrollbar-track { background: #8a7048; border-left: 1px solid #2c1f10; }
+  .switchboard .sb-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #4a3520 0%, #2c1f10 100%);
+    border: 1px solid #1a0f06;
+  }
+  .sb-row {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 1px 8px;
+    padding: 6px 6px 7px;
+    margin-bottom: 4px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(44,31,16,0.35);
+    border-left-width: 4px;
+    cursor: pointer;
+    transition: background 100ms;
+  }
+  .sb-row:hover { background: rgba(255,255,255,0.35); }
+  .sb-row .sb-dot {
+    grid-row: 1 / 2; grid-column: 1 / 2;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    box-shadow: 1px 1px 0 #1a0f06, 0 0 4px currentColor;
+  }
+  .sb-row .sb-who {
+    grid-row: 1 / 2; grid-column: 2 / 3;
+    font-weight: bold;
+    font-size: 13px;
+    color: #1a0f06;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sb-row .sb-who .sb-sid {
+    font-family: 'VT323', monospace;
+    font-weight: normal;
+    font-size: 12px;
+    color: #5a4020;
+    margin-left: 4px;
+    opacity: 0.7;
+  }
+  .sb-row .sb-age {
+    grid-row: 1 / 2; grid-column: 3 / 4;
+    font-family: 'VT323', monospace;
+    font-size: 12px;
+    color: #5a4020;
+    align-self: center;
+  }
+  .sb-row .sb-intent {
+    grid-row: 2 / 3; grid-column: 2 / 4;
+    font-size: 12px;
+    color: #2c1f10;
+    line-height: 1.25;
+    font-style: italic;
+    margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+  }
+  /* State coloring on the dot + left border */
+  .sb-row[data-state="waiting_for_user"] {
+    border-left-color: #d8a234;
+    background: rgba(255, 220, 130, 0.45);
+  }
+  .sb-row[data-state="waiting_for_user"] .sb-dot {
+    color: #d8a234;
+    background: #ffd84d;
+    animation: sbWaitingPulse 1100ms ease-in-out infinite;
+  }
+  @keyframes sbWaitingPulse {
+    0%,100% { transform: scale(1); box-shadow: 1px 1px 0 #1a0f06, 0 0 4px #ffd84d; }
+    50%     { transform: scale(1.25); box-shadow: 1px 1px 0 #1a0f06, 0 0 10px #ffd84d; }
+  }
+  .sb-row[data-state="working"] { border-left-color: #2e7a2e; }
+  .sb-row[data-state="working"] .sb-dot {
+    color: #2e7a2e;
+    background: #5fff5f;
+  }
+  .sb-row[data-state="idle"] { border-left-color: #6a5a40; opacity: 0.7; }
+  .sb-row[data-state="idle"] .sb-dot {
+    color: #6a5a40;
+    background: #a89878;
+    box-shadow: 1px 1px 0 #1a0f06;
+  }
+  .sb-row[data-state="ended"] { border-left-color: #4a3520; opacity: 0.5; }
+  .sb-row[data-state="ended"] .sb-dot {
+    color: #4a3520;
+    background: #6a5a40;
+    box-shadow: 1px 1px 0 #1a0f06;
+  }
+  .sb-row.sb-this {
+    outline: 1px solid #ffcb46;
+    outline-offset: -1px;
+  }
+  .sb-row.sb-this .sb-who::after {
+    content: " (this)";
+    font-weight: normal;
+    font-size: 11px;
+    color: #5a4020;
+    font-family: 'VT323', monospace;
+  }
+  .sb-empty {
+    padding: 14px;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    color: #5a4020;
+    text-align: center;
+    font-style: italic;
+  }
+
   /* ─── COMMS / chatbox (OSRS-style, D-014) ─── */
   /* Classic RuneScape chat: black-brown panel, bright yellow body, white
      usernames, cyan system lines. Sharp 1px inner border, no soft glow. */
@@ -561,6 +749,7 @@
   .log-tab[data-tab="zezima"]    .dot { background: var(--zezima-dot);    color: var(--zezima-text); }
   .log-tab[data-tab="dwarves"]   .dot { background: var(--dwarves-dot);   color: var(--dwarves-text); }
   .log-tab[data-tab="gnomes"]    .dot { background: var(--gnomes-dot);    color: var(--gnomes-text); }
+  .log-tab[data-tab="penguins"]  .dot { background: var(--penguins-dot);  color: var(--penguins-text); }
   .log-tab[data-tab="wisp"]      .dot { background: var(--wisp-dot);      color: var(--wisp-text); }
   .log-tab[data-tab="braindead"] .dot { background: var(--braindead-dot); color: var(--braindead-text); }
   .log-tab[data-tab="guthix"]    .dot { background: var(--guthix-dot);    color: var(--guthix-text); }
@@ -592,6 +781,7 @@
   .log-scroll[data-filter="guthix"]    .log-entry:not([data-speaker="guthix"])    { display: none; }
   .log-scroll[data-filter="commits"]   .log-entry:not([data-speaker="commits"])   { display: none; }
   .log-scroll[data-filter="gnomes"]    .log-entry:not([data-speaker="gnomes"])    { display: none; }
+  .log-scroll[data-filter="penguins"]  .log-entry:not([data-speaker="penguins"])  { display: none; }
 
   /* Speaker bullets — derived from --<actor>-text vars (C1). */
   .log-entry[data-speaker="jebrim"]    .t::before { content: "● "; color: var(--jebrim-text); }
@@ -600,6 +790,7 @@
   .log-entry[data-speaker="wisp"]      .t::before { content: "● "; color: var(--wisp-text); }
   .log-entry[data-speaker="braindead"] .t::before { content: "● "; color: var(--braindead-text); }
   .log-entry[data-speaker="gnomes"]    .t::before { content: "● "; color: var(--gnomes-text); }
+  .log-entry[data-speaker="penguins"]  .t::before { content: "● "; color: var(--penguins-text); }
   .log-entry[data-speaker="guthix"]    .t::before { content: "● "; color: var(--guthix-text); }
   .log-entry[data-speaker="commits"]   .t::before { content: "● "; color: var(--commits-text); }
 
@@ -1009,7 +1200,7 @@
                 values="1 1; 1 0.95; 1 1" keyTimes="0; 0.5; 1"
                 dur="2.6s" repeatCount="indefinite" calcMode="spline"
                 keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"/>
-              <use href="#jebrim" transform="scale(1.4)"/>
+              <use href="#jebrim" transform="scale(2.4)"/>
             </g>
           </g>
           <g class="actor player" id="actor-zezima" data-actor="zezima" transform="translate(1190, 868)">
@@ -1019,22 +1210,27 @@
                 values="1 1; 1 0.95; 1 1" keyTimes="0; 0.5; 1"
                 dur="2.9s" repeatCount="indefinite" calcMode="spline"
                 keySplines="0.4 0 0.6 1; 0.4 0 0.6 1" begin="-0.8s"/>
-              <use href="#zezima" transform="scale(1.4)"/>
+              <use href="#zezima" transform="scale(2.4)"/>
             </g>
           </g>
           <g id="focal-label" pointer-events="none" opacity="0"></g>
         </g>
 
-        <!-- Day/night hue overlay (Q-008 #3). Fill tinted by wall time via JS;
-             mix-blend-mode in CSS keeps underlying art readable. Sits below the
-             vignette so the corner darkening still reads. -->
-        <rect id="day-night" class="day-night-overlay" x="0" y="0" width="1680" height="1148" fill="rgba(255,250,240,0)"/>
+        <!-- Day/night hue overlay removed (S029): mix-blend-mode multiply + the
+             dusk/night anchor alphas darkened the whole map ~2s after load,
+             looking like the map "disappeared." `updateDayNight()` in JS no-ops
+             because the #day-night element is gone. -->
 
         <!-- vignette -->
         <rect x="0" y="0" width="1680" height="1148" fill="url(#vignette)" pointer-events="none"/>
 
         <!-- Building name plates — always on top, even over actors and vignette -->
         <g id="building-labels" pointer-events="none"></g>
+
+        <!-- S029: leader lines connecting bubble pointer-tip to sprite head.
+             Painted *below* speech-bubbles so a line crossing another bubble's
+             rect gets cleanly covered — bubble text stays readable. -->
+        <g id="leader-lines" pointer-events="none"></g>
 
         <!-- Speech bubbles — intent narration (D-010). Top layer, above labels. -->
         <g id="speech-bubbles" pointer-events="none"></g>
@@ -1086,6 +1282,7 @@
         <span class="log-tab"        data-tab="zezima"  role="tab"><span class="dot"></span>ZEZIMA</span>
         <span class="log-tab"        data-tab="dwarves" role="tab"><span class="dot"></span>DWARVES</span>
         <span class="log-tab"        data-tab="gnomes"  role="tab"><span class="dot"></span>GNOMES</span>
+        <span class="log-tab"        data-tab="penguins" role="tab"><span class="dot"></span>PENGUINS</span>
         <span class="log-tab"        data-tab="wisp"      role="tab"><span class="dot"></span>WISP</span>
         <span class="log-tab"        data-tab="braindead" role="tab"><span class="dot"></span>BRAINDEAD</span>
         <span class="log-tab"        data-tab="guthix"    role="tab"><span class="dot"></span>GUTHIX</span>
@@ -1095,6 +1292,16 @@
     <div class="log-scroll" id="logScroll"></div>
     <button class="jump-latest" id="jumpLatest" type="button"><span class="arrow">↓</span><span id="jumpLatestCount">latest</span></button>
   </div>
+
+  <aside class="switchboard" aria-label="Session switchboard">
+    <header>
+      <span class="log-title">SWITCHBOARD</span>
+      <span class="sb-count" id="sbCount">—</span>
+    </header>
+    <div class="sb-list" id="sbList">
+      <div class="sb-empty">no sessions found</div>
+    </div>
+  </aside>
 
   <div class="crumb">replay built from <span>git log</span> · iso projection · sessions S001–S007 + Q-007 · <span>experiments/visualizer</span></div>
 
@@ -1122,6 +1329,7 @@ const BUILDINGS = {
   'keepsake-vault':   {x: 1218, y: 924, label: 'Keepsake Vault'},
   'inn':              {x: 756, y: 924, label: 'The Inn'},
   'braindead-workshop': {x: 196, y: 196, label: 'The Workshop'},
+  'iceberg':            {x: 1480, y: 220, label: 'The Iceberg'},
 };
 
 // Where actors stand at each building (front-of-door spot, slightly south of footprint)
@@ -1136,6 +1344,7 @@ const STAND = {
   'keepsake-vault':   {x: 1218, y: 977},
   'inn':              {x: 756, y: 980},
   'braindead-workshop': {x: 196, y: 249},
+  'iceberg':            {x: 1480, y: 278},
 };
 
 // Iso path connections (cobblestone strips)
@@ -2157,6 +2366,55 @@ function buildBuildings() {
     });
   }
 
+  // ── The Iceberg — penguin research outpost. Terrain-shaped, not architecture:
+  //    a glacier mound on the NE edge of the map, opposite Braindead's workshop.
+  //    KGP flag on top — Komitet Gosudarstvennoy Pingvinnosti, the penguin
+  //    intelligence service from RS lore. Penguins are outward-facing operatives;
+  //    the iceberg is their HQ for external work. ──
+  {
+    const b = BUILDINGS['iceberg'];
+    html += `<g class="building" data-id="iceberg" transform="translate(${b.x},${b.y})">
+      <!-- soft shadow on the snow -->
+      <ellipse cx="0" cy="42" rx="78" ry="14" fill="rgba(20,30,55,0.35)"/>
+      <!-- waterline / icy puddle around base -->
+      <ellipse cx="0" cy="38" rx="68" ry="9" fill="#b8d2dc" opacity="0.55"/>
+      <ellipse cx="0" cy="36" rx="62" ry="6" fill="#dde9ee" opacity="0.6"/>
+      <!-- base ice slab (broad, SE-lit) -->
+      <polygon points="-66,38 -52,8 -24,2 24,-2 50,6 66,38" fill="#9eb8c8"/>
+      <polygon points="-52,8 -24,2 24,-2 50,6 0,38" fill="#cbdce4"/>
+      <!-- mid mound — taller central peak -->
+      <polygon points="-44,4 -18,-44 14,-58 38,-32 44,8" fill="#aac4d0"/>
+      <polygon points="-18,-44 14,-58 38,-32 6,-12" fill="#d8e6ec"/>
+      <!-- highlight wedge on SW face (sun-catching) -->
+      <polygon points="-44,4 -18,-44 -22,-12" fill="#e6eef2"/>
+      <polygon points="-44,4 -22,-12 -8,8" fill="#f0f4f6" opacity="0.8"/>
+      <!-- secondary peak (back-left, shorter) -->
+      <polygon points="-58,2 -48,-26 -30,-32 -22,-12 -44,4" fill="#b8ccd6"/>
+      <polygon points="-48,-26 -30,-32 -36,-10" fill="#dce8ee"/>
+      <!-- small front-right spur -->
+      <polygon points="36,16 52,-6 60,6 56,28" fill="#a8c0cc"/>
+      <polygon points="52,-6 60,6 54,12" fill="#d2e0e6"/>
+      <!-- ice cracks on the main face -->
+      <line x1="-20" y1="-30" x2="-10" y2="-4" stroke="rgba(40,70,90,0.4)" stroke-width="0.8"/>
+      <line x1="6" y1="-44" x2="12" y2="-18" stroke="rgba(40,70,90,0.35)" stroke-width="0.7"/>
+      <line x1="24" y1="-36" x2="32" y2="-14" stroke="rgba(40,70,90,0.4)" stroke-width="0.8"/>
+      <line x1="-30" y1="-20" x2="-22" y2="-2" stroke="rgba(40,70,90,0.3)" stroke-width="0.6"/>
+      <!-- snow caps on the peaks (lighter highlights) -->
+      <polygon points="14,-58 22,-52 8,-46" fill="#ffffff" opacity="0.9"/>
+      <polygon points="-30,-32 -22,-28 -32,-22" fill="#f4f8fa" opacity="0.85"/>
+      <!-- KGP flag pole + banner on top of central peak -->
+      <line x1="14" y1="-58" x2="14" y2="-86" stroke="#3a2c1c" stroke-width="1.4"/>
+      <polygon points="14,-86 32,-82 32,-72 14,-76" fill="#1c1f2c"/>
+      <polygon points="14,-86 32,-82 32,-80 14,-84" fill="#0b0d14"/>
+      <text x="23" y="-77" text-anchor="middle" font-family="VT323" font-size="7" fill="#ffba48">KGP</text>
+      <!-- small fish/intel-scroll pile at the base (foreshadow of the operatives) -->
+      <ellipse cx="-26" cy="32" rx="6" ry="2" fill="#5a6e7e"/>
+      <ellipse cx="-26" cy="31" rx="5" ry="1.4" fill="#7a8e9e"/>
+      <rect x="22" y="28" width="10" height="3" fill="#d4c294" stroke="#7a6a3a" stroke-width="0.3"/>
+      <rect x="22" y="28" width="10" height="0.8" fill="#e2d2a8"/>
+    </g>`;
+  }
+
   layer.innerHTML = html;
 }
 
@@ -2177,6 +2435,7 @@ const LABEL_Y_OFFSET = {
   'keepsake-vault':   -165,  // h+r=102
   'inn':              -185,  // h+r=114
   'braindead-workshop': -91, // h+r=52
+  'iceberg':            -100, // ice peak ~80 above center
 };
 
 function buildLabels() {
@@ -2201,6 +2460,7 @@ const BUILDING_DESC = {
   'keepsake-vault':   "Always-surface pins. The small set of things the agent keeps in working sight every session.",
   'inn':              "Where sessions end. The close-session ritual reconciles drafts and hands off to the next spawn.",
   'braindead-workshop': "Braindead's workshop. The construction crew that builds and maintains gielinor from the dev brain.",
+  'iceberg':            "The Iceberg. Penguin research outpost — the KGP gathers external intel from beyond Gielinor's gates and returns with anchored findings.",
 };
 
 function wireBuildingTooltips() {
@@ -2474,6 +2734,7 @@ let speed = 1;
 let cursor = 0;
 let dwarfNodes = {};
 let gnomeNodes = {};
+let penguinNodes = {};
 let wispNode = null;
 let wispActive = false;
 let braindeadNode = null;
@@ -2539,12 +2800,17 @@ function freeGatherSlot(actorKey) {
 let currentSession = null;
 let dwarfCount = 0;
 let gnomeCount = 0;
+let penguinCount = 0;
 let activePlayer = null;
 const actorPositions = {};
 const actorMoveTimers = {};
 const currentBuilding = {};
 const intents = {};   // actorKey -> {text, subtask, node}  (actorKey from instanceKey())
 const speechLayer = document.getElementById('speech-bubbles');
+// S029: leader lines live in their own layer below speech-bubbles, so a line
+// that physically crosses another bubble's rect gets painted over by that
+// bubble — keeps the bubble text readable.
+const leaderLayer = document.getElementById('leader-lines');
 // D-017: parallel-instance bookkeeping. instanceLastEventAt is keyed by the
 // same instanceKey() as actorPositions; updated on every event with an actor.
 // The 5-minute idle-despawn timer reads this. instanceNodes holds the
@@ -2653,27 +2919,29 @@ function spawnDwarf(ev) {
 
   g.innerHTML = `
     <g class="bob">
-      <ellipse cx="0" cy="3" rx="5.5" ry="1.7" fill="rgba(0,0,0,0.45)"/>
-      <rect x="-4" y="-4" width="8" height="7" fill="#5a4530"/>
-      <rect x="-4" y="-1" width="8" height="1" fill="#3a2c1c"/>
-      <rect x="-5" y="-3" width="1" height="5" fill="#5a4530"/>
-      <rect x="4"  y="-3" width="1" height="5" fill="#5a4530"/>
-      <rect x="-3" y="-8" width="6" height="4" fill="#e2b88a"/>
-      <rect x="-3" y="-6" width="6" height="3" fill="#d8c694"/>
-      <rect x="-2" y="-3" width="4" height="1" fill="#d8c694"/>
-      <rect x="-2" y="-7" width="1" height="1" fill="#28201a"/>
-      <rect x="1"  y="-7" width="1" height="1" fill="#28201a"/>
-      <rect x="-4" y="-10" width="8" height="2" fill="${hat}"/>
-      <rect x="-3" y="-12" width="6" height="2" fill="${hat}"/>
-      <rect x="-3" y="-11" width="6" height="1" fill="rgba(0,0,0,0.25)"/>
-      <rect x="5" y="-7" width="1" height="9" fill="#4a2f1a"/>
-      <rect x="3" y="-8" width="5" height="2" fill="#a8a8a8"/>
-      <rect x="3" y="-8" width="5" height="1" fill="#d4d4d4"/>
-      <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
+      <g transform="scale(1.7)">
+        <ellipse cx="0" cy="3" rx="5.5" ry="1.7" fill="rgba(0,0,0,0.45)"/>
+        <rect x="-4" y="-4" width="8" height="7" fill="#5a4530"/>
+        <rect x="-4" y="-1" width="8" height="1" fill="#3a2c1c"/>
+        <rect x="-5" y="-3" width="1" height="5" fill="#5a4530"/>
+        <rect x="4"  y="-3" width="1" height="5" fill="#5a4530"/>
+        <rect x="-3" y="-8" width="6" height="4" fill="#e2b88a"/>
+        <rect x="-3" y="-6" width="6" height="3" fill="#d8c694"/>
+        <rect x="-2" y="-3" width="4" height="1" fill="#d8c694"/>
+        <rect x="-2" y="-7" width="1" height="1" fill="#28201a"/>
+        <rect x="1"  y="-7" width="1" height="1" fill="#28201a"/>
+        <rect x="-4" y="-10" width="8" height="2" fill="${hat}"/>
+        <rect x="-3" y="-12" width="6" height="2" fill="${hat}"/>
+        <rect x="-3" y="-11" width="6" height="1" fill="rgba(0,0,0,0.25)"/>
+        <rect x="5" y="-7" width="1" height="9" fill="#4a2f1a"/>
+        <rect x="3" y="-8" width="5" height="2" fill="#a8a8a8"/>
+        <rect x="3" y="-8" width="5" height="1" fill="#d4d4d4"/>
+        <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
+      </g>
     </g>
   `;
   charactersLayer.appendChild(g);
-  dwarfNodes[ev.id] = {node: g};
+  dwarfNodes[ev.id] = {node: g, color: hat};
   dwarfCount++;
   updateTicker();
 }
@@ -2713,31 +2981,33 @@ function spawnGnome(ev) {
   // in right hand instead of dwarves' hammer.
   g.innerHTML = `
     <g class="bob">
-      <ellipse cx="0" cy="3" rx="4.8" ry="1.6" fill="rgba(0,0,0,0.45)"/>
-      <polygon points="-3.5,-7 3.5,-7 0,-15" fill="${hat}"/>
-      <rect x="-3.5" y="-7" width="7" height="1.2" fill="rgba(0,0,0,0.3)"/>
-      <rect x="-0.5" y="-15" width="1" height="1" fill="#e8d8a8"/>
-      <rect x="-2.5" y="-6" width="5" height="3" fill="#e2b88a"/>
-      <rect x="-1.8" y="-5" width="1" height="1" fill="#28201a"/>
-      <rect x="0.8"  y="-5" width="1" height="1" fill="#28201a"/>
-      <rect x="-3" y="-3" width="6" height="2.5" fill="#d8d0b8"/>
-      <rect x="-2.5" y="-1.8" width="5" height="0.6" fill="#bab2a0"/>
-      <rect x="-3" y="-1" width="6" height="5" fill="#6e5a3e"/>
-      <rect x="-3" y="-1" width="6" height="0.8" fill="#4a3a26"/>
-      <rect x="-1" y="-1" width="2" height="5" fill="#4a3a26"/>
-      <rect x="-4" y="-1" width="1" height="4" fill="${hat}"/>
-      <rect x="3"  y="-1" width="1" height="4" fill="${hat}"/>
-      <rect x="4" y="-2" width="2.5" height="5" fill="#efe2bb"/>
-      <rect x="4" y="-2" width="2.5" height="0.8" fill="#d8c694"/>
-      <rect x="4" y="2.2" width="2.5" height="0.8" fill="#d8c694"/>
-      <line x1="4.4" y1="-0.5" x2="6.1" y2="-0.5" stroke="#3a2c1c" stroke-width="0.3"/>
-      <line x1="4.4" y1="0.5"  x2="5.7" y2="0.5"  stroke="#3a2c1c" stroke-width="0.3"/>
-      <line x1="4.4" y1="1.4"  x2="6.1" y2="1.4"  stroke="#3a2c1c" stroke-width="0.3"/>
-      <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
+      <g transform="scale(1.7)">
+        <ellipse cx="0" cy="3" rx="4.8" ry="1.6" fill="rgba(0,0,0,0.45)"/>
+        <polygon points="-3.5,-7 3.5,-7 0,-15" fill="${hat}"/>
+        <rect x="-3.5" y="-7" width="7" height="1.2" fill="rgba(0,0,0,0.3)"/>
+        <rect x="-0.5" y="-15" width="1" height="1" fill="#e8d8a8"/>
+        <rect x="-2.5" y="-6" width="5" height="3" fill="#e2b88a"/>
+        <rect x="-1.8" y="-5" width="1" height="1" fill="#28201a"/>
+        <rect x="0.8"  y="-5" width="1" height="1" fill="#28201a"/>
+        <rect x="-3" y="-3" width="6" height="2.5" fill="#d8d0b8"/>
+        <rect x="-2.5" y="-1.8" width="5" height="0.6" fill="#bab2a0"/>
+        <rect x="-3" y="-1" width="6" height="5" fill="#6e5a3e"/>
+        <rect x="-3" y="-1" width="6" height="0.8" fill="#4a3a26"/>
+        <rect x="-1" y="-1" width="2" height="5" fill="#4a3a26"/>
+        <rect x="-4" y="-1" width="1" height="4" fill="${hat}"/>
+        <rect x="3"  y="-1" width="1" height="4" fill="${hat}"/>
+        <rect x="4" y="-2" width="2.5" height="5" fill="#efe2bb"/>
+        <rect x="4" y="-2" width="2.5" height="0.8" fill="#d8c694"/>
+        <rect x="4" y="2.2" width="2.5" height="0.8" fill="#d8c694"/>
+        <line x1="4.4" y1="-0.5" x2="6.1" y2="-0.5" stroke="#3a2c1c" stroke-width="0.3"/>
+        <line x1="4.4" y1="0.5"  x2="5.7" y2="0.5"  stroke="#3a2c1c" stroke-width="0.3"/>
+        <line x1="4.4" y1="1.4"  x2="6.1" y2="1.4"  stroke="#3a2c1c" stroke-width="0.3"/>
+        <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
+      </g>
     </g>
   `;
   charactersLayer.appendChild(g);
-  gnomeNodes[ev.id] = {node: g};
+  gnomeNodes[ev.id] = {node: g, color: hat};
   gnomeCount++;
   updateTicker();
 }
@@ -2752,6 +3022,74 @@ function despawnGnome(id) {
   delete currentBuilding[id];
   freeGatherSlot(id);
   gnomeCount = Math.max(0, gnomeCount - 1);
+  updateTicker();
+}
+
+// Penguins — research-operative sub-agents. KGP intel-gatherers. Default
+// spawn building is the iceberg (their HQ); the spawn event's `at` is
+// usually the parent's location for visual delegation continuity, but the
+// principal-spawn flow can also place them straight at the iceberg.
+function spawnPenguin(ev) {
+  const at = ev.at && STAND[ev.at] ? ev.at : 'iceberg';
+  const b = STAND[at];
+  currentBuilding[ev.id] = at;
+  const j = assignGatherSlot(ev.id, at);
+  const x = b.x + j.dx, y = b.y + j.dy * 0.5;
+  actorPositions[ev.id] = {x, y};
+
+  const g = document.createElementNS(svgNS, 'g');
+  g.setAttribute('class', 'actor penguin fade-in');
+  g.setAttribute('id', 'actor-' + ev.id);
+  g.setAttribute('data-actor', ev.id);
+  g.setAttribute('transform', `translate(${x},${y})`);
+  g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
+
+  const scarfMap = {'penguin-1':'#4b6f9c', 'penguin-2':'#5a8a8a', 'penguin-3':'#8884a8'};
+  const scarf = scarfMap[ev.color] || '#4b6f9c';
+  // Tuxedoed silhouette — dark back, cream belly, orange beak, flippers.
+  // Scarf in spawn color (the only varying element). Smaller silhouette than
+  // dwarves/gnomes (rounder, no hat) — reads as a different species at a glance.
+  g.innerHTML = `
+    <g class="bob">
+      <g transform="scale(1.7)">
+        <ellipse cx="0" cy="3" rx="4.5" ry="1.5" fill="rgba(0,0,0,0.45)"/>
+        <rect x="-2.6" y="2" width="2" height="1.2" fill="var(--penguin-feet)"/>
+        <rect x="0.6"  y="2" width="2" height="1.2" fill="var(--penguin-feet)"/>
+        <ellipse cx="-3.6" cy="-0.5" rx="1" ry="2.6" fill="var(--penguin-body-dk)"/>
+        <ellipse cx="3.6"  cy="-0.5" rx="1" ry="2.6" fill="var(--penguin-body-dk)"/>
+        <ellipse cx="0" cy="-1.5" rx="3.5" ry="5" fill="var(--penguin-body)"/>
+        <ellipse cx="0" cy="-0.6" rx="2.4" ry="3.7" fill="var(--penguin-belly)"/>
+        <ellipse cx="0" cy="-7" rx="3" ry="2.7" fill="var(--penguin-body)"/>
+        <ellipse cx="0" cy="-6.6" rx="2" ry="1.8" fill="var(--penguin-belly)"/>
+        <rect x="-1.3" y="-7.5" width="0.7" height="0.8" fill="#1a0f06"/>
+        <rect x="0.6"  y="-7.5" width="0.7" height="0.8" fill="#1a0f06"/>
+        <rect x="-1.1" y="-7.4" width="0.25" height="0.3" fill="#fff"/>
+        <rect x="0.85" y="-7.4" width="0.25" height="0.3" fill="#fff"/>
+        <polygon points="-1,-5.8 1,-5.8 0,-4.4" fill="var(--penguin-beak)"/>
+        <line x1="-1" y1="-5.2" x2="1" y2="-5.2" stroke="rgba(0,0,0,0.35)" stroke-width="0.25"/>
+        <rect x="-3.2" y="-4.2" width="6.4" height="1.2" fill="${scarf}"/>
+        <rect x="-3.2" y="-4.2" width="6.4" height="0.3" fill="rgba(0,0,0,0.3)"/>
+        <rect x="2.4"  y="-3.2" width="1.5" height="2.6" fill="${scarf}"/>
+        <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
+      </g>
+    </g>
+  `;
+  charactersLayer.appendChild(g);
+  penguinNodes[ev.id] = {node: g, color: scarf};
+  penguinCount++;
+  updateTicker();
+}
+
+function despawnPenguin(id) {
+  const entry = penguinNodes[id];
+  if (!entry) return;
+  entry.node.classList.add('fade-out');
+  setTimeout(() => entry.node.remove(), 500);
+  delete penguinNodes[id];
+  delete actorPositions[id];
+  delete currentBuilding[id];
+  freeGatherSlot(id);
+  penguinCount = Math.max(0, penguinCount - 1);
   updateTicker();
 }
 
@@ -2772,6 +3110,7 @@ function ensureActorExists(actor, atKey, instance) {
   if (actor === 'jebrim' || actor === 'zezima') return;          // baked in (instance 1)
   if (/^D\d+$/.test(actor)) return;                              // dwarves spawn via spawn-dwarf only
   if (/^G\d+$/.test(actor)) return;                              // gnomes spawn via spawn-gnome only
+  if (/^P\d+$/.test(actor)) return;                              // penguins spawn via spawn-penguin only
   if (document.getElementById('actor-' + actor)) return;           // already present
   if (actor === 'braindead') {
     braindeadActive = true;
@@ -2795,7 +3134,8 @@ function ensureActorExists(actor, atKey, instance) {
 // buildings, but dwarves shouldn't lose their bubble mid-walk.
 function isDwarfActor(actor) { return /^D\d+$/.test(actor); }
 function isGnomeActor(actor) { return /^G\d+$/.test(actor); }
-function isSubAgentActor(actor) { return isDwarfActor(actor) || isGnomeActor(actor); }
+function isPenguinActor(actor) { return /^P\d+$/.test(actor); }
+function isSubAgentActor(actor) { return isDwarfActor(actor) || isGnomeActor(actor) || isPenguinActor(actor); }
 
 // D-017/D-019: spawn a secondary instance sprite for an instanced actor.
 // Instance 1 lives in static HTML (actor-jebrim, actor-zezima) or the
@@ -2830,7 +3170,7 @@ function spawnPlayerInstance(actor, instance, at) {
         values="1 1; 1 0.95; 1 1" keyTimes="0; 0.5; 1"
         dur="${2400 + inst * 200}ms" repeatCount="indefinite" calcMode="spline"
         keySplines="0.4 0 0.6 1; 0.4 0 0.6 1" begin="-${300 * inst}ms"/>
-      <use href="#${actor}" transform="scale(1.4)"/>
+      <use href="#${actor}" transform="scale(2.4)"/>
     </g>
     <text class="instance-badge" x="11" y="-18" font-family="Jacquard 12, serif"
           font-size="13" fill="var(--gold)" stroke="var(--ink)" stroke-width="0.5"
@@ -2867,7 +3207,7 @@ function spawnBraindead(ev) {
   g.setAttribute('data-actor', 'braindead');
   g.setAttribute('transform', `translate(${x},${y})`);
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
-  g.innerHTML = `<g class="bob"><use href="#braindead" transform="scale(1.4)"/></g>`;
+  g.innerHTML = `<g class="bob"><use href="#braindead" transform="scale(2.4)"/></g>`;
   charactersLayer.appendChild(g);
   braindeadNode = g;
 }
@@ -2894,7 +3234,7 @@ function spawnWisp(ev) {
   g.setAttribute('data-actor', 'wisp');
   g.setAttribute('transform', `translate(${x},${y})`);
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
-  g.innerHTML = `<g class="wisp-bob"><g class="wisp-glow"><use href="#wisp"/></g></g>`;
+  g.innerHTML = `<g class="wisp-bob"><g class="wisp-glow"><use href="#wisp" transform="scale(1.7)"/></g></g>`;
   charactersLayer.appendChild(g);
   wispNode = g;
 }
@@ -2927,7 +3267,7 @@ function spawnGuthix(ev) {
   g.setAttribute('data-actor', 'guthix');
   g.setAttribute('transform', `translate(${x},${y})`);
   g.style.transition = 'transform 2200ms cubic-bezier(0.55,0.05,0.45,0.95)';
-  g.innerHTML = `<g class="guthix-bob"><g class="guthix-glow"><use href="#guthix"/></g></g>`;
+  g.innerHTML = `<g class="guthix-bob"><g class="guthix-glow"><use href="#guthix" transform="scale(1.7)"/></g></g>`;
   charactersLayer.appendChild(g);
   guthixNode = g;
 }
@@ -3028,7 +3368,18 @@ function setIntent(actor, text, instant=false) {
       ? 'none'
       : 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95), opacity 360ms';
     speechLayer.appendChild(g);
-    entry = intents[actor] = {node: g, subtask: ''};
+    // S029: thought-trail group lives in leaderLayer (below speech-bubbles) so
+    // circles that pass through another bubble's rect get cleanly painted over —
+    // text underneath stays readable. 4 cream-fill / accent-stroke circles get
+    // sized + positioned each render to span sprite head → bubble pointer area.
+    const trail = document.createElementNS(svgNS, 'g');
+    trail.setAttribute('class', 'thought-trail');
+    trail.setAttribute('data-actor', actor);
+    trail.style.transition = instant
+      ? 'none'
+      : 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95), opacity 360ms';
+    leaderLayer.appendChild(trail);
+    entry = intents[actor] = {node: g, leaderNode: trail, subtask: ''};
   }
   entry.text = text;
   relayoutBubbles();
@@ -3064,9 +3415,10 @@ function bubbleDims(actor) {
   }
   const renderedLines = subtaskLine ? [...lines, subtaskLine] : lines;
   const longest = renderedLines.reduce((m, s) => Math.max(m, s.length), 0);
-  const w = Math.min(300, Math.max(54, longest * 6.2 + 14));
-  const lineH = 13;
-  const padY = 4;
+  // S029: bubble dims scaled 2× — MAX 300→600, formula coeffs 6.2/14→12.4/28, min 54→108.
+  const w = Math.min(600, Math.max(108, longest * 12.4 + 28));
+  const lineH = 26;
+  const padY = 8;
   const h = renderedLines.length * lineH + padY * 2;
   return { pos, w, h };
 }
@@ -3080,27 +3432,58 @@ function bubbleDims(actor) {
 // Stores the resolved Y offset on `intents[actor].layoutYOff` for renderIntent
 // to read.
 function relayoutBubbles() {
-  const PAD = 4;
+  // S029: lane-based layout. Bubbles whose sprites cluster within
+  // CLUSTER_RADIUS get tiled horizontally into individual X lanes so each
+  // bubble's diagonal trail lives in its own column and can't cross a
+  // neighbour's rect. Inter-cluster Y overlaps still fall back to upward push.
+  const PAD = 12;
+  const CLUSTER_RADIUS = 140;
   const MAX_PUSH_ITER = 16;
-  // Collect each bubble's natural starting state.
+  // 1. Snapshot every bubble's natural state.
   const list = [];
   for (const actor of Object.keys(intents)) {
     const dims = bubbleDims(actor);
     if (!dims) continue;
     const slotIdx = actorSlot[actor];
     const slotDef = (slotIdx != null) ? GATHER_SLOTS[slotIdx % GATHER_SLOTS.length] : null;
-    const naturalYOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -34;
+    const naturalYOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -68;
     list.push({
       actor,
-      cx: dims.pos.x,
-      pointerY: dims.pos.y + naturalYOff,  // bubble pointer Y (absolute)
+      spriteX: dims.pos.x,
+      spriteY: dims.pos.y,
+      naturalYOff,
       w: dims.w,
       h: dims.h,
-      spriteY: dims.pos.y,
+      cx: dims.pos.x,
+      pointerY: dims.pos.y + naturalYOff,
     });
   }
-  // Left-to-right traversal — bubbles further right resolve against bubbles
-  // already placed to their left.
+  if (!list.length) return;
+  // 2. Cluster by sprite X-proximity.
+  list.sort((a, b) => a.spriteX - b.spriteX);
+  const clusters = [];
+  for (const b of list) {
+    const last = clusters[clusters.length - 1];
+    if (last && (b.spriteX - last[last.length - 1].spriteX) < CLUSTER_RADIUS) {
+      last.push(b);
+    } else {
+      clusters.push([b]);
+    }
+  }
+  // 3. Tile each multi-bubble cluster horizontally above its mean X.
+  for (const cluster of clusters) {
+    if (cluster.length === 1) continue;
+    const meanX = cluster.reduce((s, b) => s + b.spriteX, 0) / cluster.length;
+    const totalW = cluster.reduce((s, b) => s + b.w + PAD, 0) - PAD;
+    let cursor = meanX - totalW / 2;
+    const sharedPointerY = Math.min(...cluster.map(b => b.spriteY + b.naturalYOff));
+    for (const b of cluster) {
+      b.cx = cursor + b.w / 2;
+      b.pointerY = sharedPointerY;
+      cursor += b.w + PAD;
+    }
+  }
+  // 4. Inter-cluster fallback — classic upward push for any remaining overlap.
   list.sort((a, b) => a.cx - b.cx);
   const placed = [];
   for (const b of list) {
@@ -3118,22 +3501,19 @@ function relayoutBubbles() {
         const pRight = p.cx + p.w / 2;
         const horizOverlap = (right > pLeft + PAD) && (left < pRight - PAD);
         const vertOverlap  = (bottom > pTop + PAD) && (top < pBottom - PAD);
-        if (horizOverlap && vertOverlap) {
-          conflict = p;
-          break;
-        }
+        if (horizOverlap && vertOverlap) { conflict = p; break; }
       }
       if (!conflict) break;
-      // Push above the conflicting bubble's top edge.
       b.pointerY = (conflict.pointerY - conflict.h) - PAD;
       iter++;
     }
     placed.push(b);
   }
-  // Apply resolved offsets back to the intent entries and re-render.
+  // 5. Apply resolved X + Y offsets back to entries and re-render.
   for (const b of placed) {
     const entry = intents[b.actor];
     if (!entry) continue;
+    entry.layoutXOff = b.cx - b.spriteX;
     entry.layoutYOff = b.pointerY - b.spriteY;
   }
   for (const b of placed) renderIntent(b.actor);
@@ -3161,6 +3541,30 @@ function wrapBubbleText(text, maxLine=50) {
   return line2 ? [line1, line2] : [line1];
 }
 
+// S029: per-actor accent color used for bubble border + pointer + leader line.
+// Players/braindead/guthix map to their robe/swatch hex. Dwarves and gnomes
+// read back the color stored on spawn so each individual D-N / G-N keeps its
+// signature tint. Wisp uses a muted gold because --wisp-core (#fff8d8) is too
+// light to read against the cream bubble fill.
+const ACTOR_ACCENT = {
+  jebrim: '#2e4d75',
+  zezima: '#a85a2a',
+  braindead: '#4c6478',
+  guthix: '#2f6a44',
+  wisp: '#8a7846',
+};
+function actorAccentColor(actorKey) {
+  const {actor} = parseInstanceKey(actorKey);
+  if (ACTOR_ACCENT[actor]) return ACTOR_ACCENT[actor];
+  if (/^D\d+$/i.test(actor) && dwarfNodes[actor] && dwarfNodes[actor].color) return dwarfNodes[actor].color;
+  if (/^G\d+$/i.test(actor) && gnomeNodes[actor] && gnomeNodes[actor].color) return gnomeNodes[actor].color;
+  if (/^P\d+$/i.test(actor) && penguinNodes[actor] && penguinNodes[actor].color) return penguinNodes[actor].color;
+  if (/^D\d+$/i.test(actor)) return '#cf9a2c';   // fallback if dwarf record was lost
+  if (/^G\d+$/i.test(actor)) return '#8b6caf';   // gnome fallback
+  if (/^P\d+$/i.test(actor)) return '#4b6f9c';   // penguin fallback
+  return '#3a2a1a';
+}
+
 function renderIntent(actor) {
   const entry = intents[actor];
   if (!entry) return;
@@ -3171,7 +3575,8 @@ function renderIntent(actor) {
   // B8: width cap so a long line can't run off narrow viewports. wrapBubbleText
   // already caps each line to 50 chars × 6.2px ≈ 310px + padding; this clamps
   // the rendered rect even if a future wrap setting is wider.
-  const MAX_BUBBLE_W = 300;
+  // S029: bubble dims scaled 2× — keep in sync with bubbleDims().
+  const MAX_BUBBLE_W = 600;
   const lines = wrapBubbleText(text, 50);
   // S028: subtask occupies line 2 only when intent fits on line 1. Intent wins
   // ties because it carries the scope; if the agent wrote a verbose intent,
@@ -3182,25 +3587,27 @@ function renderIntent(actor) {
   }
   const renderedLines = subtaskLine ? [...lines, subtaskLine] : lines;
   const longest = renderedLines.reduce((m, s) => Math.max(m, s.length), 0);
-  const w = Math.min(MAX_BUBBLE_W, Math.max(54, longest * 6.2 + 14));
-  const lineH = 13;
-  const padY = 4;
+  const w = Math.min(MAX_BUBBLE_W, Math.max(108, longest * 12.4 + 28));
+  const lineH = 26;
+  const padY = 8;
   const h = renderedLines.length * lineH + padY * 2;
   // Bubble Y offset preference: laid-out offset from relayoutBubbles wins
   // (resolves bubble-vs-bubble collisions). Falls back to the slot's natural
-  // bubbleY when no layout has run yet, then to -34 (default above-head) for
+  // bubbleY when no layout has run yet, then to -68 (default above-head) for
   // actors with no slot (e.g., sub-agents whose slot lookup keys differ).
-  let yOff;
+  let yOff, xOff;
   if (entry.layoutYOff != null) {
     yOff = entry.layoutYOff;
+    xOff = entry.layoutXOff || 0;
   } else {
     const slotIdx = actorSlot[actor];
     const slotDef = (slotIdx != null) ? GATHER_SLOTS[slotIdx % GATHER_SLOTS.length] : null;
-    yOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -34;
+    yOff = (slotDef && slotDef.bubbleY != null) ? slotDef.bubbleY : -68;
+    xOff = 0;
   }
   const half = w / 2;
   const topY = yOff - h;
-  const baseY = topY + padY + 10;   // first-line baseline (font-size 11)
+  const baseY = topY + padY + 20;   // first-line baseline (font-size 22)
   const tspans = renderedLines.map((s, i) => {
     const isSubtask = !!subtaskLine && i === renderedLines.length - 1;
     const styling = isSubtask
@@ -3208,31 +3615,60 @@ function renderIntent(actor) {
       : '';
     return `<tspan x="0" y="${baseY + i * lineH}"${styling}>${escapeHtml(s)}</tspan>`;
   }).join('');
-  entry.node.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+  // S029: per-actor accent — border + pointer + leader line take the actor's
+  // signature color so a bubble's owner is identifiable at a glance, even when
+  // relayoutBubbles has pushed the bubble far from its sprite to avoid overlap.
+  const accent = actorAccentColor(actor);
+  // S029: bubble translates to (sprite + layout offset). Lane-spread clusters
+  // place each bubble in its own X column above the cluster row, so xOff !== 0
+  // is normal whenever ≥2 bubbles share a cluster.
+  entry.node.setAttribute('transform', `translate(${pos.x + xOff},${pos.y})`);
   entry.node.innerHTML = `
-    <rect x="${-half}" y="${topY}" width="${w}" height="${h}" rx="5" ry="5"
-          fill="rgba(248,238,212,0.96)" stroke="#3a2a1a" stroke-width="0.7"/>
-    <rect x="${-half + 1.2}" y="${topY + 1.2}" width="${w - 2.4}" height="${h - 2.4}" rx="3.5" ry="3.5"
-          fill="none" stroke="rgba(216,173,54,0.5)" stroke-width="0.4"/>
-    <polygon points="-3.5,${yOff} 3.5,${yOff} 0,${yOff + 5.5}"
-             fill="rgba(248,238,212,0.96)" stroke="#3a2a1a" stroke-width="0.7"/>
-    <line x1="-2.5" y1="${yOff + 0.4}" x2="2.5" y2="${yOff + 0.4}"
-          stroke="rgba(248,238,212,0.96)" stroke-width="1.4"/>
+    <rect x="${-half}" y="${topY}" width="${w}" height="${h}" rx="10" ry="10"
+          fill="rgba(248,238,212,0.96)" stroke="${accent}" stroke-width="2.4"/>
+    <rect x="${-half + 2.4}" y="${topY + 2.4}" width="${w - 4.8}" height="${h - 4.8}" rx="7" ry="7"
+          fill="none" stroke="rgba(216,173,54,0.5)" stroke-width="0.8"/>
     <text text-anchor="middle"
-          font-family="VT323" font-size="11" fill="#1f150c"
+          font-family="VT323" font-size="22" fill="#1f150c"
           letter-spacing="0.02em">${tspans}</text>
   `;
+  // S029: thought-trail — 4 circles span sprite head (0, -8) → bubble pointer
+  // (xOff, yOff). When xOff !== 0 the trail is diagonal; each lane's trail
+  // lives in its own X column so no circle crosses another bubble's rect.
+  if (entry.leaderNode) {
+    const trail = entry.leaderNode;
+    trail.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+    const SPRITE_HEAD_Y = -8;
+    const STOPS = [
+      {t: 0.20, r: 3},
+      {t: 0.45, r: 5},
+      {t: 0.70, r: 7.5},
+      {t: 0.95, r: 10},
+    ];
+    trail.innerHTML = STOPS.map(c => {
+      const cx = c.t * xOff;
+      const cy = SPRITE_HEAD_Y + c.t * (yOff - SPRITE_HEAD_Y);
+      return `<circle cx="${cx}" cy="${cy}" r="${c.r}" fill="rgba(248,238,212,0.96)" stroke="${accent}" stroke-width="2"/>`;
+    }).join('');
+    trail.setAttribute('opacity', '1');
+  }
 }
 
 function clearIntent(actor, instant=false) {
   const entry = intents[actor];
   if (!entry) return;
   delete intents[actor];
+  const leader = entry.leaderNode;
   if (instant) {
     entry.node.remove();
+    if (leader) leader.remove();
   } else {
     entry.node.classList.add('fade-out');
-    setTimeout(() => { entry.node.remove(); }, 360);
+    if (leader) leader.style.opacity = '0';
+    setTimeout(() => {
+      entry.node.remove();
+      if (leader) leader.remove();
+    }, 360);
   }
   // S028 follow-up: one fewer bubble — let neighbours descend toward their
   // natural slot positions.
@@ -3295,6 +3731,7 @@ function actorDisplayName(id) {
   if (!id) return '';
   if (/^D\d+$/i.test(id)) return id.toUpperCase();
   if (/^G\d+$/i.test(id)) return id.toUpperCase();
+  if (/^P\d+$/i.test(id)) return id.toUpperCase();
   // D-017: parallel-instance suffix renders as "Jebrim·2".
   const {actor, instance} = parseInstanceKey(id);
   const cap = actor.charAt(0).toUpperCase() + actor.slice(1);
@@ -3304,15 +3741,17 @@ function speakerFor(id) {
   if (!id) return 'system';
   if (/^D\d+$/i.test(id)) return 'dwarves';
   if (/^G\d+$/i.test(id)) return 'gnomes';
+  if (/^P\d+$/i.test(id)) return 'penguins';
   if (['jebrim','zezima','wisp','braindead','guthix'].includes(id)) return id;
   return 'system';
 }
 
 function deriveSpeaker(msg) {
-  // B13: regex bound matches speakerFor (unbounded D\d+/G\d+) — was D[1-3]/G[1-3]
+  // B13: regex bound matches speakerFor (unbounded D\d+/G\d+/P\d+) — was D[1-3]/G[1-3]
   // and silently drifted once nextId rolled past 3.
   if (/\bD\d+\b|dwarves?|\bspawning D/i.test(msg)) return 'dwarves';
   if (/\bG\d+\b|gnomes?|\bspawning G/i.test(msg)) return 'gnomes';
+  if (/\bP\d+\b|penguins?|\bspawning P/i.test(msg)) return 'penguins';
   // S028: Guthix outranks all other modes when active — bankstanding is the
   // top-level ritual, so its voice should not be shadowed by a stale braindead
   // or activePlayer.
@@ -3347,9 +3786,10 @@ function updateTicker() {
   const timeStr = LIVE
     ? formatWall(new Date().toISOString())
     : formatTime(t);
-  const subStats = gnomeCount > 0
-    ? `dwarves: ${dwarfCount} · gnomes: ${gnomeCount}`
-    : `dwarves: ${dwarfCount}`;
+  const parts = [`dwarves: ${dwarfCount}`];
+  if (gnomeCount > 0) parts.push(`gnomes: ${gnomeCount}`);
+  if (penguinCount > 0) parts.push(`penguins: ${penguinCount}`);
+  const subStats = parts.join(' · ');
   tkStatsEl.textContent = `${subStats} · time ${timeStr}`;
 }
 
@@ -3475,6 +3915,14 @@ function applyEvent(ev, instant=false) {
       clearIntent(ev.id, instant);
       despawnGnome(ev.id);
       break;
+    case 'spawn-penguin':
+      spawnPenguin(ev);
+      if (ev.intent) setIntent(ev.id, ev.intent, instant);
+      break;
+    case 'despawn-penguin':
+      clearIntent(ev.id, instant);
+      despawnPenguin(ev.id);
+      break;
     case 'spawn-wisp':   wispActive = true; spawnWisp(ev); break;
     case 'despawn-wisp': wispActive = false; clearIntent('wisp', instant); despawnWisp(); break;
     case 'spawn-braindead':   braindeadActive = true; spawnBraindead(ev); break;
@@ -3494,6 +3942,10 @@ function resetWorld() {
     gnomeNodes[id].node.remove();
     delete gnomeNodes[id]; delete actorPositions[id];
   });
+  Object.keys(penguinNodes).forEach(id => {
+    penguinNodes[id].node.remove();
+    delete penguinNodes[id]; delete actorPositions[id];
+  });
   if (wispNode) { wispNode.remove(); wispNode = null; delete actorPositions['wisp']; }
   wispActive = false;
   if (braindeadNode) { braindeadNode.remove(); braindeadNode = null; delete actorPositions['braindead']; }
@@ -3502,6 +3954,7 @@ function resetWorld() {
   guthixActive = false;
   Object.keys(intents).forEach(a => {
     intents[a].node.remove();
+    if (intents[a].leaderNode) intents[a].leaderNode.remove();
     delete intents[a];
   });
   // B11: clear ALL currentBuilding entries — previously left dwarf/gnome/wisp
@@ -3516,6 +3969,7 @@ function resetWorld() {
   currentEventWallTime = null;
   dwarfCount = 0;
   gnomeCount = 0;
+  penguinCount = 0;
   const j = document.getElementById('actor-jebrim');
   const z = document.getElementById('actor-zezima');
   const js = STAND['inbox-square'];
@@ -3829,6 +4283,151 @@ if (LIVE) {
   // frozen during idle periods. updateTicker is cheap (one DOM textContent set).
   setInterval(updateTicker, 1000);
 }
+
+// ─────────────────────────────────────────────────────────────
+//   SWITCHBOARD (D-020 Phase 2)
+//   Polls state-switchboard.json (written by status-sidecar.py)
+//   and renders one row per live Claude Code session. Independent
+//   of replay/live mode — the switchboard is always current state.
+// ─────────────────────────────────────────────────────────────
+(function initSwitchboard() {
+  const listEl = document.getElementById('sbList');
+  const countEl = document.getElementById('sbCount');
+  if (!listEl || !countEl) return;
+
+  const IDLE_AFTER_SEC = 5 * 60;   // matches the visualizer despawn timer + D-020
+  const POLL_MS = 2000;
+  // The session running THIS visualizer instance — try the URL ?sid8=... first
+  // (lets the operator label one window as "this"), then fall back to the most-
+  // recent intent file's owner. Phase 3 click-to-focus will lean on this.
+  const thisSid8 = new URLSearchParams(location.search).get('sid8') || '';
+
+  function ageSec(record) {
+    if (!record || !record.last_event_ts) return 0;
+    return Math.max(0, (Date.now() / 1000) - record.last_event_ts);
+  }
+  function formatAge(sec) {
+    sec = Math.floor(sec);
+    if (sec < 60) return sec + 's';
+    if (sec < 3600) return Math.floor(sec / 60) + 'm';
+    return Math.floor(sec / 3600) + 'h';
+  }
+  function deriveState(record) {
+    if (record.state === 'ended') return 'ended';
+    if (record.state === 'waiting_for_user' && ageSec(record) > IDLE_AFTER_SEC) return 'idle';
+    if (record.state === 'working' && ageSec(record) > IDLE_AFTER_SEC) return 'idle';
+    return record.state || 'unknown';
+  }
+  // Sort order: waiting_for_user first (most urgent), then working, then idle,
+  // then ended. Within a state, newest activity first.
+  const STATE_RANK = { waiting_for_user: 0, working: 1, idle: 2, ended: 3, unknown: 4 };
+  function sortSessions(sessions) {
+    return sessions.slice().sort((a, b) => {
+      const sa = deriveState(a), sb = deriveState(b);
+      const ra = STATE_RANK[sa] ?? 9, rb = STATE_RANK[sb] ?? 9;
+      if (ra !== rb) return ra - rb;
+      return (b.last_event_ts || 0) - (a.last_event_ts || 0);
+    });
+  }
+  function actorLabel(record) {
+    const name = (record.actor || 'unknown');
+    const cap = name.charAt(0).toUpperCase() + name.slice(1);
+    const inst = (record.instance && record.instance > 1) ? '·' + record.instance : '';
+    return cap + inst;
+  }
+  function render(sessions) {
+    listEl.innerHTML = '';
+    const ordered = sortSessions(sessions);
+    if (!ordered.length) {
+      const empty = document.createElement('div');
+      empty.className = 'sb-empty';
+      empty.textContent = 'no sessions found';
+      listEl.appendChild(empty);
+      countEl.textContent = '0';
+      return;
+    }
+    // Counts: only "live" sessions in the count badge (not ended).
+    let live = 0, waiting = 0;
+    for (const r of ordered) {
+      const s = deriveState(r);
+      if (s !== 'ended') live++;
+      if (s === 'waiting_for_user') waiting++;
+    }
+    countEl.textContent = waiting > 0
+      ? `${live} live · ${waiting} waiting`
+      : `${live} live`;
+
+    for (const r of ordered) {
+      const state = deriveState(r);
+      const row = document.createElement('div');
+      row.className = 'sb-row';
+      row.dataset.state = state;
+      row.dataset.sid8 = r.sid8 || '';
+      if (thisSid8 && r.sid8 === thisSid8) row.classList.add('sb-this');
+
+      const dot = document.createElement('div');
+      dot.className = 'sb-dot';
+      row.appendChild(dot);
+
+      const who = document.createElement('div');
+      who.className = 'sb-who';
+      who.textContent = actorLabel(r);
+      const sid = document.createElement('span');
+      sid.className = 'sb-sid';
+      sid.textContent = r.sid8 || '';
+      who.appendChild(sid);
+      row.appendChild(who);
+
+      const age = document.createElement('div');
+      age.className = 'sb-age';
+      age.textContent = formatAge(ageSec(r));
+      row.appendChild(age);
+
+      const intent = document.createElement('div');
+      intent.className = 'sb-intent';
+      // Strip BOM if the intent file was written with one (Windows quirk).
+      intent.textContent = (r.intent || '').replace(/^﻿/, '') || '—';
+      row.appendChild(intent);
+
+      // Click → copy sid8 to clipboard. Phase 3 will replace this with a
+      // window-focus call; for now the sid8 is the lookup key the operator
+      // needs to find the right terminal manually.
+      row.addEventListener('click', () => {
+        if (navigator.clipboard && r.sid8) {
+          navigator.clipboard.writeText(r.sid8).then(() => {
+            row.style.outline = '2px solid #ffcb46';
+            setTimeout(() => { row.style.outline = ''; }, 350);
+          }).catch(() => {});
+        }
+      });
+      row.title = `${r.session_id || r.sid8}\nproject: ${r.project_dir || '?'}\nstate: ${state}\nclick to copy sid8`;
+      listEl.appendChild(row);
+    }
+  }
+  // Cached manifest so the age column can re-render on a 1s tick without a
+  // fresh fetch. Otherwise the displayed age only changes every poll cycle.
+  let cached = [];
+  let polling = false;
+  async function pollSwitchboard() {
+    if (polling) return;
+    polling = true;
+    try {
+      const res = await fetch('state-switchboard.json?_=' + Date.now(), {cache: 'no-store'});
+      if (!res.ok) return;
+      const j = await res.json();
+      cached = (j && Array.isArray(j.sessions)) ? j.sessions : [];
+      render(cached);
+    } catch (_) {
+      // file may not exist yet (sidecar hasn't fired) — silent, retry next tick
+    } finally {
+      polling = false;
+    }
+  }
+  pollSwitchboard();
+  setInterval(pollSwitchboard, POLL_MS);
+  // Re-render every second so ages tick without re-fetching.
+  setInterval(() => { if (cached.length) render(cached); }, 1000);
+})();
 
 </script>
 </body>

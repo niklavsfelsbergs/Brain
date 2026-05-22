@@ -24,6 +24,7 @@ Deliberate fresh start. The principal chooses to begin again — possibly to tes
 | `quest-log/in-progress/` (all) | principal's choice — lose or carry forward |
 | `quest-log/completed/` (all) | preserved |
 | `bank/` (all) | preserved |
+| `research/` (all) | preserved |
 | `spellbook/` (all) | preserved |
 | `examine/confirmed/`, `niksis8/confirmed/`, `niksis8_character/confirmed/` | preserved |
 | All `drafts/` | lost (never canonical) |

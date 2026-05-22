@@ -7,6 +7,7 @@ Per-layer write discipline. Hooks enforce the most critical lines (see `.claude/
 | Layer | Auto-write | Draft-then-approve | User-only |
 |---|---|---|---|
 | `bank/` (per-player) | drafts only (`bank/drafts/notes/`) | all promotions to `bank/notes/` | — |
+| `research/` (per-player) | yes (penguins and principals write freely; no draft gate inside the folder) | — | — |
 | `quest-log/` (per-player) | yes (sessions log themselves turn-by-turn) | — | — |
 | `spellbook/skills/` (per-player) | drafts only (`spellbook/drafts/skills/`) | all promotions to `spellbook/skills/` | — |
 | `spellbook/rituals/` (global and per-player) | — | — | yes — core rituals are user-edited |
@@ -49,7 +50,8 @@ Dwarves can run none of these rituals. Gnomes can run **session-close**, **alchi
 - No file deletes. The agent moves files into the corresponding `archive/`.
 - Dwarf write boundary (see `modes.md`).
 - Gnome write boundary (see `modes.md` and `spellbook/skills/spawning-gnomes.md`). Gnomes can write across players to drafts/proposals/inventory/quest-log but are blocked from `confirmed/`, `lorebook/confirmed/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, and body files.
-- No sub-spawning from a dwarf or gnome. Only the principal spawns.
+- Penguin write boundary (see `modes.md` and `spellbook/skills/spawning-penguins.md`). Penguins can write to the active player's `research/`, `quest-log/`, `inventory/`; blocked from `bank/`, all other `drafts/`, `confirmed/`, `keepsake/`, `lorebook/`, `examine/`, `niksis8_character/`, `meta/`, `spellbook/rituals/`, body files, and other players' namespaces.
+- No sub-spawning from a dwarf, gnome, or penguin. Only the principal spawns.
 
 **CLAUDE.md guides (discipline):**
 

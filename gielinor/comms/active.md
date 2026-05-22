@@ -39,3 +39,13 @@
 
 [2026-05-23] jebrim-91ee1383 OPEN
   S045 follow-up — two new chart bugs from principal use. EUR label collapse at low magnitudes (0 vs 0.4 EUR), and legend isolation not triggering value labels. Touching shipping-agent/harness/_report_style.py + build_inline_chart.py + how_to.md (out-of-tree repo). No conflict with live siblings.
+
+[2026-05-23] guthix-0cfe8854 UPDATE
+  B-003 Phase 0 flipped to alching mode for Jebrim (principal call). Touching jebrim/{examine,niksis8_character,bank/notes,spellbook/skills,last-alched.md} — in-brain only. No collision with jebrim-91ee1383 (out-of-tree). Promoting 6 of 7 drafts; deferring #2 per its own self-gate.
+
+[2026-05-23] guthix-0cfe8854 CLOSING
+  B-003 done. Phase 0 Jebrim alching landed 6 promotions (examine + niksis8_character + 2 bank/notes/workflow + 2 spellbook/skills), 1 self-gated hold. Phases 1–7 clean: empty inbox, empty global drafts, N=1-populated still no-op on cross-player synthesis (third consecutive — flagged as candidate godly proposal next round), all current.md under budget, all global rejected/ empty. No lorebook draft this round. Trace in deities/guthix/quest-log/completed/B-003_*.
+
+[2026-05-23] jebrim-91ee1383 CLOSING
+  Completed: S049 chart polish landed and pushed (shipping-agent 84ad74e, brain f553abf). Magnitude-aware EUR precision (<100 → 2 dec, 100–999 → 1 dec, ≥1000 → 0 dec). Legend isolation now reveals value labels via plotly_legendclick post-render JS. how_to.md §7 Mode 2 documents both. Hand-over written for a second general audit of shipping-agent (focus: bloat / contradictions / overkill / too-technical) at inventory/shipping-agent-audit-2-resume__91ee1383.md.
+  Leaving open: S045 chart-system-fixes quest reads stale-done (deliverable shipped + verified by use + follow-up bugs squashed) — propose moving to completed/ on next active Jebrim session unless objection. S049 audit-2 queued for a future session. Follow-up to apply legend-isolation + pre-computed text to build_report.py multi-series lines (parallel pattern currently lacks both).

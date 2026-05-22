@@ -6,7 +6,14 @@
 
 Players (`gielinor/players/`) act on Niklavs's behalf in their respective domains. Sub-agents (dwarves, gnomes) execute task-local work under a principal's direction. Neither shape fits the role of *tending the brain's own structure across players* — that work has no per-character ownership, no relationship-self, and no parent agent. Deities fill that role.
 
-A deity is summoned by ritual cue (e.g., bankstanding via `Hey Guthix` or `let's bankstand`), works the brain at system scope while in residence, and recedes when the ritual closes. The work they leave behind — graduations, triage moves, drift surfacings — persists in their own layers here.
+A deity is summoned by address (`Hey Guthix, ...`) or ritual cue (`let's bankstand`), works the brain at system scope while in residence, and recedes when the conversation ends or another address takes over. The work they leave behind — graduations, triage moves, drift surfacings, optional consultation traces — persists in their own layers here.
+
+A deity may be in residence in **two distinct modes**:
+
+- **Consultation** — the default residence. Guthix is available as the general "ask me about the brain" actor; reads anything, writes only to his own deity layers, leaves a `quest-log/in-progress/G-NNN_*` entry only when the conversation produces something worth surfacing on next respawn.
+- **Ritual** — bankstanding (or other future rituals). Wider write reach into globals and godly proposals; runs a procedural shape; lands a `B-NNN_*` entry on close.
+
+Both modes share actor, voice, and sprite. They differ in write authority. See `gielinor/meta/modes.md` for the mode definitions and `gielinor/meta/guthix.md` for Guthix specifically.
 
 ## Roster
 
@@ -31,7 +38,12 @@ Layers **not** present per-deity (and why):
 
 ## Write reach
 
-A deity in residence inherits the write reach of the ritual that summoned it. For Guthix during bankstanding, that's: reads everything; proposes to globals (`examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/`) **and** to his own deity layers here (`deities/guthix/bank/drafts/notes/`, `deities/guthix/quest-log/`, `deities/guthix/inventory/`, `deities/guthix/keepsake/proposals/`). Never to per-player layers — that's alching's surface.
+A deity in residence inherits the write reach of the *mode* that summoned it.
+
+- **Consultation** — reads everything; writes only to his own deity layers (`deities/guthix/bank/drafts/notes/`, `deities/guthix/inventory/`, `deities/guthix/quest-log/in-progress/`). No writes to globals, per-player layers, or godly proposals.
+- **Bankstanding** — reads everything; proposes to globals (`examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/`) **and** to his own deity layers **and** to `deities/guthix/proposals/` for godly proposals.
+
+Never writes to per-player layers in either mode — that's alching's surface.
 
 ## Related
 

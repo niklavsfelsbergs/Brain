@@ -6,9 +6,13 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-22 (end of [[S032]] — terminal switchboard, D-020 Phases 1 + 2). **Sidecar registrations partially paused after a terminal-rendering incident — Step 0 decides whether to re-enable on a lower-frequency design or leave parked.**
+**Last updated.** 2026-05-22 (end of [[S034]] — Guthix consultation mode landed; [[D-022]] captured. Doc-only change across nine `gielinor/` files plus dev-brain artifacts). **S034 consultation mode untested live (Step 7 now covers both consultation and bankstanding); sidecar registration shape still pending (Step 1).**
 
 ## Where we are
+
+[[S034]] expanded Guthix from a ritual-only voice to a two-mode deity: **consultation** (default residence — general questions, cross-cutting lookups, system-shaped reflection) and **bankstanding** (the ritual). Same actor, same sprite; different write authority. Wisp shrinks to "session that has truly had no prompt yet" — any substantive question without a player address now routes to Guthix consultation. Nine doc files in `gielinor/` touched: `meta/guthix.md` (major rewrite), `meta/modes.md` (lifted to five session modes), `CLAUDE.md`, `meta/write-rules.md`, `meta/layer-routing.md`, `meta/communication-protocol.md`, `spellbook/rituals/bankstanding.md`, `deities/_about.md`, `deities/guthix/_about.md`. Decision is [[D-022]]; live test pending (Step 7). No hooks, no visualizer, no code — discipline change on top of existing `guthix.txt` machinery. The S032 origin story ("Hey Guthix" used as a general design surface) was itself the use case that motivated this — the architecture now matches the principal's mental model.
+
+Carried forward — [[S032]] still has its sidecar registration shape decision open (Step 1); the terminal-rendering issue may not recur in fresh terminals so Step 0 may be obsolete.
 
 [[S032]] shipped a new instrumentation layer for parallel-session operation. Started as a Guthix-mode design conversation ("how do I know which of N Claude Code terminals is waiting for me right now"), pivoted into dev-brain, landed [[D-020]] + Phases 1 + 2 of the three-phase build:
 
@@ -68,7 +72,10 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 
 **Step 6 — Phase 3 of D-020 (VS Code click-to-focus).** Deferred until Phase 2's UX is lived-with for a week. If alt-tab from the sidebar list proves sufficient, Phase 3 stays unbuilt. If not, the "one-VS-Code-window-per-session" convention flavor is the lowest-effort path — set `$Host.UI.RawUI.WindowTitle = "claude-$sid8-<actor>"` in `$PROFILE`, then a PowerShell helper using `user32.dll`'s `FindWindow` + `SetForegroundWindow` brings the matching window forward on row click.
 
-**Step 7 — Live test Guthix end-to-end** (carried from S028). Replay-mode demos worked; live-mode demo of `Hey Guthix` + `let's bankstand` still pending.
+**Step 7 — Live test Guthix end-to-end** (carried from S028, extended by [[S034]]). Replay-mode demos worked; live-mode demo still pending for both modes:
+
+- **Consultation** ([[D-022]] / [[S034]]). Address `Hey Guthix, what do I have on EU Tender 2026 across the brain?` or similar. Observe: `guthix.txt` intent file written, spawn-guthix event fires, Guthix sprite appears at lorebook-library, answer comes back in Guthix voice, **no writes to globals or per-player layers**, no quest-log entry unless conversation produces something worth surfacing. The consultation→bankstanding flip: start in consultation, mid-chat say "ok, let's bankstand on this", observe write authority widening and `B-NNN` landing on close.
+- **Bankstanding** (carried). `let's bankstand` from a player session; full ritual through Phase 0 + global synthesis.
 
 **Step 8 — Subtask debounce decision** (carried from S028). Default to no debounce if bubble stays alive without strobing.
 
@@ -102,7 +109,7 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 - **Parallel Braindead visual tuning** — Step 4 (function validated by S032).
 - **Cross-repo sidecar rollout** — Step 5.
 - **D-020 Phase 3 click-to-focus** — Step 6 (deferred, decide after living with Phase 2).
-- **Live test Guthix** — Step 7.
+- **Live test Guthix** — Step 7 (now covers both consultation [[S034]] and bankstanding).
 - **Subtask debounce** — Step 8.
 - **Replay demos** — Step 9.
 - **Drafts triage** — Step 10.
@@ -115,6 +122,14 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 - §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations
+
+From [[S034]] (new): **a four-bullet refusal list is a signal that the actor's role is too narrow.** Guthix's pre-S034 "What he refuses" had four items; post-S034 it has one ("won't write into a player's house"). When an actor declines a category of work, ask whether the role definition is the cause before defending the boundary.
+
+From [[S034]] (new): **"consultation default, ritual on cue" is a reusable shape.** Same actor, two modes, write authority varies by mode. If a second deity ever shows up, the precedent now sits in the meta files. Don't generalize prematurely — but the shape is there to inherit.
+
+From [[S034]] (new): **the principal's mental model is the architecture, even when it's an addition.** The shift had to land in the doc surfaces the agent reads at session start (`CLAUDE.md`, `modes.md`, `guthix.md`), not internal discipline alone. A purely-discipline change would have evaporated by next session because the address-routing rules would still describe the old role.
+
+From [[S034]] (new): **wisp's role evolution is the same pattern as the S028 split, one degree further.** S028 took the system-curation half away from wisp; S034 takes the general-question half away too. Pattern: when an actor does multiple unrelated jobs, expect to split each off in sequence, not at once. Final wisp = "blank session opener," nothing more.
 
 From [[S032]] (new): **high-frequency hooks on Windows + VS Code's integrated terminal are a hazard, even when silent.** `status-sidecar.py` was added at 2N+3 fires per turn without a frequency budget check against `emit-event.py`'s ~N rate. The added rate didn't cause the specific terminal-corruption incident this session (disabling didn't fix it), but it widened the surface for timing-sensitive renderer bugs. Treat hook-fire rate as a constrained resource on this substrate. Worth a lorebook draft.
 
@@ -215,8 +230,12 @@ From [[S003]]–[[S007]]: **structure-first, content earns its way in.** **Build
 ## Files to read first
 
 1. `respawn.md` (this file).
-2. `quest-log/S032_terminal_switchboard_phases_1_and_2.md` — what just shipped (Phases 1 + 2 of D-020, with the terminal-rendering diagnosis).
-3. `bank/decisions/D-020_terminal_switchboard.md` — full design including state machine, contract, phase order, open questions.
+2. `quest-log/S034_guthix_consultation_mode.md` — what just shipped (Guthix two residence modes; doc-only across nine `gielinor/` files).
+3. `bank/decisions/D-022_guthix_consultation_mode.md` — full decision including before/after table, open questions.
+4. `gielinor/meta/guthix.md` — the load-bearing spec post-S034 (two residence modes; consultation as default).
+5. `gielinor/meta/modes.md` — five session modes definition; consultation block.
+6. `quest-log/S032_terminal_switchboard_phases_1_and_2.md` — prior session: Phases 1 + 2 of D-020, terminal-rendering diagnosis.
+7. `bank/decisions/D-020_terminal_switchboard.md` — full design including state machine, contract, phase order, open questions.
 4. `.claude/hooks/status-sidecar.py` — the sidecar script (currently only registered on SessionEnd).
 5. `brain/.claude/settings.json` — see the `_comment_status_sidecar` note explaining the paused registrations.
 6. `experiments/visualizer/index.html` — Phase 2 sidebar lives here. Search `class="switchboard"` for markup, `class=".sb-` for CSS, `initSwitchboard` for JS.

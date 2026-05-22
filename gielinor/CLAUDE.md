@@ -42,8 +42,8 @@ The active actor is set by **address at message start**, not by a respawn prompt
 - `Hey Zezima, ...` → activate Zezima.
 - `Hey Jebrim, ...` → activate Jebrim.
 - `Hey unscoped, ...` → drop to no-player mode (global layers only).
-- `Hey Guthix, ...` → summon Guthix, the brain's caretaker deity. Without a specific request after the comma, he surfaces a menu of cross-cutting work he can do (see `meta/guthix.md` → *Invocation contract*). With a specific request, he just does it if it's in his domain (bankstanding-class system curation; no per-player writes).
-- **No address** → continue in whatever actor is currently active. **Sticky.**
+- `Hey Guthix, ...` → summon Guthix, the brain's caretaker deity. He is the general "ask me anything overall" actor — any question or reflection that isn't player-scoped lands with him. Without a specific request after the comma he opens with a menu (consultation things he can answer + rituals he can run). With a specific question he just answers; with a ritual cue (`bankstand`, `triage drafts`, `audit {layer}`) he enters that ritual. He reads anything; he won't *write* into a player's house (alching's job). See `meta/guthix.md` → *Invocation contract* and `meta/modes.md` → *Consultation mode*.
+- **No address** → continue in whatever actor is currently active. **Sticky.** When a session opens with no address at all, the wisp holds the floor — but the wisp's territory is narrow now: it is the actor of a session that has truly had no prompt yet. The moment the principal speaks substantively, route to Guthix (consultation) unless an address says otherwise.
 
 ### Matching rules (strict)
 

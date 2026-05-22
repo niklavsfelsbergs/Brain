@@ -28,9 +28,10 @@ Observations enter the brain freely as drafts. Promotion to canonical knowledge 
 
 Three principal-only rituals each have a bounded write surface, layered on top of the table above. The table above governs *what discipline applies to a write*; the ritual reach governs *which layers a write can touch at all in that ritual*.
 
-| Ritual | Reads | Writes (proposes to) |
+| Ritual / Mode | Reads | Writes (proposes to) |
 |---|---|---|
-| Bankstanding | everything (globals + every player) | globals only — `examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/` triage. **Cannot write to per-player layers.** |
+| Consultation (Guthix default) | everything (globals + every player + his own `deities/guthix/`) | **his own deity layers only** — `deities/guthix/bank/drafts/notes/`, `deities/guthix/inventory/`, `deities/guthix/quest-log/in-progress/` (filename `G-NNN_*`). Chat-only by default; quest-log entry only when the conversation produces something worth surfacing on next respawn. **No writes to globals, per-player layers, or godly proposals** — those require flipping into bankstanding. |
+| Bankstanding | everything (globals + every player) | globals — `examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `players/inbox/` triage — plus his own deity layers and `deities/guthix/proposals/` for godly proposals. **Cannot write to per-player layers.** |
 | Alching | only the active player's layers | only the active player's layers — `bank/`, `quest-log/`, `inventory/`, `examine/`, `niksis8_character/`, `keepsake/`, `spellbook/drafts/skills/`. **Cannot write to globals or to other players.** |
 | Session-close | active player(s) + globals as needed for the harvest pump | drafts, proposals, `quest-log/`, `inventory/`, `players/inbox/`. **No promotions to confirmed; no `keepsake/current.md` pins.** |
 | Drafts-triage | drafts/proposals across players + globals | report-only by default; can propose `rejected/` moves with principal sign-off in-session. **No promotions.** |
@@ -38,7 +39,7 @@ Three principal-only rituals each have a bounded write surface, layered on top o
 
 Dwarves can run none of these rituals. Gnomes can run **session-close**, **alching** (per-player), and **drafts-triage** when spawned by the principal at the ritual's step 0 spawn-decision; bankstanding stays principal-only at the top level (though it can spawn gnomes for its Phase 0 alching loop). See `modes.md` and `spellbook/skills/spawning-gnomes.md` for the gnome write surface and spawn heuristic.
 
-**Voice per ritual.** Bankstanding is performed in the voice of **Guthix**, the brain's caretaker deity (see [[guthix]]) — not the active player and not the wisp. Alching is performed in the voice of the active player. Session-close, drafts-triage, and respawn carry the voice of whichever actor is active when they run (the player, Braindead, or — if unscoped — wisp). Voice is orthogonal to write-reach; it determines the actor on whose intent file the agent speaks and which sprite the visualizer renders.
+**Voice per ritual.** Consultation and bankstanding are both performed in the voice of **Guthix**, the brain's caretaker deity (see [[guthix]]) — not the active player and not the wisp. Alching is performed in the voice of the active player. Session-close, drafts-triage, and respawn carry the voice of whichever actor is active when they run (the player, Braindead, or — if unscoped — wisp). Voice is orthogonal to write-reach; it determines the actor on whose intent file the agent speaks and which sprite the visualizer renders.
 
 **Guthix's godly proposals.** During bankstanding, Guthix has elevated authority to *propose* changes to surfaces normally marked user-only — `meta/*.md`, `spellbook/rituals/*.md`, `keepsake/current.md`, hooks, body files, even the architecture and his own role. Proposals land in `deities/guthix/proposals/` and the principal reviews them. This is an extension of the "User-only with explicit permission" mechanism below, scoped to one actor (Guthix) and one ritual (bankstanding); the architectural guarantees (hook-enforced lines) remain non-overridable even for him. See `deities/guthix/proposals/_about.md` for scope, shape, and the surfaces he may target.
 

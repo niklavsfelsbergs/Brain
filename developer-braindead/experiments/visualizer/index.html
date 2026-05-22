@@ -183,6 +183,11 @@
   .world::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(216,173,54,0.18); pointer-events: none; z-index: 3; }
   .map-wrap { position: relative; flex: 1; min-width: 0; }
   svg.map { display: block; width: 100%; height: 100%; background: #1a140e; shape-rendering: crispEdges; image-rendering: pixelated; }
+  /* S039: force pixelated rendering on every <image> — some browsers don't
+     inherit image-rendering from the parent SVG. */
+  svg.map image { image-rendering: pixelated; image-rendering: crisp-edges; }
+  /* Dim the green ground so buildings and characters pop. */
+  svg.map #ground { filter: brightness(0.62) saturate(0.78); }
 
   /* Building hover */
   .building { cursor: help; transition: filter 200ms; }
@@ -448,7 +453,7 @@
   }
   .sb-row {
     display: grid;
-    grid-template-columns: 14px 1fr auto;
+    grid-template-columns: 14px 1fr auto auto;
     grid-template-rows: auto auto;
     gap: 1px 8px;
     padding: 6px 6px 7px;
@@ -485,15 +490,28 @@
     margin-left: 4px;
     opacity: 0.7;
   }
-  .sb-row .sb-age {
+  .sb-row .sb-state {
     grid-row: 1 / 2; grid-column: 3 / 4;
+    font-family: 'VT323', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 0 5px 1px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    line-height: 1.45;
+    align-self: center;
+    background: rgba(255,255,255,0.28);
+    text-transform: uppercase;
+  }
+  .sb-row .sb-age {
+    grid-row: 1 / 2; grid-column: 4 / 5;
     font-family: 'VT323', monospace;
     font-size: 12px;
     color: #5a4020;
     align-self: center;
   }
   .sb-row .sb-intent {
-    grid-row: 2 / 3; grid-column: 2 / 4;
+    grid-row: 2 / 3; grid-column: 2 / 5;
     font-size: 12px;
     color: #2c1f10;
     line-height: 1.25;
@@ -506,7 +524,7 @@
     -webkit-box-orient: vertical;
     word-break: break-word;
   }
-  /* State coloring on the dot + left border */
+  /* State coloring on the dot + left border + chip + row tint */
   .sb-row[data-state="waiting_for_user"] {
     border-left-color: #d8a234;
     background: rgba(255, 220, 130, 0.45);
@@ -516,26 +534,62 @@
     background: #ffd84d;
     animation: sbWaitingPulse 1100ms ease-in-out infinite;
   }
+  .sb-row[data-state="waiting_for_user"] .sb-state {
+    color: #6a4a10;
+    background: rgba(255, 216, 77, 0.85);
+    border-color: #a87820;
+    animation: sbWaitingChip 1100ms ease-in-out infinite;
+  }
   @keyframes sbWaitingPulse {
     0%,100% { transform: scale(1); box-shadow: 1px 1px 0 #1a0f06, 0 0 4px #ffd84d; }
     50%     { transform: scale(1.25); box-shadow: 1px 1px 0 #1a0f06, 0 0 10px #ffd84d; }
   }
-  .sb-row[data-state="working"] { border-left-color: #2e7a2e; }
+  @keyframes sbWaitingChip {
+    0%,100% { background: rgba(255, 216, 77, 0.85); }
+    50%     { background: rgba(255, 240, 160, 1); }
+  }
+  .sb-row[data-state="working"] {
+    border-left-color: #2e7a2e;
+    background: rgba(140, 220, 140, 0.18);
+  }
   .sb-row[data-state="working"] .sb-dot {
     color: #2e7a2e;
     background: #5fff5f;
   }
-  .sb-row[data-state="idle"] { border-left-color: #6a5a40; opacity: 0.7; }
+  .sb-row[data-state="working"] .sb-state {
+    color: #1f5a1f;
+    background: rgba(140, 220, 140, 0.40);
+    border-color: #2e7a2e;
+  }
+  .sb-row[data-state="idle"] {
+    border-left-color: #6a5a40;
+    background: rgba(120, 95, 50, 0.14);
+    opacity: 0.85;
+  }
   .sb-row[data-state="idle"] .sb-dot {
     color: #6a5a40;
     background: #a89878;
     box-shadow: 1px 1px 0 #1a0f06;
   }
-  .sb-row[data-state="ended"] { border-left-color: #4a3520; opacity: 0.5; }
+  .sb-row[data-state="idle"] .sb-state {
+    color: #4a3a20;
+    background: rgba(168, 152, 120, 0.40);
+    border-color: #6a5a40;
+  }
+  .sb-row[data-state="ended"] {
+    border-left-color: #4a3520;
+    background: rgba(74, 53, 32, 0.14);
+    opacity: 0.55;
+  }
   .sb-row[data-state="ended"] .sb-dot {
     color: #4a3520;
     background: #6a5a40;
     box-shadow: 1px 1px 0 #1a0f06;
+  }
+  .sb-row[data-state="ended"] .sb-state {
+    color: #2c1f10;
+    background: rgba(106, 90, 64, 0.35);
+    border-color: #4a3520;
   }
   .sb-row.sb-this {
     outline: 1px solid #ffcb46;
@@ -886,44 +940,37 @@
 
           <!-- ── billboard sprites ── -->
 
-          <!-- Tree -->
-          <g id="tree">
-            <ellipse cx="0" cy="6" rx="13" ry="3.5" fill="rgba(0,0,0,0.32)"/>
-            <rect x="-3" y="-4" width="6" height="10" fill="var(--wood-dark)"/>
-            <rect x="-2" y="-4" width="1" height="10" fill="#2a1808"/>
-            <circle cx="0"  cy="-12" r="14" fill="var(--grass-shadow)"/>
-            <circle cx="-3" cy="-15" r="10" fill="#3e6432"/>
-            <circle cx="4"  cy="-12" r="8"  fill="#588744"/>
-            <circle cx="-5" cy="-10" r="5"  fill="#6d9a4d"/>
-            <circle cx="2"  cy="-18" r="4"  fill="#82b35a"/>
-            <rect x="-5" y="-15" width="1" height="1" fill="#2d4520"/>
-            <rect x="3"  y="-11" width="1" height="1" fill="#2d4520"/>
-          </g>
+          <!-- Tree variants (S039) — bottom-center at origin. -->
+          <g id="tree"><image href="sprites/tiles/tree-leafy-1.png" x="-22" y="-58" width="44" height="60"/></g>
+          <g id="tree-1"><image href="sprites/tiles/tree-leafy-1.png" x="-22" y="-58" width="44" height="60"/></g>
+          <g id="tree-2"><image href="sprites/tiles/tree-leafy-2.png" x="-22" y="-58" width="44" height="60"/></g>
+          <g id="tree-3"><image href="sprites/tiles/tree-leafy-3.png" x="-22" y="-58" width="44" height="60"/></g>
+          <g id="tree-4"><image href="sprites/tiles/tree-leafy-4.png" x="-22" y="-58" width="44" height="60"/></g>
+          <g id="tree-pine"><image href="sprites/tiles/tree-pine-1.png" x="-16" y="-58" width="32" height="58"/></g>
+          <g id="tree-autumn"><image href="sprites/tiles/tree-autumn.png" x="-22" y="-54" width="44" height="56"/></g>
 
-          <!-- Bush -->
-          <g id="bush">
-            <ellipse cx="0" cy="2" rx="9" ry="2.2" fill="rgba(0,0,0,0.25)"/>
-            <circle cx="-3" cy="-2" r="5" fill="#577e3a"/>
-            <circle cx="3"  cy="-1" r="6" fill="#6a9645"/>
-            <circle cx="0"  cy="-4" r="4" fill="#7eaf52"/>
-          </g>
+          <!-- Bush variants -->
+          <g id="bush"><image href="sprites/tiles/bush-1.png" x="-14" y="-24" width="28" height="26"/></g>
+          <g id="bush-1"><image href="sprites/tiles/bush-1.png" x="-14" y="-24" width="28" height="26"/></g>
+          <g id="bush-2"><image href="sprites/tiles/bush-2.png" x="-13" y="-22" width="26" height="24"/></g>
+          <g id="bush-3"><image href="sprites/tiles/bush-3.png" x="-12" y="-22" width="24" height="24"/></g>
 
-          <!-- Flower -->
-          <g id="flower">
-            <rect x="-1" y="-1" width="2" height="2" fill="var(--gold)"/>
-            <rect x="-2" y="0"  width="1" height="1" fill="#e69b9b"/>
-            <rect x="2"  y="0"  width="1" height="1" fill="#e69b9b"/>
-            <rect x="0"  y="-2" width="1" height="1" fill="#e69b9b"/>
-            <rect x="0"  y="2"  width="1" height="1" fill="#e69b9b"/>
-          </g>
+          <!-- Flower cluster -->
+          <g id="flower"><image href="sprites/tiles/flower-cluster.png" x="-9" y="-20" width="18" height="22"/></g>
 
-          <!-- Rock -->
-          <g id="rock">
-            <ellipse cx="0" cy="2" rx="7" ry="1.5" fill="rgba(0,0,0,0.3)"/>
-            <polygon points="-6,1 -4,-5 2,-6 6,0 5,2" fill="#7a716a"/>
-            <polygon points="-6,1 -4,-5 -2,-3 -1,1" fill="#968576"/>
-            <polygon points="2,-6 6,0 4,-2" fill="#5e564d"/>
-          </g>
+          <!-- Rock variants -->
+          <g id="rock"><image href="sprites/tiles/rock-large.png" x="-14" y="-15" width="28" height="17"/></g>
+          <g id="rock-large"><image href="sprites/tiles/rock-large.png" x="-14" y="-15" width="28" height="17"/></g>
+          <g id="rock-medium"><image href="sprites/tiles/rock-medium.png" x="-11" y="-18" width="22" height="20"/></g>
+
+          <!-- Animals (idle ambient — S039) -->
+          <g id="horse-1"><image href="sprites/tiles/horse-brown.png" x="-18" y="-32" width="36" height="34"/></g>
+          <g id="horse-2"><image href="sprites/tiles/horse-grey.png"  x="-18" y="-32" width="36" height="34"/></g>
+          <g id="horse-3"><image href="sprites/tiles/horse-paint.png" x="-18" y="-32" width="36" height="34"/></g>
+          <g id="horse-4"><image href="sprites/tiles/horse-black.png" x="-18" y="-32" width="36" height="34"/></g>
+          <g id="pet-1"><image href="sprites/tiles/dog-2.png" x="-10" y="-22" width="20" height="24"/></g>
+          <g id="pet-2"><image href="sprites/tiles/dog-3.png" x="-10" y="-22" width="20" height="24"/></g>
+          <g id="pet-3"><image href="sprites/tiles/dog-5.png" x="-10" y="-22" width="20" height="24"/></g>
 
           <!-- Mushroom (small red toadstool) -->
           <g id="mushroom">
@@ -988,133 +1035,40 @@
             <rect x="0" y="-3.2" width="0.5" height="0.7" fill="#d8b8e8"/>
           </g>
 
-          <!-- Jebrim (billboard) -->
+          <!-- Jebrim (v2 PNG: 92×185, slim full-body). Shadow ellipse retained;
+               bottom-center of art at (0,5) so STAND/foot logic still reads. -->
           <g id="jebrim">
-            <ellipse cx="0" cy="5" rx="9" ry="2.3" fill="rgba(0,0,0,0.42)"/>
-            <rect x="-7" y="-6" width="14" height="11" fill="var(--jebrim-robe)"/>
-            <rect x="-7" y="-6" width="14" height="2"  fill="#1f365a"/>
-            <rect x="-1" y="-6" width="2"  height="11" fill="var(--jebrim-trim)"/>
-            <rect x="-7" y="-1" width="14" height="1" fill="#1a2a44"/>
-            <rect x="-9" y="-4" width="2" height="6" fill="var(--jebrim-robe)"/>
-            <rect x="7"  y="-4" width="2" height="6" fill="var(--jebrim-robe)"/>
-            <rect x="-4" y="-13" width="8" height="7" fill="#e2b88a"/>
-            <rect x="-4" y="-9"  width="8" height="1" fill="#b88c61"/>
-            <rect x="-3" y="-8"  width="6" height="2" fill="#5a4530"/>
-            <rect x="-2" y="-11" width="1" height="1" fill="#28201a"/>
-            <rect x="1"  y="-11" width="1" height="1" fill="#28201a"/>
-            <polygon points="-6,-13 6,-13 0,-22" fill="var(--jebrim-hat)"/>
-            <rect x="-7" y="-14" width="14" height="2" fill="var(--jebrim-hat)"/>
-            <rect x="-7" y="-13" width="14" height="1" fill="var(--jebrim-trim)"/>
-            <rect x="-1" y="-21" width="2" height="2" fill="var(--jebrim-trim)"/>
-            <rect x="-11" y="0" width="3" height="5" fill="var(--parchment)"/>
-            <rect x="-11" y="0" width="3" height="1" fill="var(--gold-dk)"/>
+            <ellipse cx="0" cy="5" rx="8" ry="2.2" fill="rgba(0,0,0,0.42)"/>
+            <image href="sprites/jebrim.png" x="-7" y="-23" width="14" height="28"
+                   preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>
           </g>
 
-          <!-- Zezima (billboard) -->
+          <!-- Zezima (93×181) -->
           <g id="zezima">
-            <ellipse cx="0" cy="5" rx="9" ry="2.3" fill="rgba(0,0,0,0.42)"/>
-            <rect x="-7" y="-6" width="14" height="11" fill="var(--zezima-robe)"/>
-            <rect x="-7" y="-6" width="14" height="2"  fill="#8a4520"/>
-            <rect x="-7" y="3"  width="14" height="2"  fill="var(--zezima-trim)"/>
-            <rect x="-9" y="-4" width="2" height="6" fill="var(--zezima-robe)"/>
-            <rect x="7"  y="-4" width="2" height="6" fill="var(--zezima-robe)"/>
-            <rect x="-4" y="-13" width="8" height="7" fill="#e8c39a"/>
-            <rect x="-5" y="-15" width="10" height="3" fill="var(--zezima-hood)"/>
-            <rect x="-5" y="-13" width="2"  height="5" fill="var(--zezima-hood)"/>
-            <rect x="3"  y="-13" width="2"  height="5" fill="var(--zezima-hood)"/>
-            <rect x="-2" y="-11" width="1" height="1" fill="#28201a"/>
-            <rect x="1"  y="-11" width="1" height="1" fill="#28201a"/>
-            <rect x="-1" y="-8" width="2" height="1" fill="#8a4520"/>
-            <rect x="8" y="-3" width="1" height="6" fill="var(--wood-dark)"/>
-            <polygon points="8,-3 9,-3 11,-7 9,-6" fill="#e8d8a8"/>
+            <ellipse cx="0" cy="5" rx="8" ry="2.2" fill="rgba(0,0,0,0.42)"/>
+            <image href="sprites/zezima.png" x="-7.2" y="-23" width="14.4" height="28"
+                   preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>
           </g>
 
-          <!-- Wisp -->
+          <!-- Wisp (86×167, vertical orb shape — centered on origin, no shadow) -->
           <g id="wisp">
-            <circle cx="0" cy="0" r="11" fill="var(--wisp)" opacity="0.18"/>
-            <circle cx="0" cy="0" r="7"  fill="var(--wisp)" opacity="0.45"/>
-            <circle cx="0" cy="0" r="4"  fill="var(--wisp-core)"/>
-            <rect x="-1" y="-1" width="2" height="2" fill="#ffffff"/>
+            <image href="sprites/wisp.png" x="-7" y="-13.5" width="14" height="27"
+                   preserveAspectRatio="xMidYMid meet" image-rendering="pixelated"/>
           </g>
 
-          <!-- Braindead — quirky tinkerer in slate robe, head wrap, goggles -->
+          <!-- Braindead (92×170) — shadow ellipse retained. -->
           <g id="braindead">
-            <ellipse cx="0" cy="5" rx="9" ry="2.3" fill="rgba(0,0,0,0.42)"/>
-            <!-- robe body -->
-            <rect x="-7" y="-6" width="14" height="11" fill="var(--braindead-robe)"/>
-            <rect x="-7" y="-6" width="14" height="2"  fill="var(--braindead-robe-dk)"/>
-            <rect x="-7" y="3"  width="14" height="2"  fill="var(--braindead-robe-dk)"/>
-            <!-- belt of pouches -->
-            <rect x="-7" y="-1" width="14" height="1.4" fill="var(--wood-dark)"/>
-            <rect x="-3" y="-0.6" width="2" height="2" fill="var(--braindead-bandage)"/>
-            <!-- sleeves -->
-            <rect x="-9" y="-4" width="2" height="6" fill="var(--braindead-robe)"/>
-            <rect x="7"  y="-4" width="2" height="6" fill="var(--braindead-robe)"/>
-            <!-- face -->
-            <rect x="-4" y="-13" width="8" height="7" fill="#e2b88a"/>
-            <!-- head bandage / wrap (wraps around forehead, ends dangling) -->
-            <rect x="-5" y="-15" width="10" height="2.4" fill="var(--braindead-bandage)"/>
-            <rect x="-5" y="-13" width="2" height="5" fill="var(--braindead-bandage)"/>
-            <rect x="-7" y="-9" width="2" height="3" fill="var(--braindead-bandage)"/>
-            <rect x="-8" y="-7" width="2" height="2" fill="var(--braindead-bandage)" opacity="0.85"/>
-            <!-- goggles pushed up to forehead -->
-            <rect x="-4" y="-12" width="3" height="2" fill="var(--braindead-goggle)" stroke="var(--ink)" stroke-width="0.4"/>
-            <rect x="1"  y="-12" width="3" height="2" fill="var(--braindead-goggle)" stroke="var(--ink)" stroke-width="0.4"/>
-            <rect x="-1" y="-11.5" width="2" height="0.6" fill="var(--ink)"/>
-            <!-- eyes (tired, of course) -->
-            <rect x="-2.5" y="-10.5" width="1" height="1" fill="#28201a"/>
-            <rect x="1.5"  y="-10.5" width="1" height="1" fill="#28201a"/>
-            <!-- crooked grin -->
-            <rect x="-1.5" y="-8" width="3" height="0.6" fill="#5a3320"/>
-            <rect x="1.5" y="-8.5" width="0.6" height="0.6" fill="#5a3320"/>
-            <!-- right hand: hammer -->
-            <rect x="8.5" y="-2" width="1" height="9" fill="var(--braindead-hammer)"/>
-            <rect x="7"  y="-3" width="4" height="2.5" fill="#8a8580"/>
-            <rect x="7"  y="-3" width="4" height="0.8" fill="#b8b3a8"/>
-            <rect x="10.5" y="-3" width="1" height="2.5" fill="#5a554f"/>
-            <!-- left hand: rolled blueprint -->
-            <rect x="-11" y="0" width="3.5" height="6" fill="var(--parchment)"/>
-            <rect x="-11" y="0" width="3.5" height="1" fill="#8d9bb2"/>
-            <rect x="-11" y="5" width="3.5" height="1" fill="#8d9bb2"/>
-            <line x1="-10.4" y1="2.5" x2="-7.7" y2="2.5" stroke="#3d597b" stroke-width="0.3"/>
-            <line x1="-10.4" y1="3.5" x2="-8.5" y2="3.5" stroke="#3d597b" stroke-width="0.3"/>
+            <ellipse cx="0" cy="5" rx="8" ry="2.2" fill="rgba(0,0,0,0.42)"/>
+            <image href="sprites/braindead.png" x="-7.6" y="-23" width="15.2" height="28"
+                   preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>
           </g>
 
-          <!-- S028 Guthix — bankstanding deity. Hooded green robe, white beard,
-               wooden staff with green gem. Floats; no ground shadow. -->
+          <!-- Guthix (124×185) — floats, no ground shadow. Aura backdrop kept. -->
           <g id="guthix">
-            <!-- aura backdrop (rendered behind via feGaussianBlur filter) -->
             <circle cx="0" cy="-4" r="17" fill="var(--guthix-aura)" opacity="0.10"/>
             <circle cx="0" cy="-4" r="12" fill="var(--guthix-aura)" opacity="0.16"/>
-            <!-- robe outer silhouette: pointed hood tapering down -->
-            <polygon points="0,-20 -7.5,-9 -9.5,7 9.5,7 7.5,-9"
-                     fill="var(--guthix-robe)"
-                     stroke="var(--guthix-robe-dk)" stroke-width="0.5"/>
-            <!-- inner hood shadow (frames the face) -->
-            <polygon points="0,-16 -4.5,-9 4.5,-9" fill="var(--guthix-robe-dk)"/>
-            <!-- robe centre seam -->
-            <rect x="-0.6" y="-9" width="1.2" height="16" fill="var(--guthix-robe-dk)"/>
-            <!-- robe lighter highlight strips -->
-            <polygon points="-7.5,-9 -5.5,-9 -7.5,7 -9.5,7" fill="var(--guthix-robe-lt)" opacity="0.55"/>
-            <!-- robe bottom trim -->
-            <rect x="-9.5" y="5"   width="19" height="2" fill="var(--guthix-robe-dk)"/>
-            <rect x="-9.5" y="6.4" width="19" height="0.6" fill="var(--guthix-trim)"/>
-            <!-- face peek (in shadow) -->
-            <rect x="-2.2" y="-12.5" width="4.4" height="3.5" fill="var(--guthix-skin)"/>
-            <!-- glowing eyes (green) -->
-            <rect x="-1.8" y="-11" width="1.2" height="1" fill="var(--guthix-gem)"/>
-            <rect x="0.6"  y="-11" width="1.2" height="1" fill="var(--guthix-gem)"/>
-            <!-- beard hanging from face down to chest -->
-            <polygon points="-3,-9 -2.5,-3 -1,-1 1,-1 2.5,-3 3,-9"
-                     fill="var(--guthix-beard)"/>
-            <rect x="-1.2" y="-2" width="2.4" height="2" fill="var(--guthix-beard)"/>
-            <!-- staff (held in right hand, extends above and below body) -->
-            <rect x="9"   y="-15" width="1.4" height="22" fill="var(--guthix-staff)"/>
-            <rect x="9"   y="-15" width="1.4" height="1.4" fill="#4a3018"/>
-            <!-- staff orb (green gem with bright core) -->
-            <circle cx="9.7" cy="-16.5" r="2.2" fill="var(--guthix-gem)" opacity="0.55"/>
-            <circle cx="9.7" cy="-16.5" r="1.4" fill="var(--guthix-gem)"/>
-            <circle cx="9.4" cy="-16.8" r="0.6" fill="#ffffff" opacity="0.85"/>
+            <image href="sprites/guthix.png" x="-9.4" y="-23" width="18.8" height="28"
+                   preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>
           </g>
 
         </defs>
@@ -1388,76 +1342,51 @@ function jitter(actorId, atKey) {
 // ─────────────────────────────────────────────────────────────
 
 function buildGround() {
+  // S039: replaced procedural iso green diamonds with tiled PNG ground from the
+  // v3 environment sheet. Tiles are 157×115 isometric grass blocks; we lay
+  // them in an iso grid so the diamond surfaces tessellate. The small detail
+  // (tufts, mushrooms, dandelions) keeps its scatter on the overlays layer for
+  // texture variety on top of the base tiles.
   const ground = document.getElementById('ground');
   const overlays = document.getElementById('ground-overlays');
-  // Big enough to fill the entire viewport — viewport crop does the rest.
-  const cols = 56, rows = 56;
-  for (let gy = 0; gy < rows; gy++) {
-    for (let gx = 0; gx < cols; gx++) {
-      const p = isoToScreen(gx - cols/2, gy - rows/2);
-      // viewport crop only — no diamond mask, grass fills the whole frame
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const TW = 157, TH = 80;  // tile native = 157×115; visible diamond face ≈ 80 tall
+  const VISIBLE_H = 115;    // full image height (block sits on dirt cliff)
+  // Iso grid: columns step by (TW/2, TH/2); rows by (-TW/2, TH/2).
+  // Cover the world (1680 × 1148) with a comfortable margin.
+  const range = 18;
+  for (let gy = -range; gy <= range; gy++) {
+    for (let gx = -range; gx <= range; gx++) {
+      const cx = 840 + (gx - gy) * (TW / 2);
+      const cy = 574 + (gx + gy) * (TH / 2);
+      if (cx + TW/2 < -80 || cx - TW/2 > 1760 || cy + VISIBLE_H/2 < -80 || cy - VISIBLE_H/2 > 1228) continue;
+      const im = document.createElementNS(svgNS, 'image');
+      im.setAttribute('href', 'sprites/tiles/ground-grass.png');
+      im.setAttribute('x', cx - TW/2);
+      im.setAttribute('y', cy - VISIBLE_H/2);
+      im.setAttribute('width', TW);
+      im.setAttribute('height', VISIBLE_H);
+      im.setAttribute('preserveAspectRatio', 'none');
+      ground.appendChild(im);
+    }
+  }
+
+  // Scatter detail on top — kept from the procedural version. The new
+  // ground tiles already have texture, so this is just extra variety.
+  for (let gy = 0; gy < 56; gy++) {
+    for (let gx = 0; gx < 56; gx++) {
+      const p = isoToScreen(gx - 28, gy - 28);
       if (p.x < -56 || p.x > 1736 || p.y < -28 || p.y > 1176) continue;
-
-      const isLight = ((gx + gy) % 2 === 0);
-      let fill = isLight ? '#5e8639' : '#577d35';
-      // soft vignette via distance from screen center
-      const dx = p.x - 840, dy = (p.y - 574) * 1.5;
-      const edge = Math.hypot(dx, dy);
-      if (edge > 868) fill = '#4d6c2d';
-      if (edge > 1064) fill = '#3f5a26';
-      const poly = document.createElementNS(svgNS, 'polygon');
-      poly.setAttribute('points',
-        `${p.x},${p.y - TILE_H/2} ${p.x + TILE_W/2},${p.y} ${p.x},${p.y + TILE_H/2} ${p.x - TILE_W/2},${p.y}`);
-      poly.setAttribute('fill', fill);
-      poly.setAttribute('stroke', 'rgba(50,80,30,0.35)');
-      poly.setAttribute('stroke-width', '0.5');
-      ground.appendChild(poly);
-
-      // sprinkle small detail
       const hashSeed = (gx * 31 + gy * 17) & 255;
       const hashSeed2 = (gx * 41 + gy * 23 + 11) & 255;
-
-      // building clearance — sprites within 70px of any building center are skipped (scaled 1.4×)
       const nearBldg = Object.values(BUILDINGS).some(
         bb => Math.hypot(bb.x - p.x, bb.y - p.y) < 101
       );
-
-      // Light grass-tuft dot — kept dense even near buildings
-      if (hashSeed % 9 === 0) {
-        const dot = document.createElementNS(svgNS, 'rect');
-        dot.setAttribute('x', p.x - 2); dot.setAttribute('y', p.y - 1);
-        dot.setAttribute('width', 2); dot.setAttribute('height', 2);
-        dot.setAttribute('fill', '#82a851');
-        overlays.appendChild(dot);
-      }
-      // Dark grass tip
-      if (hashSeed % 15 === 3) {
-        const dot = document.createElementNS(svgNS, 'rect');
-        dot.setAttribute('x', p.x + 4); dot.setAttribute('y', p.y + 2);
-        dot.setAttribute('width', 1); dot.setAttribute('height', 1);
-        dot.setAttribute('fill', '#3e5a26');
-        overlays.appendChild(dot);
-      }
-      // Bright grass speck
-      if (hashSeed2 % 11 === 4) {
-        const dot = document.createElementNS(svgNS, 'rect');
-        dot.setAttribute('x', p.x - 5); dot.setAttribute('y', p.y);
-        dot.setAttribute('width', 1); dot.setAttribute('height', 1);
-        dot.setAttribute('fill', '#a8c468');
-        overlays.appendChild(dot);
-      }
-
-      // Larger sprites — skip near buildings
       if (nearBldg) continue;
-
-      if (hashSeed % 23 === 7)  addUse(overlays, 'tuft',      p.x - 6, p.y + 4);
-      if (hashSeed % 29 === 11) addUse(overlays, 'mushroom',  p.x + 6, p.y - 2);
       if (hashSeed % 31 === 13) addUse(overlays, 'pebble',    p.x - 4, p.y + 6);
       if (hashSeed % 37 === 19) addUse(overlays, 'dandelion', p.x + 8, p.y + 1);
       if (hashSeed % 41 === 5)  addUse(overlays, 'daisy',     p.x - 8, p.y - 3);
       if (hashSeed2 % 53 === 17) addUse(overlays, 'lavender', p.x + 2, p.y + 2);
-      // mushroom rings — very rare
-      if (hashSeed % 89 === 41) addUse(overlays, 'mushroom-ring', p.x, p.y + 4);
     }
   }
 }
@@ -1613,13 +1542,16 @@ function buildFlora() {
     return true;
   }
 
+  const TREE_VARIANTS = ['tree-1', 'tree-2', 'tree-3', 'tree-4', 'tree-pine', 'tree-autumn'];
   function placeTree(x, y, layerHint) {
-    // S029: bounds scaled 1.4× (6→8, 1194→1672, 174→244, 812→1137).
     if (x < 8 || x > 1672 || y < 244 || y > 1137) return;
     if (!clearOfBuildings(x, y, 120)) return;
     if (!clearOfPond(x, y, 146)) return;
     const layer = layerHint || (y > 784 ? front : back);
-    addUse(layer, 'tree', x, y);
+    // Deterministic variant pick — same forest every reload.
+    const h = ((x * 73856093) ^ (y * 19349663)) >>> 0;
+    const variant = TREE_VARIANTS[h % TREE_VARIANTS.length];
+    addUse(layer, variant, x, y);
   }
 
   // ── Wild scatter, weighted toward the perimeter ──
@@ -1669,11 +1601,12 @@ function buildFlora() {
     addUse(layer, href, x, y);
   }
 
-  // pseudo-random scatter for bushes (S029: bounds scaled 1.4×, count bumped 30→44).
+  // pseudo-random scatter for bushes (variant per placement, deterministic)
+  const BUSH_VARIANTS = ['bush-1', 'bush-2', 'bush-3'];
   for (let i = 0; i < 44; i++) {
     const x = 154 + ((i * 127) % 1372);
     const y = 308 + ((i * 91)  % 784);
-    placeIfClear(back, 'bush', x, y);
+    placeIfClear(back, BUSH_VARIANTS[i % BUSH_VARIANTS.length], x, y);
   }
   // flower clusters (3 each, tight; bounds scaled 1.4×, count 14→20)
   for (let i = 0; i < 20; i++) {
@@ -1681,12 +1614,26 @@ function buildFlora() {
     const cy = 322 + ((i * 113) % 756);
     [[0,0],[4,-3],[-3,4]].forEach(([ox,oy]) => placeIfClear(back, 'flower', cx+ox, cy+oy, {pathPad: 20}));
   }
-  // rocks — fewer, weighted toward the periphery (bounds scaled 1.4×, count 16→22)
+  // rocks — fewer, weighted toward the periphery (variants alternate)
+  const ROCK_VARIANTS = ['rock-large', 'rock-medium'];
   for (let i = 0; i < 22; i++) {
     const x = 112 + ((i * 199) % 1456);
     const y = 308 + ((i * 79)  % 784);
-    placeIfClear(back, 'rock', x, y, {bPad: 98});
+    placeIfClear(back, ROCK_VARIANTS[i % ROCK_VARIANTS.length], x, y, {bPad: 98});
   }
+  // S039: idle ambient animals — 4 horses + 4 pets at fixed-ish positions,
+  // each filtered through placeIfClear so they don't land on a building.
+  const animals = [
+    {href: 'horse-1', x: 480,  y: 460},
+    {href: 'horse-2', x: 1080, y: 510},
+    {href: 'horse-3', x: 350,  y: 880},
+    {href: 'horse-4', x: 1380, y: 840},
+    {href: 'pet-1',   x: 700,  y: 480},
+    {href: 'pet-2',   x: 980,  y: 770},
+    {href: 'pet-3',   x: 420,  y: 720},
+    {href: 'pet-1',   x: 1180, y: 980},
+  ];
+  animals.forEach(a => placeIfClear(front, a.href, a.x, a.y, {bPad: 110, pathPad: 18}));
 }
 
 function addUse(parent, href, x, y, cls='') {
@@ -1889,532 +1836,41 @@ function seWallPoly(w, d, f1, f2, vy, H) {
 // ─────────────────────────────────────────────────────────────
 
 function buildBuildings() {
+  // S039: replaced ~530 lines of per-building procedural SVG with a single
+  // <image> per building, sourced from sprites/<id>.png. Native PNG dims are
+  // stored in BLD_SPRITE_DIMS; SCALE is global; Y_DROP sits each PNG bottom
+  // slightly below the building's center so actors stand "in front of" the
+  // building. Helper functions (isoBuilding, wallTexture, etc.) are now dead
+  // code — sweep next bankstanding pass.
   const layer = document.getElementById('buildings');
+  const SCALE = 1.0;
+  const Y_DROP = 60; // px below building center for PNG bottom
+  const BLD_SPRITE_DIMS = {
+    'inbox-square':       {w: 213, h: 170},
+    'meta-town-hall':     {w: 200, h: 192},
+    'lorebook-library':   {w: 195, h: 188},
+    'bank':               {w: 203, h: 171},
+    'examine-hall':       {w: 102, h: 200},
+    'quest-hall':         {w: 206, h: 170},
+    'spellbook-tower':    {w: 89,  h: 183},
+    'keepsake-vault':     {w: 166, h: 175},
+    'inn':                {w: 258, h: 181},
+    'braindead-workshop': {w: 211, h: 185},
+    'iceberg':            {w: 200, h: 113},
+  };
   let html = '';
-
-  // ── Inbox Square — flat stone platform with bulletin board (no walls) ──
-  {
-    const b = BUILDINGS['inbox-square'];
-    const w = 56, d = 28;
-    // checkered tile diamond
-    let tiles = '';
-    for (let i = -2; i <= 2; i++) {
-      for (let j = -2; j <= 2; j++) {
-        if (Math.abs(i) + Math.abs(j) > 3) continue;
-        const tx = (i - j) * 14;
-        const ty = (i + j) * 7;
-        const fill = ((i + j + 100) % 2 === 0) ? 'var(--stone-light)' : 'var(--stone-mid)';
-        tiles += `<polygon points="${tx},${ty-7} ${tx+14},${ty} ${tx},${ty+7} ${tx-14},${ty}" fill="${fill}" stroke="var(--stone-shadow)" stroke-width="0.5"/>`;
-      }
-    }
-    // bulletin board on the back (north)
-    const bb = `
-      <polygon points="0,-26 12,-32 12,-12 0,-6" fill="var(--wood-dark)"/>
-      <polygon points="0,-26 -12,-32 -12,-12 0,-6" fill="var(--wood-mid)"/>
-      <rect x="-10" y="-30" width="20" height="3" fill="var(--wood-dark)"/>
-      <!-- paper notes (on the SE/visible face) — flutter in the breeze -->
-      <polygon class="parchment-flutter" points="2,-22 5,-23.5 5,-15.5 2,-14" fill="var(--parchment)"/>
-      <polygon class="parchment-flutter d1" points="6,-22.5 9,-24 9,-16 6,-14.5" fill="var(--parchment)"/>
-      <!-- left side notes -->
-      <polygon class="parchment-flutter d2" points="-2,-22 -5,-23.5 -5,-15.5 -2,-14" fill="var(--parchment-dk)"/>
-      <!-- post bases -->
-      <rect x="-2" y="-12" width="1" height="6" fill="var(--wood-dark)"/>
-      <rect x="11" y="-19" width="1" height="6" fill="var(--wood-dark)"/>
-    `;
-    html += `<g class="building" data-id="inbox-square" transform="translate(${b.x},${b.y}) scale(1.4)">
-      <polygon points="0,${d+5} ${w+5},5 0,${-d+5} ${-w+5},5" fill="rgba(0,0,0,0.25)"/>
-      ${tiles}
-      ${bb}
-    </g>`;
-  }
-
-  // ── Meta Town Hall — tall castle-like with banners, central + corner spires ──
-  {
-    const b = BUILDINGS['meta-town-hall'];
-    const w = 78, d = 39, h = 96, r = 50;
-    const details = `
-      <!-- clock medallion on SW wall (upper half) -->
-      <circle cx="${-w*0.5}" cy="${d*0.5 - 52}" r="10" fill="var(--parchment)" stroke="var(--ink)" stroke-width="1"/>
-      <circle cx="${-w*0.5}" cy="${d*0.5 - 52}" r="10" fill="none" stroke="var(--gold-dk)" stroke-width="0.6" opacity="0.7"/>
-      <rect x="${-w*0.5 - 1}" y="${d*0.5 - 58}" width="2" height="7" fill="var(--ink)"/>
-      <rect x="${-w*0.5}"     y="${d*0.5 - 53}" width="7" height="1.5" fill="var(--ink)"/>
-      <circle cx="${-w*0.5}" cy="${d*0.5 - 52}" r="1" fill="var(--gold)"/>
-      <!-- banners hanging from eaves (longer, more castle-like) -->
-      <polygon points="${-w + 6},${-h + 2} ${-w + 18},${-h + 2} ${-w + 15},${-h + 30} ${-w + 9},${-h + 30}" fill="var(--roof-red)" stroke="var(--roof-red-dk)" stroke-width="0.5"/>
-      <rect x="${-w + 8}" y="${-h + 10}" width="8" height="2" fill="var(--gold)"/>
-      <polygon points="${w - 18},${-h + 2} ${w - 6},${-h + 2} ${w - 9},${-h + 30} ${w - 15},${-h + 30}" fill="var(--roof-red)" stroke="var(--roof-red-dk)" stroke-width="0.5"/>
-      <rect x="${w - 16}" y="${-h + 10}" width="8" height="2" fill="var(--gold)"/>
-      <!-- large arched double door on SW -->
-      <polygon points="${swWallPoly(w, d, 0.32, 0.52, 0, 40)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.32, 0.52, 36, 4)}" fill="#1a0e04"/>
-      <polygon points="${swWallPoly(w, d, 0.32, 0.42, 0, 40)}" fill="none" stroke="#1a0e04" stroke-width="0.6"/>
-      <!-- arched windows SE (mid-wall) -->
-      <polygon points="${seWallPoly(w, d, 0.28, 0.42, 22, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-light)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.58, 0.72, 22, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-light)" stroke-width="0.6"/>
-      <!-- upper-row arched windows SE -->
-      <polygon points="${seWallPoly(w, d, 0.32, 0.42, 60, 16)}" fill="#3d597b" stroke="var(--stone-light)" stroke-width="0.5"/>
-      <polygon points="${seWallPoly(w, d, 0.58, 0.68, 60, 16)}" fill="#3d597b" stroke="var(--stone-light)" stroke-width="0.5"/>
-      <!-- corner turret spires (E and W roof corners) -->
-      <polygon points="${-w + 6},${-h + 2} ${-w + 14},${-h + 2} ${-w + 10},${-h - 22}" fill="var(--roof-blue-dk)"/>
-      <rect x="${-w + 9}" y="${-h - 28}" width="2" height="6" fill="var(--gold-dk)"/>
-      <polygon points="${-w + 7},${-h - 32} ${-w + 13},${-h - 32} ${-w + 10},${-h - 40}" fill="var(--gold)"/>
-      <polygon points="${w - 14},${-h + 2} ${w - 6},${-h + 2} ${w - 10},${-h - 22}" fill="var(--roof-blue-dk)"/>
-      <rect x="${w - 11}" y="${-h - 28}" width="2" height="6" fill="var(--gold-dk)"/>
-      <polygon points="${w - 13},${-h - 32} ${w - 7},${-h - 32} ${w - 10},${-h - 40}" fill="var(--gold)"/>
-      <!-- central spire on apex -->
-      <polygon points="-5,${-h - r} 5,${-h - r} 0,${-h - r - 28}" fill="var(--roof-blue-dk)"/>
-      <polygon points="-5,${-h - r} 0,${-h - r} 0,${-h - r - 28}" fill="#1d2c40"/>
-      <rect x="-1.5" y="${-h - r - 36}" width="3" height="8" fill="var(--gold-dk)"/>
-      <polygon points="-5,${-h - r - 40} 5,${-h - r - 40} 0,${-h - r - 50}" fill="var(--gold)"/>
-      <circle cx="0" cy="${-h - r - 38}" r="1.5" fill="var(--gold)"/>
-      <!-- ridge highlight -->
-      <line x1="0" y1="${d - h}" x2="0" y2="${-h - r}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-    `;
-    html += isoBuilding({
-      id: 'meta-town-hall', label: 'Meta Town Hall',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--stone-mid)', left: 'var(--stone-dark)', frame: 'rgba(0,0,0,0.35)', base: 'var(--stone-shadow)' },
-      roof:  { right: 'var(--roof-blue)', left: 'var(--roof-blue-dk)', ridge: 'rgba(0,0,0,0.5)' },
-      texture: 'stone', roofTex: true,
-      details,
-    });
-  }
-
-  // ── Lorebook Library — red roof, ivy, books on top ──
-  {
-    const b = BUILDINGS['lorebook-library'];
-    const w = 66, d = 33, h = 76, r = 40;
-    const details = `
-      <!-- ivy on SW wall (climbs higher) -->
-      <rect x="${-w + 1}" y="${-h + 4}" width="3" height="${h - 4}" fill="#3e6432"/>
-      <circle cx="${-w + 2}" cy="${-h + 14}" r="2" fill="#588744"/>
-      <circle cx="${-w + 2}" cy="${-h + 28}" r="2" fill="#588744"/>
-      <circle cx="${-w + 2}" cy="${-h + 42}" r="2" fill="#588744"/>
-      <circle cx="${-w + 2}" cy="${-h + 56}" r="2.2" fill="#6a9645"/>
-      <circle cx="${-w + 4}" cy="${-h + 64}" r="1.8" fill="#588744"/>
-      <!-- door SW -->
-      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 28)}" fill="var(--wood-mid)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 25, 3)}" fill="var(--wood-dark)"/>
-      <!-- arched windows SE (lower row) -->
-      <polygon points="${seWallPoly(w, d, 0.25, 0.4, 14, 24)}" fill="var(--roof-blue-dk)" stroke="var(--stone-mid)" stroke-width="0.6"/>
-      <!-- lower-right window: lit, candle behind the glass -->
-      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 14, 24)}" fill="#cf9a2c" stroke="var(--stone-mid)" stroke-width="0.6"/>
-      <polygon class="candle-flicker" points="${seWallPoly(w, d, 0.57, 0.68, 16, 20)}" fill="#ffce5b"/>
-      <!-- upper row windows SE -->
-      <!-- upper-left window: lit, faintly flickering -->
-      <polygon points="${seWallPoly(w, d, 0.28, 0.4, 50, 14)}" fill="#a87a26" stroke="var(--stone-mid)" stroke-width="0.5"/>
-      <polygon class="candle-flicker d2" points="${seWallPoly(w, d, 0.29, 0.39, 51, 12)}" fill="#ffd97a"/>
-      <polygon points="${seWallPoly(w, d, 0.56, 0.68, 50, 14)}" fill="#3d597b" stroke="var(--stone-mid)" stroke-width="0.5"/>
-      <!-- books stacked on the SE roof slope (sits at ridge, visible against roof) -->
-      <g transform="translate(8, ${-h - r*0.5})">
-        <rect x="0" y="0" width="20" height="6" fill="#7a3c1f" stroke="#3a1a0c" stroke-width="0.5"/>
-        <rect x="0" y="0" width="20" height="1.5" fill="var(--gold)"/>
-        <rect x="2" y="-6" width="16" height="6" fill="#5a3a72" stroke="#2a1a40" stroke-width="0.5"/>
-        <rect x="2" y="-6" width="16" height="1.5" fill="var(--gold)"/>
-        <rect x="4" y="-12" width="12" height="6" fill="#3a5775" stroke="#1a2a40" stroke-width="0.5"/>
-        <rect x="4" y="-12" width="12" height="1.5" fill="var(--gold)"/>
-        <!-- bookmark ribbon -->
-        <rect x="10" y="-12" width="1.5" height="14" fill="#d8ad36"/>
-      </g>
-      <!-- LORE banner across SE roof -->
-      <polygon points="-14,${d - h - 8} 22,${-h - 4} 22,${-h + 4} -14,${d - h}" fill="var(--parchment)" opacity="0.9"/>
-      <text x="4" y="${d - h - 2}" font-family="Jacquard 12" font-size="11" fill="var(--ink)" transform="rotate(-26 4 ${d-h-2})">LORE</text>
-    `;
-    html += isoBuilding({
-      id: 'lorebook-library', label: 'Lorebook Library',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.3)', base: 'var(--stone-shadow)' },
-      roof:  { right: 'var(--roof-red)', left: 'var(--roof-red-dk)', ridge: 'rgba(0,0,0,0.45)' },
-      texture: 'stone', roofTex: true,
-      details,
-    });
-  }
-
-  // ── Bank — dark stone vault with gold trim ──
-  {
-    const b = BUILDINGS['bank'];
-    const w = 72, d = 36, h = 82, r = 44;
-    const details = `
-      <!-- gold trim band across top of both walls -->
-      <polygon points="${0},${d - h + 2} ${w},${-h + 2} ${w},${-h + 5} ${0},${d - h + 5}" fill="var(--gold)"/>
-      <polygon points="${0},${d - h + 2} ${-w},${-h + 2} ${-w},${-h + 5} ${0},${d - h + 5}" fill="var(--gold-dk)"/>
-      <!-- reinforced band lower -->
-      <polygon points="${0},${d - 28} ${w},${-28} ${w},${-25} ${0},${d - 25}" fill="#1f1812"/>
-      <polygon points="${0},${d - 28} ${-w},${-28} ${-w},${-25} ${0},${d - 25}" fill="#1f1812"/>
-      <!-- big double doors on SW -->
-      <polygon points="${swWallPoly(w, d, 0.32, 0.55, 0, 36)}" fill="var(--gold-dk)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.32, 0.55, 33, 3)}" fill="var(--gold)"/>
-      <line x1="${-w*0.435}" y1="${d*0.565}" x2="${-w*0.435}" y2="${d*0.565 - 36}" stroke="#5a4520" stroke-width="1"/>
-      <!-- gold $ symbol on apex -->
-      <rect x="-5" y="${-h - r + 4}" width="10" height="3" fill="var(--gold)"/>
-      <rect x="-2" y="${-h - r}"     width="4"  height="11" fill="var(--gold)"/>
-      <rect x="-5" y="${-h - r + 8}" width="10" height="3" fill="var(--gold)"/>
-      <!-- coin pile in front — distinct coins with rim outline -->
-      <ellipse cx="0" cy="${d + 14}" rx="22" ry="4" fill="rgba(0,0,0,0.4)"/>
-      <circle cx="-11" cy="${d + 12}" r="3" fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="1"/>
-      <circle cx="-4"  cy="${d + 13}" r="3" fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="1"/>
-      <circle cx="3"   cy="${d + 12}" r="3" fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="1"/>
-      <circle cx="10"  cy="${d + 13}" r="3" fill="var(--gold)" stroke="var(--gold-dk)" stroke-width="1"/>
-      <circle cx="-7"  cy="${d + 9}"  r="3" fill="#f0c344" stroke="var(--gold-dk)" stroke-width="1"/>
-      <circle cx="0"   cy="${d + 9}"  r="3" fill="#f0c344" stroke="var(--gold-dk)" stroke-width="1"/>
-      <circle cx="7"   cy="${d + 9}"  r="3" fill="#f0c344" stroke="var(--gold-dk)" stroke-width="1"/>
-      <circle cx="-3"  cy="${d + 6}"  r="2.5" fill="#f8d050" stroke="var(--gold-dk)" stroke-width="0.8"/>
-      <circle cx="3"   cy="${d + 6}"  r="2.5" fill="#f8d050" stroke="var(--gold-dk)" stroke-width="0.8"/>
-    `;
-    html += isoBuilding({
-      id: 'bank', label: 'Bank',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--stone-dark)', left: '#2a241e', frame: 'rgba(0,0,0,0.55)', base: '#1c1812' },
-      roof:  { right: 'var(--roof-red-dk)', left: '#4d1d13', ridge: '#1a0e04' },
-      texture: 'stone', roofTex: true,
-      details,
-    });
-  }
-
-  // ── Hall of Mirrors — short walls, dome on top ──
-  {
-    const b = BUILDINGS['examine-hall'];
-    const w = 54, d = 27, h = 50, r = 10;
-    const details = `
-      <!-- mirror window SW: silver gleam parallelogram -->
-      <polygon points="${swWallPoly(w, d, 0.25, 0.5, 8, 22)}" fill="#a8c5d8" stroke="#5d7d96" stroke-width="0.8"/>
-      <polygon points="${swWallPoly(w, d, 0.3, 0.34, 12, 18)}" fill="#d8e8f0"/>
-      <!-- mirror window SE -->
-      <polygon points="${seWallPoly(w, d, 0.25, 0.5, 8, 22)}" fill="#a8c5d8" stroke="#5d7d96" stroke-width="0.8"/>
-      <polygon points="${seWallPoly(w, d, 0.3, 0.34, 12, 18)}" fill="#d8e8f0"/>
-      <!-- small door front -->
-      <polygon points="${swWallPoly(w, d, 0.55, 0.65, 0, 22)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
-      <!-- dome above the (almost flat) roof apex — sized to wall base, not a UFO -->
-      <ellipse cx="0" cy="${-h - r - 6}" rx="22" ry="11" fill="var(--roof-purple)"/>
-      <ellipse cx="0" cy="${-h - r - 6}" rx="22" ry="11" fill="none" stroke="var(--roof-purple-dk)" stroke-width="1.2"/>
-      <ellipse cx="-5" cy="${-h - r - 9}" rx="10" ry="3.5" fill="rgba(255,255,255,0.22)"/>
-      <!-- finial -->
-      <rect x="-1" y="${-h - r - 24}" width="2" height="8" fill="var(--gold-dk)"/>
-      <circle cx="0" cy="${-h - r - 26}" r="2.5" fill="var(--gold)"/>
-    `;
-    html += isoBuilding({
-      id: 'examine-hall', label: 'Hall of Mirrors',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.3)', base: 'var(--stone-shadow)' },
-      roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: 'rgba(0,0,0,0.5)' },
-      texture: 'stone', roofTex: true,
-      details,
-    });
-  }
-
-  // ── Quest Hall — big wooden tavern, the heart ──
-  {
-    const b = BUILDINGS['quest-hall'];
-    const w = 88, d = 44, h = 88, r = 46;
-    const details = `
-      <!-- timber framing across walls (vertical posts) -->
-      <line x1="${-w*0.4}" y1="${d*0.4}" x2="${-w*0.4}" y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
-      <line x1="${-w*0.75}" y1="${d*0.25}" x2="${-w*0.75}" y2="${d*0.25 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
-      <line x1="${w*0.4}" y1="${d*0.4}" x2="${w*0.4}" y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
-      <line x1="${w*0.75}" y1="${d*0.25}" x2="${w*0.75}" y2="${d*0.25 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
-      <!-- mid horizontal beam -->
-      <polygon points="${0},${d*0.5} ${w},${-h*0.5} ${w},${-h*0.5 + 3} ${0},${d*0.5 + 3}" fill="var(--wood-shadow)" opacity="0.5"/>
-      <polygon points="${0},${d*0.5} ${-w},${-h*0.5} ${-w},${-h*0.5 + 3} ${0},${d*0.5 + 3}" fill="var(--wood-shadow)" opacity="0.5"/>
-      <!-- big door SW -->
-      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 38)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 35, 3)}" fill="#1a0e04"/>
-      <line x1="${-w*0.475}" y1="${d*0.525}" x2="${-w*0.475}" y2="${d*0.525 - 38}" stroke="#1a0e04" stroke-width="1.5"/>
-      <!-- door handle -->
-      <circle cx="${-w*0.42}" cy="${d*0.58 - 18}" r="1.2" fill="var(--gold)"/>
-      <!-- lit windows SE -->
-      <polygon points="${seWallPoly(w, d, 0.2, 0.35, 22, 14)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 22, 14)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.2, 0.35, 42, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.55, 0.7, 42, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <!-- lit windows SW -->
-      <polygon points="${swWallPoly(w, d, 0.15, 0.3, 24, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <polygon points="${swWallPoly(w, d, 0.7, 0.85, 24, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <!-- upper-row lit windows (second floor) -->
-      <polygon points="${swWallPoly(w, d, 0.2, 0.32, 60, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.68, 0.8, 60, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.5"/>
-      <polygon points="${seWallPoly(w, d, 0.25, 0.37, 62, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.5"/>
-      <polygon points="${seWallPoly(w, d, 0.62, 0.74, 62, 12)}" fill="#f0c050" stroke="var(--wood-dark)" stroke-width="0.5"/>
-      <!-- chimney + smoke on apex (right) -->
-      <rect x="14" y="${-h - r + 6}" width="9" height="14" fill="var(--stone-dark)"/>
-      <rect x="14" y="${-h - r + 6}" width="9" height="2" fill="#1a0e04"/>
-      <circle class="smoke"    cx="18" cy="${-h - r + 4}" r="3" fill="rgba(220,220,220,0.6)"/>
-      <circle class="smoke d1" cx="18" cy="${-h - r + 4}" r="3" fill="rgba(220,220,220,0.5)"/>
-      <circle class="smoke d2" cx="18" cy="${-h - r + 4}" r="3" fill="rgba(220,220,220,0.55)"/>
-      <!-- hanging sign by SW wall -->
-      <rect x="${-w - 2}" y="${-26}" width="2" height="22" fill="var(--wood-dark)"/>
-      <line x1="${-w - 1}" y1="-22" x2="${-w + 14}" y2="-14" stroke="var(--wood-dark)" stroke-width="2"/>
-      <polygon points="${-w + 14},-14 ${-w + 32},-6 ${-w + 32},10 ${-w + 14},2" fill="var(--parchment)"/>
-      <text x="${-w + 23}" y="-1" font-family="Jacquard 12" font-size="9" fill="var(--ink)" transform="rotate(-26 ${-w+23} -1)">QUEST</text>
-      <!-- torches by the door -->
-      <rect x="${-w*0.32}" y="${d*0.68 - 18}" width="1.5" height="14" fill="var(--wood-dark)"/>
-      <ellipse class="torch-flame" cx="${-w*0.32 + 0.75}" cy="${d*0.68 - 22}" rx="2.5" ry="4" fill="#ffaa3c"/>
-      <ellipse class="torch-flame" cx="${-w*0.32 + 0.75}" cy="${d*0.68 - 22}" rx="1" ry="2.5" fill="#ffeb88"/>
-    `;
-    html += isoBuilding({
-      id: 'quest-hall', label: 'Quest Hall',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--wood-mid)', left: 'var(--wood-dark)', frame: 'rgba(0,0,0,0.5)', base: 'var(--wood-shadow)' },
-      roof:  { right: 'var(--roof-green)', left: 'var(--roof-green-dk)', ridge: 'rgba(0,0,0,0.5)' },
-      texture: 'wood', roofTex: true,
-      details,
-    });
-  }
-
-  // ── Spellbook Tower — towering wizard spire, the tallest in the village ──
-  {
-    const b = BUILDINGS['spellbook-tower'];
-    const w = 44, d = 22, h = 156, r = 84;
-    const details = `
-      <!-- tower bands (5 bands for the tall wall) -->
-      <polygon points="${0},${d - 30} ${w},${-30} ${w},${-27} ${0},${d - 27}" fill="rgba(0,0,0,0.3)"/>
-      <polygon points="${0},${d - 30} ${-w},${-30} ${-w},${-27} ${0},${d - 27}" fill="rgba(0,0,0,0.4)"/>
-      <polygon points="${0},${d - 60} ${w},${-60} ${w},${-57} ${0},${d - 57}" fill="rgba(0,0,0,0.3)"/>
-      <polygon points="${0},${d - 60} ${-w},${-60} ${-w},${-57} ${0},${d - 57}" fill="rgba(0,0,0,0.4)"/>
-      <polygon points="${0},${d - 90} ${w},${-90} ${w},${-87} ${0},${d - 87}" fill="rgba(0,0,0,0.3)"/>
-      <polygon points="${0},${d - 90} ${-w},${-90} ${-w},${-87} ${0},${d - 87}" fill="rgba(0,0,0,0.4)"/>
-      <polygon points="${0},${d - 120} ${w},${-120} ${w},${-117} ${0},${d - 117}" fill="rgba(0,0,0,0.3)"/>
-      <polygon points="${0},${d - 120} ${-w},${-120} ${-w},${-117} ${0},${d - 117}" fill="rgba(0,0,0,0.4)"/>
-      <polygon points="${0},${d - 144} ${w},${-144} ${w},${-141} ${0},${d - 141}" fill="rgba(0,0,0,0.3)"/>
-      <polygon points="${0},${d - 144} ${-w},${-144} ${-w},${-141} ${0},${d - 141}" fill="rgba(0,0,0,0.4)"/>
-      <!-- arrow-slit windows (upper) -->
-      <polygon points="${swWallPoly(w, d, 0.4, 0.45, 104, 14)}" fill="var(--roof-purple-dk)"/>
-      <polygon points="${seWallPoly(w, d, 0.55, 0.6, 104, 14)}" fill="var(--roof-purple-dk)"/>
-      <polygon points="${swWallPoly(w, d, 0.4, 0.45, 132, 14)}" fill="var(--roof-purple-dk)"/>
-      <polygon points="${seWallPoly(w, d, 0.55, 0.6, 132, 14)}" fill="var(--roof-purple-dk)"/>
-      <!-- arrow-slit windows (lower) -->
-      <polygon points="${swWallPoly(w, d, 0.4, 0.45, 76, 12)}" fill="var(--roof-purple-dk)"/>
-      <polygon points="${seWallPoly(w, d, 0.55, 0.6, 76, 12)}" fill="var(--roof-purple-dk)"/>
-      <!-- magic window SW middle (glows) -->
-      <polygon points="${swWallPoly(w, d, 0.32, 0.6, 38, 18)}" fill="#b89cd8" stroke="#5b3d6e" stroke-width="0.8"/>
-      <polygon points="${swWallPoly(w, d, 0.4, 0.5, 42, 14)}" fill="#fff0ff"/>
-      <polygon points="${swWallPoly(w, d, 0.42, 0.48, 44, 10)}" fill="#ffd8ff"/>
-      <!-- crenellation at top of wall -->
-      <rect x="${-w + 2}" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
-      <rect x="${-w + 12}" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
-      <rect x="${w - 16}" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
-      <rect x="${w - 6}" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
-      <rect x="-2" y="${-h - 1}" width="4" height="5" fill="var(--stone-light)"/>
-      <!-- door -->
-      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 24)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 22, 2)}" fill="#1a0e04"/>
-      <circle cx="${-w*0.46}" cy="${d*0.54 - 12}" r="1" fill="var(--gold)"/>
-      <!-- magic aura around star -->
-      <circle class="tower-aura" cx="0" cy="${-h - r + 18}" r="28" fill="url(#auraGrad)"/>
-      <!-- spire decorative bands -->
-      <line x1="-${w*0.6}" y1="${-h - r*0.35}" x2="${w*0.6}" y2="${-h - r*0.35}" stroke="rgba(255,255,255,0.12)" stroke-width="0.5"/>
-      <!-- finial -->
-      <rect x="-1.2" y="${-h - r - 6}" width="2.4" height="10" fill="var(--gold-dk)"/>
-      <polygon points="0,${-h - r - 18} 4,${-h - r - 10} 9,${-h - r - 8} 5,${-h - r - 3} 7,${-h - r + 5} 0,${-h - r} -7,${-h - r + 5} -5,${-h - r - 3} -9,${-h - r - 8} -4,${-h - r - 10}" fill="var(--gold)"/>
-      <circle cx="0" cy="${-h - r - 4}" r="2" fill="#fff8d8"/>
-    `;
-    html += isoBuilding({
-      id: 'spellbook-tower', label: 'Spellbook Tower',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--stone-light)', left: 'var(--stone-mid)', frame: 'rgba(0,0,0,0.35)', base: 'var(--stone-shadow)' },
-      roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: '#2a1a3a' },
-      texture: 'stone', roofTex: true,
-      details,
-    });
-  }
-
-  // ── Keepsake Vault — small ornate with gem ──
-  {
-    const b = BUILDINGS['keepsake-vault'];
-    const w = 50, d = 25, h = 56, r = 46;
-    const details = `
-      <!-- gold trim top and bottom -->
-      <polygon points="${0},${d - 4} ${w},${-4} ${w},${-2} ${0},${d - 2}" fill="var(--gold)"/>
-      <polygon points="${0},${d - 4} ${-w},${-4} ${-w},${-2} ${0},${d - 2}" fill="var(--gold-dk)"/>
-      <polygon points="${0},${d - h + 4} ${w},${-h + 4} ${w},${-h + 6} ${0},${d - h + 6}" fill="var(--gold)"/>
-      <polygon points="${0},${d - h + 4} ${-w},${-h + 4} ${-w},${-h + 6} ${0},${d - h + 6}" fill="var(--gold-dk)"/>
-      <!-- ornate door SW -->
-      <polygon points="${swWallPoly(w, d, 0.4, 0.55, 0, 24)}" fill="var(--gold-dk)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${-w*0.4 - 1},${d*0.6 - 24} ${-w*0.55 + 1},${d*0.45 - 24} ${-w*0.475},${d*0.525 - 30}" fill="var(--gold)"/>
-      <!-- round windows -->
-      <circle cx="${-w*0.2}" cy="${d*0.2 - 22}" r="4" fill="#b89cd8" stroke="var(--gold)" stroke-width="0.8"/>
-      <circle cx="${w*0.4}"  cy="${-d*0.4 - 22}" r="4" fill="#b89cd8" stroke="var(--gold)" stroke-width="0.8"/>
-      <!-- gem at apex -->
-      <polygon points="0,${-h - r - 4} -7,${-h - r + 8} 0,${-h - r + 20} 7,${-h - r + 8}" fill="#f0a8e0"/>
-      <polygon points="0,${-h - r - 4} -7,${-h - r + 8} 0,${-h - r + 8}" fill="#f8c0ec"/>
-      <circle class="gem-shine" cx="0" cy="${-h - r + 4}" r="14" fill="url(#gemGlow)"/>
-      <!-- crown spikes around gem -->
-      <polygon points="-9,${-h - r + 6} -7,${-h - r + 8} -5,${-h - r + 6} -7,${-h - r}" fill="var(--gold)"/>
-      <polygon points="9,${-h - r + 6} 7,${-h - r + 8} 5,${-h - r + 6} 7,${-h - r}" fill="var(--gold)"/>
-    `;
-    html += isoBuilding({
-      id: 'keepsake-vault', label: 'Keepsake Vault',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--stone-dark)', left: '#2a241e', frame: 'rgba(0,0,0,0.5)', base: '#1c1812' },
-      roof:  { right: 'var(--roof-purple)', left: 'var(--roof-purple-dk)', ridge: '#2a1a3a' },
-      texture: 'stone', roofTex: true,
-      details,
-    });
-  }
-
-  // ── The Inn — warm wood, lit windows, chimney smoke, mug sign ──
-  {
-    const b = BUILDINGS['inn'];
-    const w = 72, d = 36, h = 76, r = 38;
-    const details = `
-      <!-- timber framing -->
-      <line x1="${-w*0.4}" y1="${d*0.4}" x2="${-w*0.4}" y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
-      <line x1="${w*0.4}"  y1="${d*0.4}" x2="${w*0.4}"  y2="${d*0.4 - h}" stroke="var(--wood-shadow)" stroke-width="2"/>
-      <polygon points="${0},${d*0.45} ${w},${-h*0.45}  ${w},${-h*0.45 + 3} ${0},${d*0.45 + 3}" fill="var(--wood-shadow)" opacity="0.5"/>
-      <polygon points="${0},${d*0.45} ${-w},${-h*0.45} ${-w},${-h*0.45 + 3} ${0},${d*0.45 + 3}" fill="var(--wood-shadow)" opacity="0.5"/>
-      <!-- door SW -->
-      <polygon points="${swWallPoly(w, d, 0.42, 0.55, 0, 26)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.42, 0.55, 23, 3)}" fill="#1a0e04"/>
-      <!-- lit windows SE -->
-      <polygon points="${seWallPoly(w, d, 0.18, 0.32, 16, 12)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.58, 0.72, 16, 12)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.18, 0.32, 34, 10)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <polygon points="${seWallPoly(w, d, 0.58, 0.72, 34, 10)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <!-- lit windows SW -->
-      <polygon points="${swWallPoly(w, d, 0.13, 0.28, 18, 12)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <polygon points="${swWallPoly(w, d, 0.7, 0.85, 18, 12)}" fill="#ffce5b" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <!-- chimney + smoke on SW side of roof -->
-      <rect x="-22" y="${-h - r + 4}" width="9" height="14" fill="var(--stone-dark)"/>
-      <rect x="-22" y="${-h - r + 4}" width="9" height="2" fill="#1a0e04"/>
-      <circle class="smoke"    cx="-18" cy="${-h - r + 2}" r="3" fill="rgba(220,220,220,0.6)"/>
-      <circle class="smoke d1" cx="-18" cy="${-h - r + 2}" r="3" fill="rgba(220,220,220,0.5)"/>
-      <circle class="smoke d2" cx="-18" cy="${-h - r + 2}" r="3" fill="rgba(220,220,220,0.55)"/>
-      <!-- mug sign on SE -->
-      <rect x="${w + 2}" y="${-30}" width="2" height="22" fill="var(--wood-dark)"/>
-      <line x1="${w + 1}" y1="-26" x2="${w - 14}" y2="-18" stroke="var(--wood-dark)" stroke-width="2"/>
-      <polygon points="${w - 14},-18 ${w - 32},-10 ${w - 32},6 ${w - 14},-2" fill="var(--parchment)"/>
-      <g transform="translate(${w - 23} -6)">
-        <rect x="-4" y="-3" width="8" height="6" fill="var(--wood-mid)"/>
-        <rect x="-4" y="-3" width="8" height="2" fill="#f0e2b8"/>
-        <rect x="2"  y="-2" width="3" height="4" fill="var(--wood-mid)"/>
-      </g>
-    `;
-    html += isoBuilding({
-      id: 'inn', label: 'The Inn',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--wood-light)', left: 'var(--wood-mid)', frame: 'rgba(0,0,0,0.45)', base: 'var(--wood-shadow)' },
-      roof:  { right: 'var(--roof-red)', left: 'var(--roof-red-dk)', ridge: 'rgba(0,0,0,0.5)' },
-      texture: 'wood', roofTex: true,
-      details,
-    });
-  }
-
-  // ── Braindead's Workshop — half-finished shack, scaffolding, sawhorse, tools ──
-  {
-    const b = BUILDINGS['braindead-workshop'];
-    const w = 38, d = 22, h = 38, r = 14;
-    const details = `
-      <!-- scaffolding on SE — vertical poles + crossbeams sticking above the roof line -->
-      <line x1="${w - 2}" y1="${-h + 4}" x2="${w - 2}" y2="${-h - r - 18}" stroke="var(--wood-dark)" stroke-width="1.6"/>
-      <line x1="${w + 8}" y1="${-h + 9}" x2="${w + 8}" y2="${-h - 10}" stroke="var(--wood-dark)" stroke-width="1.6"/>
-      <line x1="${w - 2}" y1="${-h - 10}" x2="${w + 8}" y2="${-h - 6}" stroke="var(--wood-mid)" stroke-width="1.4"/>
-      <line x1="${w - 2}" y1="${-h - 22}" x2="${w + 8}" y2="${-h - 18}" stroke="var(--wood-mid)" stroke-width="1.4"/>
-      <!-- diagonal brace -->
-      <line x1="${w - 2}" y1="${-h - 4}" x2="${w + 8}" y2="${-h - 18}" stroke="var(--wood-mid)" stroke-width="1"/>
-      <!-- a single plank propped against the roof ridge -->
-      <line x1="${w + 6}" y1="${-h - 6}" x2="${-2}" y2="${-h - r - 4}" stroke="var(--wood-light)" stroke-width="1.6"/>
-
-      <!-- forge chimney + smoke on SW side of roof. The workshop's a smithing
-           shed; smoke is steady but light, matches braindead's slow tinkering. -->
-      <rect x="${-w + 8}" y="${-h - r + 2}" width="6" height="10" fill="var(--stone-dark)"/>
-      <rect x="${-w + 8}" y="${-h - r + 2}" width="6" height="1.5" fill="#1a0e04"/>
-      <circle class="forge-smoke"    cx="${-w + 11}" cy="${-h - r}" r="2.4" fill="rgba(210,200,185,0.55)"/>
-      <circle class="forge-smoke d1" cx="${-w + 11}" cy="${-h - r}" r="2.4" fill="rgba(210,200,185,0.45)"/>
-      <circle class="forge-smoke d2" cx="${-w + 11}" cy="${-h - r}" r="2.4" fill="rgba(210,200,185,0.5)"/>
-
-      <!-- door SW: simple plank door with bandage-wrapped handle -->
-      <polygon points="${swWallPoly(w, d, 0.38, 0.55, 0, 22)}" fill="var(--wood-dark)" stroke="var(--ink)" stroke-width="0.5"/>
-      <polygon points="${swWallPoly(w, d, 0.38, 0.55, 19, 3)}" fill="var(--wood-shadow)"/>
-      <!-- horizontal plank lines -->
-      <line x1="${-w * 0.38}" y1="${d * 0.62 - 10}" x2="${-w * 0.55}" y2="${d * 0.45 - 10}" stroke="rgba(0,0,0,0.4)" stroke-width="0.4"/>
-      <line x1="${-w * 0.38}" y1="${d * 0.62 - 6}"  x2="${-w * 0.55}" y2="${d * 0.45 - 6}"  stroke="rgba(0,0,0,0.4)" stroke-width="0.4"/>
-      <!-- small lit window SE -->
-      <polygon points="${seWallPoly(w, d, 0.42, 0.58, 16, 10)}" fill="#cf9a2c" stroke="var(--wood-dark)" stroke-width="0.6"/>
-      <line x1="${w * 0.5}" y1="${d * 0.5 - 21}" x2="${w * 0.5}" y2="${d * 0.5 - 11}" stroke="var(--wood-dark)" stroke-width="0.4"/>
-      <!-- blueprint pinned to SW wall -->
-      <polygon points="${swWallPoly(w, d, 0.15, 0.32, 10, 8)}" fill="#8d9bb2" stroke="var(--ink)" stroke-width="0.4"/>
-      <polygon points="${swWallPoly(w, d, 0.17, 0.30, 11, 6)}" fill="#a8b5cc"/>
-      <!-- crooked timber framing on SE -->
-      <line x1="${w * 0.18}" y1="${d * 0.82}" x2="${w * 0.22}" y2="${-h + 2}" stroke="var(--wood-shadow)" stroke-width="1.2"/>
-      <line x1="${w * 0.78}" y1="${d * 0.22}" x2="${w * 0.78}" y2="${-h * 0.4}" stroke="var(--wood-shadow)" stroke-width="1.2"/>
-
-      <!-- sawhorse on the SW side, in front of the door -->
-      <g transform="translate(${-w - 4}, ${d + 8})">
-        <rect x="-6" y="-2" width="12" height="1.5" fill="var(--wood-mid)"/>
-        <line x1="-5" y1="-1" x2="-7" y2="3" stroke="var(--wood-dark)" stroke-width="0.8"/>
-        <line x1="-5" y1="-1" x2="-3" y2="3" stroke="var(--wood-dark)" stroke-width="0.8"/>
-        <line x1="5"  y1="-1" x2="3"  y2="3" stroke="var(--wood-dark)" stroke-width="0.8"/>
-        <line x1="5"  y1="-1" x2="7"  y2="3" stroke="var(--wood-dark)" stroke-width="0.8"/>
-        <!-- half-cut plank -->
-        <rect x="-8" y="-3" width="6" height="1" fill="var(--wood-light)"/>
-      </g>
-
-      <!-- toolbox at SE ground -->
-      <g transform="translate(${w + 2}, ${d + 4})">
-        <rect x="-4" y="-3" width="8" height="3.5" fill="var(--wood-dark)"/>
-        <rect x="-4" y="-3" width="8" height="1" fill="var(--wood-mid)"/>
-        <rect x="-3" y="-5" width="6" height="1" fill="var(--braindead-hammer)"/>
-        <rect x="2"  y="-5" width="1" height="2" fill="var(--braindead-hammer)"/>
-      </g>
-    `;
-    html += isoBuilding({
-      id: 'braindead-workshop', label: 'The Workshop',
-      cx: b.x, cy: b.y, w, d, h, r,
-      walls: { right: 'var(--wood-light)', left: 'var(--wood-mid)', frame: 'rgba(0,0,0,0.45)', base: 'var(--wood-shadow)' },
-      roof:  { right: 'var(--braindead-robe)', left: 'var(--braindead-robe-dk)', ridge: 'rgba(0,0,0,0.5)' },
-      texture: 'wood', roofTex: true,
-      details,
-    });
-  }
-
-  // ── The Iceberg — penguin research outpost. Terrain-shaped, not architecture:
-  //    a glacier mound on the NE edge of the map, opposite Braindead's workshop.
-  //    KGP flag on top — Komitet Gosudarstvennoy Pingvinnosti, the penguin
-  //    intelligence service from RS lore. Penguins are outward-facing operatives;
-  //    the iceberg is their HQ for external work. ──
-  {
-    const b = BUILDINGS['iceberg'];
-    html += `<g class="building" data-id="iceberg" transform="translate(${b.x},${b.y})">
-      <!-- soft shadow on the snow -->
-      <ellipse cx="0" cy="42" rx="78" ry="14" fill="rgba(20,30,55,0.35)"/>
-      <!-- waterline / icy puddle around base -->
-      <ellipse cx="0" cy="38" rx="68" ry="9" fill="#b8d2dc" opacity="0.55"/>
-      <ellipse cx="0" cy="36" rx="62" ry="6" fill="#dde9ee" opacity="0.6"/>
-      <!-- base ice slab (broad, SE-lit) -->
-      <polygon points="-66,38 -52,8 -24,2 24,-2 50,6 66,38" fill="#9eb8c8"/>
-      <polygon points="-52,8 -24,2 24,-2 50,6 0,38" fill="#cbdce4"/>
-      <!-- mid mound — taller central peak -->
-      <polygon points="-44,4 -18,-44 14,-58 38,-32 44,8" fill="#aac4d0"/>
-      <polygon points="-18,-44 14,-58 38,-32 6,-12" fill="#d8e6ec"/>
-      <!-- highlight wedge on SW face (sun-catching) -->
-      <polygon points="-44,4 -18,-44 -22,-12" fill="#e6eef2"/>
-      <polygon points="-44,4 -22,-12 -8,8" fill="#f0f4f6" opacity="0.8"/>
-      <!-- secondary peak (back-left, shorter) -->
-      <polygon points="-58,2 -48,-26 -30,-32 -22,-12 -44,4" fill="#b8ccd6"/>
-      <polygon points="-48,-26 -30,-32 -36,-10" fill="#dce8ee"/>
-      <!-- small front-right spur -->
-      <polygon points="36,16 52,-6 60,6 56,28" fill="#a8c0cc"/>
-      <polygon points="52,-6 60,6 54,12" fill="#d2e0e6"/>
-      <!-- ice cracks on the main face -->
-      <line x1="-20" y1="-30" x2="-10" y2="-4" stroke="rgba(40,70,90,0.4)" stroke-width="0.8"/>
-      <line x1="6" y1="-44" x2="12" y2="-18" stroke="rgba(40,70,90,0.35)" stroke-width="0.7"/>
-      <line x1="24" y1="-36" x2="32" y2="-14" stroke="rgba(40,70,90,0.4)" stroke-width="0.8"/>
-      <line x1="-30" y1="-20" x2="-22" y2="-2" stroke="rgba(40,70,90,0.3)" stroke-width="0.6"/>
-      <!-- snow caps on the peaks (lighter highlights) -->
-      <polygon points="14,-58 22,-52 8,-46" fill="#ffffff" opacity="0.9"/>
-      <polygon points="-30,-32 -22,-28 -32,-22" fill="#f4f8fa" opacity="0.85"/>
-      <!-- KGP flag pole + banner on top of central peak -->
-      <line x1="14" y1="-58" x2="14" y2="-86" stroke="#3a2c1c" stroke-width="1.4"/>
-      <polygon points="14,-86 32,-82 32,-72 14,-76" fill="#1c1f2c"/>
-      <polygon points="14,-86 32,-82 32,-80 14,-84" fill="#0b0d14"/>
-      <text x="23" y="-77" text-anchor="middle" font-family="VT323" font-size="7" fill="#ffba48">KGP</text>
-      <!-- small fish/intel-scroll pile at the base (foreshadow of the operatives) -->
-      <ellipse cx="-26" cy="32" rx="6" ry="2" fill="#5a6e7e"/>
-      <ellipse cx="-26" cy="31" rx="5" ry="1.4" fill="#7a8e9e"/>
-      <rect x="22" y="28" width="10" height="3" fill="#d4c294" stroke="#7a6a3a" stroke-width="0.3"/>
-      <rect x="22" y="28" width="10" height="0.8" fill="#e2d2a8"/>
-    </g>`;
-  }
-
+  Object.entries(BUILDINGS).forEach(([id, b]) => {
+    const sp = BLD_SPRITE_DIMS[id];
+    if (!sp) return;
+    const w = sp.w * SCALE;
+    const h = sp.h * SCALE;
+    const x = b.x - w / 2;
+    const y = b.y + Y_DROP - h;
+    html += `<g class="building" data-id="${id}">` +
+            `<image href="sprites/${id}.png" x="${x}" y="${y}" width="${w}" height="${h}" ` +
+            `preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"/>` +
+            `</g>`;
+  });
   layer.innerHTML = html;
 }
 
@@ -2914,30 +2370,19 @@ function spawnDwarf(ev) {
   g.setAttribute('transform', `translate(${x},${y})`);
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
 
+  // PNG approach (S039): per-spawn color tint dropped; the ID badge below the
+  // sprite is now the only per-instance distinguisher. `ev.color` retained on
+  // the node record for state-file compatibility but no longer affects render.
   const colorMap = {'dwarf-1':'#cf9a2c', 'dwarf-2':'#b54a32', 'dwarf-3':'#46946c'};
   const hat = colorMap[ev.color] || '#cf9a2c';
 
   g.innerHTML = `
     <g class="bob">
-      <g transform="scale(1.7)">
-        <ellipse cx="0" cy="3" rx="5.5" ry="1.7" fill="rgba(0,0,0,0.45)"/>
-        <rect x="-4" y="-4" width="8" height="7" fill="#5a4530"/>
-        <rect x="-4" y="-1" width="8" height="1" fill="#3a2c1c"/>
-        <rect x="-5" y="-3" width="1" height="5" fill="#5a4530"/>
-        <rect x="4"  y="-3" width="1" height="5" fill="#5a4530"/>
-        <rect x="-3" y="-8" width="6" height="4" fill="#e2b88a"/>
-        <rect x="-3" y="-6" width="6" height="3" fill="#d8c694"/>
-        <rect x="-2" y="-3" width="4" height="1" fill="#d8c694"/>
-        <rect x="-2" y="-7" width="1" height="1" fill="#28201a"/>
-        <rect x="1"  y="-7" width="1" height="1" fill="#28201a"/>
-        <rect x="-4" y="-10" width="8" height="2" fill="${hat}"/>
-        <rect x="-3" y="-12" width="6" height="2" fill="${hat}"/>
-        <rect x="-3" y="-11" width="6" height="1" fill="rgba(0,0,0,0.25)"/>
-        <rect x="5" y="-7" width="1" height="9" fill="#4a2f1a"/>
-        <rect x="3" y="-8" width="5" height="2" fill="#a8a8a8"/>
-        <rect x="3" y="-8" width="5" height="1" fill="#d4d4d4"/>
-        <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
-      </g>
+      <ellipse cx="0" cy="5" rx="9" ry="2.9" fill="rgba(0,0,0,0.45)"/>
+      <image href="sprites/dwarf.png" x="-16" y="-32" width="32" height="35"
+             preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"
+             style="image-rendering: pixelated;"/>
+      <text x="0" y="15" text-anchor="middle" font-family="VT323" font-size="11" fill="#fff" stroke="#000" stroke-width="0.6">${ev.id}</text>
     </g>
   `;
   charactersLayer.appendChild(g);
@@ -2973,37 +2418,18 @@ function spawnGnome(ev) {
   g.setAttribute('transform', `translate(${x},${y})`);
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
 
+  // PNG approach (S039): per-spawn hat color tint dropped, ID badge is the
+  // distinguisher.
   const colorMap = {'gnome-1':'#6b7da6', 'gnome-2':'#8b6caf', 'gnome-3':'#5d8a7e'};
   const hat = colorMap[ev.color] || '#6b7da6';
-  // Tall pointy hat + scroll + small body — distinct silhouette from dwarves.
-  // Slimmer body (6 wide vs dwarves' 8), taller hat (-14 to -7 vs dwarves'
-  // -12 to -8), beard tuft in --gnome-beard, vest in --gnome-vest, scroll
-  // in right hand instead of dwarves' hammer.
+
   g.innerHTML = `
     <g class="bob">
-      <g transform="scale(1.7)">
-        <ellipse cx="0" cy="3" rx="4.8" ry="1.6" fill="rgba(0,0,0,0.45)"/>
-        <polygon points="-3.5,-7 3.5,-7 0,-15" fill="${hat}"/>
-        <rect x="-3.5" y="-7" width="7" height="1.2" fill="rgba(0,0,0,0.3)"/>
-        <rect x="-0.5" y="-15" width="1" height="1" fill="#e8d8a8"/>
-        <rect x="-2.5" y="-6" width="5" height="3" fill="#e2b88a"/>
-        <rect x="-1.8" y="-5" width="1" height="1" fill="#28201a"/>
-        <rect x="0.8"  y="-5" width="1" height="1" fill="#28201a"/>
-        <rect x="-3" y="-3" width="6" height="2.5" fill="#d8d0b8"/>
-        <rect x="-2.5" y="-1.8" width="5" height="0.6" fill="#bab2a0"/>
-        <rect x="-3" y="-1" width="6" height="5" fill="#6e5a3e"/>
-        <rect x="-3" y="-1" width="6" height="0.8" fill="#4a3a26"/>
-        <rect x="-1" y="-1" width="2" height="5" fill="#4a3a26"/>
-        <rect x="-4" y="-1" width="1" height="4" fill="${hat}"/>
-        <rect x="3"  y="-1" width="1" height="4" fill="${hat}"/>
-        <rect x="4" y="-2" width="2.5" height="5" fill="#efe2bb"/>
-        <rect x="4" y="-2" width="2.5" height="0.8" fill="#d8c694"/>
-        <rect x="4" y="2.2" width="2.5" height="0.8" fill="#d8c694"/>
-        <line x1="4.4" y1="-0.5" x2="6.1" y2="-0.5" stroke="#3a2c1c" stroke-width="0.3"/>
-        <line x1="4.4" y1="0.5"  x2="5.7" y2="0.5"  stroke="#3a2c1c" stroke-width="0.3"/>
-        <line x1="4.4" y1="1.4"  x2="6.1" y2="1.4"  stroke="#3a2c1c" stroke-width="0.3"/>
-        <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
-      </g>
+      <ellipse cx="0" cy="5" rx="8" ry="2.7" fill="rgba(0,0,0,0.45)"/>
+      <image href="sprites/gnome.png" x="-13" y="-38" width="26" height="40"
+             preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"
+             style="image-rendering: pixelated;"/>
+      <text x="0" y="15" text-anchor="middle" font-family="VT323" font-size="11" fill="#fff" stroke="#000" stroke-width="0.6">${ev.id}</text>
     </g>
   `;
   charactersLayer.appendChild(g);
@@ -3044,34 +2470,17 @@ function spawnPenguin(ev) {
   g.setAttribute('transform', `translate(${x},${y})`);
   g.style.transition = 'transform 1800ms cubic-bezier(0.45,0.05,0.55,0.95)';
 
+  // PNG approach (S039): per-spawn scarf color tint dropped.
   const scarfMap = {'penguin-1':'#4b6f9c', 'penguin-2':'#5a8a8a', 'penguin-3':'#8884a8'};
   const scarf = scarfMap[ev.color] || '#4b6f9c';
-  // Tuxedoed silhouette — dark back, cream belly, orange beak, flippers.
-  // Scarf in spawn color (the only varying element). Smaller silhouette than
-  // dwarves/gnomes (rounder, no hat) — reads as a different species at a glance.
+
   g.innerHTML = `
     <g class="bob">
-      <g transform="scale(1.7)">
-        <ellipse cx="0" cy="3" rx="4.5" ry="1.5" fill="rgba(0,0,0,0.45)"/>
-        <rect x="-2.6" y="2" width="2" height="1.2" fill="var(--penguin-feet)"/>
-        <rect x="0.6"  y="2" width="2" height="1.2" fill="var(--penguin-feet)"/>
-        <ellipse cx="-3.6" cy="-0.5" rx="1" ry="2.6" fill="var(--penguin-body-dk)"/>
-        <ellipse cx="3.6"  cy="-0.5" rx="1" ry="2.6" fill="var(--penguin-body-dk)"/>
-        <ellipse cx="0" cy="-1.5" rx="3.5" ry="5" fill="var(--penguin-body)"/>
-        <ellipse cx="0" cy="-0.6" rx="2.4" ry="3.7" fill="var(--penguin-belly)"/>
-        <ellipse cx="0" cy="-7" rx="3" ry="2.7" fill="var(--penguin-body)"/>
-        <ellipse cx="0" cy="-6.6" rx="2" ry="1.8" fill="var(--penguin-belly)"/>
-        <rect x="-1.3" y="-7.5" width="0.7" height="0.8" fill="#1a0f06"/>
-        <rect x="0.6"  y="-7.5" width="0.7" height="0.8" fill="#1a0f06"/>
-        <rect x="-1.1" y="-7.4" width="0.25" height="0.3" fill="#fff"/>
-        <rect x="0.85" y="-7.4" width="0.25" height="0.3" fill="#fff"/>
-        <polygon points="-1,-5.8 1,-5.8 0,-4.4" fill="var(--penguin-beak)"/>
-        <line x1="-1" y1="-5.2" x2="1" y2="-5.2" stroke="rgba(0,0,0,0.35)" stroke-width="0.25"/>
-        <rect x="-3.2" y="-4.2" width="6.4" height="1.2" fill="${scarf}"/>
-        <rect x="-3.2" y="-4.2" width="6.4" height="0.3" fill="rgba(0,0,0,0.3)"/>
-        <rect x="2.4"  y="-3.2" width="1.5" height="2.6" fill="${scarf}"/>
-        <text x="0" y="9" text-anchor="middle" font-family="VT323" font-size="10" fill="#fff" stroke="#000" stroke-width="0.5">${ev.id}</text>
-      </g>
+      <ellipse cx="0" cy="5" rx="7.5" ry="2.5" fill="rgba(0,0,0,0.45)"/>
+      <image href="sprites/penguin.png" x="-13" y="-34" width="26" height="36"
+             preserveAspectRatio="xMidYMax meet" image-rendering="pixelated"
+             style="image-rendering: pixelated;"/>
+      <text x="0" y="15" text-anchor="middle" font-family="VT323" font-size="11" fill="#fff" stroke="#000" stroke-width="0.6">${ev.id}</text>
     </g>
   `;
   charactersLayer.appendChild(g);
@@ -3093,21 +2502,38 @@ function despawnPenguin(id) {
   updateTicker();
 }
 
+// Legacy `-<sid8>` suffix strip. Pre-S028 emit-event.py leaked the per-session
+// intent filename as an actor name; events like "braindead-ed610cbe" still
+// appear in old state.ndjson and replay through here. parseInstanceKey's
+// regex only catches digit suffixes, so hex sid8s fall through as their own
+// actor unless we normalize.
+//
+// S042 audit fix (D-025 bug #1): previously the strip lived inline inside
+// ensureActorExists, which meant the spawn path used the bare name correctly
+// but every downstream instanceKey(ev.actor, ...) in applyEvent's move/
+// intent/action/subtask handlers kept the un-stripped name. State writes to
+// currentBuilding['braindead-ed610cbe'], setIntent('braindead-ed610cbe', ...)
+// landed on phantom keys the sprite-render path didn't know — sprite stayed
+// put, bubble silently never rendered. The strip is now a module-scope
+// helper applied at the top of applyEvent so every case-branch sees the
+// bare name.
+const SID8_SUFFIX_ACTORS = ['jebrim','zezima','braindead','guthix','wisp'];
+function stripSid8Suffix(actor) {
+  if (!actor) return actor;
+  const m = /^([a-z][a-z0-9_]+)-([0-9a-f]{8})$/i.exec(actor);
+  if (m && SID8_SUFFIX_ACTORS.includes(m[1].toLowerCase())) {
+    return m[1].toLowerCase();
+  }
+  return actor;
+}
+
 // Self-heal when a dynamic actor receives a move/intent before its spawn event.
 // Spawns braindead/wisp at the inferred building so the bubble has a sprite under it.
 // D-017: also handles parallel player instances — if `instance` > 1 and no sprite
 // exists yet for that (actor, instance), spawn it as a tinted secondary sprite.
 function ensureActorExists(actor, atKey, instance) {
   if (!actor) return;
-  // Strip `-<sid8>` suffix on legacy events that leaked the per-session intent
-  // filename as an actor name (pre-S028 emit-event.py didn't strip braindead
-  // suffixes). parseInstanceKey's regex only catches digit suffixes, so hex
-  // sid8s like "braindead-ed610cbe" fall through here as their own actor.
-  const SID8_SUFFIX_ACTORS = ['jebrim','zezima','braindead','guthix','wisp'];
-  const m = /^([a-z][a-z0-9_]+)-([0-9a-f]{8})$/i.exec(actor);
-  if (m && SID8_SUFFIX_ACTORS.includes(m[1].toLowerCase())) {
-    actor = m[1].toLowerCase();
-  }
+  actor = stripSid8Suffix(actor);
   const inst = +instance || 1;
   // D-017/D-019: instance > 1 → parallel-instance sprite (tinted, with badge).
   // Player-class + braindead are the eligible actors. Wisp/Guthix never fork.
@@ -3805,6 +3231,12 @@ function updateTicker() {
 function applyEvent(ev, instant=false) {
   const dur = instant ? 0 : (1800 / Math.max(0.5, speed));
   if (ev.wallTime) currentEventWallTime = ev.wallTime;
+  // S042 audit fix (D-025 bug #1): normalize ev.actor once at the top so every
+  // case-branch downstream sees the bare name. ensureActorExists used to do
+  // this internally; the strip didn't propagate to instanceKey-derived keys
+  // in move/intent/action/subtask handlers, so state writes landed on phantom
+  // keys and bubbles silently never rendered.
+  if (ev.actor) ev.actor = stripSid8Suffix(ev.actor);
   // D-017: stamp lastEventAt on the instance key whenever an actor-bearing
   // event lands. The idle-despawn timer reads this to decide who has gone
   // quiet for 5+ minutes.
@@ -4126,6 +3558,38 @@ function despawnIdleInstances() {
       delete instanceLastEventAt['guthix'];
     }
   }
+  // S042 audit fix (D-025 bug #5): sub-agent sweep. Sub-agent IDs (D\d+,
+  // G\d+, P\d+) get their instanceLastEventAt stamped on every event in
+  // applyEvent's top-of-function block (instanceKey on a digit-less actor
+  // returns the bare id). Without this sweep, a sub-agent whose despawn-*
+  // event was lost from state.ndjson — append-race, concurrent-write
+  // corruption, hook silent-fail — stays forever, keeping its intents[]
+  // entry, dominating cluster relayout indefinitely. Mirror the base-actor
+  // pattern above: clearIntent then class-specific despawn.
+  for (const id of Object.keys(dwarfNodes)) {
+    const last = instanceLastEventAt[id] || 0;
+    if (last && last < cutoff) {
+      clearIntent(id, false);
+      despawnDwarf(id);
+      delete instanceLastEventAt[id];
+    }
+  }
+  for (const id of Object.keys(gnomeNodes)) {
+    const last = instanceLastEventAt[id] || 0;
+    if (last && last < cutoff) {
+      clearIntent(id, false);
+      despawnGnome(id);
+      delete instanceLastEventAt[id];
+    }
+  }
+  for (const id of Object.keys(penguinNodes)) {
+    const last = instanceLastEventAt[id] || 0;
+    if (last && last < cutoff) {
+      clearIntent(id, false);
+      despawnPenguin(id);
+      delete instanceLastEventAt[id];
+    }
+  }
 }
 setInterval(despawnIdleInstances, 30 * 1000); // sweep every 30s
 
@@ -4274,12 +3738,16 @@ if (LIVE) {
   function deriveState(record) {
     if (record.state === 'ended') return 'ended';
     if (record.state === 'waiting_for_user' && ageSec(record) > IDLE_AFTER_SEC) return 'idle';
-    if (record.state === 'working' && ageSec(record) > IDLE_AFTER_SEC) return 'idle';
+    // No working→idle downgrade. Settings register only UserPromptSubmit/Stop/
+    // SessionEnd (S037 budget shape), so a long turn fires zero hooks between
+    // start and Stop — a 17m "working" age is one slow turn, not idleness.
+    // Truly dead sessions get caught by the sidecar's 1h GC, not here.
     return record.state || 'unknown';
   }
   // Sort order: waiting_for_user first (most urgent), then working, then idle,
   // then ended. Within a state, newest activity first.
   const STATE_RANK = { waiting_for_user: 0, working: 1, idle: 2, ended: 3, unknown: 4 };
+  const STATE_LABEL = { waiting_for_user: 'WAITING', working: 'WORKING', idle: 'IDLE', ended: 'ENDED', unknown: '?' };
   function sortSessions(sessions) {
     return sessions.slice().sort((a, b) => {
       const sa = deriveState(a), sb = deriveState(b);
@@ -4290,6 +3758,7 @@ if (LIVE) {
   }
   function actorLabel(record) {
     const name = (record.actor || 'unknown');
+    if (!name || name === 'unknown') return 'Pending...';
     const cap = name.charAt(0).toUpperCase() + name.slice(1);
     const inst = (record.instance && record.instance > 1) ? '·' + record.instance : '';
     return cap + inst;
@@ -4336,6 +3805,11 @@ if (LIVE) {
       sid.textContent = r.sid8 || '';
       who.appendChild(sid);
       row.appendChild(who);
+
+      const stateChip = document.createElement('div');
+      stateChip.className = 'sb-state';
+      stateChip.textContent = STATE_LABEL[state] || state;
+      row.appendChild(stateChip);
 
       const age = document.createElement('div');
       age.className = 'sb-age';

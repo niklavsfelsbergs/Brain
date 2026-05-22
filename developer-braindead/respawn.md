@@ -6,9 +6,13 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
-**Last updated.** 2026-05-22 (end of [[S024]] — Q-008 aliveness options 1–3 + intent re-emit on move).
+**Last updated.** 2026-05-22 (end of [[S025]] — parallel player instances via D-017).
 
 ## Where we are
+
+[[S025]] designed and shipped [[D-017]] end-to-end in one session: visualizer renders parallel sessions of the same player as distinct tinted sprites with per-instance bubbles and COMMS prefixes. Hook stamps `instance` on every event from a player-class actor; state-instances.json registry maps `(actor, session_id) → instance`. Validated live on first run — two parallel Jebrim sessions appeared correctly. First tint pass too subtle (+25°), bumped to +140°/+220°/+80° for clear differentiation.
+
+Open follow-ups from D-017 (none blocking): cross-instance dwarf delegation, accessibility check of tint palette, active-player as `Set` instead of single value, sprite stacking at 3+ instances per building.
 
 [[S024]] shipped the first wave of [[Q-008]] visualizer aliveness work plus one bug surfaced and fixed under live observation:
 

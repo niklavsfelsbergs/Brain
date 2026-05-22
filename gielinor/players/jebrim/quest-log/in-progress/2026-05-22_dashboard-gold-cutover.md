@@ -108,6 +108,118 @@ Still pending principal (interleaved with Niklavs running smokes):
 - DAG verification (tomorrow's 08:00 Berlin run).
 - Quest closure + unblock convergence quest.
 
+## T6 — committed; pivoting to CSV export rework (principal)
+
+Niklavs authorized commit (smokes 1+2 verdicts not awaited; Phase H pytest kicked in background instead of pre-commit). Four commits landed:
+
+- `bi-analytics` (`shipping-mart-cutover`):
+  - `dee0265` — dashboard: cut over to shipping_mart gold tables (Phases A+B+C+E)
+  - `0660a52` — dashboard: rename cost-basis vocab to match gold (Phase D)
+  - `0001b36` — dashboard: re-target audit.py + backtest.py (Phase G)
+- `brain` (`main`): `c41ce97` — dashboard gold cutover applied: quest log + resume
+
+Phase H (`pytest tests/`) started in background. If failures surface, fix-up commit on top.
+
+Still pending on the cutover (won't block CSV work):
+- Smoke 1/2 verdicts from Niklavs
+- Phase F (issues.parquet reset)
+- Next pipeline run + Smoke 4 parity check (€6.95 / 209,874)
+- pytest results triage
+- DAG verification (tomorrow's 08:00 Berlin)
+- Quest closure
+
+**Pivoting to CSV export rework** — Niklavs unparked item A from § Deferred. Scope TBD; about to ask.
+
+### Phase H — pytest
+
+✅ 82 passed in 0.37s. Schema-agnostic; D1's `cost_for_routing` semantic change did not break any fixtures.
+
+## T7 — CSV export rework: helper + dwarves (principal)
+
+Niklavs picked "Unify + standardize" scope. Sub-decisions: snake_case all ID columns; add `cost_source` to `/api/export`.
+
+Principal landed first:
+- `src/lib/csv.ts` — shared helper: `rowsToCsv<T>(rows, columns)`, `downloadCsvBlob(csv, filename)`, `csvFilename(prefix, ...parts)`. RFC-4180-ish CSV. Auto-quotes cells containing `",\n\r`; `forceQuote` flag for ID-shaped cols.
+- `src/components/ui/TableExportButton.tsx` — standard button (cloned from OutliersTable's existing visual).
+
+Three dwarves in parallel:
+- **D1** — refactor existing 2 paths (`OutliersTable.tsx::downloadCsv` + `/api/export/route.ts`) to use helper + gold vocab. Establishes the canonical column shape. Brief includes the full 13-col convention for `/api/export` (with `cost_source` added).
+- **D2** — add Download CSV button to BreakdownTab + DeviationsTable + AvgCostsHeatmap (heavy / complex).
+- **D3** — add Download CSV button to RateChangesTable + CarrierShiftsTable + ShiftsTable + ProductShiftsTable + BenchmarksTab + CompletenessGrid (smaller / repetitive).
+
+Sibling quest-log files:
+- `2026-05-22_d1_csv-refactor.md`
+- `2026-05-22_d2_csv-add-breakdown-deviations-avgcosts.md`
+- `2026-05-22_d3_csv-add-shifts-bench-completeness.md`
+
+All on `shipping-mart-cutover`. No commits during dwarf runs.
+
+## T8 — D1 (CSV) returned (principal)
+
+D1 complete. Changes:
+- `sql/query_mart.sql`: added `fs.cost_source AS cost_source` to SELECT (with enum-value comment).
+- `pipeline.py`: added `cost_source` to `RAW_KEEP_COLS` (~L38) and `write_processed` (~L2440).
+- `src/components/OutliersTable.tsx`: 8-col helper-based `downloadCsv`; inline button JSX replaced by `<TableExportButton>`.
+- `src/app/api/export/route.ts`: full rewrite. SELECT aliases parquet columns to gold-vocab snake_case; CSV via `rowsToCsv`; filename via `csvFilename("shipments", …)`. ORDER BY updated to use alias.
+
+**Pipeline refresh needed:** `cost_source` is now in the pipeline projection but won't populate in `data/processed/<YYYY-MM>.parquet` until next `python pipeline.py --refresh-full` (or `--refresh`). Until then the CSV column exists but is empty. Flag for the post-cutover pipeline run that's already pending (Phase F + smoke 4 territory).
+
+Still in flight: D2 (Breakdown/Deviations/AvgCosts), D3 (shifts/bench/completeness).
+
+## T9 — D2 (CSV) returned (principal)
+
+D2 complete. CSV export added to three tabs (no commits). `npx tsc --noEmit` exits 0.
+
+- `DeviationsTable.tsx` — 10-col main-row export incl. `invoiced_cost_eur` / `estimated_cost_eur` / `deviation_eur`. Filename `deviations_<from>_<to>.csv`.
+- `AvgCostsHeatmap.tsx` — long format (one row per (corridor, week) cell). Filename `avg_costs_<metric>_<gran>-<periods>_to_<to>.csv`.
+- `BreakdownTab.tsx` — tree-walking flatten that preserves UI sort + parent context. Dynamic dim cols per `dims` prop. Filename `breakdown_<dim-order>_<from>_<to>.csv`.
+
+Flags surfaced (none load-bearing):
+1. Deviations uses two cols (`destination_country` + `shippingprovider`) rather than concatenated `corridor` — no corridor field on `DeviationRow`. Easy switch later.
+2. Deviations expanded-row package breakdown not exported (would need a separate per-corridor button inside the expanded panel).
+3. AvgCosts defaulted to long format (per brief's "either / default to long").
+4. Breakdown's `cost_source` column emits a constant reflecting UI's `costBasis` toggle value (`"final"` / `"invoiced"`) — `BreakdownRow` has no per-row provenance.
+
+Still in flight: D3.
+
+## T10 — D3 (CSV) returned, all CSV dwarves home (principal)
+
+D3 complete. Six components got the Download CSV button (no commits). `npx tsc --noEmit` exits 0.
+
+- `RateChangesTable.tsx` — 14 cols, `rate_changes_<from>_<to>.csv`
+- `CarrierShiftsTable.tsx` — 17 cols, `carrier_shifts_<from>_<to>.csv`
+- `ShiftsTable.tsx` — 18 cols, `routing_shifts_<from>_<to>.csv`
+- `ProductShiftsTable.tsx` — 19 cols, `product_shifts_<from>_<to>.csv`
+- `BenchmarksTab.tsx` — 22 cols, `benchmarks_<from>_<to>.csv` (respects priority/effort/confidence pills)
+- `CompletenessGrid.tsx` — 9 cols, `completeness_<gran>_<firstWeek>_<lastWeek>.csv` (long format, filtered to providers passing min-shipments gate)
+
+Decisions D3 made on the spot:
+- No `cost_source` in shifts-family rows (cost columns are averages across mixed-basis rows). Used `gainer_cost_eur` / `from_cost_eur` snake_case rather than misleadingly forcing `invoiced_cost_eur`.
+- No `forceQuote: true` needed (no ID-shaped columns in any of these six).
+- CompletenessGrid's pre-existing per-cell "click to export" → `/api/export` left untouched (D1 territory).
+
+## CSV rework — landed (full tally)
+
+| Path | Owner | What |
+|---|---|---|
+| `src/lib/csv.ts` | principal | new helper |
+| `src/components/ui/TableExportButton.tsx` | principal | standard button |
+| `sql/query_mart.sql` | D1 | added `cost_source` to SELECT |
+| `pipeline.py` | D1 | added `cost_source` to `RAW_KEEP_COLS` + `write_processed` |
+| `src/components/OutliersTable.tsx` | D1 | refactor to helper |
+| `src/app/api/export/route.ts` | D1 | full refactor + gold-vocab aliases + `cost_source` col |
+| `src/components/BreakdownTab.tsx` | D2 | + Download CSV |
+| `src/components/DeviationsTable.tsx` | D2 | + Download CSV |
+| `src/components/AvgCostsHeatmap.tsx` | D2 | + Download CSV |
+| `src/components/RateChangesTable.tsx` | D3 | + Download CSV |
+| `src/components/CarrierShiftsTable.tsx` | D3 | + Download CSV |
+| `src/components/ShiftsTable.tsx` | D3 | + Download CSV |
+| `src/components/ProductShiftsTable.tsx` | D3 | + Download CSV |
+| `src/components/BenchmarksTab.tsx` | D3 | + Download CSV |
+| `src/components/CompletenessGrid.tsx` | D3 | + Download CSV |
+
+15 files; 2 new, 13 modified. tsc-clean. No commits.
+
 ## Pending actions
 
-*(none — awaiting smoke 1/2 verdict from Niklavs)*
+*(none — CSV rework done; awaiting principal for smoke + commit cadence)*

@@ -28,6 +28,13 @@ STATE_PATH = VIZ_DIR / "state.ndjson"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"
 DWARVES_PATH = VIZ_DIR / "state-dwarves.json"
 GNOMES_PATH = VIZ_DIR / "state-gnomes.json"
+INSTANCES_PATH = VIZ_DIR / "state-instances.json"
+
+# D-017: actors that can run as parallel sessions, each getting its own
+# visualizer sprite. Sub-agents (dwarves, gnomes) have unique IDs already.
+# Wisp is system-voice and conceptually singular. Braindead is the
+# construction crew — duplicate dev-brain sessions are weird; treat as 1.
+PLAYER_ACTORS = {"jebrim", "zezima"}
 
 # Sub-agent kinds. spawn-time selection from tool_input.subagent_type; tool-call
 # attribution from payload.agent_type. Both reach into the same per-kind state
@@ -148,10 +155,45 @@ def save_json(path: Path, obj) -> None:
         print(f"emit-event: cannot write {path.name}: {e}", file=sys.stderr)
 
 
+def resolve_instance(actor: str, session_id: str | None) -> int:
+    """D-017: maps (actor, session_id) → instance number for player-class actors.
+    First-seen session for a given actor gets instance 1; subsequent parallel
+    sessions get 2, 3, … Non-player actors (wisp, braindead, dwarves, gnomes)
+    always return 1 — they don't fork into parallel sprites.
+
+    Persists assignments in state-instances.json so a hook re-invocation in the
+    same session lands on the same instance number. Schema:
+        { "<actor>": { "next": <int>, "byId": { "<session_id>": <int> } } }
+    """
+    if not actor or actor not in PLAYER_ACTORS:
+        return 1
+    if not session_id:
+        return 1
+    state = load_json(INSTANCES_PATH, {})
+    entry = state.get(actor) or {"next": 1, "byId": {}}
+    by_id = entry.get("byId") or {}
+    if session_id in by_id:
+        return int(by_id[session_id])
+    n = int(entry.get("next") or 1)
+    by_id[session_id] = n
+    entry["byId"] = by_id
+    entry["next"] = n + 1
+    state[actor] = entry
+    save_json(INSTANCES_PATH, state)
+    return n
+
+
 def append(event: dict) -> None:
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     if _SESSION_ID and "sessionId" not in event:
         event["sessionId"] = _SESSION_ID
+    # D-017: stamp instance number for player-class actors. Events without an
+    # `actor` field, or events for non-player actors, skip the stamp — `instance`
+    # absent reads as 1 in the visualizer.
+    if "instance" not in event:
+        actor = event.get("actor") or ""
+        if actor in PLAYER_ACTORS:
+            event["instance"] = resolve_instance(actor, event.get("sessionId") or _SESSION_ID)
     with STATE_PATH.open("a", encoding="utf-8") as f:
         f.write(json.dumps(event, separators=(",", ":")) + "\n")
 
@@ -612,6 +654,54 @@ def handle_bash(payload: dict) -> None:
     })
 
 
+def handle_session_end(payload: dict) -> None:
+    """D-017: emit despawn-instance events for every player instance bound to
+    the ending session. The visualizer uses these for fast cleanup on clean
+    exits — the 5-minute idle timer is the safety net for forced kills."""
+    sid = payload.get("session_id") or _SESSION_ID
+    if not sid:
+        return
+    state = load_json(INSTANCES_PATH, {})
+    wall = now_iso()
+    matcher = payload.get("matcher") or payload.get("reason") or "other"
+    for actor, entry in (state or {}).items():
+        if actor not in PLAYER_ACTORS:
+            continue
+        by_id = (entry or {}).get("byId") or {}
+        if sid not in by_id:
+            continue
+        instance = int(by_id[sid])
+        append({
+            "wallTime": wall, "source": "hook",
+            "type": "despawn-instance",
+            "actor": actor,
+            "instance": instance,
+            "reason": str(matcher),
+        })
+        # Reclaim the slot — the next session for this actor can reuse this
+        # instance number rather than monotonically incrementing forever.
+        del by_id[sid]
+        entry["byId"] = by_id
+        # next stays where it was; reclaim is opportunistic, not required.
+        # (Reusing low-numbered slots is a separate optimization.)
+        state[actor] = entry
+    save_json(INSTANCES_PATH, state)
+
+
+def _intent_file_candidates(actor: str, session_id: str | None) -> list[Path]:
+    """D-017: per-instance intent files. Each parallel session of a player
+    writes to `.claude/intent/<actor>-<sid8>.txt`; legacy shared files at
+    `<actor>.txt` are still honored for the first-instance fallback. Returns
+    the read-order list — per-session file first, then shared."""
+    base = REPO_ROOT / ".claude" / "intent"
+    short = (session_id or "")[:8]
+    out: list[Path] = []
+    if short:
+        out.append(base / f"{actor}-{short}.txt")
+    out.append(base / f"{actor}.txt")
+    return out
+
+
 def _reemit_intent_after_move(actor: str, wall: str) -> None:
     """After a player actor moves, re-emit their current intent file content
     so the visualizer bubble reappears at the new building. The visualizer
@@ -621,14 +711,17 @@ def _reemit_intent_after_move(actor: str, wall: str) -> None:
     name = (actor or "").strip().lower()
     if not name:
         return
-    intent_path = REPO_ROOT / ".claude" / "intent" / f"{name}.txt"
-    if not intent_path.exists():
-        return
-    try:
-        raw = intent_path.read_text(encoding="utf-8").strip()
-    except Exception:
-        return
-    text = raw.splitlines()[0].strip() if raw else ""
+    text = ""
+    for p in _intent_file_candidates(name, _SESSION_ID):
+        if not p.exists():
+            continue
+        try:
+            raw = p.read_text(encoding="utf-8").strip()
+        except Exception:
+            continue
+        if raw:
+            text = raw.splitlines()[0].strip()
+            break
     if not text:
         return
     append({
@@ -640,9 +733,17 @@ def _reemit_intent_after_move(actor: str, wall: str) -> None:
 
 
 def handle_intent_write(needle: str) -> bool:
-    """If needle is .claude/intent/<actor>.txt, emit an intent event and
-    return True. Otherwise return False so the normal path-classify flow
-    runs. Intent writes skip building-move + log noise on purpose."""
+    """If needle is .claude/intent/<actor>.txt or
+    .claude/intent/<actor>-<sid>.txt, emit an intent event and return True.
+    Otherwise return False so the normal path-classify flow runs. Intent
+    writes skip building-move + log noise on purpose.
+
+    D-017: filenames may carry a per-session suffix (`jebrim-abc12345.txt`).
+    Actor name is extracted from the prefix when the suffix is present and the
+    prefix matches a known player. Instance routing happens automatically via
+    append() — the writing session's instance number is stamped, regardless of
+    which filename variant was used. The suffix is a label for human clarity,
+    not a routing input."""
     s = needle.replace("\\", "/")
     key = "/" + s if not s.startswith("/") else s
     if INTENT_FRAGMENT not in key:
@@ -650,9 +751,15 @@ def handle_intent_write(needle: str) -> bool:
     name = Path(s).name
     if not name.endswith(".txt"):
         return True   # consume — unknown intent file shape, but don't fall through
-    actor = name[:-4].strip().lower()
-    if not actor:
+    base = name[:-4].strip().lower()
+    if not base:
         return True
+    # Split off the per-session suffix when it follows a known player name.
+    actor = base
+    if "-" in base:
+        prefix, _ = base.rsplit("-", 1)
+        if prefix in PLAYER_ACTORS:
+            actor = prefix
     text = ""
     try:
         intent_path = REPO_ROOT / s
@@ -950,6 +1057,18 @@ def main() -> None:
 
     tool_name = payload.get("tool_name", "")
     hook_event = payload.get("hook_event_name", "")
+
+    # D-017: SessionEnd is a best-effort signal that fires on graceful exits
+    # (prompt_input_exit, clear, resume, logout, other matchers). NOT
+    # guaranteed on crashes or forced kills — the visualizer's 5-minute idle
+    # timer is the load-bearing despawn signal. This hook just lets clean
+    # exits despawn faster than the timer.
+    if hook_event == "SessionEnd":
+        try:
+            handle_session_end(payload)
+        except Exception as e:
+            print(f"emit-event: session-end failed: {e}", file=sys.stderr)
+        sys.exit(0)
 
     if tool_name in ("Task", "Agent"):
         if hook_event == "PreToolUse":

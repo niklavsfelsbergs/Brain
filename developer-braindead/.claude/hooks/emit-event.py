@@ -155,6 +155,42 @@ def save_json(path: Path, obj) -> None:
         print(f"emit-event: cannot write {path.name}: {e}", file=sys.stderr)
 
 
+# D-018: state-actors.json read/write helpers. Player-class actors get a nested
+# shape `{ "byId": { "<sessionId>": "<building>" } }` so two parallel Jebrim
+# sessions don't trample each other's move-coalescing state. Non-player actors
+# (wisp, braindead) and bookkeeping keys (_mode, _mode_session_id) stay flat —
+# they're conceptually singular, so per-session keying would just be ceremony.
+# Legacy flat entries for player actors are read as session-agnostic fallback;
+# the first write under the new shape promotes them. Lossy on rollout (the old
+# flat building is dropped on first nested write), but the old shape was racy
+# anyway, so any state it held was unreliable.
+def get_actor_building(actors: dict, actor: str, session_id: str | None) -> str | None:
+    entry = actors.get(actor)
+    if entry is None:
+        return None
+    if isinstance(entry, str):
+        return entry
+    if isinstance(entry, dict) and session_id:
+        by_id = entry.get("byId") or {}
+        v = by_id.get(session_id)
+        if isinstance(v, str):
+            return v
+    return None
+
+
+def set_actor_building(actors: dict, actor: str, session_id: str | None, building: str) -> None:
+    if actor in PLAYER_ACTORS and session_id:
+        entry = actors.get(actor)
+        if not isinstance(entry, dict):
+            entry = {"byId": {}}
+        by_id = entry.get("byId") or {}
+        by_id[session_id] = building
+        entry["byId"] = by_id
+        actors[actor] = entry
+    else:
+        actors[actor] = building
+
+
 def resolve_instance(actor: str, session_id: str | None) -> int:
     """D-017: maps (actor, session_id) → instance number for player-class actors.
     First-seen session for a given actor gets instance 1; subsequent parallel
@@ -295,10 +331,11 @@ def _walk_recent_actor(session_id: str | None = None) -> tuple[str | None, str |
         elif t == "move":
             a = ev.get("actor")
             if a and a != "wisp" and move_actor is None:
-                move_actor = (a, ev.get("to") or actors.get(a) or "quest-hall")
+                ev_sid = ev.get("sessionId") or session_id
+                move_actor = (a, ev.get("to") or get_actor_building(actors, a, ev_sid) or "quest-hall")
 
     if intent_actor:
-        return (intent_actor, actors.get(intent_actor) or "quest-hall")
+        return (intent_actor, get_actor_building(actors, intent_actor, session_id) or "quest-hall")
     if move_actor:
         return move_actor
     return (None, None)
@@ -319,7 +356,7 @@ def infer_dwarf_parent() -> tuple[str, str]:
     if actor:
         return (actor, at or "quest-hall")
     actors = load_json(ACTORS_PATH, {})
-    return ("wisp", actors.get("wisp") or "quest-hall")
+    return ("wisp", get_actor_building(actors, "wisp", _SESSION_ID) or "quest-hall")
 
 
 def _parse_iso(s: str):
@@ -374,51 +411,66 @@ def gc_stale_subagents(kind: str) -> None:
     PreToolUse landed but PostToolUse never did (Claude Code crash, network
     error, parent kill). Threshold STALE_SEC ago. Called from handle_task_pre
     / handle_task_post so live sub-agent activity is the trigger; bounds
-    overhead without needing a session-boundary signal."""
+    overhead without needing a session-boundary signal.
+
+    D-018: walks every session's substate under `bySession`. A long-lived
+    parallel session whose dwarves never returned cleanly still gets its
+    leaked entries swept here even when this hook fires under a different
+    session."""
     STALE_SEC = 3600  # 1 hour
     cfg = ROLE_CONFIG[kind]
     st = load_json(cfg["state_path"], _subagent_default())
-    by_tui = st.get("byToolUseId", {})
-    if not by_tui:
+    by_session = st.get("bySession") or {}
+    if not by_session:
         return
     now = datetime.now(timezone.utc)
-    stale = []
-    for tui, entry in list(by_tui.items()):
-        wt = _parse_iso(entry.get("spawnedAt", ""))
-        # Entries without spawnedAt predate the B7 fix; treat them as fresh on
-        # this pass (they'll be cleaned up next time once a fresh spawn updates
-        # the file format, or by hand). Avoids a one-time GC storm.
-        if wt and (now - wt).total_seconds() > STALE_SEC:
-            stale.append((tui, entry))
-    if not stale:
-        return
-    by_agent = st.setdefault("byAgentId", {})
-    pending = st.setdefault("pendingAgentBind", [])
+    dirty = False
     wall = now_iso()
-    for tui, entry in stale:
-        by_tui.pop(tui, None)
-        for aid, t in list(by_agent.items()):
-            if t == tui:
-                by_agent.pop(aid, None)
-        if tui in pending:
-            pending.remove(tui)
-        append({
-            "wallTime": wall, "source": "hook",
-            "type": cfg["despawn_event"],
-            "id": entry["id"],
-        })
-        append({
-            "wallTime": wall, "source": "hook",
-            "type": "log",
-            "msg": f"* {entry['id']} timed out (no PostToolUse, GC after {STALE_SEC // 60}m)",
-            "cls": "system",
-            "speaker": cfg["speaker"],
-        })
-        print(
-            f"emit-event: GC stale {kind} {entry['id']} (tool_use_id={tui})",
-            file=sys.stderr,
-        )
-    save_json(cfg["state_path"], st)
+    for sid, sub in list(by_session.items()):
+        if not isinstance(sub, dict):
+            continue
+        by_tui = sub.get("byToolUseId") or {}
+        if not by_tui:
+            continue
+        stale = []
+        for tui, entry in list(by_tui.items()):
+            wt = _parse_iso(entry.get("spawnedAt", ""))
+            # Entries without spawnedAt predate the B7 fix; treat them as fresh
+            # on this pass (they'll be cleaned up next time once a fresh spawn
+            # updates the file format, or by hand). Avoids a one-time GC storm.
+            if wt and (now - wt).total_seconds() > STALE_SEC:
+                stale.append((tui, entry))
+        if not stale:
+            continue
+        by_agent = sub.setdefault("byAgentId", {})
+        pending = sub.setdefault("pendingAgentBind", [])
+        for tui, entry in stale:
+            by_tui.pop(tui, None)
+            for aid, t in list(by_agent.items()):
+                if t == tui:
+                    by_agent.pop(aid, None)
+            if tui in pending:
+                pending.remove(tui)
+            append({
+                "wallTime": wall, "source": "hook",
+                "type": cfg["despawn_event"],
+                "id": entry["id"],
+            })
+            append({
+                "wallTime": wall, "source": "hook",
+                "type": "log",
+                "msg": f"* {entry['id']} timed out (no PostToolUse, GC after {STALE_SEC // 60}m)",
+                "cls": "system",
+                "speaker": cfg["speaker"],
+            })
+            print(
+                f"emit-event: GC stale {kind} {entry['id']} "
+                f"(tool_use_id={tui}, session={sid})",
+                file=sys.stderr,
+            )
+        dirty = True
+    if dirty:
+        save_json(cfg["state_path"], st)
 
 
 def read_active_mode() -> str:
@@ -838,12 +890,12 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
             if recent:
                 actor = recent
     actors = load_json(ACTORS_PATH, {})
-    if actors.get(actor) != building:
+    if get_actor_building(actors, actor, _SESSION_ID) != building:
         append({
             "wallTime": wall, "source": "hook",
             "type": "move", "actor": actor, "to": building,
         })
-        actors[actor] = building
+        set_actor_building(actors, actor, _SESSION_ID, building)
         save_json(ACTORS_PATH, actors)
         # Re-emit the actor's current intent so the bubble follows to the new
         # building. Visualizer clears player intents on move; without this, the
@@ -860,24 +912,46 @@ def handle_write_or_read(tool_name: str, tool_input: dict, m: dict, payload: dic
 
 
 def _subagent_default() -> dict:
-    # Stable shape for a per-role state file (dwarves, gnomes). Keys:
-    #   nextId          — next sub-agent number to assign (D1, D2, … or G1, G2, …)
-    #   byToolUseId     — { tool_use_id: { id, color, at, spawnedAt } } until despawn
-    #                     (spawnedAt added in S022 / B7 — entries from before
-    #                     are tolerated by gc_stale_subagents.)
-    #   pendingQueue    — FIFO of sub-agents whose spawn Pre lacked tool_use_id
-    #   byAgentId       — { agent_id: tool_use_id } bound on first sub-call
-    #   pendingAgentBind — list of tool_use_ids awaiting agent_id binding;
-    #                     popped LIFO (most-recent-first) in attribute_to_subagent
-    #                     to bias toward the newer spawn under concurrent races
-    #                     (S022 / B1).
+    # D-018: top-level shape for a per-role state file (dwarves, gnomes).
+    #   nextId    — globally-monotonic sub-agent counter; stays top-level so
+    #               parallel sessions can't both spawn "D1" (visual collision).
+    #   bySession — { session_id: substate } partitioning the binding registries
+    #               so session A's pending bind can't be stolen by session B's
+    #               first sub-call. Each substate carries byToolUseId,
+    #               pendingQueue, byAgentId, pendingAgentBind with the same
+    #               semantics as the legacy flat shape.
+    #
+    # Legacy flat-shape entries (top-level byToolUseId / pendingQueue /
+    # byAgentId / pendingAgentBind from before this re-key) are no longer
+    # consulted. In-flight Task spawns at migration time leak silently and
+    # get cleaned up by gc_stale_subagents after STALE_SEC.
     return {
         "nextId": 1,
-        "byToolUseId": {},
-        "pendingQueue": [],
-        "byAgentId": {},
-        "pendingAgentBind": [],
+        "bySession": {},
     }
+
+
+def _session_substate(state: dict, session_id: str | None) -> dict:
+    """D-018: get-or-create the per-session sub-state. Sessions firing before
+    Claude Code's session_id is wired up (extremely rare) all share '_none'."""
+    key = session_id or "_none"
+    by_session = state.setdefault("bySession", {})
+    sub = by_session.get(key)
+    if not isinstance(sub, dict):
+        sub = {
+            "byToolUseId": {},
+            "pendingQueue": [],
+            "byAgentId": {},
+            "pendingAgentBind": [],
+        }
+        by_session[key] = sub
+    else:
+        # Heal partial substates (e.g., a write that landed mid-rollout).
+        sub.setdefault("byToolUseId", {})
+        sub.setdefault("pendingQueue", [])
+        sub.setdefault("byAgentId", {})
+        sub.setdefault("pendingAgentBind", [])
+    return sub
 
 
 def spawn_kind_from_tool_input(tool_input: dict) -> str:
@@ -903,17 +977,20 @@ def handle_task_pre(payload: dict) -> None:
     sub_id = f"{cfg['id_prefix']}{n}"
     color = f"{cfg['color_prefix']}-{((n - 1) % cfg['color_count']) + 1}"
     st["nextId"] = n + 1
+    # D-018: per-session binding registries — pendingAgentBind for THIS session
+    # is the only queue eligible to claim THIS session's first sub-call.
+    sub = _session_substate(st, _SESSION_ID)
     # B7: spawnedAt is the GC anchor; used by gc_stale_subagents to find
     # entries whose PostToolUse never landed.
     entry = {"id": sub_id, "color": color, "at": at, "spawnedAt": now_iso()}
     if tool_use_id:
-        st.setdefault("byToolUseId", {})[tool_use_id] = entry
+        sub["byToolUseId"][tool_use_id] = entry
         # Queue this spawn so the first sub-call carrying `agent_id` can claim
         # it. The Agent tool's Pre fires before the sub-agent exists, so we
         # don't know its agent_id yet; bind on first sighting.
-        st.setdefault("pendingAgentBind", []).append(tool_use_id)
+        sub["pendingAgentBind"].append(tool_use_id)
     else:
-        st.setdefault("pendingQueue", []).append(entry)
+        sub["pendingQueue"].append(entry)
     save_json(cfg["state_path"], st)
 
     description = tool_input.get("description") or tool_input.get("subagent_type") or "task"
@@ -942,23 +1019,24 @@ def handle_task_post(payload: dict) -> None:
     # new spawns are firing.
     gc_stale_subagents(kind)
     st = load_json(cfg["state_path"], _subagent_default())
+    sub = _session_substate(st, _SESSION_ID)
 
     entry = None
-    if tool_use_id and tool_use_id in st.get("byToolUseId", {}):
-        entry = st["byToolUseId"].pop(tool_use_id)
+    if tool_use_id and tool_use_id in sub["byToolUseId"]:
+        entry = sub["byToolUseId"].pop(tool_use_id)
         # Clean up the agent_id binding so it can't be reused for a future spawn.
-        by_agent = st.setdefault("byAgentId", {})
+        by_agent = sub["byAgentId"]
         for aid, tui in list(by_agent.items()):
             if tui == tool_use_id:
                 by_agent.pop(aid, None)
         # Also drop from the pendingAgentBind queue in case this spawn never
         # had any sub-calls (instant return) so we don't leak a stale entry.
-        pq = st.setdefault("pendingAgentBind", [])
+        pq = sub["pendingAgentBind"]
         if tool_use_id in pq:
             pq.remove(tool_use_id)
-    elif st.get("pendingQueue"):
+    elif sub["pendingQueue"]:
         # FIFO fallback when tool_use_id wasn't available at Pre time.
-        entry = st["pendingQueue"].pop(0)
+        entry = sub["pendingQueue"].pop(0)
     save_json(cfg["state_path"], st)
 
     if not entry:
@@ -997,11 +1075,15 @@ def attribute_to_subagent(payload: dict):
     kind = "gnome" if agent_type == "gnome" else "dwarf"
     cfg = ROLE_CONFIG[kind]
     st = load_json(cfg["state_path"], _subagent_default())
-    by_agent = st.setdefault("byAgentId", {})
-    by_tui = st.setdefault("byToolUseId", {})
+    # D-018: look up only in THIS session's substate. Sub-agent agent_ids are
+    # owned by the session that spawned them, so cross-session search would
+    # only introduce attribution races.
+    sub = _session_substate(st, _SESSION_ID)
+    by_agent = sub["byAgentId"]
+    by_tui = sub["byToolUseId"]
     tool_use_id = by_agent.get(agent_id)
     if tool_use_id is None:
-        pending = st.setdefault("pendingAgentBind", [])
+        pending = sub["pendingAgentBind"]
         if not pending:
             # B6: silent fallthrough — agent_id present but no pending spawn
             # to bind it to. Caller will attribute to main actor; live-mode

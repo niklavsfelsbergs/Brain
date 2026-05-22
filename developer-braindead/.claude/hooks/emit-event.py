@@ -32,9 +32,16 @@ INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 
 # D-017: actors that can run as parallel sessions, each getting its own
 # visualizer sprite. Sub-agents (dwarves, gnomes) have unique IDs already.
-# Wisp is system-voice and conceptually singular. Braindead is the
-# construction crew — duplicate dev-brain sessions are weird; treat as 1.
+# Wisp is system-voice and conceptually singular. Guthix is bankstanding-deity,
+# always solo.
 PLAYER_ACTORS = {"jebrim", "zezima"}
+
+# D-019: actors eligible for parallel-instance routing. Player-class plus
+# Braindead — multiple dev-brain sessions are now a supported pattern (was
+# explicitly deferred in D-017). resolve_instance() and the append()
+# instance-stamp gate on this set; visualizer-side spawnPlayerInstance covers
+# the same set. wisp and guthix stay excluded — neither forks meaningfully.
+INSTANCED_ACTORS = PLAYER_ACTORS | {"braindead"}
 
 # S028: any non-player actor that may carry a per-session intent-file suffix
 # (`<actor>-<sid8>.txt`). Players already get suffix stripping; these get it
@@ -195,7 +202,7 @@ def get_actor_building(actors: dict, actor: str, session_id: str | None) -> str 
 
 
 def set_actor_building(actors: dict, actor: str, session_id: str | None, building: str) -> None:
-    if actor in PLAYER_ACTORS and session_id:
+    if actor in INSTANCED_ACTORS and session_id:
         entry = actors.get(actor)
         if not isinstance(entry, dict):
             entry = {"byId": {}}
@@ -208,16 +215,17 @@ def set_actor_building(actors: dict, actor: str, session_id: str | None, buildin
 
 
 def resolve_instance(actor: str, session_id: str | None) -> int:
-    """D-017: maps (actor, session_id) → instance number for player-class actors.
-    First-seen session for a given actor gets instance 1; subsequent parallel
-    sessions get 2, 3, … Non-player actors (wisp, braindead, dwarves, gnomes)
-    always return 1 — they don't fork into parallel sprites.
+    """D-017/D-019: maps (actor, session_id) → instance number for instanced
+    actors (player-class + braindead per D-019). First-seen session for a
+    given actor gets instance 1; subsequent parallel sessions get 2, 3, …
+    Non-instanced actors (wisp, guthix, dwarves, gnomes) always return 1 —
+    they don't fork into parallel sprites.
 
     Persists assignments in state-instances.json so a hook re-invocation in the
     same session lands on the same instance number. Schema:
         { "<actor>": { "next": <int>, "byId": { "<session_id>": <int> } } }
     """
-    if not actor or actor not in PLAYER_ACTORS:
+    if not actor or actor not in INSTANCED_ACTORS:
         return 1
     if not session_id:
         return 1
@@ -239,12 +247,12 @@ def append(event: dict) -> None:
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     if _SESSION_ID and "sessionId" not in event:
         event["sessionId"] = _SESSION_ID
-    # D-017: stamp instance number for player-class actors. Events without an
-    # `actor` field, or events for non-player actors, skip the stamp — `instance`
-    # absent reads as 1 in the visualizer.
+    # D-017/D-019: stamp instance number for instanced actors. Events without
+    # an `actor` field, or events for non-instanced actors, skip the stamp —
+    # `instance` absent reads as 1 in the visualizer.
     if "instance" not in event:
         actor = event.get("actor") or ""
-        if actor in PLAYER_ACTORS:
+        if actor in INSTANCED_ACTORS:
             event["instance"] = resolve_instance(actor, event.get("sessionId") or _SESSION_ID)
     with STATE_PATH.open("a", encoding="utf-8") as f:
         f.write(json.dumps(event, separators=(",", ":")) + "\n")
@@ -936,7 +944,7 @@ def handle_session_end(payload: dict) -> None:
     wall = now_iso()
     matcher = payload.get("matcher") or payload.get("reason") or "other"
     for actor, entry in (state or {}).items():
-        if actor not in PLAYER_ACTORS:
+        if actor not in INSTANCED_ACTORS:
             continue
         by_id = (entry or {}).get("byId") or {}
         if sid not in by_id:

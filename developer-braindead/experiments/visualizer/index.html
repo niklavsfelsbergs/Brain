@@ -94,7 +94,7 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; height: 100%; }
   body {
     background:
       radial-gradient(ellipse at top, #2a1f15 0%, #14100c 60%, #0a0805 100%);
@@ -102,30 +102,25 @@
     font-family: 'VT323', 'Courier New', monospace;
     font-size: 18px;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
   .stage {
-    max-width: 1380px;
-    margin: 0 auto;
-    padding: 24px 24px 32px;
+    max-width: none;
+    margin: 0;
+    padding: 14px;
+    display: flex;
+    gap: 14px;
+    align-items: stretch;
+    min-height: 100vh;
+    box-sizing: border-box;
   }
+  /* Header hidden — chat moved to right rail next to the map. */
+  .topbar { display: none; }
 
-  /* ─── Header (quest scroll) ─── */
+  /* ─── Header (quest scroll) — hidden in the side-by-side layout. ─── */
   .topbar {
-    background: linear-gradient(180deg, var(--parchment) 0%, var(--parchment-dk) 100%);
-    color: var(--ink);
-    border: 3px solid var(--frame-edge);
-    position: relative;
-    padding: 14px 28px 16px;
-    box-shadow:
-      0 0 0 1px var(--gold-dk) inset,
-      0 8px 32px rgba(0,0,0,0.6),
-      0 0 24px rgba(216, 173, 54, 0.08);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 28px;
+    display: none;
   }
   .topbar::before, .topbar::after {
     content: ""; position: absolute; top: 6px; bottom: 6px;
@@ -165,7 +160,7 @@
 
   /* ─── Map frame ─── */
   .world {
-    margin-top: 18px; position: relative;
+    margin-top: 0; position: relative;
     border: 3px solid var(--frame-edge);
     background: var(--frame-bg);
     padding: 6px;
@@ -173,10 +168,13 @@
       inset 0 0 0 2px var(--gold-dk),
       inset 0 0 60px rgba(0,0,0,0.7),
       0 12px 48px rgba(0,0,0,0.6);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
   .world::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(216,173,54,0.18); pointer-events: none; z-index: 3; }
-  .map-wrap { position: relative; }
-  svg.map { display: block; width: 100%; height: auto; background: #1a140e; shape-rendering: crispEdges; image-rendering: pixelated; }
+  .map-wrap { position: absolute; top: 6px; right: 6px; bottom: 6px; left: 6px; }
+  svg.map { display: block; width: 100%; height: 100%; background: #1a140e; shape-rendering: crispEdges; image-rendering: pixelated; }
 
   /* Building hover */
   .building { cursor: help; transition: filter 200ms; }
@@ -375,10 +373,12 @@
   /* Classic RuneScape chat: black-brown panel, bright yellow body, white
      usernames, cyan system lines. Sharp 1px inner border, no soft glow. */
   .logbox {
-    margin-top: 14px;
+    margin-top: 0;
     background: #c8b48a;
     border: 2px solid #2c1f10;
-    height: 340px;
+    width: 380px;
+    flex-shrink: 0;
+    align-self: stretch;
     overflow: hidden;
     position: relative;
     box-shadow:
@@ -387,6 +387,8 @@
       inset -1px -1px 0 #5a4020,
       0 6px 16px rgba(0,0,0,0.5);
     color: #1a0f06;
+    display: flex;
+    flex-direction: column;
   }
   .logbox header {
     background: linear-gradient(180deg, #4a3520 0%, #2e2010 100%);
@@ -412,7 +414,7 @@
   }
   @keyframes pulse { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
   .log-scroll {
-    height: calc(100% - 32px);
+    flex: 1;
     overflow-y: auto;
     padding: 6px 12px;
     font-family: 'Trebuchet MS', 'Verdana', 'Tahoma', sans-serif;
@@ -503,8 +505,14 @@
   }
   @keyframes live-pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
   body[data-mode="live"] .topbar { grid-template-columns: auto 1fr auto; }
+  /* S029: kill the day/night overlay in live mode. With mix-blend-mode: multiply
+     and dusk/night anchors at 30–55% alpha, the 6s CSS transition fades the map
+     to near-black at certain wall-clock hours — looked like the map "disappeared"
+     a second or two after load. Replay still uses the cycle (it walks a virtual
+     day across the timeline; aesthetic, not load-bearing). */
+  body[data-mode="live"] .day-night-overlay { display: none; }
 
-  .crumb { margin-top: 12px; text-align: center; color: rgba(216,173,54,0.45); font-family: 'VT323',monospace; font-size: 14px; letter-spacing: 0.1em; }
+  .crumb { display: none; }
   .crumb span { color: rgba(216,173,54,0.65); }
 
   /* ─── COMMS tabs (OSRS-style buttons) ─── */
@@ -639,7 +647,7 @@
 
   <div class="world">
     <div class="map-wrap">
-      <svg class="map" viewBox="0 0 1200 820" preserveAspectRatio="xMidYMid meet" aria-label="Gielinor brain map">
+      <svg class="map" viewBox="0 0 1680 1148" preserveAspectRatio="xMidYMid meet" aria-label="Gielinor brain map">
         <defs>
           <!-- Sky -->
           <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
@@ -921,10 +929,10 @@
         </defs>
 
         <!-- void backdrop (corners + bottom) -->
-        <rect x="0" y="0" width="1200" height="820" fill="var(--void)"/>
+        <rect x="0" y="0" width="1680" height="1148" fill="var(--void)"/>
 
-        <!-- Sky band + horizon -->
-        <g id="sky" pointer-events="none">
+        <!-- Sky band + horizon (S029: scale(1.4) wraps the whole sky to fill the bigger world) -->
+        <g id="sky" pointer-events="none" transform="scale(1.4)">
           <rect x="0" y="0" width="1200" height="170" fill="url(#skyGrad)"/>
           <!-- distant clouds -->
           <ellipse cx="180" cy="42" rx="58" ry="6" fill="#c6d8e0" opacity="0.32"/>
@@ -988,7 +996,7 @@
         <g id="flora-front"></g>
         <g id="particles"></g>
         <g id="characters">
-          <g class="actor player" id="actor-jebrim" data-actor="jebrim" transform="translate(260, 240)">
+          <g class="actor player" id="actor-jebrim" data-actor="jebrim" transform="translate(364, 336)">
             <ellipse class="glow" cx="0" cy="0" rx="26" ry="26" fill="url(#activeGlow)"/>
             <g class="bob">
               <!-- Idle breath via vertical scale only (scaleY 1 → 0.95 → 1).
@@ -1004,7 +1012,7 @@
               <use href="#jebrim" transform="scale(1.4)"/>
             </g>
           </g>
-          <g class="actor player" id="actor-zezima" data-actor="zezima" transform="translate(850, 620)">
+          <g class="actor player" id="actor-zezima" data-actor="zezima" transform="translate(1190, 868)">
             <ellipse class="glow" cx="0" cy="0" rx="26" ry="26" fill="url(#activeGlow)"/>
             <g class="bob">
               <animateTransform attributeName="transform" attributeType="XML" type="scale"
@@ -1020,10 +1028,10 @@
         <!-- Day/night hue overlay (Q-008 #3). Fill tinted by wall time via JS;
              mix-blend-mode in CSS keeps underlying art readable. Sits below the
              vignette so the corner darkening still reads. -->
-        <rect id="day-night" class="day-night-overlay" x="0" y="0" width="1200" height="820" fill="rgba(255,250,240,0)"/>
+        <rect id="day-night" class="day-night-overlay" x="0" y="0" width="1680" height="1148" fill="rgba(255,250,240,0)"/>
 
         <!-- vignette -->
-        <rect x="0" y="0" width="1200" height="820" fill="url(#vignette)" pointer-events="none"/>
+        <rect x="0" y="0" width="1680" height="1148" fill="url(#vignette)" pointer-events="none"/>
 
         <!-- Building name plates — always on top, even over actors and vignette -->
         <g id="building-labels" pointer-events="none"></g>
@@ -1104,30 +1112,30 @@ const LIVE = new URLSearchParams(location.search).has('live');
 
 // Buildings: screen positions (the southern/foot corner of the building)
 const BUILDINGS = {
-  'inbox-square':     {x: 260, y: 270, label: 'Inbox Square'},
-  'meta-town-hall':   {x: 590, y: 190, label: 'Meta Town Hall'},
-  'lorebook-library': {x: 920, y: 280, label: 'Lorebook Library'},
-  'bank':             {x: 400, y: 410, label: 'Bank'},
-  'examine-hall':     {x: 220, y: 560, label: 'Hall of Mirrors'},
-  'quest-hall':       {x: 620, y: 460, label: 'Quest Hall'},
-  'spellbook-tower':  {x: 880, y: 480, label: 'Spellbook Tower'},
-  'keepsake-vault':   {x: 870, y: 660, label: 'Keepsake Vault'},
-  'inn':              {x: 540, y: 660, label: 'The Inn'},
-  'braindead-workshop': {x: 140, y: 140, label: 'The Workshop'},
+  'inbox-square':     {x: 364, y: 378, label: 'Inbox Square'},
+  'meta-town-hall':   {x: 826, y: 266, label: 'Meta Town Hall'},
+  'lorebook-library': {x: 1288, y: 392, label: 'Lorebook Library'},
+  'bank':             {x: 560, y: 574, label: 'Bank'},
+  'examine-hall':     {x: 308, y: 784, label: 'Hall of Mirrors'},
+  'quest-hall':       {x: 868, y: 644, label: 'Quest Hall'},
+  'spellbook-tower':  {x: 1232, y: 672, label: 'Spellbook Tower'},
+  'keepsake-vault':   {x: 1218, y: 924, label: 'Keepsake Vault'},
+  'inn':              {x: 756, y: 924, label: 'The Inn'},
+  'braindead-workshop': {x: 196, y: 196, label: 'The Workshop'},
 };
 
 // Where actors stand at each building (front-of-door spot, slightly south of footprint)
 const STAND = {
-  'inbox-square':     {x: 260, y: 285},
-  'meta-town-hall':   {x: 590, y: 240},
-  'lorebook-library': {x: 920, y: 332},
-  'bank':             {x: 400, y: 462},
-  'examine-hall':     {x: 220, y: 600},
-  'quest-hall':       {x: 620, y: 510},
-  'spellbook-tower':  {x: 880, y: 528},
-  'keepsake-vault':   {x: 870, y: 698},
-  'inn':              {x: 540, y: 700},
-  'braindead-workshop': {x: 140, y: 178},
+  'inbox-square':     {x: 364, y: 399},
+  'meta-town-hall':   {x: 826, y: 336},
+  'lorebook-library': {x: 1288, y: 465},
+  'bank':             {x: 560, y: 647},
+  'examine-hall':     {x: 308, y: 840},
+  'quest-hall':       {x: 868, y: 714},
+  'spellbook-tower':  {x: 1232, y: 739},
+  'keepsake-vault':   {x: 1218, y: 977},
+  'inn':              {x: 756, y: 980},
+  'braindead-workshop': {x: 196, y: 249},
 };
 
 // Iso path connections (cobblestone strips)
@@ -1146,11 +1154,11 @@ const PATHS = [
   ['inn', 'keepsake-vault'],
 ];
 
-const TILE_W = 64, TILE_H = 32;
+const TILE_W = 90, TILE_H = 45;
 
 // Iso transform — origin at (gx=0, gy=0) maps to (offX, offY).
 // offY centers the grass diamond on the building cluster.
-const ISO = { offX: 600, offY: 440 };
+const ISO = { offX: 840, offY: 616 };
 function isoToScreen(gx, gy) {
   return {
     x: ISO.offX + (gx - gy) * TILE_W/2,
@@ -1179,15 +1187,15 @@ function buildGround() {
     for (let gx = 0; gx < cols; gx++) {
       const p = isoToScreen(gx - cols/2, gy - rows/2);
       // viewport crop only — no diamond mask, grass fills the whole frame
-      if (p.x < -40 || p.x > 1240 || p.y < -20 || p.y > 840) continue;
+      if (p.x < -56 || p.x > 1736 || p.y < -28 || p.y > 1176) continue;
 
       const isLight = ((gx + gy) % 2 === 0);
       let fill = isLight ? '#5e8639' : '#577d35';
       // soft vignette via distance from screen center
-      const dx = p.x - 600, dy = (p.y - 410) * 1.5;
+      const dx = p.x - 840, dy = (p.y - 574) * 1.5;
       const edge = Math.hypot(dx, dy);
-      if (edge > 620) fill = '#4d6c2d';
-      if (edge > 760) fill = '#3f5a26';
+      if (edge > 868) fill = '#4d6c2d';
+      if (edge > 1064) fill = '#3f5a26';
       const poly = document.createElementNS(svgNS, 'polygon');
       poly.setAttribute('points',
         `${p.x},${p.y - TILE_H/2} ${p.x + TILE_W/2},${p.y} ${p.x},${p.y + TILE_H/2} ${p.x - TILE_W/2},${p.y}`);
@@ -1200,9 +1208,9 @@ function buildGround() {
       const hashSeed = (gx * 31 + gy * 17) & 255;
       const hashSeed2 = (gx * 41 + gy * 23 + 11) & 255;
 
-      // building clearance — sprites within 70px of any building center are skipped
+      // building clearance — sprites within 70px of any building center are skipped (scaled 1.4×)
       const nearBldg = Object.values(BUILDINGS).some(
-        bb => Math.hypot(bb.x - p.x, bb.y - p.y) < 72
+        bb => Math.hypot(bb.x - p.x, bb.y - p.y) < 101
       );
 
       // Light grass-tuft dot — kept dense even near buildings
@@ -1331,10 +1339,11 @@ function buildPaths() {
 
 function buildPond() {
   const pond = document.getElementById('pond');
-  const cx = 740, cy = 620;
+  // S029: scaled 1.4× when the world grew. Outer ring 90→126, 36→50.
+  const cx = 1036, cy = 868;
   // big diamond
   const poly = document.createElementNS(svgNS, 'polygon');
-  poly.setAttribute('points', `${cx},${cy - 36} ${cx + 90},${cy} ${cx},${cy + 36} ${cx - 90},${cy}`);
+  poly.setAttribute('points', `${cx},${cy - 50} ${cx + 126},${cy} ${cx},${cy + 50} ${cx - 126},${cy}`);
   poly.setAttribute('fill', 'url(#waterGrad)');
   poly.setAttribute('stroke', 'var(--water-dk)');
   poly.setAttribute('stroke-width', '2');
@@ -1342,30 +1351,30 @@ function buildPond() {
 
   // foam
   const foam = document.createElementNS(svgNS, 'polygon');
-  foam.setAttribute('points', `${cx},${cy - 32} ${cx + 80},${cy} ${cx},${cy + 32} ${cx - 80},${cy}`);
+  foam.setAttribute('points', `${cx},${cy - 45} ${cx + 112},${cy} ${cx},${cy + 45} ${cx - 112},${cy}`);
   foam.setAttribute('fill', 'none');
   foam.setAttribute('stroke', 'var(--water-foam)');
   foam.setAttribute('stroke-width', '0.6');
   foam.setAttribute('opacity', '0.4');
   pond.appendChild(foam);
 
-  // ripples
-  [[cx-30, cy-6], [cx+20, cy+8], [cx-10, cy+18], [cx+40, cy-12]].forEach((p, i) => {
+  // ripples (offsets scaled 1.4×: 30→42, 6→8, 20→28, 8→11, 10→14, 18→25, 40→56, 12→17)
+  [[cx-42, cy-8], [cx+28, cy+11], [cx-14, cy+25], [cx+56, cy-17]].forEach((p, i) => {
     const r = document.createElementNS(svgNS, 'line');
-    r.setAttribute('x1', p[0] - 8); r.setAttribute('y1', p[1]);
-    r.setAttribute('x2', p[0] + 8); r.setAttribute('y2', p[1]);
+    r.setAttribute('x1', p[0] - 11); r.setAttribute('y1', p[1]);
+    r.setAttribute('x2', p[0] + 11); r.setAttribute('y2', p[1]);
     r.setAttribute('stroke', 'var(--water-light)');
     r.setAttribute('stroke-width', '1');
     r.setAttribute('class', i % 2 === 0 ? 'ripple' : 'ripple delay');
     pond.appendChild(r);
   });
 
-  // lily pad
+  // lily pad (lobes scaled 1.4×: 22→31, 12→17, 32→45, 4→6, 3→4, 13→18, 31→43)
   const lily = document.createElementNS(svgNS, 'g');
   lily.innerHTML = `
-    <polygon points="${cx-22},${cy+4} ${cx-12},${cy} ${cx-22},${cy-4} ${cx-32},${cy}" fill="#4f6b3a"/>
-    <polygon points="${cx-22},${cy+3} ${cx-13},${cy} ${cx-22},${cy-3} ${cx-31},${cy}" fill="#6a9645"/>
-    <circle cx="${cx-22}" cy="${cy-1}" r="1.5" fill="#f0b0c8"/>
+    <polygon points="${cx-31},${cy+6} ${cx-17},${cy} ${cx-31},${cy-6} ${cx-45},${cy}" fill="#4f6b3a"/>
+    <polygon points="${cx-31},${cy+4} ${cx-18},${cy} ${cx-31},${cy-4} ${cx-43},${cy}" fill="#6a9645"/>
+    <circle cx="${cx-31}" cy="${cy-1}" r="2.1" fill="#f0b0c8"/>
   `;
   pond.appendChild(lily);
 }
@@ -1396,10 +1405,11 @@ function buildFlora() {
   }
 
   function placeTree(x, y, layerHint) {
-    if (x < 6 || x > 1194 || y < 174 || y > 812) return;
-    if (!clearOfBuildings(x, y, 86)) return;
-    if (!clearOfPond(x, y, 104)) return;
-    const layer = layerHint || (y > 560 ? front : back);
+    // S029: bounds scaled 1.4× (6→8, 1194→1672, 174→244, 812→1137).
+    if (x < 8 || x > 1672 || y < 244 || y > 1137) return;
+    if (!clearOfBuildings(x, y, 120)) return;
+    if (!clearOfPond(x, y, 146)) return;
+    const layer = layerHint || (y > 784 ? front : back);
     addUse(layer, 'tree', x, y);
   }
 
@@ -1415,18 +1425,20 @@ function buildFlora() {
     return [a, b];
   }
   // Distance to nearest viewport edge, normalized 0 (edge) .. 1 (center).
+  // S029: bounds scaled 1.4×.
   function edgeDistNorm(x, y) {
-    const ex = Math.min(x, 1200 - x) / 600;
-    const ey = Math.min(y - 170, 820 - y) / 325;
+    const ex = Math.min(x, 1680 - x) / 840;
+    const ey = Math.min(y - 238, 1148 - y) / 455;
     return Math.max(0, Math.min(1, Math.min(ex, ey)));
   }
   // Reservoir of candidate positions across the open ground (skips sky band).
   // Density biased to ~6-8x higher near edges than the middle.
-  const TREE_CANDIDATES = 130;
+  // S029: more candidates to fill the bigger map (130→180); scatter bounds scaled 1.4×.
+  const TREE_CANDIDATES = 180;
   for (let i = 0; i < TREE_CANDIDATES; i++) {
     const [u, v] = rand2(i + 1);
-    const x = 8 + u * 1184;
-    const y = 178 + v * 626;
+    const x = 11 + u * 1658;
+    const y = 249 + v * 876;
     const edge = edgeDistNorm(x, y);
     // Acceptance probability: high near edges, low in the middle. Add a touch
     // of texture so it doesn't read as a smooth gradient.
@@ -1435,35 +1447,36 @@ function buildFlora() {
     if (w > accept) continue;
     // Sub-tile jitter, then place. placeTree filters buildings/edges.
     const [jx, jy] = rand2(i * 13 + 11);
-    placeTree(x + (jx - 0.5) * 8, y + (jy - 0.5) * 6, y > 560 ? front : back);
+    placeTree(x + (jx - 0.5) * 11, y + (jy - 0.5) * 8, y > 784 ? front : back);
   }
 
   // ── Small details scattered through the open map (with clearance) ──
+  // S029: bounds scaled 1.4× (30→42, 1170→1638, 180→252, 800→1120).
   function placeIfClear(layer, href, x, y, opts={}) {
-    if (x < 30 || x > 1170 || y < 180 || y > 800) return;
-    if (!clearOfBuildings(x, y, opts.bPad || 60)) return;
-    if (!clearOfPond(x, y, opts.pPad || 90)) return;
-    if (!clearOfPaths(x, y, opts.pathPad || 18)) return;
+    if (x < 42 || x > 1638 || y < 252 || y > 1120) return;
+    if (!clearOfBuildings(x, y, opts.bPad || 84)) return;
+    if (!clearOfPond(x, y, opts.pPad || 126)) return;
+    if (!clearOfPaths(x, y, opts.pathPad || 25)) return;
     addUse(layer, href, x, y);
   }
 
-  // pseudo-random scatter for bushes
-  for (let i = 0; i < 30; i++) {
-    const x = 110 + ((i * 127) % 980);
-    const y = 220 + ((i * 91)  % 560);
+  // pseudo-random scatter for bushes (S029: bounds scaled 1.4×, count bumped 30→44).
+  for (let i = 0; i < 44; i++) {
+    const x = 154 + ((i * 127) % 1372);
+    const y = 308 + ((i * 91)  % 784);
     placeIfClear(back, 'bush', x, y);
   }
-  // flower clusters (3 each, tight)
-  for (let i = 0; i < 14; i++) {
-    const cx = 100 + ((i * 167) % 1000);
-    const cy = 230 + ((i * 113) % 540);
-    [[0,0],[3,-2],[-2,3]].forEach(([ox,oy]) => placeIfClear(back, 'flower', cx+ox, cy+oy, {pathPad: 14}));
+  // flower clusters (3 each, tight; bounds scaled 1.4×, count 14→20)
+  for (let i = 0; i < 20; i++) {
+    const cx = 140 + ((i * 167) % 1400);
+    const cy = 322 + ((i * 113) % 756);
+    [[0,0],[4,-3],[-3,4]].forEach(([ox,oy]) => placeIfClear(back, 'flower', cx+ox, cy+oy, {pathPad: 20}));
   }
-  // rocks — fewer, weighted toward the periphery
-  for (let i = 0; i < 16; i++) {
-    const x = 80 + ((i * 199) % 1040);
-    const y = 220 + ((i * 79)  % 560);
-    placeIfClear(back, 'rock', x, y, {bPad: 70});
+  // rocks — fewer, weighted toward the periphery (bounds scaled 1.4×, count 16→22)
+  for (let i = 0; i < 22; i++) {
+    const x = 112 + ((i * 199) % 1456);
+    const y = 308 + ((i * 79)  % 784);
+    placeIfClear(back, 'rock', x, y, {bPad: 98});
   }
 }
 
@@ -1620,7 +1633,7 @@ function isoBuilding(opts) {
   const wallTex = wallTexture(w, d, h, texture);
   const rfTex   = roofTex ? roofTexture(w, d, h, r) : '';
 
-  return `<g class="building" data-id="${id}" transform="translate(${cx},${cy})">
+  return `<g class="building" data-id="${id}" transform="translate(${cx},${cy}) scale(1.4)">
     ${shadow}${plinth}${base}${swWall}${seWall}${wallTex}${frame}${swRoof}${seRoof}${rfTex}${roofRidge}${details}
   </g>`;
 }
@@ -1699,7 +1712,7 @@ function buildBuildings() {
       <rect x="-2" y="-12" width="1" height="6" fill="var(--wood-dark)"/>
       <rect x="11" y="-19" width="1" height="6" fill="var(--wood-dark)"/>
     `;
-    html += `<g class="building" data-id="inbox-square" transform="translate(${b.x},${b.y})">
+    html += `<g class="building" data-id="inbox-square" transform="translate(${b.x},${b.y}) scale(1.4)">
       <polygon points="0,${d+5} ${w+5},5 0,${-d+5} ${-w+5},5" fill="rgba(0,0,0,0.25)"/>
       ${tiles}
       ${bb}
@@ -2154,16 +2167,16 @@ function buildBuildings() {
 
 // Negative = label sits above the building's roof apex (with a little clearance).
 const LABEL_Y_OFFSET = {
-  'inbox-square':     -50,   // flat platform; sits above bulletin board
-  'meta-town-hall':   -160,  // h+r=146, spire clipped by canvas top
-  'lorebook-library': -132,  // h+r=116
-  'bank':             -146,  // h+r=126
-  'examine-hall':     -78,   // h+r=60
-  'quest-hall':       -154,  // h+r=134
-  'spellbook-tower':  -250,  // h+r=240 (tall tower)
-  'keepsake-vault':   -118,  // h+r=102
-  'inn':              -132,  // h+r=114
-  'braindead-workshop': -65, // h+r=52
+  'inbox-square':     -70,   // flat platform; sits above bulletin board
+  'meta-town-hall':   -224,  // h+r=146, spire clipped by canvas top
+  'lorebook-library': -185,  // h+r=116
+  'bank':             -204,  // h+r=126
+  'examine-hall':     -109,  // h+r=60
+  'quest-hall':       -216,  // h+r=134
+  'spellbook-tower':  -350,  // h+r=240 (tall tower)
+  'keepsake-vault':   -165,  // h+r=102
+  'inn':              -185,  // h+r=114
+  'braindead-workshop': -91, // h+r=52
 };
 
 function buildLabels() {
@@ -2171,7 +2184,7 @@ function buildLabels() {
   let html = '';
   Object.entries(BUILDINGS).forEach(([id, b]) => {
     const yoff = LABEL_Y_OFFSET[id] || 60;
-    html += `<g transform="translate(${b.x},${b.y + yoff})">${ornateLabel(b.label, 0)}</g>`;
+    html += `<g transform="translate(${b.x},${b.y + yoff}) scale(1.4)">${ornateLabel(b.label, 0)}</g>`;
   });
   layer.innerHTML = html;
 }
@@ -2472,7 +2485,7 @@ let guthixActive = false;
 // from the building's stand point. moveActor honours this so a floater glides
 // between buildings without dropping to ground level.
 const ACTOR_Y_OFFSET = {
-  guthix: -48,
+  guthix: -67,
 };
 // S028: actors that don't walk — suppress the step animation + dust trail.
 const NON_WALKING_ACTORS = new Set(['guthix']);
@@ -2487,16 +2500,17 @@ const GATHER_SLOTS = [
   // this slot's speech bubble (more negative = higher above head). Back-row
   // slots get higher bubbles so the cluster's bubbles fan upward instead of
   // stacking on top of each other.
-  { dx: 0,    dy: 0,    bubbleY: -34 },  // 0: center
-  { dx: -34,  dy: 8,    bubbleY: -34 },  // 1: front-left
-  { dx: 34,   dy: 8,    bubbleY: -34 },  // 2: front-right
-  { dx: -22,  dy: -14,  bubbleY: -56 },  // 3: back-left (higher bubble)
-  { dx: 22,   dy: -14,  bubbleY: -56 },  // 4: back-right (higher bubble)
-  { dx: -58,  dy: -2,   bubbleY: -42 },  // 5: far-left
-  { dx: 58,   dy: -2,   bubbleY: -42 },  // 6: far-right
-  { dx: 0,    dy: -24,  bubbleY: -72 },  // 7: directly back (highest bubble)
-  { dx: -46,  dy: 14,   bubbleY: -28 },  // 8: front-far-left (lower bubble)
-  { dx: 46,   dy: 14,   bubbleY: -28 },  // 9: front-far-right
+  // All values scaled 1.4× from the original layout when the world grew (S029).
+  { dx: 0,    dy: 0,    bubbleY: -48 },  // 0: center
+  { dx: -48,  dy: 11,   bubbleY: -48 },  // 1: front-left
+  { dx: 48,   dy: 11,   bubbleY: -48 },  // 2: front-right
+  { dx: -31,  dy: -20,  bubbleY: -78 },  // 3: back-left (higher bubble)
+  { dx: 31,   dy: -20,  bubbleY: -78 },  // 4: back-right (higher bubble)
+  { dx: -81,  dy: -3,   bubbleY: -59 },  // 5: far-left
+  { dx: 81,   dy: -3,   bubbleY: -59 },  // 6: far-right
+  { dx: 0,    dy: -34,  bubbleY: -101 }, // 7: directly back (highest bubble)
+  { dx: -64,  dy: 20,   bubbleY: -39 },  // 8: front-far-left (lower bubble)
+  { dx: 64,   dy: 20,   bubbleY: -39 },  // 9: front-far-right
 ];
 const actorSlot = {};  // actorKey -> slot index at current building
 
@@ -2540,7 +2554,7 @@ const instanceNodes = {};   // actorKey -> SVG <g> element
 const INSTANCE_IDLE_MS = 5 * 60 * 1000;
 
 actorPositions['jebrim'] = {x: STAND['inbox-square'].x, y: STAND['inbox-square'].y};
-actorPositions['zezima'] = {x: STAND['keepsake-vault'].x - 30, y: STAND['keepsake-vault'].y};
+actorPositions['zezima'] = {x: STAND['keepsake-vault'].x - 42, y: STAND['keepsake-vault'].y};
 
 // jump dropdown + scrub ticks
 const sessionStarts = EVENTS.filter(e => e.type === 'session-start');
@@ -2748,8 +2762,11 @@ function despawnGnome(id) {
 function ensureActorExists(actor, atKey, instance) {
   if (!actor) return;
   const inst = +instance || 1;
-  if ((actor === 'jebrim' || actor === 'zezima') && inst > 1) {
-    spawnPlayerInstance(actor, inst, atKey);
+  // D-017/D-019: instance > 1 → parallel-instance sprite (tinted, with badge).
+  // Player-class + braindead are the eligible actors. Wisp/Guthix never fork.
+  if ((actor === 'jebrim' || actor === 'zezima' || actor === 'braindead') && inst > 1) {
+    const fallbackBuilding = actor === 'braindead' ? 'braindead-workshop' : atKey;
+    spawnPlayerInstance(actor, inst, atKey || fallbackBuilding);
     return;
   }
   if (actor === 'jebrim' || actor === 'zezima') return;          // baked in (instance 1)
@@ -2780,17 +2797,19 @@ function isDwarfActor(actor) { return /^D\d+$/.test(actor); }
 function isGnomeActor(actor) { return /^G\d+$/.test(actor); }
 function isSubAgentActor(actor) { return isDwarfActor(actor) || isGnomeActor(actor); }
 
-// D-017: spawn a secondary instance sprite for a player-class actor.
-// Instance 1 lives in static HTML (actor-jebrim / actor-zezima); this only
-// runs for instance 2+. Same sprite art, tinted via CSS filter, with a small
-// instance badge above the head for definitive disambiguation.
+// D-017/D-019: spawn a secondary instance sprite for an instanced actor.
+// Instance 1 lives in static HTML (actor-jebrim, actor-zezima) or the
+// dev-brain spawn path (actor-braindead). This only runs for instance 2+.
+// Same sprite art (via `<use href="#${actor}">`), tinted via CSS filter on
+// .parallel-instance.tint-N, with a small instance badge above the head.
 function spawnPlayerInstance(actor, instance, at) {
   const inst = +instance || 0;
   if (inst <= 1) return;
   const actorKey = instanceKey(actor, inst);
   if (instanceNodes[actorKey]) return;        // already spawned
   if (document.getElementById('actor-' + actorKey)) return;
-  const atKey = at || currentBuilding[actor] || 'inbox-square';
+  const defaultBuilding = actor === 'braindead' ? 'braindead-workshop' : 'inbox-square';
+  const atKey = at || currentBuilding[actor] || defaultBuilding;
   const b = STAND[atKey] || STAND['inbox-square'];
   currentBuilding[actorKey] = atKey;
   const j = assignGatherSlot(actorKey, atKey);
@@ -3502,9 +3521,9 @@ function resetWorld() {
   const js = STAND['inbox-square'];
   const zs = STAND['keepsake-vault'];
   setActorTransform(j, js.x, js.y, false);
-  setActorTransform(z, zs.x - 30, zs.y, false);
+  setActorTransform(z, zs.x - 42, zs.y, false);
   actorPositions['jebrim'] = {x: js.x, y: js.y};
-  actorPositions['zezima'] = {x: zs.x - 30, y: zs.y};
+  actorPositions['zezima'] = {x: zs.x - 42, y: zs.y};
   currentBuilding['jebrim'] = 'inbox-square';
   currentBuilding['zezima'] = 'keepsake-vault';
   // Seed slot assignments for the static-HTML actors so the next arrival at

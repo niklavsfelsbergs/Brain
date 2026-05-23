@@ -120,6 +120,15 @@ After stating the Plan, write the intent line **in the active actor's voice** (1
 - **No file → no bubble.** Skipping intent narration in turns that don't run the visualizer is fine; the file is a hint, not a contract. If a turn doesn't write, the previous intent stays up until the actor moves buildings (then it clears).
 - **Don't narrate the intent line itself in the visible response.** It's a sidecar — the agent doesn't say "I'm setting my intent to X"; it just writes the file.
 
+### Mode marker sidecar (`.mode`)
+
+Alongside the per-session intent file there is an optional **mode marker** at `.claude/intent/<sid8>.mode` (keyed by sid8 only — it's per-session, not per-actor). It carries a single token the event stream can't infer on its own, so the switchboard can render a ritual-lifecycle chip:
+
+- `alching` — written on entry to a principal-self alching pass, cleared on exit. Row reads `ALCHING`. See `spellbook/rituals/alching.md`.
+- `wrapped_up` — written as the final action of close-session. Row reads `WRAPPED UP` ("done, terminal still open") until the process ends; a fresh prompt auto-clears it. See `spellbook/rituals/close-session.md`.
+
+`status-sidecar.py` reads the marker and overrides the event-derived state (precedence: `ended` > `waiting_for_user` > `waiting_for_subagents` > `alching` > `working`; `wrapped_up` holds across working/waiting). Like the intent file it's a hint, not a contract — no marker just means no chip. Written by the rituals, not narrated in the visible response.
+
 ## Narration channel (system voice)
 
 Alongside the per-actor intent file, there is a single global narration sidecar at `.claude/narration.txt`. Same overwrite semantics as `intent/*.txt` — the file holds the most recent narration line; the chat keeps history. Cap ≤200 chars.

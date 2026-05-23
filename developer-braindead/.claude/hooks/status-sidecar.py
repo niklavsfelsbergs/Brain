@@ -3,9 +3,11 @@
 #
 # Writes ~/.claude/status/<sid8>.json on every UserPromptSubmit, PreToolUse,
 # PostToolUse, Stop, and SessionEnd. The file records the session's current
-# state (working / waiting_for_user / ended) so an aggregator view can show
-# which terminals are idle, working, or parked on a Stop waiting for the
-# principal.
+# state (working / waiting_for_user / waiting_for_subagents / alching /
+# wrapped_up / ended) so an aggregator view can show which terminals are idle,
+# working, mid-ritual, or parked on a Stop waiting for the principal. The last
+# two (alching / wrapped_up) ride a per-session `.mode` marker the agent writes
+# — see MODE_MARKER_SUFFIX below.
 #
 # Idle is *not* stamped by this writer — readers derive it from
 # `state == "waiting_for_user" AND now - last_event_ts > 5 min`. The hook
@@ -118,6 +120,23 @@ EVENT_STATE = {
 # fire-budget impact is ~0-2 per session each, not per tool call.
 WAIT_TOOLS = {"AskUserQuestion", "ExitPlanMode"}
 SUBAGENT_TOOLS = {"Task", "Agent"}
+
+# S059: per-session mode marker. The event stream alone can't tell that a
+# session is mid-ritual; the agent writes a single token to
+# `.claude/intent/<sid8>.mode` to flag a lifecycle state the events can't infer:
+#   "alching"    — a per-player tending ritual is in progress. Overrides the
+#                  "working" event-state only (waiting-for-you, awaiting-crew,
+#                  and ended all still win) → state="alching".
+#   "wrapped_up" — close-session finished; the terminal lingers but there's
+#                  nothing left to do. Holds across working/waiting until the
+#                  process ends → state="wrapped_up". Auto-cleared on the next
+#                  UserPromptSubmit (a fresh prompt means work resumed).
+# Absent/empty marker = normal event-derived state. The marker is a persistent
+# file, so the session's own next hook fire picks it up (≤1 fire of lag). The
+# agent owns writing it (alching.md, close-session.md); the hook reads it here
+# and tidies it (archive, never delete) on SessionEnd / wrapped-up resume.
+MODE_MARKER_SUFFIX = ".mode"
+MODE_VALUES = {"alching", "wrapped_up"}
 
 
 def _project_dir() -> Path | None:
@@ -1006,12 +1025,16 @@ def _gc_intent_files(project_dir: Path | None, live_short: set[str], current_sid
                 continue
             if p.name == ".gitkeep":
                 continue
-            if p.suffix != ".txt":
+            if p.suffix not in (".txt", ".mode"):
                 continue
             name = p.stem
-            # Per-session pattern: <actor>-<8hex>
             sid8 = ""
-            if len(name) >= 9 and name[-9] == "-":
+            if p.suffix == ".mode":
+                # S059 marker filename: "<8hex>.mode"
+                if len(name) == 8 and all(c in "0123456789abcdef" for c in name):
+                    sid8 = name
+            elif len(name) >= 9 and name[-9] == "-":
+                # Intent file per-session pattern: <actor>-<8hex>
                 tail = name[-8:]
                 if all(c in "0123456789abcdef" for c in tail):
                     sid8 = tail
@@ -1032,6 +1055,48 @@ def _gc_intent_files(project_dir: Path | None, live_short: set[str], current_sid
                 print(f"status-sidecar: intent archive failed for {p.name}: {e}", file=sys.stderr)
     except Exception as e:
         print(f"status-sidecar: intent GC failed: {e}", file=sys.stderr)
+
+
+def _mode_marker_path(project_dir: Path | None, sid8: str) -> Path | None:
+    """S059: `.claude/intent/<sid8>.mode` — same dir as the intent files so the
+    intent GC sweeps stale markers too. None when the project dir is unknown."""
+    if not project_dir or not sid8:
+        return None
+    return project_dir / ".claude" / "intent" / f"{sid8}{MODE_MARKER_SUFFIX}"
+
+
+def _read_mode_marker(project_dir: Path | None, sid8: str) -> str:
+    """Return the marker token ("alching" / "wrapped_up") or "" when absent,
+    empty, or unrecognized. Tolerant of a BOM and surrounding whitespace."""
+    p = _mode_marker_path(project_dir, sid8)
+    if not p:
+        return ""
+    try:
+        if not p.exists():
+            return ""
+        token = p.read_text(encoding="utf-8").lstrip("﻿").strip().lower()
+        return token if token in MODE_VALUES else ""
+    except Exception:
+        return ""
+
+
+def _clear_mode_marker(project_dir: Path | None, sid8: str) -> None:
+    """Archive the session's mode marker (never delete — archive-discipline).
+    Called on SessionEnd and on a wrapped-up resume."""
+    p = _mode_marker_path(project_dir, sid8)
+    if not p:
+        return
+    try:
+        if not p.exists():
+            return
+        archive = p.parent / "archive"
+        archive.mkdir(parents=True, exist_ok=True)
+        dst = archive / p.name
+        if dst.exists():
+            dst = archive / f"{p.stem}.{int(time.time())}{p.suffix}"
+        p.replace(dst)
+    except Exception as e:
+        print(f"status-sidecar: mode marker clear failed for {sid8}: {e}", file=sys.stderr)
 
 
 def main() -> None:
@@ -1084,6 +1149,23 @@ def main() -> None:
 
     project_dir = _project_dir()
     actor, intent = _detect_actor(project_dir, sid8, sid)
+
+    # S059: per-session mode marker override. Layered on top of the event-state
+    # and the Pre/Post tool overrides above, so the precedence is:
+    #   ended > waiting_for_user > waiting_for_subagents > alching > working.
+    # alching replaces a plain "working" turn; "needs you" and "awaiting crew"
+    # still win because they're more actionable. wrapped_up holds across
+    # working/waiting until the process ends.
+    mode = _read_mode_marker(project_dir, sid8)
+    if hook_event == "SessionEnd":
+        _clear_mode_marker(project_dir, sid8)          # process gone — tidy up
+    elif hook_event == "UserPromptSubmit" and mode == "wrapped_up":
+        _clear_mode_marker(project_dir, sid8)          # fresh prompt → resumed
+        mode = ""
+    if mode == "wrapped_up" and state != "ended":
+        state = "wrapped_up"
+    elif mode == "alching" and state == "working":
+        state = "alching"
 
     now_ts = time.time()
     out_path = STATUS_DIR / f"{sid8}.json"

@@ -64,6 +64,17 @@ Recommendation shape — one line, surfaced after the Plan per `meta/communicati
 
 If the principal declines, proceed normally. Do not nag again that session.
 
+## Switchboard marker (visualizer concern)
+
+When the agent runs alching **itself** — steps 1–7 personally, not delegated to a gnome — it flags the session so the switchboard renders an `ALCHING` chip:
+
+- **On entry** (before step 0): write `alching` to `.claude/intent/<sid8>.mode` at the brain root, where `<sid8>` is the first 8 chars of `CLAUDE_CODE_SESSION_ID` (the same anchor the intent file uses).
+- **On exit** (after step 7, or if alching is abandoned mid-pass): overwrite that file with an empty line to clear it.
+
+`status-sidecar.py` reads the marker and overrides the session's `working` state with `alching` while it's set. The two more-actionable states still win: a draft-approval pause (a `Stop`) reads as `WAITING`, and a spawned gnome reads as `AWAITING CREW`. So an alching session shows `ALCHING` while it churns and `WAITING` when it parks for your approval — both correct.
+
+This is a switchboard concern only — **not architecturally enforced**; a missing marker just means no chip. When alching is **delegated to a gnome** (step 0 spawn-decision fires), the principal's row reads `AWAITING CREW` instead — it is genuinely blocked on its crew — and no alching marker is written.
+
 ## The procedure
 
 The agent works through each item below in order, restricted to the active player's namespace. **Propose, never silently destroy.** Surface every move to the principal for confirmation rather than auto-executing.

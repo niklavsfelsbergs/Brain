@@ -201,6 +201,8 @@ One or two sentences back to the principal. Include:
 
 Then wait. The principal closes the conversation.
 
+**Switchboard marker (visualizer concern).** As the **final action** — after the commit and the close statement, whether the close ran principal-self or via a gnome — write `wrapped_up` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`). This flips the session's switchboard row from `CLOSING` (mid-wrap, intent-derived) to `WRAPPED UP` — "done, terminal still open" — distinct from `ENDED` (process gone). `status-sidecar.py` reads the marker on this turn's `Stop` event and holds the `wrapped_up` state until the process actually ends. If the principal sends a fresh prompt instead of closing the conversation, the marker auto-clears and the session resumes as `working`. Not architecturally enforced — a missing marker just leaves the row reading `WAITING`/`IDLE` as before.
+
 ### 11. Special case: unscoped session
 
 If the session was unscoped (no player ever activated), there is no per-player quest-log to close. The agent writes a single entry to `players/inbox/S{NNN}_{sid8}_unscoped.md` capturing what happened. Same SNNN rule. Bankstanding triages the inbox later. Skip step 8 — wisp sessions don't post to comms.

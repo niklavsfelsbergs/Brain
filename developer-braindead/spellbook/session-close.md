@@ -36,6 +36,7 @@
    - **If the working tree is clean** (a read-only session — discussion, audit, no file changes), skip the commit silently and note "no commit; tree clean" in the close.
    - **The principal has already authorized end-of-session commits** by making this part of the ritual. Don't ask before committing here; the ritual is the authorization. (The user's standing rule "always ask before committing" still applies *outside* this step.)
 9. **State the close back to the user** in 1–2 sentences. Include the commit hash (or "no commit; tree clean"). Get a nod.
+10. **Flag the switchboard: `WRAPPED UP`.** As the final action — after the commit and the close statement — write `wrapped_up` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`). This flips Braindead's switchboard row from `CLOSING` (mid-wrap) to `WRAPPED UP` — "done, terminal still open" — distinct from `ENDED` (process gone). `status-sidecar.py` reads it on this turn's `Stop` and holds the state until the process ends; a fresh prompt auto-clears it and resumes. Independent of step 7's `active-mode.txt` clear — that despawns the sprite; this sets the row state. Switchboard concern only, not architecturally enforced.
 
 ## Notes
 

@@ -1,0 +1,24 @@
+# S059 — 2026-05-23 — Switchboard ALCHING + WRAPPED UP states
+
+Two new switchboard states, both **hook-side** (real `state` fields, like S057's AWAITING CREW) per the principal's explicit choice over client-side narration-sniffing. They ride a new per-session **`.mode` marker** the agent writes — the signal the hook reads.
+
+- **The marker.** `.claude/intent/<sid8>.mode` (keyed by sid8, sibling to the intent file). One token: `alching` or `wrapped_up`; absent/empty = normal. New constants `MODE_MARKER_SUFFIX` / `MODE_VALUES` + helpers `_mode_marker_path` / `_read_mode_marker` / `_clear_mode_marker` in [[status-sidecar.py]]. `main()` applies a marker override after the event-state + Pre/Post tool overrides. Precedence: `ended > waiting_for_user > waiting_for_subagents > alching > working`; `wrapped_up` holds across working/waiting until `SessionEnd`. `wrapped_up` auto-clears on `UserPromptSubmit` (fresh prompt = resumed); `SessionEnd` tidies the marker. `_gc_intent_files` extended to sweep stale `<sid8>.mode` markers (archive, never delete) alongside intent files.
+- **ALCHING** — purple `#7a4fa3`, `@keyframes sbAlchPulse` dot shimmer, rank 2 (just under WORKING). Overrides only `working`, so an alching session reads ALCHING while it churns, WAITING when parked for draft approval, AWAITING CREW if it spawns a gnome — each correct. Only fires for **principal-self** alching; gnome-delegated alching reads AWAITING CREW (genuinely blocked on crew).
+- **WRAPPED UP** — teal-green `#3f7a6a`, no pulse, rank 6 (just above ENDED). The "done, terminal still open" gap between CLOSING (mid-wrap) and ENDED (process gone). Neither new state counts toward the "needs you" tally.
+- **Marker-write discipline** wired into the rituals so the states actually fire: [[alching.md]] (write on entry / clear on exit, principal-self only), [[close-session.md]] step 10 + dev [[session-close.md]] step 10 (`wrapped_up` as the final action), and a "Mode marker sidecar" subsection in [[communication-protocol.md]].
+- **`state.js` needs no change** — hook-stamped states pass through `deriveSessionState`'s fallback (`return record.state`); the client-side `idle`/`closing` derivations don't touch them.
+- **Verification.** Hook compiles; 14 unit assertions green (read/clear/GC/precedence-table). `node --check` clean on switchboard.js; styles.css brace-balanced. **Live render simulated end-to-end** — set `2de9789c.mode=alching`, drove a synthetic `UserPromptSubmit` through the real hook → status file + manifest both read `state=alching` → board renders the ALCHING chip on the Braindead·2 row. (The close's step 10 then overwrites the marker with `wrapped_up`, cleaning up the sim and demoing WRAPPED UP.)
+
+## D-024 coordination
+
+Two live Braindead siblings (`e433ac17` S056 chatbox reskin, `ac10ec71` PTY-terminal) held uncommitted WIP in `switchboard/styles.css` + `switchboard.js` — my two contested files. Per the proven S057 handoff (213ea2ab): applied my hunks **additively** to the shared tree (clean apply, no retry-hell this window; verified they survived the siblings' concurrent writes), but did **not** commit those two files (can't `git add -p` non-interactively without sweeping their WIP). Committed my uncontested side solo; posted the exact hunks to comms for whoever lands those files next.
+
+## Open / carried
+
+- **Confirm the client hunks land in a sibling's commit** (`e433ac17` S056 or `ac10ec71` PTY). Exact hunks recorded in `comms/active.md` (2de9789c UPDATE) — re-land from there if a full-file rewrite drops them. Until then the hook emits the states but the chips need the `STATE_LABEL`/CSS hunks committed.
+- **Live-verify on a real ritual** — a real principal-self alching session shows ALCHING; a real close shows WRAPPED UP → ENDED. The simulation proved the render chain; the rituals' marker-writes are mechanism-only until first lived.
+- **Rank tuning** — alching at 2 (above AWAITING CREW), wrapped_up at 6 (above ENDED); flip if either should surface differently.
+
+**Cascade.** [[status-sidecar.py]] (marker mechanism + override + GC + docstring); dev [[session-close.md]] (step 10); `comms/active.md` (OPEN + UPDATE handoff); this entry; `respawn.md`. Contested-but-applied (ceded to siblings): `switchboard/styles.css`, `switchboard/switchboard.js`.
+
+**Main-brain changes.** [[alching.md]] (switchboard-marker section), [[close-session.md]] (step 10 wrapped_up marker), [[communication-protocol.md]] (mode-marker sidecar subsection). All in `gielinor/` — discipline docs telling the main-brain agent when to write the marker; no behavioral/architectural change beyond the marker write.

@@ -23,20 +23,77 @@ Two panels side by side:
 
 ## How to run
 
-Live mode (the one that matters):
+Two servers, pick by whether you want the embedded terminal:
+
+**A. Observability only** (no terminal, zero deps):
 
 1. `cd switchboard` (from repo root)
 2. `python -m http.server 8765`
 3. Open `http://localhost:8765/?live=1`
-4. Append `&sid8=<your-sid8>` to highlight "this" session with a gold outline.
 
+**B. Observability + embedded agent chat** (S060 — talk to `claude` in-app via
+the ▶_ toggle):
+
+1. One-time: `python -m venv switchboard/.venv` then
+   `switchboard/.venv/Scripts/python.exe -m pip install pywinpty aiohttp`
+2. `switchboard/.venv/Scripts/python.exe switchboard/server.py`
+3. Open `http://localhost:8765/?live=1`, click ▶_ in the switchboard header.
+
+`server.py` serves the same static files **plus** the WebSocket bridges. Both
+servers bind `127.0.0.1:8765` — run one or the other, not both. The static
+surface stays GET-only in both; only the `/chat` and `/pty` sockets accept input.
+
+Append `&sid8=<your-sid8>` to highlight "this" session with a gold outline.
 Without `?live=1` the page renders an inert shell — no fetches, no polling.
-Useful for inspecting layout without a running hook.
-
 Replay mode is gone with the map.
+
+## Embedded agent chat (S060)
+
+The ▶_ button toggles a third panel — **not a terminal**, a chat UI. A left rail
+holds **one pill per conversation** (`+` new, `×` end); each pill is a live
+`claude` rendered as a conversation: user bubbles, streamed assistant text,
+tool-call cards, an input box. The terminal look is gone because we don't run
+claude's TUI — we drive it **headless** over the stream-json protocol and render
+the structured events ourselves.
+
+**How.** `server.py`'s `/chat` socket spawns `claude -p --input-format
+stream-json --output-format stream-json --include-partial-messages --verbose
+--permission-mode bypassPermissions --session-id <uuid>` (clean pipes, not a
+PTY) at the **brain root** — so `brain/.claude/settings.json` is picked up and
+each conversation lands on the switchboard board like any other session.
+Streaming-input mode keeps one process alive for the whole multi-turn chat.
+`terminal.js` parses the events: `stream_event`/`text_delta` → live text;
+`assistant` → authoritative content + tool cards; `user`/`tool_result` → fills
+a card; `result` → turn-end divider (cost · duration).
+
+**Click-to-navigate.** The server mints the session UUID (`--session-id`) and
+announces the `sid8` to the browser, so each pill knows its sid8 — a click on
+the matching switchboard row jumps to that conversation. Wiring: `terminal.js`
+registers a resolver with `focus.js`; the row's `dispatchFocus(sid8)` tries it
+before falling back to the VS Code `claude-focus://` URI. Panels stay decoupled
+(switchboard.js never imports terminal.js).
+
+- Only hosts sessions **the switchboard launches** (the headless process is the
+  switchboard's child). Existing VS Code sessions still use row → window focus.
+- No CDN dependency — the renderer is plain DOM + a small markdown helper.
+- Runs with `bypassPermissions` (matches the operator's existing setup) so tools
+  execute without interactive approval. Localhost-only socket.
+- Wire protocol: server→client JSON frames — `{t:session}` once, then
+  `{t:event,ev}` (raw claude stream-json events), `{t:stderr,d}`, `{t:exit,code}`;
+  client→server `{type:input,text}`.
+- `/pty` (xterm + ConPTY raw terminal, slices 1–2) remains in `server.py` as a
+  latent raw-shell option; the client no longer wires it.
+- Next: session persistence across page reload; thinking-block display; the
+  observer→interactor `D-NNN`.
 
 ## Files
 
+- `server.py` — static file server (GET-only) + `/chat` (headless claude,
+  stream-json) and `/pty` (raw PTY) WebSocket bridges (S060). Run from
+  `switchboard/.venv`. Spawns at brain root.
+- `terminal.js` — embedded agent-chat panel: rail of conversations, stream-json
+  event rendering (bubbles / tool cards / input), sid8 click-to-navigate.
+  Imported by `app.js`. (Filename kept; it drives the "TERMINAL" panel.)
 - `index.html` — shell + layout, mounts the two panels. No inline JS or CSS.
 - `styles.css` — every rule, in one place.
 - `app.js` — entry; reads URL params, kicks off both panels.

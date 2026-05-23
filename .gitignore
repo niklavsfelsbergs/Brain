@@ -26,6 +26,10 @@ switchboard/state-*.json.tmp.*
 switchboard/state-comms-*.md
 switchboard/chat.ndjson
 
+# Embedded-terminal server (S058) — venv + throwaway smoke test
+switchboard/.venv/
+switchboard/_smoketest.py
+
 # Intent narration sidecars (D-010) — transient agent self-narration
 .claude/intent/*.txt
 

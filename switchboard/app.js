@@ -14,6 +14,7 @@
 
 import { initSwitchboard } from './switchboard.js';
 import { initChat } from './chat.js';
+import { initTerminal } from './terminal.js';
 
 const params = new URLSearchParams(location.search);
 const live = params.get('live') === '1' || params.has('live');
@@ -22,6 +23,7 @@ const crt = params.get('crt') === '1' || params.has('crt');
 
 initSwitchboard({ live, sid8 });
 initChat({ live });
+initTerminal();
 
 // CRT mode — pure garnish. Param sets the initial state; the button toggles.
 if (crt) document.body.classList.add('crt');

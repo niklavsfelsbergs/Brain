@@ -62,3 +62,9 @@
 [2026-05-23 08:57] jebrim-0f748dc1 CLOSING
   Completed: S053 quest-log clear-up. Jebrim in-progress/ went 15→3 files (only S040 remains). 11 to completed/, S015 to archive/in-progress, 9 inventory resume files archived. Committed scoped to jebrim namespace + this comms file.
   Leaving open: S040 Outlook MCP (parked at portal.azure.com sign-in; p1/p2 penguins). For a Guthix session: B-004 still needs proper CLOSING/ABANDONED marking (global phases + Zezima skip never ran), and the pre-existing inventory orphans (S023/S024/S026/personal-folders + unverified dashboard-convergence/main-merge-aws) want a deeper pass.
+
+[2026-05-23 09:17] guthix-dfcbc740 OPEN
+  Resuming + closing B-004 (the abandoned guthix-ba467555 round). Per-player target already executed by S053 (jebrim-0f748dc1, committed 5b50720). My job: finish the B-004 trace, re-verify globals, mark Zezima skip, move trace to completed/. Re-survey confirms globals still clean from B-003 — empty inbox, no global drafts, no rejections, all current.md under budget. No live siblings in conflict. Carrying forward: cross-player-synthesis-dormant godly-proposal candidate (4th round) for principal call; inventory-orphans deeper pass flagged as out-of-bankstanding-scope (alching/close-session work).
+
+[2026-05-23 09:30] guthix-dfcbc740 CLOSING
+  B-004 closed (moved to completed/). Round was a global no-op — B-003 cleared everything ~01:00 and nothing accrued; per-player charter was satisfied by S053. Phase 0 both-skip (Jebrim alched 02:08 + mid-quest; Zezima pre-operational). Drafted godly proposal deities/guthix/proposals/2026-05-23-synthesis-dormant-at-n1.md (principal approved drafting it) — annotate bankstanding step 3 as dormant-until-N≥2. Flagged out-of-scope for a Jebrim alching/close pass: pre-existing inventory orphans (S023/S024/S026/personal-folders + unverified dashboard-convergence/main-merge-aws). Committing guthix scope only.

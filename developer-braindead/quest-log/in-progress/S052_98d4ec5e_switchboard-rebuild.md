@@ -25,17 +25,25 @@
      - `developer-braindead/comms/active.md` — S052 CLOSING entry.
      - This quest-log entry.
 
+5. **Denest (principal).** First live run revealed the migration target was wrong: `git mv` had been issued as `brain/switchboard/` *relative to the repo root* — but the repo is itself named `brain`, so that created a redundant nested `brain/brain/switchboard/`. Meanwhile the hooks' `DEV_BRAIN.parent / "switchboard"` correctly resolved to `<repo>/switchboard/` and had been writing runtime state there the whole time — source files and live state were one directory apart. Symptom: the new UI rendered but every panel was empty. Fix: `git mv` all tracked files from `brain/switchboard/` → `switchboard/`, swept the `brain/switchboard` → `switchboard` path strings across all docs + `_about.md` + hook comments, fixed `.gitignore`. Commit **d0638dc**.
+
+6. **Switchboard scale-up (principal).** Principal wanted the switchboard pane bigger all around. Went to ~1.7× the original after a 2× pass read too large: width 280→480px, header 20→34px, row name 13→22px, state chip 11→18px, dot 10→17px, subtitle 12→18px. Added a `?v=N` cache-buster on the `styles.css` link in `index.html` after the first scale-up didn't show (browser had cached the stylesheet). Not yet committed at close — folds into the wrap-up commit.
+
+7. **`CLAUDE_PROJECT_DIR` hook-path hardening (principal).** Principal asked why *this* session never appeared on the board. Diagnosis: zero events from `98d4ec5e` in `chat.ndjson`/`state.ndjson`, no `~/.claude/status/98d4ec5e.json` — all hooks silently no-op'd. Root cause: this session was launched from inside `experiments/visualizer/`, where Claude Code left `CLAUDE_PROJECT_DIR` empty; the registered hook command `python "${CLAUDE_PROJECT_DIR}/developer-braindead/.claude/hooks/..."` expanded to a broken `/developer-braindead/...` path. Sessions launched from the repo root (jebrim, guthix) were unaffected. Fix: replaced `${CLAUDE_PROJECT_DIR}` with the absolute hook path in `brain/.claude/settings.json` (6 commands), documented inline via `_comment_abs_path`. Machine-specific but acceptable until ascension. settings.json hot-reloads, so this session begins reporting on its next fire.
+
 ## Files touched (by commit)
 
 - **9854b32** — `developer-braindead/experiments/visualizer/index.html` (map stripped).
 - **c03f33b** — `developer-braindead/.claude/hooks/emit-event.py`, `developer-braindead/experiments/visualizer/index.html` (chat panel subtitle wiring).
 - **1c94a57** — `developer-braindead/experiments/visualizer/{index.html,_README.md,path-map.json}` → `switchboard/`; `developer-braindead/.claude/hooks/emit-event.py`, `status-sidecar.py` (`VIZ_DIR` constant); `.gitignore`.
-- **D4 commit** — `switchboard/{index.html,state.js,switchboard.js,focus.js,_about.md}`.
-- **D5 commit (this dwarf)** — files listed in turn 4 above.
+- **31844e3** — `switchboard/{index.html,app.js,chat.js,state.js,switchboard.js,focus.js,styles.css,_about.md}` (D4 ES module split).
+- **ca02dde** — D5 doc updates (respawn, D-020/24/25/26, comms, quest log).
+- **d0638dc** — denest `brain/switchboard/` → `switchboard/` + path-string sweep across docs.
+- **wrap-up commit** — `switchboard/styles.css` + `index.html` (scale-up), `brain/.claude/settings.json` (abs-path hardening), this quest log, respawn.md, comms CLOSING.
 
 ## Open
 
-- **Live-verify the rebuilt surface.** `cd brain/switchboard && python -m http.server 8765 && open http://localhost:8765/?live=1`. Confirm: both panels render, switchboard subtitles reflect current activity from a fresh tool call, chat panel grows as the hook fires, click-to-focus still dispatches via the focus.js module.
+- ~~**Live-verify the rebuilt surface.**~~ Done at close: UI renders both panels correctly; scale-up confirmed. *Caveat:* this very session (`98d4ec5e`) did not appear on the board — diagnosed to the `CLAUDE_PROJECT_DIR` hook-path bug (turn 7), now fixed. Still unverified end-to-end: chat panel growing live from `chat.ndjson`, switchboard subtitle ticking, click-to-focus via `focus.js`. Next session launched from repo root should self-report and confirm all three. Run: `cd switchboard && python -m http.server 8765 && open http://localhost:8765/?live=1`.
 - **Cleanup pass on `developer-braindead/experiments/visualizer/`.** Sprites/, sprite source PNGs, `slice.py`, `slice_tileset.py`, `subtask_smoketest.py` remain — dead weight from the map era. `experiments/vscode-claude-focus/` is a separate VS Code extension that may or may not still be live; decide whether it gets retired or graduates to its own top-level experiment. Sweep in a future bankstanding pass; never delete.
 - **`path-map.json` is now vestigial.** Still consulted by `emit-event.py`'s path classifier to humanize file paths into building names — but no map renders, so the classifier produces labels nobody reads. Simplify or repurpose the hook in a future pass.
 - **`_about.md` for `switchboard/`** — written by D4 this session; verify on first respawn that it reads naturally from a fresh session's perspective.

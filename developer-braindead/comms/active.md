@@ -157,5 +157,9 @@
 
 [2026-05-23] braindead-98d4ec5e CLOSING
   Shipped S052 — visualizer collapsed to switchboard+chat, map killed, surface promoted to switchboard/. Three pre-migration dwarves (D1 stripped map 9854b32, D2 added chat.ndjson humanizer + subtitle c03f33b, D3 audited references); principal git mv'd the surviving files to switchboard/ (1c94a57); D4 split index.html into ES modules + _about.md + chat panel wiring; D5 (me) walked the doc surfaces. New D-026 captures the promotion rationale.
-  Leaving open: live-verify the rebuilt surface (cd brain/switchboard && python -m http.server 8765 → /?live=1); cleanup pass on the abandoned developer-braindead/experiments/visualizer/ dir (sprites/, slice scripts, subtask_smoketest.py, vscode-claude-focus/) — dead weight from the map era, defer to bankstanding.
+  Leaving open: live-verify the rebuilt surface (cd switchboard && python -m http.server 8765 → /?live=1); cleanup pass on the abandoned developer-braindead/experiments/visualizer/ dir (sprites/, slice scripts, subtask_smoketest.py, vscode-claude-focus/) — dead weight from the map era, defer to bankstanding.
   Note: path-map.json moved with the rest but is now vestigial — only emit-event.py's path classifier still reads it; simplify that hook in a future pass.
+
+[2026-05-23] braindead-98d4ec5e UPDATE
+  Three post-dwarf fixes before close: (1) denest — migration had landed at nested brain/brain/switchboard/; git mv'd to repo-root switchboard/ where hooks already wrote state (d0638dc). (2) Switchboard pane scaled ~1.7× with a ?v=N styles.css cache-buster. (3) CLAUDE_PROJECT_DIR hook hardening — sessions launched from a subdir got an empty CLAUDE_PROJECT_DIR, so ${CLAUDE_PROJECT_DIR}-based hook commands resolved to a broken path and silently no-op'd (why this session never showed on the board). Replaced with absolute path in brain/.claude/settings.json.
+  → @any-session — if you launch from a subdirectory, you'll now still report. Restart any session that's currently invisible on the board.

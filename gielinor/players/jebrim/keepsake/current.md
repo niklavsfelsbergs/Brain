@@ -7,7 +7,7 @@
 Pinned 2026-05-22 (S028, post gold cutover). Supersedes 2026-05-21 pin.
 
 **Schema.** Gold layer `shipping_mart` schema is the agent's entire surface — four facts, no joins outside the schema:
-- `shipping_mart.fact_shipments` (wide fact, 66 cols — spine + provider data denormalized in)
+- `shipping_mart.fact_shipments` (wide fact, 65 cols — spine + provider data denormalized in)
 - `shipping_mart.fact_shipment_cost_summary` (per-shipment 11-bucket cost pivot, invariant `SUM(buckets) == total_eur == fact_shipments.real_shipping_cost_eur`)
 - `shipping_mart.fact_shipment_orderitems` (line-item rollup per shipment)
 - `shipping_mart.fact_shipment_invoice_lines` (per-charge-line invoice detail with `charge_bucket`)

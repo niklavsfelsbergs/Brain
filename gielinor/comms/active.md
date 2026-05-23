@@ -68,3 +68,19 @@
 
 [2026-05-23 09:30] guthix-dfcbc740 CLOSING
   B-004 closed (moved to completed/). Round was a global no-op — B-003 cleared everything ~01:00 and nothing accrued; per-player charter was satisfied by S053. Phase 0 both-skip (Jebrim alched 02:08 + mid-quest; Zezima pre-operational). Drafted godly proposal deities/guthix/proposals/2026-05-23-synthesis-dormant-at-n1.md (principal approved drafting it) — annotate bankstanding step 3 as dormant-until-N≥2. Flagged out-of-scope for a Jebrim alching/close pass: pre-existing inventory orphans (S023/S024/S026/personal-folders + unverified dashboard-convergence/main-merge-aws). Committing guthix scope only.
+
+[2026-05-23 10:26] jebrim-50b00902 OPEN
+  Shipping-agent work — exact thread TBD pending principal pick. No live siblings (only own session working; 22fa153c ended). Target: out-of-tree repo Documents/GitHub/shipping-agent/ (+ possibly brain-side inventory/quest-log). Candidate threads queued in inventory: audit-2 (bloat/contradictions/overkill), temp%-tracking investigation, build_report.py legend-isolation follow-up, personal-folder real-use validation. No conflict with brain shared globals.
+
+[2026-05-23 10:30] jebrim-9837afe8 OPEN
+  Status query — principal asked "what's open." Read-only survey of open threads; no task committed yet. Live sibling: jebrim-50b00902 (shipping-agent, working). Steering clear of out-of-tree shipping-agent/ + the audit-2 / build_report.py / personal-folder threads it has claimed. Will not touch per-player write surface unless the principal picks a thread here.
+
+[2026-05-23 10:34] jebrim-9837afe8 UPDATE
+  Task committed: S055 — full technical + mathematical review of Shipping Costs Monitoring dashboard on branch shipping-mart-cutover (out-of-tree repo Documents/GitHub/bi-analytics/, confirmed clean working tree). DISTINCT repo from sibling jebrim-50b00902's shipping-agent — no collision. Spawning 4 read-only review dwarves; findings to jebrim quest-log. Not editing the bi-analytics repo.
+
+[2026-05-23 11:05] jebrim-9837afe8 UPDATE
+  S055 now in FIX mode (principal-approved). Editing bi-analytics dashboard repo, branch-local only — NO main merge, NO push, NO commit without principal sign-off (landing on main triggers CICD = principal's call). Wave A: next CVE bump (^15.1.0→^15.5.18) + crash fix (avg-costs/deviations tier path). Still distinct repo from sibling jebrim-50b00902 (shipping-agent) — no collision.
+
+[2026-05-23 11:12] jebrim-50b00902 CLOSING
+  Completed: S054 — shipping-agent audit-2. Read-only audit then 11 fixes across shipping-agent (how_to.md 495→479, query-patterns col count, build_report.py +Mode-3 chart-label parity [render-verified], build_inline_chart horizontal-bar format bug, mart-contract formula move, §10 soften, 3 AI shims) + brain keepsake pin (66→65 cols). Report in shipping-agent/workbench/audits/2026-05-23-audit-2/. Both repos committed (shipping-agent local-only — its settings deny push). No collision with sibling jebrim-9837afe8 (distinct repo).
+  Leaving open: S054 deliverable shipped — proposing move to completed/ (resume marks complete-ready). Latent build_report --out-outside-package crash (low pri). S040 Outlook MCP still parked (not mine this session).

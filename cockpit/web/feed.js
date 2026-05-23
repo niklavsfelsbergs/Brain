@@ -35,7 +35,12 @@ function FeedItem({ i, onJump }) {
 
 export function FeedPanel({ onJump }) {
   const [items, setItems] = useState([]);
-  const [showActions, setShowActions] = useState(false);
+  // Actions ON by default — with them off a working session looks dead (only
+  // sparse lifecycle checkpoints show). Choice persists. (S066)
+  const [showActions, setShowActions] = useState(() => {
+    const v = localStorage.getItem("cockpit-feed-actions");
+    return v === null ? true : v === "1";
+  });
   const elRef = useRef(null);
   const pinned = useRef(false);
 
@@ -75,7 +80,12 @@ export function FeedPanel({ onJump }) {
       <div class="feed-head">
         <span>FEED</span>
         <label class="feed-toggle">
-          <input type="checkbox" checked=${showActions} onChange=${(e) => setShowActions(e.target.checked)} />
+          <input type="checkbox" checked=${showActions} onChange=${(e) => {
+            setShowActions(e.target.checked);
+            try {
+              localStorage.setItem("cockpit-feed-actions", e.target.checked ? "1" : "0");
+            } catch {}
+          }} />
           actions
         </label>
       </div>

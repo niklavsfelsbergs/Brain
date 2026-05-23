@@ -50,7 +50,11 @@ cockpit\.venv\Scripts\python.exe cockpit\backend.py   # → http://127.0.0.1:877
   `../switchboard/` (preserved contracts — hooks untouched). Endpoints:
   `/api/sessions` (the model), `/api/feed` (merged lifecycle + comms), `/chat`
   (headless-claude WS driver), `/history` (`.jsonl` → visual turns). Assets
-  `Cache-Control: no-store` → no stale-JS tax.
+  `Cache-Control: no-store` → no stale-JS tax. The driver launches claude with
+  `--disallowedTools "AskUserQuestion ExitPlanMode"`: those need a TTY, and
+  headless `claude -p` auto-dismisses them with an error no WS client can answer
+  (S065) — denying them makes a driven session ask in prose, which the composer
+  answers like any turn.
 - **Frontend:** Preact + `htm` via an ESM import map (`web/`). No build step.
   (Preact loads from esm.sh — needs internet at load; vendoring locally is the
   one deferred polish item.)

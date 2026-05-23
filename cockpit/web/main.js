@@ -10,6 +10,7 @@ import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { isOwned, place, openOwned, openPeek, release } from "./fleet.js";
+import { openTerm, Term, termForSid8 } from "./term.js";
 
 // Actor → the address the cockpit writes as the first message. The actor
 // implies the brain: Braindead enters the dev brain via the start phrase;
@@ -136,12 +137,14 @@ function App() {
   const toggleFeed = () => setShowFeed((v) => { setLsBool("cockpit-feed", !v); return !v; });
 
   const selectRow = (s) => {
-    const c = isOwned(s.session_id) ? openOwned(s.session_id) : openPeek(s.session_id);
+    // a cockpit-launched terminal hosting this session wins; else headless/peek
+    const t = termForSid8(s.sid8);
+    const c = t || (isOwned(s.session_id) ? openOwned(s.session_id) : openPeek(s.session_id));
     c.label = s.actor + (s.instance > 1 ? "·" + s.instance : "");
     setSel(c);
   };
   const doPlace = (actor, seed) => {
-    const c = place(seed);
+    const c = openTerm(seed); // S066 B: real interactive claude in a PTY (on-subscription)
     c.label = actor.label;
     setSel(c);
     setShowPlace(false);
@@ -176,9 +179,21 @@ function App() {
         onToggleFeed=${toggleFeed}
       />
       <div class="console-col">
-        ${sel
-          ? html`<${Console} key=${sel.cid} conn=${sel} title=${title} onRelease=${doRelease} />`
-          : html`<div class="console-empty">select a session, or place a new one</div>`}
+        ${!sel
+          ? html`<div class="console-empty">select a session, or place a new one</div>`
+          : sel.kind === "term"
+          ? html`<div class="term-col" style="display:flex;flex-direction:column;height:100%;">
+              <div class="console-head">
+                <span class="console-title">${title}</span>
+                <span class="console-status">terminal · on subscription</span>
+                <button class="release" title="end this session" onClick=${() => {
+                  sel.close();
+                  setSel(null);
+                }}>release</button>
+              </div>
+              <div style="flex:1;min-height:0;"><${Term} key=${sel.cid} conn=${sel} /></div>
+            </div>`
+          : html`<${Console} key=${sel.cid} conn=${sel} title=${title} onRelease=${doRelease} />`}
       </div>
       ${showFeed && html`<${FeedPanel} onJump=${jumpTo} />`}
       ${showPlace && html`<${PlaceModal} onPlace=${doPlace} onClose=${() => setShowPlace(false)} />`}

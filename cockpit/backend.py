@@ -29,6 +29,14 @@ WEB_DIR = COCKPIT_DIR / "web"
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 CLAUDE_EXE = shutil.which("claude") or "claude"
 
+# Interactive-prompt tools need a TTY to answer. Headless `claude -p` auto-
+# dismisses them with an error ("Answer questions?") the instant they're called —
+# no stream-json client can intercept or supply the answer (probed 2026-05-24).
+# A session driven through the cockpit that called these hung at waiting_for_user
+# with a dead question card. Deny them so the driven model asks in plain prose
+# instead, which the composer answers like any other turn. See D-028.
+NO_TTY_TOOLS = "AskUserQuestion ExitPlanMode"
+
 MANIFEST = STATE_DIR / "state-switchboard.json"
 ROLE_FILES = {
     "dwarf": STATE_DIR / "state-dwarves.json",
@@ -177,6 +185,7 @@ async def chat_handler(request):
         "--include-partial-messages",
         "--verbose",
         "--permission-mode", "bypassPermissions",
+        "--disallowedTools", NO_TTY_TOOLS,
     ]
     args += ["--resume", session_id] if resumed else ["--session-id", session_id]
     try:
@@ -457,6 +466,8 @@ def make_app():
     app.router.add_get("/api/sessions", api_sessions)
     app.router.add_get("/api/feed", api_feed)
     app.router.add_get("/chat", chat_handler)
+    from ptybridge import pty_handler  # real interactive claude over a PTY (S066 B)
+    app.router.add_get("/pty", pty_handler)
     app.router.add_get("/history", history_handler)
     app.router.add_get("/", static_handler)
     app.router.add_get("/{path:.*}", static_handler)

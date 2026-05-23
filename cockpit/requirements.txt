@@ -1,2 +1,3 @@
 aiohttp>=3.9
 pywebview>=5.0
+pywinpty>=2.0   # embedded real-terminal bridge (ptybridge.py, S066 B)

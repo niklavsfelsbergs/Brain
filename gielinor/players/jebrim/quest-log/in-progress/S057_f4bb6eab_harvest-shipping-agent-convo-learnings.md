@@ -41,3 +41,11 @@ Two corrections from the principal, both right:
 - **how_to.md rulebook update (out-of-tree, needs principal nod):** the dimension-gating rule should land in `shipping-agent/how_to.md §0` so the agent itself never repeats the blind spot. Not done — separate repo write.
 - **Recurring intent flagged by principal:** "it's time to take the convos I'm having with the agent and pick learnings." This was one. Pattern may warrant a repeatable harvest skill if it recurs.
 - **Not harvested (point-in-time, lives in the investigation):** the 19.2% baseline / ~4pp drift / lever €-sizings — they go stale; they belong in the workbench investigation, not the bank.
+
+## T3 — close (S057)
+
+- **Committed:** brain `eac16dd` (5 drafts + quest-log + comms), shipping-agent `c515140` (how_to.md rules 30–34, local-only — push denied by config). Scoped to exclude parallel session S058's contract-ingest work.
+- **No pending external actions.**
+- **Deliverable shipped** — the convo was harvested into both my brain (5 drafts) and the agent's rulebook (rules 30–34). Quest reads **complete-ready**; proposing move to `completed/` (principal approval).
+- **Close harvest:** 1 examine draft — `2026-05-23-harvest-must-reach-the-agent-and-be-exhaustive.md` (the two principal corrections this session).
+- **Follow-ups parked** (in resume file): test-battery skill for the agent (4 probe prompts offered in chat, not picked); recurring-harvest skill if the pattern repeats; bulky-light volumetric-weight prompt queued to probe the next blind spot.

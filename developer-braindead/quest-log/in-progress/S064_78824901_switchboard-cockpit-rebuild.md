@@ -53,13 +53,16 @@ Opened with the strategic question: redefine + rebuild the switchboard from scra
 - **Frontend polish:** WebAudio beep when a session newly enters WAITING + 🔔 toggle; ▦ feed-collapse toggle; tighter tool cards; toggles persist in localStorage.
 - **Verified:** py_compile + `node --check` green; `icon.ico` written (17 KB); shortcuts created.
 
-## The swap — final step, principal-gated (NOT done)
+## The swap — DONE (S064, principal said "do the swap")
 
-Cockpit is functionally complete, but the old `switchboard/` is still the principal's working board (detached server on 8765). The swap is outward + semi-irreversible, so it waits on the principal eyeballing the cockpit and saying go:
+The cockpit is now THE board. Executed:
 
-1. Principal launches the **Switchboard** icon; exercises place / switch-without-killing / release / feed / peek.
-2. On go: archive `switchboard/` client to `switchboard/archive/` (never delete); decide whether the cockpit launcher replaces `start-switchboard.vbs` in Startup; update respawn.md; commit; comms CLOSING.
-3. Hooks stay — they feed both boards; nothing to migrate.
+1. **Archived the old client** (14 files) → `switchboard/archive/` via `git mv` (never deleted): `index.html`, the ES modules (`chat/switchboard/terminal/state/activity/settings/focus/app.js`), `styles.css`, `server.py`, `start-switchboard.vbs`, old `_about.md`/`_README.md`. Kept in `switchboard/`: `path-map.json` (hook reads it) + all runtime state files (gitignored — the cockpit + hooks use them).
+2. **Replaced `switchboard/_about.md`** with a pointer: the dir is now hook-state-only; the UI is `cockpit/`.
+3. **Retired the old server:** removed the "Switchboard Server" **Startup shortcut** (pointed at the now-archived `start-switchboard.vbs`) + stopped the running `:8765` process. The cockpit is **on-demand** via its Desktop/Start-menu icon (not auto-start — offered as an option if the principal wants it up at logon).
+4. **Hooks untouched** — they still write `switchboard/state-*`; the cockpit reads them at `../switchboard/`. Nothing migrated.
+
+Reversible: archived files recoverable via git; re-add the Startup shortcut + relaunch to restore the old board.
 
 ## Open / deferred
 

@@ -74,9 +74,10 @@ cockpit\.venv\Scripts\python.exe cockpit\backend.py   # → http://127.0.0.1:877
 
 All five built (S064): 1 board · 2 console+driver · 3 fleet command
 (place/re-task/release + persistent connections) · 4 activity feed · 5 package
-+ polish (icon/shortcut, sound, toggles, density). **Pending principal eyeball**
-of the live render. **Pending the swap** — archive the old `switchboard/` client,
-repoint the persistent launcher, once the cockpit is confirmed.
++ polish (icon/shortcut, sound, toggles, density). **Swap done** — the old
+`switchboard/` client is archived (`switchboard/archive/`), the old auto-start
+server is retired; the cockpit is the board, launched on-demand via its icon.
+Hooks unchanged — they still write `../switchboard/state-*`, which this reads.
 
 ## Preserved contracts (don't rewrite the hooks)
 

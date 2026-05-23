@@ -14,14 +14,17 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Visualizer live-mode runtime state (D-009, D-017, D-018, D-020)
-developer-braindead/experiments/visualizer/state.ndjson
-developer-braindead/experiments/visualizer/state-actors.json
-developer-braindead/experiments/visualizer/state-dwarves.json
-developer-braindead/experiments/visualizer/state-gnomes.json
-developer-braindead/experiments/visualizer/state-instances.json
-developer-braindead/experiments/visualizer/state-switchboard.json
-developer-braindead/experiments/visualizer/state-*.json.tmp.*
+# Switchboard live-mode runtime state (D-009, D-017, D-018, D-020; promoted S052)
+brain/switchboard/state.ndjson
+brain/switchboard/state-actors.json
+brain/switchboard/state-dwarves.json
+brain/switchboard/state-gnomes.json
+brain/switchboard/state-penguins.json
+brain/switchboard/state-instances.json
+brain/switchboard/state-switchboard.json
+brain/switchboard/state-*.json.tmp.*
+brain/switchboard/state-comms-*.md
+brain/switchboard/chat.ndjson
 
 # Intent narration sidecars (D-010) — transient agent self-narration
 .claude/intent/*.txt

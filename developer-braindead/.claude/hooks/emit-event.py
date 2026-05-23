@@ -23,7 +23,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve()
 DEV_BRAIN = HERE.parent.parent.parent          # developer-braindead/
 REPO_ROOT = DEV_BRAIN.parent                   # brain/
-VIZ_DIR = DEV_BRAIN / "experiments" / "visualizer"
+# S052: visualizer promoted from developer-braindead/experiments/visualizer/
+# to brain/switchboard/ — observability surface for both brains, lives at
+# brain root. VIZ_DIR name kept for minimum-disruption diff.
+VIZ_DIR = REPO_ROOT / "switchboard"
 MAP_PATH = VIZ_DIR / "path-map.json"
 STATE_PATH = VIZ_DIR / "state.ndjson"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"

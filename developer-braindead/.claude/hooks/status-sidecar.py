@@ -44,7 +44,8 @@ STATUS_ARCHIVE_DIR = STATUS_DIR / "archive"
 # repo the session was opened in.
 HERE = Path(__file__).resolve()
 DEV_BRAIN = HERE.parent.parent.parent
-VIZ_DIR = DEV_BRAIN / "experiments" / "visualizer"
+# S052: visualizer promoted to brain/switchboard/ (brain root).
+VIZ_DIR = DEV_BRAIN.parent / "switchboard"
 MANIFEST_PATH = VIZ_DIR / "state-switchboard.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"

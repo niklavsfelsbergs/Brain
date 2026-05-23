@@ -49,6 +49,14 @@ VIZ_DIR = DEV_BRAIN.parent / "switchboard"
 MANIFEST_PATH = VIZ_DIR / "state-switchboard.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"
+# Sub-agent role-state files (written by emit-event.py). Read here to derive
+# the "awaiting crew" state — a session with in-flight foreground spawns is
+# blocked waiting for its dwarves/gnomes/penguins to return.
+SUBAGENT_STATE_PATHS = (
+    VIZ_DIR / "state-dwarves.json",
+    VIZ_DIR / "state-gnomes.json",
+    VIZ_DIR / "state-penguins.json",
+)
 # S052: chat-stream sidecar — mirrors the path emit-event.py writes to.
 CHAT_PATH = VIZ_DIR / "chat.ndjson"
 CHAT_TEXT_MAX = 200
@@ -99,6 +107,14 @@ EVENT_STATE = {
     "Stop": "waiting_for_user",
     "SessionEnd": "ended",
 }
+
+# Interactive prompt tools park the session on the principal mid-turn (no Stop
+# fires) → waiting_for_user. Sub-agent spawners block the session on its crew
+# until the foreground Task returns → waiting_for_subagents ("AWAITING CREW").
+# Both are registered with a tight Pre/Post matcher in settings.json so the
+# fire-budget impact is ~0-2 per session each, not per tool call.
+WAIT_TOOLS = {"AskUserQuestion", "ExitPlanMode"}
+SUBAGENT_TOOLS = {"Task", "Agent"}
 
 
 def _project_dir() -> Path | None:
@@ -264,6 +280,62 @@ def _detect_building(actor: str, session_id: str) -> Optional[str]:
     if isinstance(entry, str) and entry:
         return entry
     return None
+
+
+def _pending_subagents_by_session() -> dict:
+    """Read the three sub-agent role-state files (state-dwarves/gnomes/
+    penguins.json, written by emit-event.py) and return
+    `{session_id: [sub_id, ...]}` of in-flight FOREGROUND spawns per session.
+
+    Background spawns (`run_in_background`) are excluded: their PostToolUse
+    fires when the parent gets its handle back, not when the work completes, so
+    the parent isn't blocked on them — they shouldn't read as "awaiting crew".
+
+    Shape consumed (D-018):
+        { "nextId": N,
+          "bySession": { "<session_id>": {
+              "byToolUseId": { "<tui>": {"id": "D1", "background": bool, ...} },
+              "pendingQueue": [ {"id": "D2", ...} ] } } }
+
+    Both byToolUseId (the common path, tool_use_id known at Pre) and
+    pendingQueue (the no-tool_use_id fallback) count. Errors per file are
+    swallowed so one unreadable role file can't blank the others."""
+    result: dict = {}
+    for path in SUBAGENT_STATE_PATHS:
+        try:
+            state = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(state, dict):
+            continue
+        by_session = state.get("bySession")
+        if not isinstance(by_session, dict):
+            continue
+        for sid, sub in by_session.items():
+            if not isinstance(sub, dict):
+                continue
+            entries = list((sub.get("byToolUseId") or {}).values())
+            entries += list(sub.get("pendingQueue") or [])
+            ids = result.setdefault(sid, [])
+            for entry in entries:
+                if not isinstance(entry, dict) or entry.get("background"):
+                    continue
+                eid = entry.get("id")
+                if eid:
+                    ids.append(eid)
+    # Stable, de-duplicated ordering for display (D1 D2 P1 …).
+    for sid in list(result.keys()):
+        result[sid] = sorted(set(result[sid]))
+    return result
+
+
+def _count_pending_subagents(session_id: str) -> int:
+    """In-flight foreground spawn count for one session. Used by the PostToolUse
+    path to decide whether a returning spawn leaves the session still awaiting
+    others. Reads all three role files; cheap (files are tiny)."""
+    if not session_id:
+        return 0
+    return len(_pending_subagents_by_session().get(session_id, []))
 
 
 def _detect_host() -> str:
@@ -563,6 +635,9 @@ def _write_manifest() -> None:
     not the manifest."""
     try:
         sessions = []
+        # Read the spawn role-files once per manifest write (not per row) — the
+        # per-row override below classifies working <-> waiting_for_subagents.
+        pending_map = _pending_subagents_by_session()
         if STATUS_DIR.exists():
             for p in STATUS_DIR.iterdir():
                 if not p.is_file() or p.suffix != ".json":
@@ -654,6 +729,24 @@ def _write_manifest() -> None:
                     j["subtitle"] = _derive_subtitle(j)
                 except Exception as e:
                     print(f"status-sidecar: subtitle derivation failed for {j.get('sid8')}: {e}", file=sys.stderr)
+                # Awaiting-crew override. The base event map stamps "working"
+                # for every tool call, so a session blocked on a foreground
+                # Task would otherwise read WORKING. Re-derive the
+                # working <-> waiting_for_subagents pair here from the spawn
+                # role-files: refreshes on ANY live session's fire (the blocked
+                # parent emits nothing while waiting) and self-heals a missed
+                # PostToolUse. Leaves waiting_for_user / ended untouched — those
+                # are owned states, not the working pair.
+                try:
+                    if j.get("state") in ("working", "waiting_for_subagents"):
+                        ids = pending_map.get(j.get("session_id") or "", [])
+                        if ids:
+                            j["state"] = "waiting_for_subagents"
+                            j["subtitle"] = "awaiting crew — " + " ".join(ids[:6])
+                        else:
+                            j["state"] = "working"
+                except Exception as e:
+                    print(f"status-sidecar: awaiting-crew refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
                 sessions.append(j)
         sessions.sort(key=lambda x: x.get("last_event_ts") or 0, reverse=True)
         out = {
@@ -949,23 +1042,42 @@ def main() -> None:
     if state is None:
         sys.exit(0)
 
-    # Interactive prompt tools park the session on the user mid-turn — no Stop
-    # fires, so the state would otherwise read "working" while it is actually
-    # waiting for an answer (AskUserQuestion) or plan approval (ExitPlanMode).
-    # Flip to waiting_for_user on their PreToolUse and back to working on
-    # PostToolUse. Registered with a tight matcher in settings.json so the
-    # fire-budget impact is ~0-2 per session, not per tool call.
-    WAIT_TOOLS = {"AskUserQuestion", "ExitPlanMode"}
-    if hook_event in ("PreToolUse", "PostToolUse"):
-        tool_name = payload.get("tool_name") or ""
-        if tool_name not in WAIT_TOOLS:
-            sys.exit(0)   # we only register Pre/Post for the prompt tools
-        state = "waiting_for_user" if hook_event == "PreToolUse" else "working"
-
     sid = payload.get("session_id") or os.environ.get("CLAUDE_CODE_SESSION_ID") or ""
     if not isinstance(sid, str) or not sid:
         sys.exit(0)
     sid8 = sid[:8]
+
+    # Pre/Post fire only for the two tight matchers in settings.json:
+    #   WAIT_TOOLS — interactive prompts that park the session on the principal
+    #     mid-turn (no Stop fires). Pre → waiting_for_user, Post → working.
+    #   SUBAGENT_TOOLS — Task/Agent spawns. A foreground spawn blocks the parent
+    #     until the crew returns. Pre → waiting_for_subagents; Post → re-derive
+    #     (other foreground spawns may still be in flight after a parallel
+    #     batch). Background spawns don't block the parent → ignore their Pre.
+    if hook_event in ("PreToolUse", "PostToolUse"):
+        tool_name = payload.get("tool_name") or ""
+        if tool_name in WAIT_TOOLS:
+            state = "waiting_for_user" if hook_event == "PreToolUse" else "working"
+        elif tool_name in SUBAGENT_TOOLS:
+            tool_input = payload.get("tool_input") or {}
+            background = bool(
+                tool_input.get("run_in_background")
+                or tool_input.get("runInBackground")
+            )
+            if hook_event == "PreToolUse":
+                if background:
+                    sys.exit(0)   # background spawn — parent keeps working
+                state = "waiting_for_subagents"
+            else:
+                # A foreground spawn returned. Stay awaiting if this session
+                # still has other in-flight foreground spawns (parallel batch),
+                # else back to working. The manifest per-row refresh is the
+                # ultimate authority — any session's next fire re-derives this
+                # pair — so a missed PostToolUse self-heals.
+                state = ("waiting_for_subagents"
+                         if _count_pending_subagents(sid) > 0 else "working")
+        else:
+            sys.exit(0)   # only registered Pre/Post for prompt + spawn tools
 
     project_dir = _project_dir()
     actor, intent = _detect_actor(project_dir, sid8, sid)

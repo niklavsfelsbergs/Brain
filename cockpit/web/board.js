@@ -1,6 +1,7 @@
 // The fleet board (left column). One reactive view over the session model.
 
 import { html } from "htm/preact";
+import { nameFor } from "./names.js";
 
 const STATE_LABEL = {
   working: "WORKING",
@@ -28,7 +29,9 @@ function Row({ s, selected, onSelect }) {
       <div class="row-head">
         <span class="dot"></span>
         <span class="actor">
-          ${s.actor}${s.instance > 1 ? html`<span class="inst">·${s.instance}</span>` : ""}
+          ${nameFor(s.sid8) || s.actor}${!nameFor(s.sid8) && s.instance > 1
+            ? html`<span class="inst">·${s.instance}</span>`
+            : ""}
         </span>
         ${s.host === "vscode" ? html`<span class="tag">vscode</span>` : ""}
         <span class="chip">${STATE_LABEL[s.state] || s.state}</span>

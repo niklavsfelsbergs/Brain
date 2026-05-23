@@ -100,6 +100,35 @@ OLD code, and `app.py` *reuses* a live backend — so the cockpit must be fully
 to run inside the current cockpit process, so a restart may interrupt them — do
 it at a clean moment.
 
+## S066 cont. 2 — OSRS reskin + persistence + UX (the long iteration)
+
+After B landed (commit b6bef88), the session became a live drive-and-fix loop
+with the principal in the cockpit window:
+
+- **June-15 billing research** (web): Anthropic moves `claude -p` / Agent SDK /
+  GH Actions onto a metered API-rate credit on 2026-06-15; **interactive terminal
+  claude stays on the subscription.** This is *why* B (real terminal) is the right
+  architecture, not just a bug fix. Recorded as a project memory.
+- **OSRS reskin** (`web/styles.css` + vendored `web/vendor/runescape-uf.woff`):
+  the cockpit's clean-modern theme → dark wood/parchment/gold interface skin.
+  Variable-driven swap (`:root`) + appended flourishes (paper grain, gold bevels,
+  corner rivets, chip plates, terminal gold-frame). Font vendored offline. The
+  terminal *interior* stays Claude's (the one panel the skin can't reach).
+- **UX tweaks:** Enter-to-send in the place modal (`main.js`); open **maximized**
+  (`app.py` `maximized=True`); **plain-chat** option (place modal defaults to no
+  player → raw message, unscoped); **`/rename`** intercepted in the terminal
+  (`term.js` line-mirror + backspace-scrub + swallow Enter) → custom label store
+  (`web/names.js`) wired into board row + console title + **feed** items.
+- **Feed:** actions ON by default (a working session no longer looks dead).
+- **Persistence (the big one):** owned session uuids persist (`term.js`); on
+  cockpit open each is resumed from disk via `claude --resume` (`ptybridge.py`
+  `?resume=`), and the board now **merges the cockpit's own live terminals**
+  (`liveTerms()`) so resumed-but-idle sessions show up without waiting on a hook
+  event. **Root-cause fix:** pywebview defaulted to `private_mode=True`, wiping
+  `localStorage` (owned-set, names, toggles) every launch → set
+  `private_mode=False` + stable `.webview` profile dir. Verified live: two owned
+  sessions resumed and ran after a relaunch.
+
 ## Leaving open
 
 - **Try B live:** close + reopen the cockpit, place a session, confirm the

@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef } from "preact/hooks";
 import { html } from "htm/preact";
+import { nameFor, subscribeNames } from "./names.js";
 
 const KIND_LABEL = {
   picked_up: "PICKED UP",
@@ -20,7 +21,7 @@ function fmtClock(ts) {
 
 function FeedItem({ i, onJump }) {
   const label = i.kind === "comms" ? i.subkind || "COMMS" : KIND_LABEL[i.kind] || "";
-  const who = i.kind === "picked_up" ? "NIKLAVS" : i.actor || "—";
+  const who = i.kind === "picked_up" ? "NIKLAVS" : nameFor(i.sid8) || i.actor || "—";
   return html`
     <div class=${"feed-item k-" + i.kind} onClick=${() => i.sid8 && onJump && onJump(i.sid8)}>
       <div class="fi-head">
@@ -43,6 +44,8 @@ export function FeedPanel({ onJump }) {
   });
   const elRef = useRef(null);
   const pinned = useRef(false);
+  const [, bump] = useState(0);
+  useEffect(() => subscribeNames(() => bump((n) => n + 1)), []); // re-render on rename
 
   useEffect(() => {
     let alive = true;

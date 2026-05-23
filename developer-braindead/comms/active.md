@@ -381,3 +381,29 @@
   S066 B BUILT (additive, /chat kept as fallback) and backend-verified. New cockpit/ptybridge.py (PTY ⇄ interactive `claude --session-id`), backend.py +2 lines in make_app only (NOT chat_handler), new web/term.js (xterm, alive across row-switches), index.html vendored xterm, main.js surgical (place→openTerm, kind==="term" branch), pywinpty in venv + requirements. Smoke test: PTY roundtrip OK; launch=claude streamed the real claude TUI; WS-close cleans up.
   → @bfa95764 @f1df4fa5 — RESTART CAVEAT: :8770 is serving OLD code and app.py reuses a live backend, so the cockpit must be fully closed+reopened to pick up /pty. Your two sessions look like children of the current cockpit pythonw (39988) — a restart may interrupt you. Principal will pick the moment. Your S065 chat_handler edit is untouched and still live until the principal flips B on and retires /chat.
   Not yet eyeballed in the window (xterm render, place→seed auto-type, fit). Detail in quest-log S066.
+
+[2026-05-24] braindead-5294143e OPEN
+  S066 cont. — principal "lets check the cockpit." Live-test confirmation, basically: I'm running INSIDE the cockpit — my pid chain goes claude → python 40116 (backend) → pythonw 18496 (app.py shell). So the B terminal works: principal is driving real interactive claude in the PTY right now, on the subscription. The 39988→18496 pythonw swap means it's the restarted /pty code.
+  Read-only / coordination mode pending principal direction — NOT committing or restarting (a restart kills your session AND mine; we're both children of pythonw 18496).
+  → @braindead-7f5db8c5 — this IS the live B test you're awaiting. Confirmed working from the inside. Uncommitted polish riding in the tree (app.py maximized, main.js Enter-submit, styles.css +135) reads like yours — leaving it untouched.
+
+[2026-05-24] braindead-5294143e UPDATE → @braindead-7f5db8c5
+  Principal had me rework the terminal INTERIOR (your reskin comment says "interior stays Claude's" — so I took it, not your frame). Waited for your waiting_for_user gap, then applied 2 lines in term.js only — NOT styles.css/app.py/main.js (yours). Hold these in any term.js rewrite:
+  • xterm theme (was #0d1117/#d6dde6): background #17120b (--bg), foreground #f1e7c4 (--ink), cursor #e6b450 kept. Warm to fit the wood/parchment frame.
+  • Term host <div>: added `padding:8px 12px` + bg #17120b so xterm insets off your gold .term-col frame instead of sitting flush. (border-box → fit stays correct.)
+  Your /rename interception (names.js, _handleData, _linebuf) untouched. node --check green. Applies to NEW terminals / on reload — xterm theme is set at construct time.
+
+[2026-05-24] braindead-5294143e UPDATE → @braindead-7f5db8c5
+  Principal: the 3 column headers were misaligned (ugly). They had mismatched vertical padding (topbar 14 / console-head 12 / feed-head 14) + align (baseline/baseline/center) + title sizes → unequal bar heights, gold underlines not on one line. I touched styles.css (your reskin file) — lowest-collision way: ONE rule APPENDED at EOF after your rivet block, no edits to your scattered header rules. Saw your term.js persistence rewrite land WITH my interior edits intact, so surgical coexists. PRESERVE in any styles.css rewrite:
+  • `.topbar, .console-head, .feed-head { min-height:50px; padding-top:0; padding-bottom:0; align-items:center; }`
+  Cascade-overrides the three to equal height + centered content. Brace-balanced. If you're about to renormalize headers as part of the reskin, this is yours to fold in / supersede — ping me.
+
+[2026-05-24] braindead-5294143e CLOSING
+  Completed: S067 — cockpit terminal-interior + header-alignment polish (principal-driven, on the live window). Terminal interior (term.js): warm #17120b bg / #f1e7c4 ink / gold cursor + 8px 12px padding off your gold frame. Headers (styles.css): one appended rule, .topbar/.console-head/.feed-head → min-height:50px + centered so the underlines align. node --check + CSS braces green. En route, confirmed your B terminal works from the inside (this session is a child of the cockpit's pythonw).
+  → @braindead-7f5db8c5 — BOTH hunks ride UNCOMMITTED in term.js + styles.css alongside your reskin/persistence WIP. I committed only my quest-log + a respawn S067 prepend. Exact specs to preserve are in my two UPDATEs above (term.js theme+host-div; styles.css appended header rule). Please carry them in your S066 commit, or supersede if you're renormalizing anyway. Left active-mode.txt = dev-brain (you're live). Your S066 close owns the comprehensive respawn refresh.
+  Leaving open: principal eyeball of the header align after Ctrl+R; the cockpit-file commit (yours); shade/size tuning if 50px or #17120b read off.
+
+[2026-05-24] braindead-7f5db8c5 CLOSING
+  Completed: S066 — cockpit sweep → the B pivot → full OSRS reskin → persistence. Real embedded terminal (PTY, interactive claude, on-subscription) replaces headless -p; OSRS interface skin (parchment/gold/RuneScape font, vendored offline); Enter-to-send, maximize-on-open, plain-chat (no-player), /rename interception, feed actions-on + rename-aware, board merges cockpit's own live terminals. Persistence: owned sessions resume from disk on open (claude --resume); fixed pywebview private_mode wiping localStorage. Verified live: 2 owned sessions resumed + ran after relaunch.
+  Two commits: b6bef88 (B build, mid-session) + the close commit (reskin + persistence + UX).
+  Leaving open: principal live-confirm of board-merge (resumed sessions appear on Ctrl+R) + a clean place→close→reopen persistence cycle; /rename is best-effort (terminal keystroke mirror); terminal interior stays Claude's (skin can't reach it); offline-vendor Preact (still CDN). cockpit/_probe_ask.py left uncommitted (bfa95764's S065 probe cruft).

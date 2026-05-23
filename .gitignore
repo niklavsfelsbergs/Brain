@@ -30,6 +30,10 @@ switchboard/chat.ndjson
 switchboard/.venv/
 switchboard/_smoketest.py
 
+# Cockpit (S064/S066) — venv + persistent WebView2 profile (localStorage lives here)
+cockpit/.venv/
+cockpit/.webview/
+
 # Intent narration sidecars (D-010) — transient agent self-narration
 .claude/intent/*.txt
 

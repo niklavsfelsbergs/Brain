@@ -53,6 +53,14 @@ def _qint(request, key, default):
         return default
 
 
+def _is_uuid(s):
+    try:
+        uuid.UUID(s)
+        return True
+    except (ValueError, TypeError, AttributeError):
+        return False
+
+
 async def pty_handler(request):
     """One WebSocket ⇄ one PTY running interactive claude."""
     ws = web.WebSocketResponse(heartbeat=30, max_msg_size=0)
@@ -69,7 +77,9 @@ async def pty_handler(request):
     cols = _qint(request, "cols", 120)
     rows = _qint(request, "rows", 30)
     launch = request.query.get("launch", "").strip()
-    session_id = str(uuid.uuid4())
+    resume = request.query.get("resume", "").strip()
+    resuming = bool(resume) and _is_uuid(resume)
+    session_id = resume if resuming else str(uuid.uuid4())
 
     try:
         proc = PtyProcess.spawn(DEFAULT_SHELL, cwd=str(BRAIN_ROOT), dimensions=(rows, cols))
@@ -78,10 +88,14 @@ async def pty_handler(request):
         await ws.close()
         return ws
 
-    # Announce the minted session before any output flows (frame #1).
-    await _ws_send(ws, {"t": "session", "sessionId": session_id, "sid8": session_id[:8]})
+    # Announce the session before any output flows (frame #1).
+    await _ws_send(ws, {"t": "session", "sessionId": session_id,
+                        "sid8": session_id[:8], "resumed": resuming})
 
-    if launch == "claude":
+    if resuming:
+        # reattach to the saved session — survives cockpit reload/restart.
+        proc.write(f"claude --resume {session_id}\r")
+    elif launch == "claude":
         # powershell resolves the `claude` .cmd shim via its own lookup,
         # sidestepping CreateProcess PATH quirks. Interactive — no -p.
         proc.write(f"claude --session-id {session_id}\r")

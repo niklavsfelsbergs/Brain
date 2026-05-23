@@ -10,7 +10,8 @@ import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { isOwned, place, openOwned, openPeek, release } from "./fleet.js";
-import { openTerm, Term, termForSid8 } from "./term.js";
+import { openTerm, Term, termForSid8, resumeTerm, ownedTermIds, liveTerms } from "./term.js";
+import { nameFor, subscribeNames } from "./names.js";
 
 // Actor → the address the cockpit writes as the first message. The actor
 // implies the brain: Braindead enters the dev brain via the start phrase;
@@ -53,11 +54,11 @@ function setLsBool(key, val) {
 }
 
 function PlaceModal({ onPlace, onClose }) {
-  const [actor, setActor] = useState(ACTORS[0]);
+  const [actor, setActor] = useState(null); // null = plain chat, no player address
   const [prompt, setPrompt] = useState("");
   const submit = () => {
     const p = prompt.trim();
-    if (p) onPlace(actor, actor.addr + p);
+    if (p) onPlace(actor, actor ? actor.addr + p : p);
   };
   return html`
     <div class="modal-backdrop" onClick=${onClose}>
@@ -67,8 +68,8 @@ function PlaceModal({ onPlace, onClose }) {
           ${ACTORS.map(
             (a) =>
               html`<button
-                class=${"actor-opt" + (a.key === actor.key ? " on" : "")}
-                onClick=${() => setActor(a)}
+                class=${"actor-opt" + (actor && a.key === actor.key ? " on" : "")}
+                onClick=${() => setActor(actor && a.key === actor.key ? null : a)}
               >
                 ${a.label}
               </button>`
@@ -78,12 +79,17 @@ function PlaceModal({ onPlace, onClose }) {
           class="place-prompt"
           value=${prompt}
           onInput=${(e) => setPrompt(e.target.value)}
-          placeholder=${"first message to " + actor.label + "…"}
+          placeholder=${(actor ? "first message to " + actor.label : "message — plain chat, no player") + "…"}
           onKeyDown=${(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              submit();
+            }
           }}
         ></textarea>
-        <div class="modal-preview">${actor.addr}<span class="dim">${prompt || "…"}</span></div>
+        <div class="modal-preview">${actor ? actor.addr : ""}<span class="dim">${
+          prompt || (actor ? "…" : "plain chat — no player selected")
+        }</span></div>
         <div class="modal-actions">
           <button class="ghost" onClick=${onClose}>cancel</button>
           <button class="primary" onClick=${submit}>place</button>
@@ -101,6 +107,15 @@ function App() {
   const [soundOn, setSoundOn] = useState(() => lsBool("cockpit-sound", true));
   const [showFeed, setShowFeed] = useState(() => lsBool("cockpit-feed", true));
   const prevWaiting = useRef(new Set());
+  const [, bumpNames] = useState(0);
+  useEffect(() => subscribeNames(() => bumpNames((n) => n + 1)), []);
+
+  // On cockpit open, resume owned terminals from disk (claude --resume) so
+  // sessions survive a close/reopen or reload. They relaunch live and reappear
+  // on the board; click a row to view. `release` is how you stop one returning.
+  useEffect(() => {
+    for (const uuid of ownedTermIds()) resumeTerm(uuid);
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -124,7 +139,32 @@ function App() {
     };
   }, []);
 
-  const sessions = data.sessions || [];
+  // Merge the hook manifest with the cockpit's own live terminals, so a session
+  // the cockpit is running (e.g. a just-resumed, still-idle one) shows on the
+  // board before it fires its first hook event. Manifest wins on dupes (richer).
+  const manifest = data.sessions || [];
+  const known = new Set(manifest.map((s) => s.sid8));
+  const sessions = [
+    ...manifest,
+    ...liveTerms()
+      .filter((t) => t.sid8 && !known.has(t.sid8))
+      .map((t) => ({
+        sid8: t.sid8,
+        session_id: t.sessionId,
+        actor: t.label || "chat",
+        instance: 1,
+        state: "idle",
+        age_sec: 0,
+        idle_sec: 0,
+        first_prompt: "",
+        doing: "running in this cockpit",
+        intent: "",
+        attention: false,
+        subagents: [],
+        host: "cockpit",
+        rank: 6,
+      })),
+  ];
 
   // ring once when a session newly needs you
   useEffect(() => {
@@ -145,7 +185,7 @@ function App() {
   };
   const doPlace = (actor, seed) => {
     const c = openTerm(seed); // S066 B: real interactive claude in a PTY (on-subscription)
-    c.label = actor.label;
+    c.label = actor ? actor.label : "chat";
     setSel(c);
     setShowPlace(false);
   };
@@ -163,7 +203,9 @@ function App() {
     }
   };
 
-  const title = sel ? sel.label || (sel.id ? sel.id.slice(0, 8) : "new conversation") : "";
+  const title = sel
+    ? nameFor(sel.id) || sel.label || (sel.id ? sel.id.slice(0, 8) : "new conversation")
+    : "";
 
   return html`
     <div class="app-grid">

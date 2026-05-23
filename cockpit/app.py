@@ -65,11 +65,15 @@ def main():
         "Switchboard",
         f"http://127.0.0.1:{PORT}/",
         width=1500,
-        height=920,
+        height=920,          # fallback size if un-maximized
         min_size=(960, 640),
+        maximized=True,       # open filling the screen
         on_top=bool(cfg.get("on_top", False)),
     )
-    webview.start()
+    # private_mode defaults to True (ephemeral profile) — that wipes localStorage
+    # on every launch, which is where session-persistence, renames, and toggles
+    # live. Persist to a stable profile dir so they survive close/reopen. (S066)
+    webview.start(private_mode=False, storage_path=str(COCKPIT_DIR / ".webview"))
 
 
 if __name__ == "__main__":

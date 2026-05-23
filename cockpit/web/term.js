@@ -10,6 +10,7 @@
 
 import { useEffect, useRef } from "preact/hooks";
 import { html } from "htm/preact";
+import { setName } from "./names.js";
 
 // xterm + fit addon are UMD globals from web/vendor/*, loaded in index.html.
 const XTerm = window.Terminal;
@@ -19,15 +20,41 @@ const live = new Map(); // cid  -> TermConn
 const bySid8 = new Map(); // sid8 -> TermConn
 let SEQ = 0;
 
+// Owned session uuids persist so a reopened cockpit can resume them from disk
+// (claude --resume) instead of starting fresh. release()/close() forgets one.
+const OWNED = "cockpit-owned-terms";
+function loadOwned() {
+  try {
+    return JSON.parse(localStorage.getItem(OWNED) || "[]");
+  } catch {
+    return [];
+  }
+}
+function saveOwned(arr) {
+  try {
+    localStorage.setItem(OWNED, JSON.stringify([...new Set(arr)]));
+  } catch {}
+}
+function addOwned(uuid) {
+  if (!uuid) return;
+  const a = loadOwned();
+  if (!a.includes(uuid)) saveOwned([...a, uuid]);
+}
+function removeOwned(uuid) {
+  saveOwned(loadOwned().filter((x) => x !== uuid));
+}
+
 class TermConn {
-  constructor(seed) {
+  constructor(opts = {}) {
     this.kind = "term"; // lets main.js tell us apart from a SessionConn
     this.cid = "t" + ++SEQ;
     this.id = null; // sid8, announced by the server
     this.sessionId = null;
-    this.seed = seed || null;
+    this.seed = opts.seed || null;
+    this.resumeId = opts.resumeId || null; // uuid to reattach to (persistence)
     this.drive = true;
     this.label = "";
+    this._linebuf = ""; // mirror of the current input line, for /rename interception
 
     this.container = document.createElement("div");
     this.container.style.cssText = "width:100%;height:100%;";
@@ -37,13 +64,15 @@ class TermConn {
       fontFamily: 'ui-monospace, "Cascadia Code", Consolas, monospace',
       fontSize: 13,
       scrollback: 8000,
-      theme: { background: "#0d1117", foreground: "#d6dde6", cursor: "#e6b450" },
+      // warm interior to fit the OSRS wood/parchment frame (the S066 reskin
+      // leaves the terminal interior to us): --bg ground, --ink text, gold cursor.
+      theme: { background: "#17120b", foreground: "#f1e7c4", cursor: "#e6b450" },
     });
     this.fit = FitAddonNS ? new FitAddonNS.FitAddon() : null;
     if (this.fit) this.term.loadAddon(this.fit);
     this.term.open(this.container);
 
-    this.term.onData((d) => this._send({ type: "input", data: d }));
+    this.term.onData((d) => this._handleData(d));
     this.term.onResize(({ cols, rows }) => this._send({ type: "resize", cols, rows }));
 
     live.set(this.cid, this);
@@ -54,11 +83,38 @@ class TermConn {
     if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(obj));
   }
 
+  // Best-effort /rename interception. We mirror the current input line as the
+  // user types; when they hit Enter on a line that is exactly `/rename <name>`,
+  // the cockpit claims it: backspace away what was typed (so Claude's input box
+  // clears) and swallow the Enter (so Claude never submits it), then apply the
+  // label. Cursor moves / pastes can desync the mirror — accepted per the user.
+  _handleData(d) {
+    if (d === "\r" || d === "\n") {
+      const m = /^\/rename\s+(.+)$/.exec(this._linebuf.trim());
+      if (m && this.id) {
+        const name = m[1].trim().slice(0, 48);
+        if (this._linebuf.length) this._send({ type: "input", data: "\x7f".repeat(this._linebuf.length) });
+        this._linebuf = "";
+        setName(this.id, name); // updates board row + console title
+        return; // swallow the Enter — Claude never sees the command
+      }
+      this._linebuf = "";
+    } else if (d === "\x7f" || d === "\b") {
+      this._linebuf = this._linebuf.slice(0, -1);
+    } else if (d.length === 1 && d.charCodeAt(0) >= 0x20) {
+      this._linebuf += d;
+    } else if (d.charCodeAt(0) < 0x20) {
+      this._linebuf = ""; // control / escape (arrows, Ctrl-U, Ctrl-C): drop the mirror
+    }
+    this._send({ type: "input", data: d });
+  }
+
   _connect() {
     const proto = location.protocol === "https:" ? "wss" : "ws";
     const cols = this.term.cols || 120;
     const rows = this.term.rows || 30;
-    const ws = new WebSocket(`${proto}://${location.host}/pty?launch=claude&cols=${cols}&rows=${rows}`);
+    const mode = this.resumeId ? `resume=${this.resumeId}` : "launch=claude";
+    const ws = new WebSocket(`${proto}://${location.host}/pty?${mode}&cols=${cols}&rows=${rows}`);
     this.ws = ws;
     ws.onmessage = (e) => {
       let f;
@@ -72,6 +128,7 @@ class TermConn {
         this.sessionId = f.sessionId;
         this.id = f.sid8;
         bySid8.set(f.sid8, this);
+        addOwned(f.sessionId); // remember it so a reopened cockpit can resume it
         if (this.seed) {
           this._seedSoon(this.seed);
           this.seed = null;
@@ -103,6 +160,7 @@ class TermConn {
       this.term.dispose();
     } catch {}
     if (this.id) bySid8.delete(this.id);
+    removeOwned(this.sessionId); // released → don't resume it next open
     live.delete(this.cid);
   }
 }
@@ -110,7 +168,29 @@ class TermConn {
 // Start a fresh interactive-claude terminal; `seed` is the composed first
 // message (e.g. "Hey Jebrim, …"), auto-typed once the TUI is up.
 export function openTerm(seed) {
-  return new TermConn(seed || null);
+  return new TermConn({ seed: seed || null });
+}
+
+// Reattach to a saved session by uuid (claude --resume). No seed — it continues
+// the existing conversation. Used on cockpit open to restore owned terminals.
+export function resumeTerm(uuid) {
+  return new TermConn({ resumeId: uuid });
+}
+
+// The owned session uuids to restore on cockpit open.
+export function ownedTermIds() {
+  return loadOwned();
+}
+
+// Live cockpit-driven terminals (announced, has an sid8). The board merges these
+// so a session the cockpit itself is running is always visible/clickable — even
+// before it fires a hook event (e.g. a freshly-resumed, still-idle session).
+export function liveTerms() {
+  const out = [];
+  for (const c of live.values()) {
+    if (c.id) out.push({ sid8: c.id, sessionId: c.sessionId, label: c.label });
+  }
+  return out;
 }
 
 // A live terminal already hosting this board session, if any (row click → it).
@@ -136,5 +216,7 @@ export function Term({ conn }) {
       // you switch rows; release() tears it down.
     };
   }, [conn]);
-  return html`<div style="width:100%;height:100%;background:#0d1117;" ref=${ref}></div>`;
+  // padding insets xterm from the gold frame; bg matches the xterm interior so
+  // the inset reads as one warm surface (box-sizing:border-box → fit stays right).
+  return html`<div style="width:100%;height:100%;padding:8px 12px;background:#17120b;" ref=${ref}></div>`;
 }

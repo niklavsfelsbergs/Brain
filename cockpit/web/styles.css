@@ -2,27 +2,36 @@
    State carries color; everything else stays quiet. */
 
 :root {
-  --bg: #0e1116;
-  --panel: #161b22;
-  --panel-2: #1c232d;
-  --line: #2a323d;
-  --ink: #e6edf3;
-  --ink-dim: #8b97a6;
-  --ink-faint: #5b6675;
+  /* OSRS interface skin (S066) — dark wood/stone frame, parchment ink, gold
+     trim. The reskin is variable-driven; flourishes live in the block at EOF. */
+  --bg: #17120b;
+  --panel: #2a2114;
+  --panel-2: #3a2e1a;
+  --line: #6e5a2c;
+  --ink: #f1e7c4;
+  --ink-dim: #cdb985;
+  --ink-faint: #9d8a5c;
 
-  --working: #3fb950;
+  --gold: #e3b73c;
+  --gold-dk: #8f6d1e;
+
+  --working: #5fcb3f;
   --waiting: #f0a020;
-  --crew: #4a90d9;
-  --alching: #a371f7;
+  --crew: #5a9fe0;
+  --alching: #b07ad8;
   --closing: #e3a008;
-  --wrapped: #2bb3a3;
-  --idle: #6e7681;
-  --ended: #424a55;
+  --wrapped: #34c0ad;
+  --idle: #8a7a55;
+  --ended: #4a3f2a;
+
+  /* paper-grain texture (feTurbulence data-URI), layered under panels via
+     background-blend-mode. Salvaged from the archived OSRS theme. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
 
   /* one knob to scale the whole UI bigger/smaller */
   --zoom: 1.35;
 
-  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-family: 'RuneScape UF', 'Trebuchet MS', Verdana, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -575,3 +584,111 @@ html, body {
 .b-tool { margin: 4px 0; }
 .tool-head { padding: 5px 10px; }
 .tool-result summary { padding: 4px 10px; }
+
+/* ════════════════════════════════════════════════════════════════════
+   OSRS interface skin (S066) — flourishes over the variable swap. Font is
+   vendored offline; paper grain + gold bevels + corner rivets are mapped
+   onto the cockpit's own selectors. The terminal interior stays Claude's;
+   only its frame is reskinned. Toned for a dark wood/stone client surround.
+   ════════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'RuneScape UF';
+  font-style: normal; font-weight: 400;
+  src: local('RuneScape UF'), url('vendor/runescape-uf.woff') format('woff');
+}
+
+/* warm dark vignette backdrop, like the OSRS client surround */
+html, body {
+  background: radial-gradient(ellipse at top, #2a1f12 0%, #17120b 58%, #0c0905 100%);
+}
+
+/* paper grain under the wood panels */
+.topbar, .board-col, .feed-col, .console-head, .feed-head, .modal,
+.row, .feed-item, .term-col {
+  background-image: var(--grain);
+  background-blend-mode: overlay;
+}
+
+/* gold-trimmed interface frame */
+.board-col { border-right: 2px solid var(--gold-dk); }
+.feed-col  { border-left: 2px solid var(--gold-dk); }
+.topbar, .console-head, .feed-head {
+  border-bottom: 2px solid var(--gold-dk);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--gold) 30%, transparent);
+}
+.topbar h1 { color: var(--gold); text-shadow: 0 1px 0 #000; }
+.feed-head { color: var(--gold); }
+
+/* OSRS bevelled studs: neutral buttons */
+.newbtn, .icon-btn, .actor-opt, .release, .ghost {
+  background: linear-gradient(#4a3c22, #342a17);
+  color: var(--ink);
+  border: 1px solid var(--gold-dk);
+  border-top-color: color-mix(in srgb, var(--gold) 55%, transparent);
+  border-left-color: color-mix(in srgb, var(--gold) 40%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--gold) 30%, transparent),
+              0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 0 #000;
+}
+.newbtn:hover, .icon-btn:hover, .actor-opt:hover, .release:hover,
+.ghost:hover { filter: brightness(1.18); color: var(--ink); }
+.actor-opt.on { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); color: var(--ink); }
+.icon-btn.on { color: var(--gold); }
+
+/* action buttons keep their meaning, gain a stud bevel + readable face */
+.send {
+  background: linear-gradient(#3f7a2c, #2c5a1d); color: #eafbe0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 0 #000;
+}
+.stop {
+  background: linear-gradient(#c08820, #946312); color: #fff4d8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 0 #000;
+}
+.primary {
+  background: linear-gradient(#3f7a2c, #2c5a1d); color: #eafbe0; border-color: #2c5a1d;
+  text-shadow: 0 1px 0 #000;
+}
+
+/* status chips + feed labels as little gold plates */
+.chip {
+  border: 1px solid var(--gold-dk);
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  text-shadow: 0 1px 0 #000;
+}
+
+/* recessed gold-edged frame around the embedded terminal */
+.term-col {
+  box-shadow: inset 0 0 0 2px var(--gold-dk), inset 0 0 26px rgba(0, 0, 0, 0.55);
+}
+
+/* panel vignette + gold corner rivets (interface-skin flourish) */
+.board-col, .feed-col, .console-col { position: relative; }
+.board-col::after, .feed-col::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 0 0 60px -10px rgba(0, 0, 0, 0.5);
+}
+.topbar, .console-head, .feed-head { position: relative; }
+.topbar::before, .topbar::after,
+.console-head::before, .console-head::after,
+.feed-head::before, .feed-head::after {
+  content: ""; position: absolute; top: 7px; width: 5px; height: 5px;
+  border-radius: 50%; background: radial-gradient(var(--gold) 30%, var(--gold-dk) 75%);
+  box-shadow: 0 0 2px #000;
+}
+.topbar::before, .console-head::before, .feed-head::before { left: 7px; }
+.topbar::after, .console-head::after, .feed-head::after { right: 7px; }
+
+/* align the three column headers (S066, braindead-5294143e): topbar /
+   console-head / feed-head had mismatched vertical padding (14/12/14) + align
+   (baseline/baseline/center) + title sizes, so the bars were unequal height and
+   the gold underlines didn't form one line. Fix the height + center the content
+   so SWITCHBOARD · design · FEED all sit at the same level. */
+.topbar, .console-head, .feed-head {
+  min-height: 50px;
+  padding-top: 0;
+  padding-bottom: 0;
+  align-items: center;
+}

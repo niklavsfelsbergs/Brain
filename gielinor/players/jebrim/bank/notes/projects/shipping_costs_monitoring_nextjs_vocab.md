@@ -1,6 +1,6 @@
 # Shipping Costs Monitoring (nextjs) — vocabulary
 
-**As of:** 2026-05-22 (S026 — dashboard cutover branch in flight; re-verify cost-basis and alert wiring before quoting as canonical).
+**As of:** 2026-05-23 — full technical + mathematical review (S055); cutover branch reviewed + fixed. Cost-basis and alert wiring verified. See **Post-cutover review (S055)** below for what changed.
 
 > Term glossary for the `shipping_costs_monitoring_nextjs` app post-mart-cutover. The architecture lives in the app's own `CLAUDE.md` + `README.md`; this note pins the *language*. Deep references: `players/jebrim/quest-log/in-progress/S026_d{1,2,3}_*.md`.
 
@@ -207,9 +207,9 @@ The cutover consolidated tabs. Legacy URLs and alert refs still route via `OLD_T
 
 ## Things to verify when re-touching
 
-- **`audit.py` and `backtest.py` are pre-cutover** — both reference legacy `layer{1,2,3,4}_*.parquet` and single-file `processed.parquet`. They'll fail or run against missing files. Rewrite needed before next audit pass.
-- **`order_date >= '2025-01-01'` floor** hardcoded in `/api/carrier-share-trends` and `/api/dimension-share-trends`. Sidebar dates can't reach below 2025 on those routes.
-- **Mart `final_shipping_cost_eur` is `COALESCE(real, expected, avg)`** — different from pipeline's `cost_for_routing` which is `COALESCE(final, expected)`. The `avg` fallback is mart-internal.
+- **`audit.py` / `backtest.py` are POST-cutover** (re-targeted in commit `0001b36`; verified S055). `audit.py` loads `processed/*.parquet` + the full output set; `backtest.py` globs `processed/*.parquet` with a single-file fallback. No legacy `layer*` refs remain. *(The earlier "pre-cutover, will fail" note was stale — corrected S055.)*
+- ~~**`order_date >= '2025-01-01'` floor** on `/api/carrier-share-trends` + `/api/dimension-share-trends`~~ **FIXED (S055)** — both now bind the sidebar `from`/`to`; pre-2025 history is reachable.
+- **`cost_for_routing` is a straight pass-through of `shipping_cost_final`** (= mart `final_shipping_cost_eur` = `COALESCE(real, expected, avg)`, mart-internal) post-cutover — NOT the old in-pipeline `COALESCE(final, expected)`. NULL final = uncosted, carried as NULL.
 - **ORWO `expected_shipping_cost`** comes from the SQL-level `CASE` fallback, not the mart's `expected_shipping_cost_eur` (which is null for ORWO source rows). Stand-in until ORWO procedure migrates to the mart.
 - **Decimal → Float8 server cast** in `query_mart.sql` is non-optional. Polars schema inference dies on all-null Decimal chunks if the cast is removed.
 - **Several Polars-segfault workarounds use DuckDB** (shipments+baskets join on full refresh, daily_product UNNEST, processed monthly-write filter+write loop). Reverting these to Polars likely re-introduces the segfaults on Windows.
@@ -217,9 +217,20 @@ The cutover consolidated tabs. Legacy URLs and alert refs still route via `OLD_T
 ## Open questions (for future asks)
 
 - Coordination with the shipping data mart: when does ORWO expected migrate from the inline CASE fallback to a mart-side procedure? See keepsake pin for mart routing.
-- `audit.py` rewrite — owns the post-cutover output-shape audit; currently stale.
-- The `corridor_costs_weekly.parquet` referenced by `_build_alerts` fallback path — is it actually written in main flow? Not seen in pipeline write path (`pipeline.py:1822`).
-- `/api/generic-trend` falls back to full-glob `processedPruned("2024-01-01","2099-12-31")` when `minCost`/`maxCost` are set without date pins. Hot under wide chart ranges + cost-range filter combos.
+- ~~`audit.py` rewrite~~ DONE (re-targeted `0001b36`, verified S055).
+- The `corridor_costs_weekly.parquet` referenced by `_build_alerts` fallback path — is it actually written in main flow? Not seen in pipeline write path. (Still open.)
+- ~~`/api/generic-trend` full-glob under cost-range~~ FIXED (S055) — now bounds the read to the chart window + adds an `order_date` bind.
+
+## Post-cutover review (S055, 2026-05-23)
+
+Full technical + mathematical review of the cutover branch + fixes. Findings doc lives in-repo at `docs/cutover-review-2026-05-23/findings.md`. What changed (effective on the next pipeline refresh for the `pipeline.py` items):
+
+- **Bucket invariant now reconciled.** The 11 buckets must sum to `real_shipping_cost_eur`; ~82k invoiced rows (237k EUR, 0.37%) had no `fact_shipment_cost_summary` row → buckets all 0 → read 0 on Breakdown. `transform()` now absorbs the residual `(real − Σbuckets)` into `bkt_unclassified` for invoiced rows. Where a summary row exists, buckets already tie to real to the cent.
+- **Per-costed avg cost.** New `n_routing` column (count `cost_for_routing` non-null) in the daily/daily_product summaries + `processedAsDaily`; Overview + Avg Costs now divide by `SUM(n_routing)` (was `SUM(shipments)`) so they match Breakdown. ~7% of shipments are uncosted, which had diluted the old per-all average.
+- **Shift metrics: Python is canonical.** `shifts.ts` now computes `eur_impact` vs the corridor `baseline_avg_cost` (not the losing counterpart), `trend_confirmed` over the first half of baseline weeks (not a fixed 42-day window), and `low_baseline_vol` over distinct baseline weeks present (not a nominal DATEDIFF). `issues.parquet` and the Shifts tab now agree.
+- **Alert engine:** rate_spike merged-island impact no longer double-counts (takes the earliest island, which already spans the union window); issues **settle to a new normal** (resolve, flagged `settled`) after `BASELINE_WEEKS` flat weeks at the elevated level, so the frozen-baseline override stops re-arming a permanent step-change; drift monitor skips a partial latest month; `volume_anomaly` exempt from the global vol floor (collapses surface); `trend_confirmed` requires early-baseline presence; `sum_real` gated to the invoiced population.
+- **Crash fix:** `avg-costs` + `deviations` 500'd on the packagetype+SOG combo (raw processed glob vs pre-agg columns) — now routed through `processedAsDaily`/`dailyTierExpr`.
+- **Deploy model:** `pipeline.py` value changes only take effect on the next pipeline refresh (the DAG runs it before the pod serves). Landing the cutover branch on `main` triggers CICD — principal-gated. Next CVE bump `15.5.18` (CVE-2026-44578) is in.
 
 ## Related
 

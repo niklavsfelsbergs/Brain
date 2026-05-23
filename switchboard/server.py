@@ -157,17 +157,37 @@ async def chat_handler(request: web.Request) -> web.WebSocketResponse:
     custom chat UI instead of a terminal. Streaming-input mode keeps the
     process alive for a multi-turn conversation.
 
+    Session persistence (S060): a fresh connection mints a new session uuid and
+    spawns `claude … --session-id <uuid>`. A reconnect that carries `?resume=<id>`
+    (a valid uuid) instead spawns `claude … --resume <id>`, continuing that
+    session from its on-disk transcript — so a browser reload that lost the
+    in-memory conversation can pick the same thread back up. claude saves
+    sessions to disk by default (we never pass --no-session-persistence), so the
+    process being gone is fine: --resume reloads context from disk. The transcript
+    is NOT re-emitted as events on resume — the client owns replaying the visible
+    history; the server just reattaches the live process to the same id.
+
     Wire protocol:
-      server → client : {"t":"session",...} once, then {"t":"event","ev":<claude
-                        stream-json event>}, {"t":"stderr","d"}, {"t":"exit","code"}.
+      server → client : {"t":"session","sessionId","sid8","resumed":<bool>} once,
+                        then {"t":"event","ev":<claude stream-json event>},
+                        {"t":"stderr","d"}, {"t":"exit","code"}.
       client → server : {"type":"input","text":<user message>}.
     """
     ws = web.WebSocketResponse(heartbeat=30)
     await ws.prepare(request)
 
-    session_id = str(uuid.uuid4())
+    # `?resume=<uuid>` continues an existing session; otherwise mint a fresh one.
+    # Validate as a real uuid before handing it to a subprocess arg (defensive
+    # even on localhost) — a malformed value silently falls back to a fresh id.
+    resume = request.query.get("resume", "").strip()
+    if resume and _is_uuid(resume):
+        session_id = resume
+        resumed = True
+    else:
+        session_id = str(uuid.uuid4())
+        resumed = False
     sid8 = session_id[:8]
-    await _send(ws, {"t": "session", "sessionId": session_id, "sid8": sid8})
+    await _send(ws, {"t": "session", "sessionId": session_id, "sid8": sid8, "resumed": resumed})
 
     args = [
         CLAUDE_EXE, "-p",
@@ -176,8 +196,8 @@ async def chat_handler(request: web.Request) -> web.WebSocketResponse:
         "--include-partial-messages",
         "--verbose",
         "--permission-mode", "bypassPermissions",
-        "--session-id", session_id,
     ]
+    args += ["--resume", session_id] if resumed else ["--session-id", session_id]
     try:
         proc = await asyncio.create_subprocess_exec(
             *args,
@@ -222,6 +242,17 @@ async def chat_handler(request: web.Request) -> web.WebSocketResponse:
     out_task = asyncio.create_task(pump_stdout())
     err_task = asyncio.create_task(pump_stderr())
 
+    async def send_stdin(payload: dict) -> bool:
+        """Write one stream-json line to claude's stdin."""
+        try:
+            proc.stdin.write((json.dumps(payload) + "\n").encode("utf-8"))
+            await proc.stdin.drain()
+            return True
+        except Exception:
+            return False
+
+    interrupt_seq = 0    # per-connection control_request id counter
+
     try:
         async for msg in ws:
             if msg.type != WSMsgType.TEXT:
@@ -232,16 +263,26 @@ async def chat_handler(request: web.Request) -> web.WebSocketResponse:
                 obj = json.loads(msg.data)
             except (ValueError, TypeError):
                 continue
-            if obj.get("type") == "input":
-                payload = {
+            kind = obj.get("type")
+            if kind == "input":
+                ok = await send_stdin({
                     "type": "user",
                     "message": {"role": "user", "content": obj.get("text", "")},
-                }
-                try:
-                    proc.stdin.write((json.dumps(payload) + "\n").encode("utf-8"))
-                    await proc.stdin.drain()
-                except Exception:
+                })
+                if not ok:
                     break
+            elif kind == "interrupt":
+                # Cancel the running turn without killing the process — claude
+                # acks control_response{success} and stays alive for the next
+                # message, so the conversation continues (probed live by the
+                # terminal.js author, 3b367751). Best-effort: a failed write
+                # means the pipe is already gone and the next input will break.
+                interrupt_seq += 1
+                await send_stdin({
+                    "type": "control_request",
+                    "request_id": f"int_{interrupt_seq}",
+                    "request": {"subtype": "interrupt"},
+                })
     finally:
         try:
             proc.stdin.close()
@@ -272,6 +313,158 @@ def _qint(request: web.Request, key: str, default: int) -> int:
         return default
 
 
+def _is_uuid(s: str) -> bool:
+    """True if `s` parses as a UUID — gates the --resume arg and history lookup."""
+    try:
+        uuid.UUID(s)
+        return True
+    except (ValueError, TypeError, AttributeError):
+        return False
+
+
+def _is_sid8(s: str) -> bool:
+    """True for an 8-char hex session prefix — the id form switchboard rows
+    carry. Lets the chat panel open a session it only knows by sid8 (e.g. a
+    VS Code session clicked on the board)."""
+    return len(s) == 8 and all(c in "0123456789abcdefABCDEF" for c in s)
+
+
+# ─── Session transcript → history replay (S060, option B) ───────────────────
+#
+# claude writes every session to ~/.claude/projects/<slug>/<session-id>.jsonl as
+# it runs. /history parses that file into the visual turns the chat UI renders —
+# so the browser persists only *which* sessions were open (their ids), never the
+# transcript itself; the conversation content is re-read from disk on demand.
+# This is what makes a page reload lossless without a parallel client-side copy.
+
+PROJECTS_DIR = Path.home() / ".claude" / "projects"
+HISTORY_RESULT_CAP = 4000   # per tool result, to bound the /history payload
+
+
+def _find_session_file(key: str):
+    """Locate a session transcript under any project dir, by full uuid OR by an
+    8-char sid8 prefix (board rows only carry the sid8). The caller validates
+    `key` as uuid/hex, so the glob can't escape PROJECTS_DIR."""
+    try:
+        return next(iter(PROJECTS_DIR.glob(f"*/{key}*.jsonl")), None)
+    except OSError:
+        return None
+
+
+def _result_text(content) -> str:
+    """Flatten a tool_result `content` (str | list-of-blocks | dict) to text —
+    mirrors the client's toolResultText so history matches the live render."""
+    if isinstance(content, str):
+        text = content
+    elif isinstance(content, list):
+        text = "\n".join(
+            b if isinstance(b, str) else (b.get("text", "") if isinstance(b, dict) else "")
+            for b in content
+        )
+    elif isinstance(content, dict):
+        text = content.get("text", "") or json.dumps(content)
+    elif content is None:
+        text = ""
+    else:
+        text = str(content)
+    if len(text) > HISTORY_RESULT_CAP:
+        text = text[:HISTORY_RESULT_CAP] + " …(truncated)"
+    return text
+
+
+def parse_transcript(key: str):
+    """Read a session's .jsonl into {sessionId, title, turns}. `key` is a full
+    uuid or an 8-char sid8; the returned sessionId is always the resolved full
+    uuid (from the filename) so the client can resume with it. Returns None if no
+    file is found. Turns are visual turns (one bubble each): consecutive assistant
+    records merge until a real user message; tool_result user records fill their
+    tool card in place rather than starting a turn; sub-agent (isSidechain)
+    records are skipped so dwarf chatter stays out of the view."""
+    path = _find_session_file(key)
+    if path is None:
+        return None
+    session_id = path.stem   # full uuid, recovered from the filename
+
+    turns = []
+    title = None
+    cur_asst = None             # open assistant turn, or None
+    tool_index = {}             # tool_use_id → tool block (to fill its result later)
+
+    with path.open(encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue          # partial last line on a live file — skip
+
+            t = r.get("type")
+            if t == "ai-title":
+                title = r.get("aiTitle") or title
+                continue
+            if r.get("isSidechain") is True:
+                continue
+            if t not in ("user", "assistant"):
+                continue
+
+            content = (r.get("message") or {}).get("content")
+
+            if t == "user":
+                user_text = []
+                if isinstance(content, str):
+                    user_text.append(content)
+                elif isinstance(content, list):
+                    for b in content:
+                        if not isinstance(b, dict):
+                            continue
+                        if b.get("type") == "tool_result":
+                            tb = tool_index.get(b.get("tool_use_id"))
+                            if tb is not None:
+                                tb["result"] = _result_text(b.get("content"))
+                                tb["isError"] = bool(b.get("is_error"))
+                        elif b.get("type") == "text":
+                            user_text.append(b.get("text", ""))
+                joined = "\n".join(p for p in user_text if p).strip()
+                if joined:                       # a real typed message starts a turn
+                    cur_asst = None
+                    turns.append({"role": "user", "blocks": [{"t": "text", "text": joined}]})
+                # tool_result-only user records keep the assistant turn open
+
+            else:  # assistant
+                if cur_asst is None:
+                    cur_asst = {"role": "assistant", "blocks": []}
+                    turns.append(cur_asst)
+                for b in (content or []):
+                    if not isinstance(b, dict):
+                        continue
+                    bt = b.get("type")
+                    if bt == "text":
+                        txt = b.get("text") or ""
+                        if txt:
+                            cur_asst["blocks"].append({"t": "text", "text": txt})
+                    elif bt == "thinking":
+                        th = b.get("thinking") or ""
+                        if th.strip():            # empty/redacted thinking → skip
+                            cur_asst["blocks"].append({"t": "thinking", "text": th})
+                    elif bt == "tool_use":
+                        inp = b.get("input")
+                        tb = {
+                            "t": "tool",
+                            "id": b.get("id"),
+                            "name": b.get("name") or "tool",
+                            "input": inp if isinstance(inp, (dict, list)) else {},
+                            "result": None,
+                            "isError": False,
+                        }
+                        cur_asst["blocks"].append(tb)
+                        if tb["id"]:
+                            tool_index[tb["id"]] = tb
+
+    return {"sessionId": session_id, "title": title, "turns": turns}
+
+
 # ─── Static files (GET-only, traversal-guarded) ────────────────────────────
 
 async def static_handler(request: web.Request) -> web.StreamResponse:
@@ -287,10 +480,27 @@ async def static_handler(request: web.Request) -> web.StreamResponse:
     return web.FileResponse(target)
 
 
+async def history_handler(request: web.Request) -> web.Response:
+    """GET /history?session=<uuid> → the session's transcript as visual turns.
+    Read-only; the parse runs in a thread so a big .jsonl doesn't stall the loop."""
+    sid = request.query.get("session", "").strip()
+    if not (_is_uuid(sid) or _is_sid8(sid)):
+        return web.json_response({"error": "invalid session id"}, status=400)
+    loop = asyncio.get_running_loop()
+    data = await loop.run_in_executor(None, parse_transcript, sid)
+    if data is None:
+        return web.json_response(
+            {"error": "not found", "sessionId": sid, "title": None, "turns": []},
+            status=404,
+        )
+    return web.json_response(data)
+
+
 def build_app() -> web.Application:
     app = web.Application()
     app.router.add_get("/pty", pty_handler)
     app.router.add_get("/chat", chat_handler)
+    app.router.add_get("/history", history_handler)
     app.router.add_get("/", static_handler)
     app.router.add_get("/{path:.*}", static_handler)
     return app

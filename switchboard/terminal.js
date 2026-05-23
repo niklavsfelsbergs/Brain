@@ -27,6 +27,7 @@ export function initTerminal() {
   toggleEl.addEventListener('click', () => togglePanel());
   if (newBtn) newBtn.addEventListener('click', () => spawnConvo());
   registerInAppFocus(focusBySid8);
+  restoreConvos();   // rebuild dormant pills from localStorage (lazy-resumed on click)
 }
 
 function setPanelOpen(open) {
@@ -45,6 +46,16 @@ function togglePanel() {
 
 function spawnConvo() {
   setPanelOpen(true);
+  const c = createConvo({});
+  activate(c.id);
+  connect(c);
+}
+
+// Build a conversation's DOM + state. A `dormant` convo is one restored from
+// localStorage on page load: its pill exists and (on first activation) its
+// history replays, but no live `claude` process is spawned until the user
+// actually clicks into it — that's the lazy half of the persistence design.
+function createConvo({ sessionId = null, sid8 = null, title = null, dormant = false }) {
   const id = ++seq;
 
   // pane: scrollable message list + input bar
@@ -75,7 +86,7 @@ function spawnConvo() {
   dot.className = 'tt-dot';
   const label = document.createElement('span');
   label.className = 'tt-label';
-  label.textContent = 'starting…';
+  label.textContent = dormant ? (getSidebarName(sid8) || title || sid8 || 'saved') : 'starting…';
   const close = document.createElement('button');
   close.className = 'tt-close';
   close.type = 'button';
@@ -85,9 +96,13 @@ function spawnConvo() {
   railEl.appendChild(tab);
 
   const c = makeConvo(id, { pane, msgs, ta, send, tab, dot, label });
+  c.sessionId = sessionId;
+  c.sid8 = sid8;
+  c.title = title;
+  c.dormant = dormant;
   convos.push(c);
 
-  tab.addEventListener('click', (e) => { if (e.target !== close) activate(id); });
+  tab.addEventListener('click', (e) => { if (e.target !== close) { activate(id); wakeConvo(c); } });
   close.addEventListener('click', (e) => { e.stopPropagation(); closeConvo(id); });
   send.addEventListener('click', () => onSendClick(c));
   ta.addEventListener('input', () => autosize(ta));
@@ -96,8 +111,11 @@ function spawnConvo() {
     else if (e.key === 'Escape' && c.turnActive) { e.preventDefault(); requestStop(c); }
   });
 
-  activate(id);
-  connect(c);
+  if (dormant) {
+    setDot(c, 'saved');
+    c.tab.title = sessionId || sid8 || '';
+  }
+  return c;
 }
 
 function makeConvo(id, els) {
@@ -111,21 +129,31 @@ function makeConvo(id, els) {
     turnActive: false,    // a turn is running → Send button becomes Stop
     interrupting: false,  // a stop was requested for the running turn
     ended: false,
+    title: null,          // ai-title from /history, shown on the pill once known
+    dormant: false,       // restored-from-storage, not yet resumed
+    waking: false,        // a wakeConvo() is in flight (guards double-wake)
+    pending: null,        // text typed before the (re)connect opened — flushed on open
   };
 }
 
-function connect(c) {
+// `resumeId` set → reconnect to an existing session (server spawns `claude
+// --resume`); omitted → a fresh session (server mints a new id).
+function connect(c, resumeId) {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${proto}://${location.host}/chat`);
+  const qs = resumeId ? `?resume=${encodeURIComponent(resumeId)}` : '';
+  const ws = new WebSocket(`${proto}://${location.host}/chat${qs}`);
   c.ws = ws;
   setDot(c, 'connecting');
-  ws.onopen = () => setDot(c, 'live');
+  ws.onopen = () => {
+    setDot(c, 'live');
+    if (c.pending) { const t = c.pending; c.pending = null; doSend(c, t); }
+  };
   ws.onmessage = (e) => {
     let m;
     try { m = JSON.parse(e.data); } catch { return; }
     if (m.t === 'session') {
       c.sid8 = m.sid8; c.sessionId = m.sessionId;
-      c.label.textContent = m.sid8;
+      c.label.textContent = labelFor(c);   // honors a custom rename if one exists
       c.tab.title = m.sessionId || m.sid8;
     } else if (m.t === 'event') {
       handleEvent(c, m.ev);
@@ -151,15 +179,35 @@ function onSendClick(c) {
 }
 
 function submit(c) {
-  if (c.turnActive) return;                 // a turn is mid-flight — Enter is a no-op
   const text = c.ta.value.trim();
-  if (!text || !c.ws || c.ws.readyState !== 1) return;
-  addUserBubble(c, text);
-  c.ws.send(JSON.stringify({ type: 'input', text }));
+  if (!text) return;
+
+  // `/rename` is a client-side command (never sent to claude) — allowed any
+  // time, including while a turn is streaming, so you can label a chat while
+  // waiting on its response.
+  const rn = text.match(/^\/rename\b\s*(.*)$/);
+  if (rn) { c.ta.value = ''; autosize(c.ta); applyRename(c, rn[1].trim()); return; }
+
+  // An actual message is blocked while a turn runs — leave the text in place so
+  // it isn't lost (Enter becomes a no-op until the turn ends).
+  if (c.turnActive || c.ended) return;
   c.ta.value = '';
   autosize(c.ta);
+  if (c.ws && c.ws.readyState === 1) {
+    doSend(c, text);
+  } else {
+    // dormant (or mid-reconnect): stash the text and wake — onopen flushes it.
+    c.pending = text;
+    if (c.dormant) wakeConvo(c);
+  }
+}
+
+function doSend(c, text) {
+  addUserBubble(c, text);
+  c.ws.send(JSON.stringify({ type: 'input', text }));
   showThinking(c);
   setTurnActive(c, true);
+  rememberConvo(c);   // first real message → persist so a reload restores it
 }
 
 // Mid-turn cancel. Sends an interrupt over the WS; server.py turns it into a
@@ -418,6 +466,7 @@ function activate(id) {
 function closeConvo(id) {
   const c = byId(id);
   if (!c) return;
+  forgetConvo(c);                            // drop it from the persisted id list
   try { if (c.ws) c.ws.close(); } catch { /* ignore */ }
   c.pane.remove();
   c.tab.remove();
@@ -430,13 +479,156 @@ function closeConvo(id) {
   }
 }
 
+// Clicking a switchboard row routes here (via focus.js). If a pill for that
+// sid8 already exists it's activated + woken; if not — e.g. a session started
+// in VS Code — a pill is created and the session is taken over: its history
+// loads and the chatbox resumes it. (Takeover is one-way; the VS Code side may
+// not be resumable afterward, which the principal accepts.)
 function focusBySid8(sid8) {
   if (!sid8) return false;
-  const c = convos.find((t) => t.sid8 === sid8);
-  if (!c) return false;
+  let c = convos.find((t) => t.sid8 === sid8);
+  if (!c) c = createConvo({ sid8, dormant: true });   // attach to a board session
   setPanelOpen(true);
   activate(c.id);
+  wakeConvo(c);
   return true;
+}
+
+// ─── persistence (survive a page reload) ────────────────────────────────────
+// The browser persists ONLY the list of open session ids — never transcripts.
+// On reload those become dormant pills; on first click each one fetches its
+// history from disk (server /history) and resumes its claude process. Disk is
+// the source of truth, so resumed/continued turns come back for free.
+
+const STORE_KEY = 'sb-chat-sessions';
+
+function loadSaved() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveSaved(list) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
+  catch { /* private mode / quota — persistence just degrades to none */ }
+}
+
+function rememberConvo(c) {
+  if (!c.sessionId) return;
+  const list = loadSaved().filter((s) => s.sessionId !== c.sessionId);
+  list.push({ sessionId: c.sessionId, sid8: c.sid8, title: c.title || null });
+  saveSaved(list);
+}
+
+function forgetConvo(c) {
+  if (!c.sessionId) return;
+  saveSaved(loadSaved().filter((s) => s.sessionId !== c.sessionId));
+}
+
+function restoreConvos() {
+  for (const s of loadSaved()) {
+    if (s && s.sessionId) {
+      createConvo({ sessionId: s.sessionId, sid8: s.sid8, title: s.title, dormant: true });
+    }
+  }
+  // Show the most recent one when the panel is opened; don't wake (lazy) and
+  // don't pop the panel open on load.
+  if (convos.length) activate(convos[convos.length - 1].id);
+}
+
+// Lazy resume: fetch + replay the transcript, then reconnect with --resume.
+async function wakeConvo(c) {
+  if (!c.dormant || c.waking) return;
+  c.waking = true;
+  setDot(c, 'connecting');
+  // For a board-attached convo we only have the sid8; /history resolves it to
+  // the full session id (returned in the payload) and we resume with that.
+  const key = c.sessionId || c.sid8;
+  try {
+    const res = await fetch(`/history?session=${encodeURIComponent(key)}`);
+    if (res.status === 404) {
+      // no transcript on disk (GC'd / different machine / never written) — can't resume.
+      systemLine(c, 'no transcript for this session — nothing to resume.', true);
+      setDot(c, 'closed');
+      c.ended = true; c.dormant = false; c.waking = false;
+      c.ta.disabled = true; c.send.disabled = true;
+      forgetConvo(c);
+      return;
+    }
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sessionId) c.sessionId = data.sessionId;   // resolve sid8 → full uuid
+      if (data.title) c.title = data.title;
+      c.label.textContent = labelFor(c);   // custom rename > ai-title > sid8
+      rememberConvo(c);                      // taken-over session now persists as a pill
+      renderHistory(c, data);
+    }
+  } catch (err) {
+    systemLine(c, 'could not load history: ' + err, true);
+  }
+  c.dormant = false;
+  if (c.sessionId) connect(c, c.sessionId);   // resume; onopen flushes any pending text
+  c.waking = false;
+}
+
+// Replay a /history payload into the pane using the live render primitives, so
+// restored history looks identical to a conversation that streamed in live.
+function renderHistory(c, data) {
+  for (const turn of (data.turns || [])) {
+    c.cur = null; c.think = null;
+    if (turn.role === 'user') {
+      const txt = (turn.blocks || []).filter((b) => b.t === 'text').map((b) => b.text).join('\n');
+      if (txt) addUserBubble(c, txt);
+      continue;
+    }
+    for (const b of (turn.blocks || [])) {
+      if (b.t === 'thinking') {
+        c.think = null; startThink(c); setThinkText(c, b.text); collapseThink(c);
+      } else if (b.t === 'text') {
+        c.cur = null; startAssistant(c); setAssistantText(c, b.text);
+      } else if (b.t === 'tool') {
+        upsertToolCard(c, { id: b.id, name: b.name, input: b.input });
+        if (b.result != null) setToolResult(c, b.id, b.result, b.isError);
+      }
+    }
+  }
+  c.cur = null; c.think = null;
+  systemLine(c, '— resumed —');
+  scroll(c);
+}
+
+// ─── rename (shared with the switchboard sidebar) ───────────────────────────
+// `/rename <name>` in the chat input writes the SAME localStorage key the
+// switchboard panel reads (sb-session-names, keyed by sid8) — so one rename
+// relabels both the pill and the session's row on the board. `/rename` with no
+// argument clears the custom name (falls back to title / sid8 / Actor·N).
+
+const SB_NAMES_KEY = 'sb-session-names';   // must match switchboard.js NAMES_KEY
+
+function getSidebarName(sid8) {
+  if (!sid8) return null;
+  try { return JSON.parse(localStorage.getItem(SB_NAMES_KEY) || '{}')[sid8] || null; }
+  catch { return null; }
+}
+
+function setSidebarName(sid8, name) {
+  if (!sid8) return;
+  let names = {};
+  try { names = JSON.parse(localStorage.getItem(SB_NAMES_KEY) || '{}'); } catch { /* corrupt → reset */ }
+  if (name) names[sid8] = name; else delete names[sid8];
+  try { localStorage.setItem(SB_NAMES_KEY, JSON.stringify(names)); } catch { /* private mode */ }
+}
+
+// Resolve a pill's display label: explicit rename > ai-title > sid8.
+function labelFor(c) {
+  return getSidebarName(c.sid8) || c.title || c.sid8 || 'chat';
+}
+
+function applyRename(c, name) {
+  if (!c.sid8) { systemLine(c, 'rename available once the session connects', true); return; }
+  setSidebarName(c.sid8, name);              // sidebar picks this up on its next poll
+  c.label.textContent = labelFor(c);
+  rememberConvo(c);
+  systemLine(c, name ? `renamed to "${name}"` : 'name cleared');
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────────

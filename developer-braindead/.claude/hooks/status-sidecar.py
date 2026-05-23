@@ -451,6 +451,72 @@ def _ppid_chain(start_pid: int) -> list[dict]:
     return chain
 
 
+def _pid_alive(pid: int) -> bool:
+    """True if a process with this PID is currently running. Windows-only via
+    OpenProcess + GetExitCodeProcess. **Fail-open** — returns True on any other
+    platform, on error, or on access-denied: a liveness probe must never be the
+    reason a live session is dropped (the staleness gate is the backstop). We
+    declare a PID dead only when the OS positively reports it doesn't exist
+    (ERROR_INVALID_PARAMETER) or that the opened process has already exited.
+
+    PID recycling can yield a false 'alive' (a dead session's PID reused by an
+    unrelated process); callers pair this with the time gate to clean those up."""
+    try:
+        pid = int(pid)
+    except (TypeError, ValueError):
+        return True
+    if pid <= 0 or sys.platform != "win32":
+        return True
+    try:
+        import ctypes
+        from ctypes import wintypes as wt
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        STILL_ACTIVE = 259
+        ERROR_INVALID_PARAMETER = 87       # no process with this id
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.restype = wt.HANDLE
+        kernel32.OpenProcess.argtypes = [wt.DWORD, wt.BOOL, wt.DWORD]
+        h = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not h:
+            err = ctypes.get_last_error()
+            # Only "no such pid" is a confident dead; access-denied / other →
+            # fail-open alive so we never drop a session we couldn't inspect.
+            return err != ERROR_INVALID_PARAMETER
+        try:
+            kernel32.GetExitCodeProcess.argtypes = [wt.HANDLE, ctypes.POINTER(wt.DWORD)]
+            kernel32.GetExitCodeProcess.restype = wt.BOOL
+            code = wt.DWORD()
+            if kernel32.GetExitCodeProcess(h, ctypes.byref(code)):
+                return code.value == STILL_ACTIVE
+            return True                     # couldn't query → assume alive
+        finally:
+            kernel32.CloseHandle(h)
+    except Exception as e:
+        print(f"status-sidecar: pid liveness check failed for {pid}: {e}", file=sys.stderr)
+        return True
+
+
+def _session_process_dead(record: dict) -> bool:
+    """True only when the session's own Claude process is positively gone.
+
+    Picks the `claude.exe` entry out of the recorded `claude_pid_chain` (that's
+    the session's actual agent process — `claude_pid` is the hook's immediate
+    parent, often a short-lived shell wrapper), falling back to `claude_pid`.
+    Fail-open through `_pid_alive`: a session is dropped on this signal ONLY
+    when its process genuinely exited, never on an inconclusive probe."""
+    chain = record.get("claude_pid_chain") or []
+    target = 0
+    for entry in chain:
+        if isinstance(entry, dict) and (entry.get("name") or "").lower() == "claude.exe":
+            target = entry.get("pid") or 0
+            break
+    if not target:
+        target = record.get("claude_pid") or 0
+    if not target:
+        return False               # nothing to check → don't drop on this signal
+    return not _pid_alive(target)
+
+
 def _capture_foreground_hwnd(chain: list[dict]) -> int:
     """Return the foreground top-level HWND iff its owning process is one of
     the ancestor pids in `chain`. Else 0.
@@ -678,16 +744,25 @@ def _write_manifest() -> None:
                     continue
                 if j.get("state") == "ended":
                     continue
-                # Liveness gate. A terminal closed hard or crashed never fires
-                # SessionEnd, so its status file freezes at working/
-                # waiting_for_user with a stale last_event_ts and would squat on
-                # the live board until the 24h archive sweep (STALE_SEC). Drop
-                # any row whose last hook fire is older than the liveness window
-                # — the same threshold the cross-session GC uses. A genuinely
-                # long working turn fires no hooks but stays well inside an hour;
-                # a session parked on a Stop past the window is treated as
-                # abandoned (reopen the terminal and it resurfaces on the next
-                # fire). This is the fix for the 3h+ "zombie" rows.
+                # Liveness gate — two signals, either drops the row:
+                #
+                #   (a) process-dead: the session's own claude.exe has exited.
+                #       Ground truth. A terminal closed hard or crashed never
+                #       fires SessionEnd, so its status file freezes at working/
+                #       waiting_for_user; checking the recorded PID chain catches
+                #       it within one poll instead of waiting out the timer. Never
+                #       false-drops a live session — _pid_alive fails open.
+                #   (b) stale: no hook fire for longer than the liveness window.
+                #       Backstop for the case (a) can't see — PID recycling, or a
+                #       chain we couldn't probe. Same threshold the cross-session
+                #       GC uses. A genuinely long working turn fires no hooks but
+                #       stays well inside an hour; a session parked on a Stop past
+                #       the window is treated as abandoned (reopen the terminal
+                #       and it resurfaces on the next fire).
+                #
+                # Together these are the fix for the lingering "zombie" rows.
+                if _session_process_dead(j):
+                    continue
                 try:
                     last_ts = float(j.get("last_event_ts") or 0)
                 except (TypeError, ValueError):

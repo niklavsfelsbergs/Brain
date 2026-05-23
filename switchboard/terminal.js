@@ -89,10 +89,11 @@ function spawnConvo() {
 
   tab.addEventListener('click', (e) => { if (e.target !== close) activate(id); });
   close.addEventListener('click', (e) => { e.stopPropagation(); closeConvo(id); });
-  send.addEventListener('click', () => submit(c));
+  send.addEventListener('click', () => onSendClick(c));
   ta.addEventListener('input', () => autosize(ta));
   ta.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(c); }
+    else if (e.key === 'Escape' && c.turnActive) { e.preventDefault(); requestStop(c); }
   });
 
   activate(id);
@@ -104,8 +105,11 @@ function makeConvo(id, els) {
     id, sid8: null, sessionId: null, ws: null,
     ...els,
     cur: null,            // current assistant message: { bubble, body, raw, streamed }
-    tools: new Map(),     // tool_use_id → { card, bodyEl }
-    thinkingEl: null,
+    tools: new Map(),     // tool_use_id → { card, inpEl, resultEl }
+    think: null,          // current turn's thinking block: { block, body, raw, streamed }
+    thinkingEl: null,     // the pre-token "•••" pulse (distinct from real thinking)
+    turnActive: false,    // a turn is running → Send button becomes Stop
+    interrupting: false,  // a stop was requested for the running turn
     ended: false,
   };
 }
@@ -129,6 +133,8 @@ function connect(c) {
       systemLine(c, m.d, true);
     } else if (m.t === 'exit') {
       c.ended = true;
+      hideThinking(c);
+      setTurnActive(c, false);
       setDot(c, 'closed');
       systemLine(c, 'session ended');
       c.ta.disabled = true; c.send.disabled = true;
@@ -138,7 +144,14 @@ function connect(c) {
   ws.onerror = () => setDot(c, 'err');
 }
 
+// The Send button doubles as Stop while a turn runs.
+function onSendClick(c) {
+  if (c.turnActive) requestStop(c);
+  else submit(c);
+}
+
 function submit(c) {
+  if (c.turnActive) return;                 // a turn is mid-flight — Enter is a no-op
   const text = c.ta.value.trim();
   if (!text || !c.ws || c.ws.readyState !== 1) return;
   addUserBubble(c, text);
@@ -146,6 +159,25 @@ function submit(c) {
   c.ta.value = '';
   autosize(c.ta);
   showThinking(c);
+  setTurnActive(c, true);
+}
+
+// Mid-turn cancel. Sends an interrupt over the WS; server.py turns it into a
+// stream-json control_request that ends the turn but keeps the process alive
+// (so the conversation continues). Inert until server.py grows that handler.
+function requestStop(c) {
+  if (!c.ws || c.ws.readyState !== 1 || !c.turnActive) return;
+  c.interrupting = true;
+  c.ws.send(JSON.stringify({ type: 'interrupt' }));
+  systemLine(c, 'stopping…');
+  c.send.disabled = true;                   // re-enabled when the turn actually ends
+}
+
+function setTurnActive(c, active) {
+  c.turnActive = active;
+  c.send.textContent = active ? 'Stop' : 'Send';
+  c.send.classList.toggle('stopping', active);
+  if (!active) { c.send.disabled = false; c.interrupting = false; }
 }
 
 // ─── claude stream-json event handling ──────────────────────────────────────
@@ -157,14 +189,23 @@ function handleEvent(c, ev) {
       break;
     case 'stream_event': {
       const e = ev.event || {};
-      if (e.type === 'message_start') { startAssistant(c); hideThinking(c); }
-      else if (e.type === 'content_block_start' && e.content_block?.type === 'tool_use') {
-        upsertToolCard(c, e.content_block);
+      if (e.type === 'message_start') {
+        hideThinking(c);   // real content (thinking or text) is about to flow
+      } else if (e.type === 'content_block_start') {
+        const cb = e.content_block || {};
+        if (cb.type === 'tool_use') upsertToolCard(c, cb);
+        else if (cb.type === 'thinking') { hideThinking(c); startThink(c); }
       } else if (e.type === 'content_block_delta') {
         const d = e.delta || {};
         if (d.type === 'text_delta') { startAssistant(c); appendAssistantText(c, d.text); }
+        else if (d.type === 'thinking_delta') appendThink(c, d.thinking || '');
+        // signature_delta ignored — not for display
       } else if (e.type === 'message_stop') {
+        // Per assistant message (a turn can have several around tool calls):
+        // the authoritative `assistant` event already landed before this, so
+        // resetting here both dedups and gives the next message a fresh block.
         c.cur = null;
+        c.think = null;
       }
       break;
     }
@@ -173,6 +214,9 @@ function handleEvent(c, ev) {
         if (block.type === 'text') {
           startAssistant(c);
           if (!c.cur.streamed) setAssistantText(c, block.text);
+        } else if (block.type === 'thinking') {
+          startThink(c);
+          if (!c.think.streamed) setThinkText(c, block.thinking || '');
         } else if (block.type === 'tool_use') {
           upsertToolCard(c, block);
         }
@@ -185,9 +229,14 @@ function handleEvent(c, ev) {
         }
       }
       break;
+    case 'control_response':
+      break;   // interrupt ack — the turn's `result` does the visible cleanup
     case 'result':
       hideThinking(c);
       c.cur = null;
+      c.think = null;
+      if (c.interrupting) systemLine(c, 'turn stopped');
+      setTurnActive(c, false);
       resultDivider(c, ev);
       break;
     default:
@@ -209,6 +258,7 @@ function addUserBubble(c, text) {
 
 function startAssistant(c) {
   if (c.cur) return;
+  collapseThink(c);          // the answer is starting — fold the thinking block
   const wrap = el('div', 'msg msg-asst');
   wrap.append(el('div', 'msg-who', 'claude'));
   const body = el('div', 'msg-body');
@@ -256,14 +306,34 @@ function upsertToolCard(c, block) {
   scroll(c);
 }
 
+const RESULT_CLAMP = 800;   // chars shown before a "show more" toggle
+
 function setToolResult(c, id, content, isError) {
   const entry = c.tools.get(id);
   if (!entry) return;
   const text = toolResultText(content);
-  entry.resultEl.textContent = text.length > 600 ? text.slice(0, 600) + ' …' : text;
   entry.resultEl.style.display = '';
   entry.card.classList.toggle('is-error', !!isError);
+  if (text.length > RESULT_CLAMP) clampResult(entry.resultEl, text);
+  else entry.resultEl.textContent = text;
   scroll(c);
+}
+
+// Long tool output: show the head + a toggle that reveals the rest in place
+// (the CSS max-height keeps even the expanded form from dominating the chat).
+function clampResult(host, text) {
+  host.textContent = '';
+  const span = el('span', 'tool-result-text');
+  const btn = el('button', 'tool-more');
+  btn.type = 'button';
+  let open = false;
+  const draw = () => {
+    span.textContent = open ? text : text.slice(0, RESULT_CLAMP) + ' … ';
+    btn.textContent = open ? '▴ show less' : `▾ ${text.length - RESULT_CLAMP} more chars`;
+  };
+  btn.addEventListener('click', (e) => { e.stopPropagation(); open = !open; draw(); });
+  draw();
+  host.append(span, btn);
 }
 
 function resultDivider(c, ev) {
@@ -288,6 +358,42 @@ function showThinking(c) {
 
 function hideThinking(c) {
   if (c.thinkingEl) { c.thinkingEl.remove(); c.thinkingEl = null; }
+}
+
+// ─── thinking block (real streamed reasoning, collapsible) ──────────────────
+// Distinct from the "•••" pre-token pulse above. One per turn; appears before
+// the answer bubble and auto-folds when the answer starts (re-open by click).
+
+function startThink(c) {
+  if (c.think) return;
+  const block = el('div', 'think-block');
+  const head = el('div', 'think-head');
+  head.append(el('span', 'think-toggle', '▾'));
+  head.append(el('span', 'think-label', 'thinking'));
+  const body = el('div', 'think-body');
+  block.append(head, body);
+  head.addEventListener('click', () => block.classList.toggle('collapsed'));
+  c.msgs.appendChild(block);
+  c.think = { block, body, raw: '', streamed: false };
+  scroll(c);
+}
+
+function appendThink(c, delta) {
+  if (!c.think) startThink(c);
+  c.think.streamed = true;
+  c.think.raw += delta;
+  c.think.body.textContent = c.think.raw;   // plain text — reasoning isn't markdown
+  scroll(c);
+}
+
+function setThinkText(c, full) {
+  if (!c.think) return;
+  c.think.raw = full;
+  c.think.body.textContent = full;
+}
+
+function collapseThink(c) {
+  if (c.think) c.think.block.classList.add('collapsed');
 }
 
 function systemLine(c, text, isErr) {
@@ -382,18 +488,64 @@ function renderMarkdown(src) {
       if (nl >= 0) block = block.slice(nl + 1);   // drop the ```lang line
       html += '<pre class="md-pre"><code>' + esc(block.replace(/\n$/, '')) + '</code></pre>';
     } else {
-      html += inlineMd(parts[i]);
+      html += blockMd(parts[i]);
     }
   }
   return html;
 }
 
+// Block-level markdown: headings, unordered/ordered lists, blockquotes, rules.
+// Everything else is a paragraph run joined with <br>. Each line's content runs
+// through inlineMd (which escapes first), so this stays injection-safe.
+function blockMd(src) {
+  const lines = String(src).split('\n');
+  let html = '';
+  let para = [];
+  const flush = () => {
+    if (para.length) { html += '<p class="md-p">' + para.map(inlineMd).join('<br>') + '</p>'; para = []; }
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    let m;
+    if (/^\s*([-*]\s*){3,}$/.test(line) || /^\s*_{3,}\s*$/.test(line)) {
+      flush(); html += '<hr class="md-hr">';
+    } else if ((m = line.match(/^\s*(#{1,3})\s+(.*\S)\s*$/))) {
+      flush(); html += `<div class="md-h md-h${m[1].length}">${inlineMd(m[2])}</div>`;
+    } else if (/^\s*>\s?/.test(line)) {
+      flush();
+      const q = [];
+      while (i < lines.length && /^\s*>\s?/.test(lines[i])) { q.push(lines[i].replace(/^\s*>\s?/, '')); i++; }
+      i--;   // for-loop's ++ re-lands on the first non-quote line
+      html += '<blockquote class="md-q">' + q.map(inlineMd).join('<br>') + '</blockquote>';
+    } else if (/^\s*[-*]\s+\S/.test(line)) {
+      flush();
+      const items = [];
+      while (i < lines.length && /^\s*[-*]\s+\S/.test(lines[i])) { items.push(lines[i].replace(/^\s*[-*]\s+/, '')); i++; }
+      i--;
+      html += '<ul class="md-list">' + items.map((t) => `<li>${inlineMd(t)}</li>`).join('') + '</ul>';
+    } else if (/^\s*\d+[.)]\s+\S/.test(line)) {
+      flush();
+      const items = [];
+      while (i < lines.length && /^\s*\d+[.)]\s+\S/.test(lines[i])) { items.push(lines[i].replace(/^\s*\d+[.)]\s+/, '')); i++; }
+      i--;
+      html += '<ol class="md-list">' + items.map((t) => `<li>${inlineMd(t)}</li>`).join('') + '</ol>';
+    } else if (line.trim() === '') {
+      flush();
+    } else {
+      para.push(line);
+    }
+  }
+  flush();
+  return html;
+}
+
+// Inline span markup. Escapes first (defensive even on localhost), then inline
+// code, bold, and links. No newline handling — blockMd owns line breaks.
 function inlineMd(t) {
   t = esc(t);
   t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
   t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   t = t.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  t = t.replace(/\n/g, '<br>');
   return t;
 }
 

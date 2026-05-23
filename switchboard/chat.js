@@ -408,6 +408,22 @@ function chatNdjsonSpeaker(actor) {
   return 'system';
 }
 
+// S063: per-session action throttle. Raw tool-actions render as an ambient
+// "alive" stream again — S062 had silenced them entirely, which made a busy
+// session look dead in the feed. Capped at one feed line per session per
+// ACTION_THROTTLE_MS so a tool-heavy burst trickles instead of flooding. The
+// row sparkline + live action line still consume *every* action (recordEvent /
+// recordAction), unthrottled — this throttle is feed-render only.
+const ACTION_THROTTLE_MS = 2500;
+const _lastActionShown = new Map();   // sid8 → tsMs of last rendered action line
+function shouldRenderAction(sid8, tsMs) {
+  const key = sid8 || '_';
+  const prev = _lastActionShown.get(key) || 0;
+  if (!(tsMs - prev >= ACTION_THROTTLE_MS)) return false;   // NaN-safe
+  _lastActionShown.set(key, tsMs);
+  return true;
+}
+
 function renderNdjsonRecord(rec) {
   const actor = rec.actor || 'system';
   const instance = (rec.instance && rec.instance > 1) ? '·' + rec.instance : '';
@@ -421,14 +437,21 @@ function renderNdjsonRecord(rec) {
   // Feed the per-session sparkline (switchboard reads activity.js back).
   recordEvent(sid8, tsMs);
 
-  // S062: raw tool-actions no longer render as feed lines — the feed is a
-  // per-session lifecycle ticker now, not a keystroke log. We still consume the
-  // action records silently: they drive the switchboard's live action line and
-  // each row's activity sparkline. Commits stay as milestone banners.
+  // S062→S063: tool-actions render again, but as a *throttled* ambient stream
+  // (see shouldRenderAction). Every action still drives the switchboard's live
+  // action line + the row's sparkline; the feed shows a representative trickle
+  // so a working session reads as alive without the old keystroke firehose.
+  // Commits always promote to a milestone drop-banner (never throttled).
   if (rec.kind === 'action') {
     const a = humanizeAction(text);
     recordAction(sid8, a.body, tsMs);
-    if (a.isCommit) logCommitBanner(displayName, a.body, speaker, tsMs, sid8);
+    if (a.isCommit) { logCommitBanner(displayName, a.body, speaker, tsMs, sid8); return; }
+    if (shouldRenderAction(sid8, tsMs)) {
+      const bodyHtml =
+        `<span class="act-glyph ${a.cls}">${escapeHtml(a.glyph)}</span>` +
+        `<span class="act-body">${escapeHtml(a.body)}</span>`;
+      logChatLine(displayName, a.body, 'action', speaker, tsMs, { bodyHtml, sid8 });
+    }
     return;
   }
   // PLAN / PROGRESS — the agent's in-voice heartbeat (the "medium" beats).

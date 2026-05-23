@@ -241,7 +241,16 @@ def _detect_actor(project_dir: Path | None, sid8: str, session_id_full: str = ""
             raw = p.read_text(encoding="utf-8").strip()
         except Exception:
             raw = ""
-        first = raw.splitlines()[0].strip()[:INTENT_MAX_LEN] if raw else ""
+        first = raw.splitlines()[0].strip() if raw else ""
+        # S063: clip at a word boundary + ellipsis, not a hard mid-word chop.
+        # A bare slice left intent lines reading as broken ("…Verified the new
+        # cha"); now an over-length line ends "…" so it's clearly intentional.
+        if len(first) > INTENT_MAX_LEN:
+            cut = first[:INTENT_MAX_LEN - 1]
+            sp = cut.rfind(" ")
+            if sp >= INTENT_MAX_LEN - 30:   # only back up to a space if it's close
+                cut = cut[:sp]
+            first = cut.rstrip() + "…"
         return (actor, first)
 
     # No intent file — try the instance map as the last resort.
@@ -1391,7 +1400,8 @@ def main() -> None:
 
     # S062: lifecycle checkpoints. Each fires on the event that already brought
     # the sidecar here, so there's no extra hook cost. PLAN/PROGRESS already flow
-    # as kind=intent above; these are the turn's bookends + the mid-turn ask.
+    # as kind=intent above. picked_up opens the exchange, needs_you is the
+    # mid-turn ask, and done (S063) bookends only at real session-close.
     try:
         ck_actor = record.get("actor") or "wisp"
         if hook_event == "UserPromptSubmit":
@@ -1402,10 +1412,25 @@ def main() -> None:
         elif hook_event == "PreToolUse" and tool_name in WAIT_TOOLS:
             q = _waiting_question(tool_name, payload.get("tool_input") or {})
             _emit_chat_checkpoint(ck_actor, sid8, instance, "needs_you", q)
-        elif hook_event == "Stop" and prev.get("last_event_kind") != "Stop":
-            # Stop can fire twice per turn — only the first is the real turn-end.
+        elif hook_event == "Stop" and mode == "wrapped_up" \
+                and prev.get("last_event_kind") != "Stop":
+            # S063: DONE marks a *real* session-close now, not every turn-end. A
+            # done-per-turn read like the session kept finishing, and it drowned
+            # the feed. The close-session ritual writes the wrapped_up marker,
+            # then this Stop fires — terminal's still open but the session is
+            # done, and the intent here is the wrap summary. Per-turn Stop emits
+            # nothing; mid-session liveness comes from the throttled action
+            # stream + the intent beats. (Stop fires twice/turn — first only.)
             _emit_chat_checkpoint(ck_actor, sid8, instance, "done",
-                                  (record.get("intent") or "").strip())
+                                  (record.get("intent") or "").strip() or "wrapped up")
+        elif hook_event == "SessionEnd" and mode != "wrapped_up":
+            # Ended without a graceful wrap (e.g. /exit, or the process just
+            # went) — emit the close DONE here so the feed still bookends it.
+            # If it HAD wrapped, the Stop branch above already fired (mode still
+            # reads wrapped_up here even though the marker file was just
+            # cleared), so this guard prevents a double DONE.
+            _emit_chat_checkpoint(ck_actor, sid8, instance, "done",
+                                  (record.get("intent") or "").strip() or "session ended")
     except Exception as e:
         print(f"status-sidecar: checkpoint dispatch failed: {e}", file=sys.stderr)
 

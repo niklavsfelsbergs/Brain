@@ -477,7 +477,12 @@ async def static_handler(request: web.Request) -> web.StreamResponse:
         target = target / "index.html"
     if not target.is_file():
         return web.Response(status=404, text="not found")
-    return web.FileResponse(target)
+    # S063: kill the stale-JS tax. The board's JS modules aren't cache-busted
+    # (no ?v=), so a normal reload kept serving old code and every edit needed a
+    # hard-refresh — which doesn't even reliably bust ES-module imports. On a
+    # localhost dev tool the bandwidth is free, so never cache: every reload now
+    # picks up the latest code, no hard-refresh dance.
+    return web.FileResponse(target, headers={"Cache-Control": "no-store"})
 
 
 async def history_handler(request: web.Request) -> web.Response:

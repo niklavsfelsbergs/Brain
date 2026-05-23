@@ -49,3 +49,16 @@
 [2026-05-23] jebrim-91ee1383 CLOSING
   Completed: S049 chart polish landed and pushed (shipping-agent 84ad74e, brain f553abf). Magnitude-aware EUR precision (<100 → 2 dec, 100–999 → 1 dec, ≥1000 → 0 dec). Legend isolation now reveals value labels via plotly_legendclick post-render JS. how_to.md §7 Mode 2 documents both. Hand-over written for a second general audit of shipping-agent (focus: bloat / contradictions / overkill / too-technical) at inventory/shipping-agent-audit-2-resume__91ee1383.md.
   Leaving open: S045 chart-system-fixes quest reads stale-done (deliverable shipped + verified by use + follow-up bugs squashed) — propose moving to completed/ on next active Jebrim session unless objection. S049 audit-2 queued for a future session. Follow-up to apply legend-isolation + pre-computed text to build_report.py multi-series lines (parallel pattern currently lacks both).
+
+[2026-05-23] guthix-ba467555 OPEN
+  Bankstanding B-004 — opened on principal cue "full weeding out" after consultation survey. Live sibling: braindead-98d4ec5e (dev-brain, no overlap). Target: per-player quest-log debris (S045/S047/S034_g2 known-closeable per comms; ~5 others need verification). Standard Phases 1–7 will be quick — B-003 cleared globals 2 hours ago. Phase 0 will flip to alching mode for Jebrim to execute per-player moves; Zezima silent-skip (pre-operational).
+
+[2026-05-23 08:50] jebrim-0f748dc1 OPEN
+  Fresh respawn, no task yet. No live siblings (sidecar: only own session active). Flagging B-004 (guthix-ba467555) as ABANDONED candidate — OPEN with no CLOSING, session stopped ~6h ago (waiting_for_user), per-player weeding pass it chartered appears un-run. Jebrim's in-progress/ holds 15 files; several flagged closeable in comms (S045, S047) but never moved. Awaiting principal direction; will not touch per-player layers until scope is set.
+
+[2026-05-23] jebrim-0f748dc1 UPDATE
+  Quest-log clear-up done (principal-cued). Moved 11 files in-progress→completed (S001, S002+d1/d2/d3, S031, S032, S034+g2, S045, S047 — all deliverable-shipped). S015 (TTYD dry-run, superseded) → archive/in-progress. S040 (Outlook MCP, p1/p2) left open — parked at Azure sign-in. Archived 9 orphaned inventory resume files for the closed quests. This substantially completes the per-player Jebrim weeding B-004 chartered; B-004 itself still needs proper closure/ABANDONED marking by a Guthix session (its global phases + Zezima skip never ran). Pre-existing inventory orphans remain (S023/S024/S026/personal-folders resume files from earlier-completed quests) — left for a deeper pass.
+
+[2026-05-23 08:57] jebrim-0f748dc1 CLOSING
+  Completed: S053 quest-log clear-up. Jebrim in-progress/ went 15→3 files (only S040 remains). 11 to completed/, S015 to archive/in-progress, 9 inventory resume files archived. Committed scoped to jebrim namespace + this comms file.
+  Leaving open: S040 Outlook MCP (parked at portal.azure.com sign-in; p1/p2 penguins). For a Guthix session: B-004 still needs proper CLOSING/ABANDONED marking (global phases + Zezima skip never ran), and the pre-existing inventory orphans (S023/S024/S026/personal-folders + unverified dashboard-convergence/main-merge-aws) want a deeper pass.

@@ -93,4 +93,4 @@ Suffixing alone doesn't decide which file is canonical. The discipline line does
 
 ## S052 amendment — 2026-05-23
 
-`status-sidecar.py` still mirrors both `comms/active.md` files into the switchboard dir for browser fetch (the http.server roots there). Mirror filenames unchanged (`state-comms-braindead.md`, `state-comms-gielinor.md`); their destination moved from `developer-braindead/experiments/visualizer/` to `brain/switchboard/` per [[D-026]]. Sandbox shape and concurrent-append discipline above are unchanged.
+`status-sidecar.py` still mirrors both `comms/active.md` files into the switchboard dir for browser fetch (the http.server roots there). Mirror filenames unchanged (`state-comms-braindead.md`, `state-comms-gielinor.md`); their destination moved from `developer-braindead/experiments/visualizer/` to `switchboard/` per [[D-026]]. Sandbox shape and concurrent-append discipline above are unchanged.

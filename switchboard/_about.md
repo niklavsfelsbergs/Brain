@@ -1,4 +1,4 @@
-# brain/switchboard/ — the observability surface
+# switchboard/ — the observability surface
 
 > Promoted from `developer-braindead/experiments/visualizer/` in S052 (2026-05-23).
 > The map was killed; switchboard + chat are the load-bearing surfaces.
@@ -25,7 +25,7 @@ Two panels side by side:
 
 Live mode (the one that matters):
 
-1. `cd brain/switchboard`
+1. `cd switchboard` (from repo root)
 2. `python -m http.server 8765`
 3. Open `http://localhost:8765/?live=1`
 4. Append `&sid8=<your-sid8>` to highlight "this" session with a gold outline.

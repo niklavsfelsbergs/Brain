@@ -24,8 +24,8 @@ HERE = Path(__file__).resolve()
 DEV_BRAIN = HERE.parent.parent.parent          # developer-braindead/
 REPO_ROOT = DEV_BRAIN.parent                   # brain/
 # S052: visualizer promoted from developer-braindead/experiments/visualizer/
-# to brain/switchboard/ — observability surface for both brains, lives at
-# brain root. VIZ_DIR name kept for minimum-disruption diff.
+# to switchboard/ at repo root — observability surface for both brains.
+# VIZ_DIR name kept for minimum-disruption diff.
 VIZ_DIR = REPO_ROOT / "switchboard"
 MAP_PATH = VIZ_DIR / "path-map.json"
 STATE_PATH = VIZ_DIR / "state.ndjson"

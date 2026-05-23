@@ -8,13 +8,13 @@ Principal called it: *"fighting with the animation but it doesn't matter — swi
 
 ## Decision
 
-Collapse the visualizer to its two load-bearing panels (switchboard + chat) and promote the surviving surface to `brain/switchboard/`. Conceptually rename from "visualizer" to "switchboard" — the load-bearing pane earns the name.
+Collapse the visualizer to its two load-bearing panels (switchboard + chat) and promote the surviving surface to `switchboard/`. Conceptually rename from "visualizer" to "switchboard" — the load-bearing pane earns the name.
 
 Three commits this session land it:
 
 - **9854b32** — strip the map. SVG `<svg class="map">`, all building defs, sprite defs, walk animations, wander logic, `applyEvent` map-mutating branches, `relayoutBubbles`, gather-slot tables, and the underlying state files for sprite positions deleted from `index.html`. Switchboard + chat panels remain, fed by `state-switchboard.json` and `chat.ndjson`.
 - **c03f33b** — `chat.ndjson` as a hook-side humanized stream. `emit-event.py` now appends one human-language line per event (`Braindead is editing index.html`, `Jebrim ran grep over sql/`, `Guthix is reading bank/notes/`, idle/spawn/despawn). The chat panel reads this directly — no more deriving prose from raw event verbs client-side. Switchboard row subtitle (the `latest_action` slot from S049) repurposed as a one-line "what is this session doing right now."
-- **1c94a57** — `git mv` migration. `index.html`, `_README.md`, `path-map.json` moved from `developer-braindead/experiments/visualizer/` to `brain/switchboard/`. Hook constants (`emit-event.py` and `status-sidecar.py` `VIZ_DIR`) updated. `.gitignore` patterns updated for the new path.
+- **1c94a57** — `git mv` migration. `index.html`, `_README.md`, `path-map.json` moved from `developer-braindead/experiments/visualizer/` to `switchboard/`. Hook constants (`emit-event.py` and `status-sidecar.py` `VIZ_DIR`) updated. `.gitignore` patterns updated for the new path.
 
 ## Why brain root, not gielinor or dev-brain
 
@@ -27,7 +27,7 @@ The "experiments/" prefix also stopped reading honestly the moment the switchboa
 ## Architectural consequences
 
 - **Hooks unchanged in shape.** `emit-event.py` and `status-sidecar.py` continue writing to the same filenames; only the directory constant moved. The hook-as-instrumentation contract holds.
-- **State files now gitignored at the new path.** `.gitignore` lists `brain/switchboard/state.ndjson`, `state-actors.json`, `state-instances.json`, `state-switchboard.json`, `state-comms-*.md`, `chat.ndjson` etc. Same volatile-runtime discipline that the old viz dir had.
+- **State files now gitignored at the new path.** `.gitignore` lists `switchboard/state.ndjson`, `state-actors.json`, `state-instances.json`, `state-switchboard.json`, `state-comms-*.md`, `chat.ndjson` etc. Same volatile-runtime discipline that the old viz dir had.
 - **`path-map.json` is vestigial.** It still lives next to `index.html` because `emit-event.py`'s path classifier reads it to humanize file paths into building names. Now that no map renders, that classifier is producing a label nobody reads. Either simplify the hook (drop the classifier, emit raw paths to chat.ndjson) or repurpose path-map as a chat-prose helper. Defer until the chat humanizer's first real-use pass surfaces what's needed.
 - **The dev-brain `experiments/visualizer/` directory remains on disk** with sprites/, sprite source PNGs, slice scripts (`slice.py`, `slice_tileset.py`), `subtask_smoketest.py`, and the `vscode-claude-focus/` sibling project. All dead weight from the map era except `vscode-claude-focus/`, which is a separate VS Code extension and may still be relevant. Sweep in a future bankstanding pass — never delete.
 - **ES modules.** Sibling dwarf split `index.html` into `state.js`, `switchboard.js`, `focus.js`. The shell HTML loads them via `<script type="module">`. Easier to scan; easier to swap one panel without touching the other.

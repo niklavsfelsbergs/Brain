@@ -107,6 +107,6 @@ This order is deliberate. Phase 1 alone gives a *machine-readable* signal even b
 
 ## S052 amendment — 2026-05-23
 
-The manifest mirror moved. `state-switchboard.json` now lives at `brain/switchboard/state-switchboard.json` (was `developer-braindead/experiments/visualizer/state-switchboard.json`) — the surface was promoted to brain root in [[D-026]] when the map collapsed and the switchboard became load-bearing on its own. `status-sidecar.py`'s `VIZ_DIR` constant points at the new location; everything in this doc about the contract, state machine, and write path is unchanged on the *shape* side.
+The manifest mirror moved. `state-switchboard.json` now lives at `switchboard/state-switchboard.json` (was `developer-braindead/experiments/visualizer/state-switchboard.json`) — the surface was promoted to brain root in [[D-026]] when the map collapsed and the switchboard became load-bearing on its own. `status-sidecar.py`'s `VIZ_DIR` constant points at the new location; everything in this doc about the contract, state machine, and write path is unchanged on the *shape* side.
 
-Sibling stream added in the same session: `brain/switchboard/chat.ndjson` — hook-side humanized event log (write/edit/grep/bash/spawn/idle lines) written by `emit-event.py`, consumed by the switchboard's chat panel. Independent of the status sidecar; same atomic-append pattern.
+Sibling stream added in the same session: `switchboard/chat.ndjson` — hook-side humanized event log (write/edit/grep/bash/spawn/idle lines) written by `emit-event.py`, consumed by the switchboard's chat panel. Independent of the status sidecar; same atomic-append pattern.

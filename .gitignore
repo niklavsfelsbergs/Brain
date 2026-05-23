@@ -15,16 +15,16 @@ __pycache__/
 *.pyo
 
 # Switchboard live-mode runtime state (D-009, D-017, D-018, D-020; promoted S052)
-brain/switchboard/state.ndjson
-brain/switchboard/state-actors.json
-brain/switchboard/state-dwarves.json
-brain/switchboard/state-gnomes.json
-brain/switchboard/state-penguins.json
-brain/switchboard/state-instances.json
-brain/switchboard/state-switchboard.json
-brain/switchboard/state-*.json.tmp.*
-brain/switchboard/state-comms-*.md
-brain/switchboard/chat.ndjson
+switchboard/state.ndjson
+switchboard/state-actors.json
+switchboard/state-dwarves.json
+switchboard/state-gnomes.json
+switchboard/state-penguins.json
+switchboard/state-instances.json
+switchboard/state-switchboard.json
+switchboard/state-*.json.tmp.*
+switchboard/state-comms-*.md
+switchboard/chat.ndjson
 
 # Intent narration sidecars (D-010) — transient agent self-narration
 .claude/intent/*.txt

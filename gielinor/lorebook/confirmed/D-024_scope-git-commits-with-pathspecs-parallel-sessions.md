@@ -1,6 +1,6 @@
 # Scope git commits with explicit pathspecs when sessions run in parallel
 
-**Type:** operating rule (git hygiene under parallel sessions). Drafted 2026-05-23, S055 close.
+**Type:** operating rule (git hygiene under parallel sessions). Drafted 2026-05-23, S055 close. Confirmed 2026-05-24 (B-005 bankstanding).
 
 **Claim.** In the shared brain working tree, a bare `git commit` (no pathspec) commits the **entire staged index** — including files that a *concurrent* session has staged but not yet committed. With multiple Claude terminals live (the norm now — see [[D-017]], [[D-018]], [[D-024]]), this silently sweeps another actor's work into your commit.
 
@@ -15,4 +15,4 @@
 
 **Scope.** Every actor, every session (players, Guthix, Braindead). Applies to the brain repo and any shared out-of-tree repo touched by concurrent sessions.
 
-**Promotion.** Observation-backed (single hard anchor above). Promote to `lorebook/confirmed/D-NNN` on principal review; consider whether it also warrants a one-line note in the relevant ritual docs (close-session / alching) since those are where commits happen.
+**Follow-up (open).** Consider a one-line cross-reference in the close-session and alching ritual docs (where commits happen). Deferred — ritual docs are user-only; raise as a godly proposal or principal edit if it proves worth wiring.

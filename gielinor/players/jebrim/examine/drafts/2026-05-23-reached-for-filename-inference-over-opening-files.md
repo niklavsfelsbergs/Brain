@@ -1,0 +1,9 @@
+# I reached for filename-inferred categorization instead of opening the files
+
+**Anchor (2026-05-23, S058 shipping-contract corpus ingest).** Building an index over 77 contract files, I started from a filename-inferred categorization. Principal pushed back: *"a filename-inferred index won't work — files must be opened."* The dig (6 read-only dwarves opening every file) proved him right at scale: a "Contract" was a rate card, a "T&C" was a price update, an "SLA" was the master agreement, "Maersk UK" was a Yodel/Evri card, two files were corrupt/wrong-type, three were duplicates. Filenames lied constantly.
+
+**Observation.** My first move on a pile of documents was to trust the surface label (the filename) rather than the content. The cheap signal was wrong often enough that an index built on it would have been actively misleading. This is broader than corpus-building: the same reflex would trust a column name without checking the data behind it, or a table name without reading what it holds.
+
+**Rule.** When categorizing or indexing artifacts whose label and content can diverge (files, columns, tables, configs), verify against opened content before committing the categorization — especially when the index will be load-bearing. Surface labels are a hypothesis, not the answer.
+
+**Promotion gate.** Wait for a second occurrence before promoting. The pattern is "Jebrim trusts a surface label over the content it names, and is corrected." Second occurrence could be a column-name assumption in a query, a mart-field inference, or another corpus pass. If reproduced, promote. Related to the corpus-curation skill (`spellbook/skills/curating-a-document-corpus-for-an-agent.md`), which encodes the *method* fix; this draft is the *tendency* behind it.

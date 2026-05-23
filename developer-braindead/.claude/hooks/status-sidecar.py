@@ -59,14 +59,14 @@ SUBAGENT_STATE_PATHS = (
 )
 # S052: chat-stream sidecar — mirrors the path emit-event.py writes to.
 CHAT_PATH = VIZ_DIR / "chat.ndjson"
-CHAT_TEXT_MAX = 200
+CHAT_TEXT_MAX = 320          # S058: was 200 — headroom above the 280 intent cap.
 CHAT_SIZE_MAX = 1_000_000
 CHAT_LINES_MAX = 5000
 CHAT_TAIL_KEEP = 2000
 # Subtitle freshness — intent_text wins as the subtitle when updated within
 # this window, else latest_action prevails.
 SUBTITLE_INTENT_FRESH_SEC = 300
-SUBTITLE_MAX_LEN = 100
+SUBTITLE_MAX_LEN = 280       # S058: was 100 — longer in-voice narration (2–3×).
 
 # S043 (D-024 visualizer wiring): mirror both comms channels into the viz dir
 # so the COMMS panel can render inter-session dialogue. Same sandbox reason as
@@ -87,7 +87,10 @@ LIVE_SESSION_SEC = 60 * 60
 
 # Same intent length cap as the visualizer hook so a sidebar can render
 # sidecar intent inline without re-truncating.
-INTENT_MAX_LEN = 100
+# S058: was 100 — bumped to 280 so in-voice intent lines run 2–3× longer and the
+# COMMS feed/subtitle actually narrate what's happening. Keep emit-event.py's
+# INTENT_MAX_LEN in lockstep.
+INTENT_MAX_LEN = 280
 
 # Reader-derives-idle threshold — 5 min matches the visualizer despawn timer.
 # Carried here only for documentation; the writer never reads it.

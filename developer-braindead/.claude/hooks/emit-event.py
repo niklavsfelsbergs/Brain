@@ -40,7 +40,7 @@ INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 # Lives in the same viz dir as state.ndjson — the http.server serves both;
 # migration to brain/switchboard/ happens after a sibling strip pass.
 CHAT_PATH = VIZ_DIR / "chat.ndjson"
-CHAT_TEXT_MAX = 200
+CHAT_TEXT_MAX = 320           # S058: was 200 — headroom above the 280 intent cap.
 CHAT_SIZE_MAX = 1_000_000     # bytes — truncate when exceeded
 CHAT_LINES_MAX = 5000         # lines — truncate when exceeded
 CHAT_TAIL_KEEP = 2000         # lines retained on truncate
@@ -118,7 +118,7 @@ READ_TOOLS = {"Read", "Glob", "Grep"}
 ACTION_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit", "Bash", "Glob", "Grep"}
 
 INTENT_FRAGMENT = "/.claude/intent/"
-INTENT_MAX_LEN = 100             # D-014: was 60, bumped for two-line bubble.
+INTENT_MAX_LEN = 280             # S058: was 100 (D-014 had 60) — longer in-voice narration.
 
 NARRATION_FRAGMENT = "/.claude/narration.txt"
 NARRATION_PATH = REPO_ROOT / ".claude" / "narration.txt"

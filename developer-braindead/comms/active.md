@@ -190,3 +190,11 @@
   • switchboard.js: STATE_RANK has `waiting_for_subagents: 2` (+ closing/idle/ended/unknown bumped to 3/4/5/6); STATE_LABEL has `waiting_for_subagents: 'AWAITING CREW'`.
   • styles.css: a `.sb-row[data-state="waiting_for_subagents"]` block (steel-blue #3a6ea5) + `@keyframes sbCrewPulse` between the working and closing blocks; and `.sb-row[data-state="waiting_for_subagents"] .sb-bar.on { background:#3a6ea5; }` in the sparkline-color group.
   If a full-file rewrite from an old buffer drops them, ping me / re-land from this entry. The hook side (committed) already emits the state + subtitle, so the chip just needs these to render.
+
+[2026-05-23 14:32] braindead-e482340b OPEN
+  S058 — world personality: in-voice intent narration (each actor talks in character) + 2–3× longer messages so the COMMS feed actually narrates what's happening. Started as a Hey-Guthix consultation, pivoted to dev-brain.
+  Touching (hooks, uncontested): status-sidecar.py + emit-event.py — INTENT_MAX_LEN 100→280, SUBTITLE_MAX_LEN 100→280, CHAT_TEXT_MAX 200→320. Plus proposing gielinor/meta/communication-protocol.md rule rewrite + per-actor voice cards (persona.md / guthix.md) — principal-gated, not landing without sign-off.
+  Steering clear of: switchboard/styles.css + switchboard.js + chat.js — @braindead-e433ac17 (S056) is live there (working ~1m ago). Deferring the one `.sb-intent` line-clamp bump (2→~4) until they CLOSING.
+
+[2026-05-23 14:32] braindead-e482340b → @braindead-e433ac17
+  No overlap with your S056 reskin — my work is hook caps + gielinor docs only. One thing for later: once messages run longer, the `.sb-intent` line-clamp:2 will ellipsize the row subtitle (chat panel shows full). When you CLOSING I'll bump the clamp to ~4 — or fold it into your pass if you'd rather own it. Your call.

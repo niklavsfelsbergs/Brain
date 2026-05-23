@@ -119,8 +119,9 @@ body {
 }
 .sb-row {
   display: grid;
-  grid-template-columns: 24px 1fr auto auto;
-  grid-template-rows: auto auto auto;
+  grid-template-columns: 24px 1fr auto auto auto;
+  /* S061: row1 name/state/age · row2 opening message · row3 live action · row4 sparkline */
+  grid-template-rows: auto auto auto auto;
   gap: 3px 15px;
   padding: 12px 12px 13px;
   margin-bottom: 8px;
@@ -176,11 +177,28 @@ body {
   color: #5a4020;
   align-self: center;
 }
-/* S052: subtitle row — a single ≤100-char human-language line composed by
-   status-sidecar.py (was per-row intent_text + latest_action heartbeat
-   pre-S052). One row, two lines max via -webkit-line-clamp. */
+/* S061: opening message (row 2) — the session's first user prompt, captured
+   once by status-sidecar.py. A stable human handle shown even before the actor
+   resolves. Quoted, non-italic, single clamped line so it reads as a label and
+   stays visually distinct from the italic action line below it. */
+.sb-row .sb-firstprompt {
+  grid-row: 2 / 3; grid-column: 2 / 6;
+  font-size: 16px;
+  color: #5a4020;
+  line-height: 1.25;
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+/* S061: live action line (row 3) — a ≤80-char heartbeat ticking at the chat
+   panel's poll cadence (was the S052 composed subtitle on row 2). Italic to
+   read as live narration under the quoted opening message. */
 .sb-row .sb-intent {
-  grid-row: 2 / 3; grid-column: 2 / 5;
+  grid-row: 3 / 4; grid-column: 2 / 6;
   font-size: 18px;
   color: #2c1f10;
   line-height: 1.3;
@@ -230,6 +248,27 @@ body {
   background: rgba(140, 220, 140, 0.40);
   border-color: #2e7a2e;
 }
+/* AWAITING CREW — session blocked on its foreground sub-agents (dwarves /
+   gnomes / penguins). Cool steel-blue: active and busy, but NOT the yellow
+   "needs you" attention state. Gentle dot pulse signals work-in-flight. */
+.sb-row[data-state="waiting_for_subagents"] {
+  border-left-color: #3a6ea5;
+  background: rgba(90, 150, 210, 0.16);
+}
+.sb-row[data-state="waiting_for_subagents"] .sb-dot {
+  color: #3a6ea5;
+  background: #6fb0e8;
+  animation: sbCrewPulse 1500ms ease-in-out infinite;
+}
+.sb-row[data-state="waiting_for_subagents"] .sb-state {
+  color: #1f456a;
+  background: rgba(111, 176, 232, 0.40);
+  border-color: #3a6ea5;
+}
+@keyframes sbCrewPulse {
+  0%,100% { transform: scale(1); box-shadow: 1px 1px 0 #06121a, 0 0 4px #6fb0e8; }
+  50%     { transform: scale(1.15); box-shadow: 1px 1px 0 #06121a, 0 0 9px #6fb0e8; }
+}
 .sb-row[data-state="closing"] {
   border-left-color: #c45a18;
   background: rgba(220, 130, 50, 0.18);
@@ -278,6 +317,45 @@ body {
   background: rgba(106, 90, 64, 0.35);
   border-color: #4a3520;
 }
+/* ALCHING — a per-player tending ritual in progress (alching mode). Arcane
+   purple: focused inward work, distinct from the green of ordinary WORKING.
+   Not a "needs you" state — a gentle dot shimmer signals the ritual churning. */
+.sb-row[data-state="alching"] {
+  border-left-color: #7a4fa3;
+  background: rgba(150, 100, 200, 0.16);
+}
+.sb-row[data-state="alching"] .sb-dot {
+  color: #7a4fa3;
+  background: #b07fd8;
+  animation: sbAlchPulse 1600ms ease-in-out infinite;
+}
+.sb-row[data-state="alching"] .sb-state {
+  color: #3a2160;
+  background: rgba(176, 127, 216, 0.42);
+  border-color: #7a4fa3;
+}
+@keyframes sbAlchPulse {
+  0%,100% { box-shadow: 1px 1px 0 #160a1f, 0 0 4px #b07fd8; }
+  50%     { box-shadow: 1px 1px 0 #160a1f, 0 0 11px #cfa0ef; }
+}
+/* WRAPPED UP — close-session done, terminal still open (distinct from CLOSING
+   = mid-wrap and ENDED = process gone). Calm desaturated teal-green reads as
+   "resolved / complete"; no pulse — the work is finished, nothing left to do. */
+.sb-row[data-state="wrapped_up"] {
+  border-left-color: #3f7a6a;
+  background: rgba(70, 140, 120, 0.14);
+  opacity: 0.92;
+}
+.sb-row[data-state="wrapped_up"] .sb-dot {
+  color: #3f7a6a;
+  background: #6fb4a0;
+  box-shadow: 1px 1px 0 #0a1a16;
+}
+.sb-row[data-state="wrapped_up"] .sb-state {
+  color: #143a30;
+  background: rgba(111, 180, 160, 0.40);
+  border-color: #3f7a6a;
+}
 .sb-row.sb-this {
   outline: 1px solid #ffcb46;
   outline-offset: -1px;
@@ -289,14 +367,19 @@ body {
   color: #5a4020;
   font-family: 'VT323', monospace;
 }
-/* S053: custom session label (double-click name to rename) */
-.sb-row .sb-who .sb-label {
-  margin-left: 9px;
+/* S056: custom session name (set via the ✎ rename button). When set it BECOMES
+   the prominent row name; the original actor label drops to a small "· Zezima"
+   hint so the session is still identifiable. */
+.sb-row .sb-who.renamed .sb-name { color: #3a2470; }
+.sb-row .sb-who .sb-orig {
+  font-family: 'VT323', monospace;
   font-weight: normal;
-  font-style: italic;
-  font-size: 18px;
+  font-size: 17px;
   color: #6a4a8a;
+  margin-left: 8px;
+  opacity: 0.9;
 }
+.sb-row .sb-who .sb-orig::before { content: "· "; }
 .sb-rename-input {
   width: 92%;
   font-family: 'Trebuchet MS', 'Verdana', sans-serif;
@@ -310,6 +393,29 @@ body {
   outline: none;
 }
 .sb-rename-input:focus { box-shadow: 0 0 0 2px #d8ad36; }
+/* S056: per-row rename button (pencil). Single click opens the inline rename
+   input — replaced the double-click, which raced the 1s age-ticker rebuild.
+   Lives in the 5th grid column, right of the age. Always visible. */
+.sb-row .sb-edit {
+  grid-row: 1 / 2;
+  grid-column: 5 / 6;
+  align-self: center;
+  justify-self: end;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: #5a4020;
+  background: rgba(255,255,255,0.30);
+  border: 1px solid rgba(44,31,16,0.45);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: background 100ms, color 100ms;
+}
+.sb-row .sb-edit:hover  { background: #ffe9a8; color: #2c1f10; border-color: #a87820; }
+.sb-row .sb-edit:active { box-shadow: inset 0 2px 3px rgba(0,0,0,0.3); }
 .sb-empty {
   padding: 24px;
   font-family: 'VT323', monospace;
@@ -366,17 +472,17 @@ body {
 .log-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 12px;
-  font-family: 'Trebuchet MS', 'Verdana', 'Tahoma', sans-serif;
-  font-weight: bold;
-  font-size: 20px;
-  line-height: 1.32;
-  color: #1a0f06;
+  padding: 7px 12px;
+  /* OSRS chatbox font (RuneScape UF). Fallback to a clean bold sans. */
+  font-family: 'RuneScape UF', 'Trebuchet MS', 'Verdana', sans-serif;
+  font-weight: normal;
+  font-size: 19px;
+  line-height: 1.58;
+  color: #2a1d12;                                /* softer than near-black (S056) */
   background-image: var(--grain), linear-gradient(180deg, #d0bc94 0%, #beaa82 100%);
   background-size: 140px 140px, auto;
   background-blend-mode: multiply, normal;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 1px 1px 0 rgba(40,24,10,0.10);   /* lighter RS glyph drop-shadow */
 }
 .log-scroll::-webkit-scrollbar { width: 10px; }
 .log-scroll::-webkit-scrollbar-track { background: #8a7048; border-left: 1px solid #2c1f10; }
@@ -389,7 +495,7 @@ body {
 .jump-latest {
   position: absolute;
   right: 14px;
-  bottom: 10px;
+  bottom: 58px;            /* clear the OSRS bottom bar (S056) */
   display: none;
   align-items: center;
   gap: 6px;
@@ -411,17 +517,32 @@ body {
 .jump-latest.visible { display: inline-flex; }
 .jump-latest .arrow { font-weight: bold; }
 .log-entry {
-  padding: 0 0 1px;
+  /* Name + body are two flex columns (S056): the name hangs to the left and the
+     body is its own column, so a wrapped body line aligns under the body text —
+     never flush-left under the username. */
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 1px 0;
   color: #0a0604;
 }
+.log-entry .body { flex: 1 1 auto; min-width: 0; }
+/* Timestamp — fixed-width column so every speaker name lines up, tabular
+   digits so 14:32:05 and 14:31:16 are the same width. Dim; no brackets. */
 .log-entry .t {
-  color: #6a5230;
+  display: inline-block;
+  width: 70px;
   margin-right: 6px;
+  color: #7a5e34;
+  opacity: 0.75;
   font-weight: normal;
+  font-variant-numeric: tabular-nums;
 }
-/* Username prefix — actor-tinted, darker for legibility against tan bg */
+/* Username prefix — actor-tinted, darker for legibility against tan bg. Its own
+   flex column so the body wraps independently beside it. */
 .log-entry .user {
-  margin-right: 2px;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 .log-entry .user::after { content: ":"; }
 /* Per-actor username tint — derived from --<actor>-text CSS vars (C1). */
@@ -447,110 +568,170 @@ body {
 /* S043 (D-024): comms-channel entries from gielinor/comms/ + developer-braindead/comms/.
    OPEN/CLOSING headers carry a faint left rule so multi-line entries read as a single
    post; body lines are indented and slightly muted. */
-.log-entry.comms-open    { border-left: 2px solid color-mix(in srgb, currentColor 50%, transparent); padding-left: 6px; margin-top: 4px; }
-.log-entry.comms-update  { border-left: 2px dashed color-mix(in srgb, currentColor 40%, transparent); padding-left: 6px; margin-top: 4px; }
-.log-entry.comms-closing { border-left: 2px dotted color-mix(in srgb, currentColor 40%, transparent); padding-left: 6px; margin-top: 4px; opacity: 0.85; }
-.log-entry.comms-dialog  { border-left: 2px solid color-mix(in srgb, var(--gold) 60%, transparent); padding-left: 6px; margin-top: 4px; }
-/* Body collapsed by default — header click expands. Discipline aims at 2-3
-   lines per body; collapsed default keeps the panel readable even for the
-   legacy multi-paragraph entries that predate the cap. */
-.log-entry.comms-body    { display: none; color: #3b2814; padding-left: 18px; font-size: 16px; }
+/* Coordination posts (S056): a 3px left rule separates them from the action /
+   intent chatter; padding-left = the hanging indent so the kind-pill sits at
+   the rule and wrapped text aligns under it. margin-top gives each post air. */
+/* Coordination posts get vertical breathing room; separation now comes from the
+   kind-pill + spacing, not a left bar (S056 — the bars read as clutter). */
+.log-entry.comms-open,
+.log-entry.comms-update,
+.log-entry.comms-dialog  { margin-top: 8px; }
+.log-entry.comms-closing { margin-top: 8px; opacity: 0.9; }
+/* Body collapsed by default — header click expands. Indented under the post,
+   no hanging indent of its own. */
+.log-entry.comms-body    { display: block; text-indent: 0; color: #3b2814; padding-left: 2.4em; font-size: 0.95em; margin-top: 1px; }
 .log-entry.comms-body.show { display: block; }
-.log-entry.comms-body .t { opacity: 0; }  /* hide timestamp on continuation lines */
 .log-entry.comms-toggleable { cursor: pointer; }
-.log-entry.comms-toggleable::after { content: " ▸"; opacity: 0.45; font-size: 13px; margin-left: 4px; }
-.log-entry.comms-toggleable.expanded::after { content: " ▾"; opacity: 0.7; }
+.log-entry.comms-toggleable::after { content: " ▸"; font-family: 'Segoe UI Symbol','Arial',sans-serif; opacity: 0.5; font-size: 0.7em; margin-left: 4px; }
+.log-entry.comms-toggleable.expanded::after { content: " ▾"; opacity: 0.75; }
 
-/* ─── COMMS tabs (OSRS-style buttons) ─── */
+/* S056: comms kind pills — compact colored tags replacing inline "OPEN — ". */
+.kind-pill {
+  display: inline-block;
+  font-family: 'VT323', monospace;
+  font-size: 0.72em;
+  letter-spacing: 0.07em;
+  font-weight: bold;
+  line-height: 1.3;
+  padding: 0 7px;
+  margin-right: 6px;
+  border-radius: 3px;
+  color: #1a0f06;
+  text-indent: 0;
+  text-shadow: none;
+  vertical-align: 1px;
+}
+.pill-open   { background: #93cf72; }
+.pill-update { background: #8fb8e8; }
+.pill-done   { background: #e6c468; }
+.pill-dialog { background: #d9c290; }
+.dlg-target  { font-family: 'VT323', monospace; color: #5a4020; margin-right: 6px; text-indent: 0; }
+/* S056: machine detail in comms text (backtick code + file/line refs) dimmed to
+   monospace so the human prose reads through the jargon. */
+.code-ref {
+  font-family: 'VT323', 'Consolas', monospace;
+  font-size: 0.86em;
+  color: #8a7350;
+  opacity: 0.82;
+}
+/* S056: long comms posts collapse to 2 lines (the gist); the ⌄ chevron expands
+   to the full message. Replaces both the wall (show-all) and the cryptic mid-
+   word `…` cut — a clean line-clamp + an obvious toggle. */
+.comms-collapsed .body {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.comms-toggle {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: 7px;
+  font-family: 'Segoe UI Symbol', 'Arial', sans-serif;
+  font-size: 0.9em;
+  color: #8a5a14;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.7;
+}
+.comms-toggle:hover { opacity: 1; }
+
+/* ─── COMMS header title ─── */
 .logbox header .log-title {
   color: #ffcb46;
   font-family: 'VT323', 'Jacquard 12', serif;
   text-shadow: 1px 1px 0 #1a0f06;
 }
-.log-tabs {
+
+/* ════════════════════════════════════════════════════════════════════
+   S056 — OSRS-style bottom bar: channel mute-toggles + settings buttons.
+   Mirrors the classic RuneScape chat tab strip (All · Game · Public … |
+   Report). Left group = per-category channel mutes; right group = settings
+   + a red Clear in the Report slot. Sits below the scroll, full width.
+   ════════════════════════════════════════════════════════════════════ */
+.chat-bar {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 6;                          /* above the panel vignette overlay */
   display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: auto;
-  font-family: 'VT323', monospace;
-  font-size: 18px;
-  letter-spacing: 0.08em;
-}
-.log-tab {
-  display: inline-flex;
-  align-items: center;
+  align-items: stretch;
   gap: 5px;
-  padding: 3px 9px 4px;
-  color: #c8a878;
-  background: #3a2812;
-  border: 1px solid #0a0604;
-  box-shadow: inset 1px 1px 0 #5a4126, inset -1px -1px 0 #1a0f06;
+  flex-wrap: wrap;
+  padding: 6px 9px;
+  background: linear-gradient(180deg, #3a2c1a 0%, #241a0e 100%);
+  border-top: 2px solid #0a0604;
+  box-shadow: inset 0 1px 0 #5a4126;
+}
+.cb-group { display: flex; gap: 5px; flex-wrap: wrap; }
+.cb-settings { margin-left: auto; }
+
+/* Beveled stone button — two stacked labels (name + On/Off state). */
+.cb-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  padding: 4px 11px 5px;
+  font-family: 'VT323', monospace;
+  line-height: 1.02;
+  color: #f0e2bb;
+  background: linear-gradient(180deg, #6e6149 0%, #4a3f2e 52%, #5c4f3a 100%);
+  border: 1px solid #16100a;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 #93805f, inset 0 -2px 3px rgba(0,0,0,0.42), 0 1px 2px rgba(0,0,0,0.5);
   cursor: pointer;
   user-select: none;
-  text-transform: uppercase;
-  line-height: 1;
-  transition: color 100ms, background 100ms;
+  transition: filter 90ms;
 }
-.log-tab:hover { color: #ffcb46; background: #4a3520; }
-.log-tab.active {
-  color: #ffff7a;
-  background: #5a3f1f;
-  box-shadow: inset 1px 1px 0 #1a0f06, inset -1px -1px 0 #5a4126;
-}
-.log-tab .dot {
-  width: 9px; height: 9px; border-radius: 50%;
-  box-shadow: 0 0 4px currentColor, 1px 1px 0 #1a0f06;
-}
-/* Tab dots — C1: background = light dot tint, glow color = dark text tint. */
-.log-tab[data-tab="all"]       .dot { background: #ffffff; color: #c8c8c8; }
-.log-tab[data-tab="jebrim"]    .dot { background: var(--jebrim-dot);    color: var(--jebrim-text); }
-.log-tab[data-tab="zezima"]    .dot { background: var(--zezima-dot);    color: var(--zezima-text); }
-.log-tab[data-tab="dwarves"]   .dot { background: var(--dwarves-dot);   color: var(--dwarves-text); }
-.log-tab[data-tab="gnomes"]    .dot { background: var(--gnomes-dot);    color: var(--gnomes-text); }
-.log-tab[data-tab="penguins"]  .dot { background: var(--penguins-dot);  color: var(--penguins-text); }
-.log-tab[data-tab="wisp"]      .dot { background: var(--wisp-dot);      color: var(--wisp-text); }
-.log-tab[data-tab="braindead"] .dot { background: var(--braindead-dot); color: var(--braindead-text); }
-.log-tab[data-tab="guthix"]    .dot { background: var(--guthix-dot);    color: var(--guthix-text); }
-.log-tab[data-tab="commits"]   .dot { background: var(--commits-dot);   color: var(--commits-text); }
-.log-tab.active .dot { box-shadow: 0 0 5px currentColor, inset 1px 1px 0 rgba(0,0,0,0.4); }
-/* I4: unread badge on inactive filter tabs. */
-.log-tab .tab-count {
-  display: none;
-  min-width: 14px;
-  padding: 0 4px;
-  margin-left: 2px;
-  font-size: 11px;
-  line-height: 13px;
-  font-weight: bold;
-  text-align: center;
-  color: #1a0f06;
-  background: #ffcb46;
-  border: 1px solid #1a0f06;
-  border-radius: 7px;
-}
-.log-tab .tab-count.has-unread { display: inline-block; }
+.cb-btn:hover  { filter: brightness(1.13); }
+.cb-btn:active { box-shadow: inset 0 2px 4px rgba(0,0,0,0.55); }
+.cb-name  { font-size: 20px; letter-spacing: 0.03em; text-shadow: 1px 1px 0 #1a0f06; }
+.cb-state { font-size: 15px; letter-spacing: 0.06em; margin-top: 1px; color: #57e257; text-shadow: 1px 1px 0 #0a0604; }
+.cb-btn.off .cb-state { color: #ff5746; }
 
-/* filter — hide non-matching entries when a filter is active */
-.log-scroll[data-filter="jebrim"]    .log-entry:not([data-speaker="jebrim"])    { display: none; }
-.log-scroll[data-filter="zezima"]    .log-entry:not([data-speaker="zezima"])    { display: none; }
-.log-scroll[data-filter="dwarves"]   .log-entry:not([data-speaker="dwarves"])   { display: none; }
-.log-scroll[data-filter="wisp"]      .log-entry:not([data-speaker="wisp"])      { display: none; }
-.log-scroll[data-filter="braindead"] .log-entry:not([data-speaker="braindead"]) { display: none; }
-.log-scroll[data-filter="guthix"]    .log-entry:not([data-speaker="guthix"])    { display: none; }
-.log-scroll[data-filter="commits"]   .log-entry:not([data-commit])              { display: none; }
-.log-scroll[data-filter="gnomes"]    .log-entry:not([data-speaker="gnomes"])    { display: none; }
-.log-scroll[data-filter="penguins"]  .log-entry:not([data-speaker="penguins"])  { display: none; }
+/* Channel-name accent — reuses the per-actor light dot tints (C1). */
+.cb-chan[data-chan="players"]   .cb-name { color: var(--jebrim-dot); }
+.cb-chan[data-chan="subagents"] .cb-name { color: var(--dwarves-dot); }
+.cb-chan[data-chan="braindead"] .cb-name { color: var(--braindead-dot); }
+.cb-chan[data-chan="guthix"]    .cb-name { color: var(--guthix-dot); }
+.cb-chan[data-chan="commits"]   .cb-name { color: var(--commits-dot); }
+/* Muted button: dim it so On/Off reads at a glance even peripherally. */
+.cb-btn.off { filter: saturate(0.5) brightness(0.82); }
+.cb-btn.off:hover { filter: saturate(0.7) brightness(0.96); }
 
-/* Speaker bullets — derived from --<actor>-text vars (C1). */
-.log-entry[data-speaker="jebrim"]    .t::before { content: "● "; color: var(--jebrim-text); }
-.log-entry[data-speaker="zezima"]    .t::before { content: "● "; color: var(--zezima-text); }
-.log-entry[data-speaker="dwarves"]   .t::before { content: "● "; color: var(--dwarves-text); }
-.log-entry[data-speaker="wisp"]      .t::before { content: "● "; color: var(--wisp-text); }
-.log-entry[data-speaker="braindead"] .t::before { content: "● "; color: var(--braindead-text); }
-.log-entry[data-speaker="gnomes"]    .t::before { content: "● "; color: var(--gnomes-text); }
-.log-entry[data-speaker="penguins"]  .t::before { content: "● "; color: var(--penguins-text); }
-.log-entry[data-speaker="guthix"]    .t::before { content: "● "; color: var(--guthix-text); }
-.log-entry[data-speaker="commits"]   .t::before { content: "● "; color: var(--commits-text); }
+/* All master — brighter when every channel is showing. */
+.cb-all { justify-content: center; }
+.cb-all .cb-name { color: #ffe9a8; }
+.cb-all.active {
+  background: linear-gradient(180deg, #82704f 0%, #5a4c34 52%, #6e5d40 100%);
+  box-shadow: inset 0 0 0 1px #d8ad36, inset 0 1px 0 #a78a58, 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Clear — the red "Report"-position button. */
+.cb-report { background: linear-gradient(180deg, #7e2c1a 0%, #4a160c 100%); }
+.cb-report .cb-name { color: #ffd2c0; }
+.cb-report:active { box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); }
+
+/* New traffic in a muted channel → flash the button (OSRS unread-tab cue). */
+.cb-btn.has-unread { animation: cbFlash 900ms ease-in-out infinite; }
+@keyframes cbFlash {
+  0%,100% { box-shadow: inset 0 1px 0 #93805f, inset 0 -2px 3px rgba(0,0,0,0.42), 0 0 0 0 rgba(255,203,70,0); }
+  50%     { box-shadow: inset 0 1px 0 #93805f, 0 0 9px 1px rgba(255,203,70,0.9); }
+}
+
+/* Channel mutes — hide an entry whose channel is toggled Off. Commit banners
+   ride the Commits channel only; the :not([data-commit]) guards keep a muted
+   speaker from also swallowing its own commit drops. */
+.log-scroll.mute-players   .log-entry:is([data-speaker="jebrim"],[data-speaker="zezima"],[data-speaker="wisp"]):not([data-commit]) { display: none; }
+.log-scroll.mute-subagents .log-entry:is([data-speaker="dwarves"],[data-speaker="gnomes"],[data-speaker="penguins"]):not([data-commit]) { display: none; }
+.log-scroll.mute-braindead .log-entry[data-speaker="braindead"]:not([data-commit]) { display: none; }
+.log-scroll.mute-guthix    .log-entry[data-speaker="guthix"]:not([data-commit])    { display: none; }
+.log-scroll.mute-commits   .log-entry[data-commit] { display: none; }
+.log-scroll.hide-actions   .log-entry.action       { display: none; }
+
+/* (S056) Speaker bullets removed — the actor name is already color-tinted, the
+   leading ● added inconsistent width and clutter. Identity = name color. */
 
 /* ════════════════════════════════════════════════════════════════════
    S053 — visual / UX polish pass
@@ -576,15 +757,17 @@ body {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(90,64,32,0.45), transparent);
 }
-/* don't strand a rail above a group that's been filtered/searched away */
-.log-scroll[data-filter] .time-rail,
+/* don't strand a rail above a group that's been searched away */
 .log-scroll.searching .time-rail { display: none; }
+/* a trailing rail with no entry after it is an empty minute — hide it (S056) */
+.time-rail:last-child { display: none; }
 
 /* ─── Speaker-run continuation: name shown once per run; continuations indent
    under a per-speaker tinted rule and drop the timestamp ─── */
 .log-entry.cont {
   margin-left: 16px;
   padding-left: 9px;
+  text-indent: 0;     /* cont lines keep their own indent, not the hanging one */
   border-left: 2px solid rgba(90,64,32,0.30);
 }
 .log-entry.cont .cont-gutter { display: none; }
@@ -608,8 +791,8 @@ body {
   font-weight: bold;
 }
 .act-body {
-  font-family: 'VT323', 'Consolas', monospace;
-  font-size: 1.08em;          /* VT323 runs small; nudge to match body weight */
+  /* Same RuneScape font as the rest of the chat — no monospace mixing. */
+  font-size: 1em;
   color: #4a3826;
 }
 .act-read   { color: #2f6aa8; }
@@ -662,9 +845,9 @@ body {
 
 /* ─── Live search ─── */
 .log-search {
-  flex: 0 1 220px;
+  flex: 0 1 240px;
   min-width: 110px;
-  margin: 0 10px 0 4px;
+  margin: 0 2px 0 auto;
   padding: 3px 10px;
   font-family: 'VT323', monospace;
   font-size: 18px;
@@ -689,10 +872,10 @@ body {
 /* keep the jump-latest pip above the panel vignette overlay */
 .jump-latest { z-index: 6; }
 
-/* ─── Switchboard: per-row activity sparkline (row 3) ─── */
+/* ─── Switchboard: per-row activity sparkline (row 4 since S061) ─── */
 .sb-row .sb-spark {
-  grid-row: 3 / 4;
-  grid-column: 2 / 5;
+  grid-row: 4 / 5;
+  grid-column: 2 / 6;
   display: flex;
   align-items: flex-end;
   gap: 2px;
@@ -709,9 +892,12 @@ body {
   border-radius: 1px 1px 0 0;
 }
 .sb-bar.on { background: #5a4020; }
-.sb-row[data-state="working"]          .sb-bar.on { background: #2e7a2e; }
-.sb-row[data-state="waiting_for_user"] .sb-bar.on { background: #d8a234; }
-.sb-row[data-state="closing"]          .sb-bar.on { background: #c45a18; }
+.sb-row[data-state="working"]               .sb-bar.on { background: #2e7a2e; }
+.sb-row[data-state="waiting_for_user"]      .sb-bar.on { background: #d8a234; }
+.sb-row[data-state="waiting_for_subagents"] .sb-bar.on { background: #3a6ea5; }
+.sb-row[data-state="closing"]               .sb-bar.on { background: #c45a18; }
+.sb-row[data-state="alching"]               .sb-bar.on { background: #7a4fa3; }
+.sb-row[data-state="wrapped_up"]            .sb-bar.on { background: #3f7a6a; }
 
 /* ─── WAITING hero row (the board's whole job: which terminal needs you) ─── */
 .sb-row.sb-hero {
@@ -814,3 +1000,416 @@ body.crt::after {
 }
 .crt-toggle:hover { opacity: 1; color: #ffcb46; }
 .crt-toggle.on { color: #5fff5f; opacity: 0.95; box-shadow: inset 0 0 0 1px #2e7a2e; }
+
+/* ─── Embedded terminal (S058) ───
+   Third .stage child. Hidden until ▶_ toggles `.open`; then it claims the
+   widest share of the row (terminals want width). Chrome matches .logbox so
+   it reads as a sibling panel, not a bolt-on. */
+.terminalbox {
+  display: none;
+  margin-top: 0;
+  background: #c8b48a;
+  border: 2px solid #2c1f10;
+  min-width: 0;
+  align-self: stretch;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    inset 0 0 0 1px #8a7048,
+    inset 1px 1px 0 #e0caa0,
+    inset -1px -1px 0 #5a4020,
+    0 6px 16px rgba(0,0,0,0.5);
+}
+.terminalbox.open { display: flex; flex-direction: column; flex: 1.5; }
+.terminalbox header {                  /* matched to the .logbox header */
+  background: linear-gradient(180deg, #4a3520 0%, #2e2010 100%);
+  border-bottom: 2px solid #0a0604;
+  box-shadow: inset 0 -1px 0 #5a4126, inset 0 1px 0 #7a5e3a;
+  padding: 7px 20px;
+  font-family: 'VT323', 'Jacquard 12', serif;
+  font-size: 34px;
+  letter-spacing: 0.08em;
+  color: #ffcb46;
+  text-shadow: 1px 1px 0 #1a0f06;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+}
+#termNew { margin-left: auto; }
+
+/* Body = vertical rail of session pills (left) + the xterm stack (right). */
+.term-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.term-rail {
+  flex: 0 0 auto;
+  width: 168px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #2a2012 0%, #1c150c 100%);
+  border-right: 2px solid #0a0604;
+  box-shadow: inset -1px 0 0 #5a4126;
+}
+.term-rail::-webkit-scrollbar { width: 6px; }
+.term-rail::-webkit-scrollbar-thumb { background: #5a4126; }
+.term-rail:empty::before {
+  content: "no sessions";
+  color: #7a6038;
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  padding: 4px;
+}
+/* One pill per claude session, stacked vertically. */
+.term-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 6px 7px 7px 10px;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  letter-spacing: 0.03em;
+  color: #d8c694;
+  background: linear-gradient(180deg, rgba(86,64,36,0.55) 0%, rgba(42,30,16,0.55) 100%);
+  border: 1px solid #5a4126;
+  border-radius: 3px;
+  box-shadow: inset 1px 1px 0 rgba(224,202,160,0.15), inset -1px -1px 0 rgba(10,6,4,0.6);
+  cursor: pointer;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 #1a0f06;
+  transition: color 100ms, background 100ms;
+}
+.term-tab:hover { color: #ffe9a8; }
+.term-tab.active {
+  color: #ffcb46;
+  background: linear-gradient(180deg, rgba(216,173,54,0.30) 0%, rgba(120,90,30,0.22) 100%);
+  border-color: #d8ad36;
+  box-shadow: inset 0 0 0 1px rgba(255,203,70,0.4), 0 0 9px rgba(216,173,54,0.28);
+}
+.term-tab .tt-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #8a7048;
+  box-shadow: 1px 1px 0 #1a0f06;
+  flex: 0 0 auto;
+}
+.term-tab .tt-dot[data-state="live"]       { background: #5fff5f; box-shadow: 0 0 5px #5fff5f, 1px 1px 0 #1a0f06; }
+.term-tab .tt-dot[data-state="connecting"] { background: #ffd84d; animation: pulse 1100ms ease-in-out infinite; }
+.term-tab .tt-dot[data-state="closed"]     { background: #7a5a30; }
+.term-tab .tt-dot[data-state="err"]        { background: #e0603a; }
+.term-tab .tt-label { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.term-tab .tt-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  line-height: 1;
+  padding: 0 1px;
+  cursor: pointer;
+  opacity: 0.55;
+}
+.term-tab .tt-close:hover { opacity: 1; color: #ff7a4a; }
+
+/* Pane stack — all panes overlay; only .show is visible (so the active pane
+   has full size when xterm's FitAddon measures it). */
+.term-stack {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 0%, #1f160d 0%, #17100a 55%, #100b06 100%);
+  /* inset bevel + soft vignette so the terminal reads as a recessed panel,
+     not a black hole punched into the parchment */
+  box-shadow:
+    inset 0 0 0 1px #3a2c18,
+    inset 1px 1px 0 #4a3826,
+    inset 0 0 30px rgba(0,0,0,0.55);
+}
+.term-pane {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.term-pane.show { display: block; }
+
+/* ── Agent chat (S058 slice 3) — mirrors the COMMS panel skin so it reads as
+   part of the switchboard, not a terminal: parchment message area, dark ink,
+   gold accents. ── */
+.chat-pane { padding: 0; }
+.term-pane.chat-pane.show { display: flex; flex-direction: column; }
+
+.chat-msgs {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-image: var(--grain), linear-gradient(180deg, #d0bc94 0%, #beaa82 100%);
+  background-size: 140px 140px, auto;
+  background-blend-mode: multiply, normal;
+  color: #1a0f06;
+}
+.chat-msgs::-webkit-scrollbar { width: 10px; }
+.chat-msgs::-webkit-scrollbar-track { background: #8a7048; border-left: 1px solid #2c1f10; }
+.chat-msgs::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #4a3520 0%, #2c1f10 100%); border: 1px solid #1a0f06; }
+
+.msg {
+  max-width: 90%;
+  padding: 8px 12px 10px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 0 rgba(40,24,10,0.18);
+}
+.msg-user {
+  align-self: flex-end;
+  background: rgba(216,173,54,0.26);
+  border: 1px solid #a87820;
+}
+.msg-asst {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(44,31,16,0.28);
+}
+.msg-who {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+.msg-user .msg-who { color: #8a5a10; text-align: right; }
+.msg-asst .msg-who { color: #1f7045; }
+.msg-body {
+  font-family: 'RuneScape UF', 'Trebuchet MS', 'Verdana', sans-serif;
+  font-size: 19px;
+  line-height: 1.5;
+  color: #1a0f06;
+  word-break: break-word;
+  text-shadow: 1px 1px 0 rgba(40,24,10,0.12);
+}
+.msg-body code {
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  background: rgba(20,12,6,0.13);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+.msg-body .md-pre {
+  background: #17100a;
+  color: #e8d8a8;
+  border: 1px solid #3a2c18;
+  border-radius: 4px;
+  padding: 9px 11px;
+  margin: 7px 0;
+  overflow-x: auto;
+  text-shadow: none;
+}
+.msg-body .md-pre code { background: none; padding: 0; font-size: 16px; color: inherit; }
+.msg-body a { color: #1f4b8a; }
+
+/* tool-call card */
+.tool-card {
+  margin-top: 9px;
+  border: 1px solid #5a4126;
+  border-left: 4px solid #6e4a86;
+  border-radius: 3px;
+  background: rgba(20,12,6,0.06);
+  font-family: 'VT323', monospace;
+}
+.tool-head {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+  padding: 4px 9px 5px;
+  font-size: 17px;
+}
+.tool-glyph { color: #6e4a86; }
+.tool-name { color: #5b3d6e; font-weight: bold; flex: 0 0 auto; }
+.tool-input {
+  color: #3a2c18;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.tool-result {
+  padding: 5px 9px 7px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: #2c1f10;
+  opacity: 0.9;
+  white-space: pre-wrap;
+  border-top: 1px dashed rgba(44,31,16,0.28);
+  max-height: 170px;
+  overflow: auto;
+}
+.tool-card.is-error { border-left-color: #c2452f; }
+.tool-card.is-error .tool-result { color: #7a2414; }
+
+.turn-end {
+  align-self: center;
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: #5a4020;
+  opacity: 0.6;
+}
+.turn-end.is-error { color: #c2452f; opacity: 0.95; }
+
+.msg.thinking .msg-body { letter-spacing: 4px; animation: pulse 1100ms ease-in-out infinite; }
+
+.sys-line {
+  align-self: center;
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: #7a6038;
+  opacity: 0.7;
+}
+.sys-line.is-error { color: #c2452f; opacity: 0.95; }
+
+/* input bar */
+.chat-input {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: linear-gradient(180deg, #2a2012 0%, #1c150c 100%);
+  border-top: 2px solid #0a0604;
+  box-shadow: inset 0 1px 0 #5a4126;
+}
+.chat-input textarea {
+  flex: 1;
+  resize: none;
+  font-family: 'RuneScape UF', 'Trebuchet MS', sans-serif;
+  font-size: 18px;
+  line-height: 1.4;
+  color: #1a0f06;
+  background: #e8d8a8;
+  border: 1px solid #5a4126;
+  border-radius: 3px;
+  padding: 8px 10px;
+  outline: none;
+  box-shadow: inset 1px 1px 0 #c9b285;
+}
+.chat-input textarea:focus { box-shadow: inset 0 0 0 1px #d8ad36; }
+.chat-send {
+  flex: 0 0 auto;
+  align-self: stretch;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  padding: 0 18px;
+  color: #1a0f06;
+  background: linear-gradient(180deg, #e8c25a 0%, #c89a2c 100%);
+  border: 1px solid #8a6a1a;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 rgba(255,244,200,0.5), inset -1px -1px 0 rgba(120,90,30,0.6);
+}
+.chat-send:hover { background: linear-gradient(180deg, #ffd96a 0%, #d8a838 100%); }
+.chat-input textarea:disabled, .chat-send:disabled { opacity: 0.5; cursor: default; }
+.term-error {
+  color: #efe2bb;
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  line-height: 1.5;
+  padding: 18px;
+}
+.term-error small { color: #b89a5a; }
+
+/* ── Agent chat — thinking blocks · cancel · render polish (S060 cont.) ──────
+   Appended additively; depends only on the chat DOM terminal.js builds. */
+
+/* collapsible streamed reasoning, distinct from the "•••" pre-token pulse */
+.think-block {
+  align-self: flex-start;
+  max-width: 90%;
+  border: 1px dashed rgba(110,74,134,0.55);
+  border-left: 3px solid #6e4a86;
+  border-radius: 4px;
+  background: rgba(110,74,134,0.07);
+}
+.think-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #6e4a86;
+}
+.think-head:hover { color: #8a5fa8; }
+.think-toggle { display: inline-block; transition: transform 120ms ease; }
+.think-block.collapsed .think-toggle { transform: rotate(-90deg); }
+.think-body {
+  padding: 5px 11px 8px;
+  border-top: 1px dashed rgba(110,74,134,0.32);
+  font-family: 'RuneScape UF', 'Trebuchet MS', sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  font-style: italic;
+  color: #463752;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.think-block.collapsed .think-body { display: none; }
+
+/* long tool-result show-more toggle */
+.tool-result-text { white-space: pre-wrap; }
+.tool-more {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 0 7px;
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: #5b3d6e;
+  background: rgba(110,74,134,0.12);
+  border: 1px solid rgba(110,74,134,0.4);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.tool-more:hover { background: rgba(110,74,134,0.22); color: #8a5fa8; }
+
+/* Send button flips to a red Stop while a turn runs */
+.chat-send.stopping {
+  background: linear-gradient(180deg, #e07a4a 0%, #b2452a 100%);
+  border-color: #8a2a14;
+  color: #fff4ec;
+}
+.chat-send.stopping:hover { background: linear-gradient(180deg, #f08a5a 0%, #c2502f 100%); }
+
+/* richer markdown blocks inside message bodies */
+.msg-body .md-p { margin: 0 0 7px; }
+.msg-body .md-p:last-child { margin-bottom: 0; }
+.msg-body .md-h { font-weight: bold; margin: 8px 0 4px; line-height: 1.3; color: #2a1c0e; }
+.msg-body .md-h:first-child { margin-top: 0; }
+.msg-body .md-h1 { font-size: 23px; }
+.msg-body .md-h2 { font-size: 21px; }
+.msg-body .md-h3 { font-size: 19px; opacity: 0.92; }
+.msg-body .md-list { margin: 4px 0 7px; padding-left: 22px; }
+.msg-body .md-list:last-child { margin-bottom: 0; }
+.msg-body .md-list li { margin: 2px 0; }
+.msg-body .md-q {
+  margin: 6px 0;
+  padding: 2px 0 2px 11px;
+  border-left: 3px solid rgba(44,31,16,0.4);
+  font-style: italic;
+  color: #4a3a28;
+}
+.msg-body .md-hr { border: none; border-top: 1px solid rgba(44,31,16,0.35); margin: 9px 0; }

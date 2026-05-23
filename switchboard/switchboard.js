@@ -14,7 +14,8 @@
 
 import { sbAgeSec, deriveSessionState } from './state.js';
 import { dispatchFocus, copySid8 } from './focus.js';
-import { activityBuckets } from './activity.js';
+import { activityBuckets, latestAction } from './activity.js';
+import { getSetting } from './settings.js';
 
 // Actors shown in the roster legend (fills the dead space below the rows and
 // teaches the color language the chat panel uses). Keyed to the --<actor>-dot
@@ -83,11 +84,13 @@ function buildLegend(container) {
 const POLL_MS = 2000;
 
 const STATE_RANK = {
-  waiting_for_user: 0, working: 1, closing: 2, idle: 3, ended: 4, unknown: 5,
+  waiting_for_user: 0, working: 1, alching: 2, waiting_for_subagents: 3,
+  closing: 4, idle: 5, wrapped_up: 6, ended: 7, unknown: 8,
 };
 const STATE_LABEL = {
-  waiting_for_user: 'WAITING', working: 'WORKING', closing: 'CLOSING',
-  idle: 'IDLE', ended: 'ENDED', unknown: '?',
+  waiting_for_user: 'WAITING', working: 'WORKING', alching: 'ALCHING',
+  waiting_for_subagents: 'AWAITING CREW', closing: 'CLOSING',
+  idle: 'IDLE', wrapped_up: 'WRAPPED UP', ended: 'ENDED', unknown: '?',
 };
 
 function formatAge(sec) {
@@ -116,6 +119,108 @@ function actorLabel(record) {
   return cap + inst;
 }
 
+// Render the row's name cell. A custom name (set via rename) BECOMES the
+// prominent label; the original actor drops to a small "· Zezima" hint so the
+// session stays identifiable. sid8 trails as the unique key.
+function fillWho(who, record) {
+  who.textContent = '';
+  const base = actorLabel(record);
+  const custom = record.sid8 ? (getNames()[record.sid8] || '') : '';
+  who.classList.toggle('renamed', !!custom);
+
+  const name = document.createElement('span');
+  name.className = 'sb-name';
+  name.textContent = custom || base;
+  who.appendChild(name);
+
+  if (custom) {
+    const orig = document.createElement('span');
+    orig.className = 'sb-orig';
+    orig.textContent = base;
+    who.appendChild(orig);
+  }
+  const sid = document.createElement('span');
+  sid.className = 'sb-sid';
+  sid.textContent = record.sid8 || '';
+  who.appendChild(sid);
+}
+
+// Open the inline rename editor for a row's name cell. Triggered by the ✎
+// button (single click) — sets `editing` synchronously so the poll/age-ticker
+// re-render pauses before it can rebuild the row out from under the input.
+function startRename(who, record) {
+  if (!record.sid8) return;
+  editing = true;
+  const input = document.createElement('input');
+  input.className = 'sb-rename-input';
+  input.value = getNames()[record.sid8] || '';
+  input.placeholder = 'rename this session…';
+  who.textContent = '';
+  who.classList.remove('renamed');
+  who.appendChild(input);
+  input.focus();
+  input.select();
+  const finish = (save) => {
+    if (save) setSessionName(record.sid8, input.value.trim());
+    editing = false;
+    requestRender();
+  };
+  input.addEventListener('click', (e) => e.stopPropagation());
+  input.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+    if (e.key === 'Enter') finish(true);
+    else if (e.key === 'Escape') finish(false);
+  });
+  input.addEventListener('blur', () => finish(true));
+}
+
+// ─── Sound on WAITING (toggle lives in the COMMS bar; flag via settings.js) ───
+let audioCtx = null;
+let prevWaiting = new Set();
+let chimePrimed = false;          // skip the first poll so we don't chime on load
+
+function ensureAudio() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (_) { /* WebAudio unavailable */ }
+  return audioCtx;
+}
+
+function playChime() {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  // soft rising two-note ping — present but not startling
+  for (const [freq, delay] of [[784, 0], [1175, 0.13]]) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    osc.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.0001, now + delay);
+    gain.gain.exponentialRampToValueAtTime(0.14, now + delay + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.4);
+    osc.start(now + delay);
+    osc.stop(now + delay + 0.45);
+  }
+}
+
+// Chime once when any session newly enters WAITING (edge-triggered per sid8).
+function chimeForWaiting(sessions) {
+  const nowWaiting = new Set();
+  for (const r of sessions) {
+    if (r.sid8 && deriveSessionState(r) === 'waiting_for_user') nowWaiting.add(r.sid8);
+  }
+  if (chimePrimed && getSetting('sound')) {
+    for (const sid of nowWaiting) {
+      if (!prevWaiting.has(sid)) { playChime(); break; }   // one ping per poll
+    }
+  }
+  prevWaiting = nowWaiting;
+  chimePrimed = true;
+}
+
 function buildRow(record, thisSid8, heroSid8) {
   const state = deriveSessionState(record);
   const row = document.createElement('div');
@@ -131,46 +236,7 @@ function buildRow(record, thisSid8, heroSid8) {
 
   const who = document.createElement('div');
   who.className = 'sb-who';
-  who.textContent = actorLabel(record);
-  const sid = document.createElement('span');
-  sid.className = 'sb-sid';
-  sid.textContent = record.sid8 || '';
-  who.appendChild(sid);
-  const custom = record.sid8 ? getNames()[record.sid8] : '';
-  if (custom) {
-    const label = document.createElement('span');
-    label.className = 'sb-label';
-    label.textContent = custom;
-    who.appendChild(label);
-  }
-  // Double-click the name to rename (inline edit → localStorage).
-  if (record.sid8) {
-    who.title = 'double-click to rename';
-    who.addEventListener('dblclick', (ev) => {
-      ev.stopPropagation();
-      editing = true;
-      const input = document.createElement('input');
-      input.className = 'sb-rename-input';
-      input.value = getNames()[record.sid8] || '';
-      input.placeholder = 'name this session…';
-      who.textContent = '';
-      who.appendChild(input);
-      input.focus();
-      input.select();
-      const finish = (save) => {
-        if (save) setSessionName(record.sid8, input.value.trim());
-        editing = false;
-        requestRender();
-      };
-      input.addEventListener('click', (e) => e.stopPropagation());
-      input.addEventListener('keydown', (e) => {
-        e.stopPropagation();
-        if (e.key === 'Enter') finish(true);
-        else if (e.key === 'Escape') finish(false);
-      });
-      input.addEventListener('blur', () => finish(true));
-    });
-  }
+  fillWho(who, record);
   row.appendChild(who);
 
   const stateChip = document.createElement('div');
@@ -183,13 +249,29 @@ function buildRow(record, thisSid8, heroSid8) {
   age.textContent = formatAge(sbAgeSec(record));
   row.appendChild(age);
 
-  // S052: subtitle replaces the old intent / latest-action lines. One
-  // human-language line composed server-side (status-sidecar.py) — up to 100
-  // chars. Strip BOM defensively in case the upstream writer left one.
+  // S061: opening message (row 2). The session's first user prompt, captured
+  // once by status-sidecar.py — a stable human handle for tracking, shown even
+  // while the actor is still "Pending..." (no intent narrated yet). Hidden when
+  // absent so old records (pre-S061) don't leave an empty gap.
+  const firstPrompt = document.createElement('div');
+  firstPrompt.className = 'sb-firstprompt';
+  const fp = (record.first_prompt || '').replace(/^﻿/, '').trim();
+  if (fp) firstPrompt.textContent = '“' + fp + '”';
+  else firstPrompt.style.display = 'none';
+  row.appendChild(firstPrompt);
+
+  // S061: current action (row 3) — a live, ≤80-char heartbeat. Prefer the
+  // client-side store (fed by the chat panel every 2s, so it ticks even during
+  // a long lone-session turn) → hook-stamped latest_action (first-paint
+  // fallback) → the composed subtitle. Strip BOM defensively.
   const subtitle = document.createElement('div');
   subtitle.className = 'sb-intent';
-  const subtitleText = (record.subtitle || '').replace(/^﻿/, '');
-  subtitle.textContent = subtitleText || '—';
+  let actionText = (latestAction(record.sid8)
+                    || record.latest_action
+                    || record.subtitle
+                    || '').replace(/^﻿/, '').trim();
+  if (actionText.length > 80) actionText = actionText.slice(0, 79) + '…';
+  subtitle.textContent = actionText || '—';
   row.appendChild(subtitle);
 
   // Per-session activity sparkline (row 3) — cadence over the last few minutes.
@@ -197,6 +279,22 @@ function buildRow(record, thisSid8, heroSid8) {
   spark.className = 'sb-spark';
   renderSpark(spark, record.sid8);
   row.appendChild(spark);
+
+  // S056: rename button (✎). Single click opens the inline rename — replaced the
+  // double-click, which raced the per-second re-render. stopPropagation so the
+  // row's focus-click doesn't also fire.
+  if (record.sid8) {
+    const edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'sb-edit';
+    edit.textContent = '✎';
+    edit.title = 'rename this session';
+    edit.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      startRename(who, record);
+    });
+    row.appendChild(edit);
+  }
 
   // Two-way link: hovering a row flashes that session's chat lines.
   row.addEventListener('mouseenter', () => {
@@ -206,9 +304,10 @@ function buildRow(record, thisSid8, heroSid8) {
     document.dispatchEvent(new CustomEvent('sb-hover', { detail: { sid8: null } }));
   });
 
-  // Click → focus that terminal pane. Shift-click copies sid8 instead.
+  // Click → focus that terminal pane. Shift-click copies sid8 instead. (Rename
+  // is the ✎ button now, so the row click can focus immediately — no dbl-click.)
   row.addEventListener('click', (ev) => {
-    if (!record.sid8 || editing || ev.detail > 1) return;   // ignore dbl-click's 2nd click
+    if (!record.sid8 || editing) return;
     if (ev.shiftKey) {
       copySid8(record.sid8).then((ok) => {
         if (ok) {
@@ -266,7 +365,21 @@ export function initSwitchboard(opts = {}) {
 
   buildLegend(document.getElementById('sbLegend'));
 
+  // Browsers gate WebAudio behind a user gesture — unlock on first interaction
+  // so the WAITING chime can fire later from the poll loop.
+  document.addEventListener('pointerdown', ensureAudio, { once: true });
+
   const thisSid8 = opts.sid8 || '';
+
+  // Pause re-rendering while the pointer is over the list. The board rebuilds
+  // every row once a second (age ticker); without this, a double-click to rename
+  // straddles a rebuild — the 2nd click lands on a freshly-created element and no
+  // dblclick fires (the "top row won't rename" bug). Hovering freezes the DOM so
+  // any interaction (rename, selection) is stable; updates resume on mouseleave.
+  let hovering = false;
+  listEl.addEventListener('mouseenter', () => { hovering = true; });
+  listEl.addEventListener('mouseleave', () => { hovering = false; });
+  const renderPaused = () => editing || hovering;
 
   let cached = [];
   let polling = false;
@@ -279,7 +392,8 @@ export function initSwitchboard(opts = {}) {
       if (!res.ok) return;
       const j = await res.json();
       cached = (j && Array.isArray(j.sessions)) ? j.sessions : [];
-      if (!editing) renderInto(listEl, countEl, cached, thisSid8);
+      chimeForWaiting(cached);
+      if (!renderPaused()) renderInto(listEl, countEl, cached, thisSid8);
     } catch (_) {
       // file may not exist yet — silent retry next tick
     } finally {
@@ -289,6 +403,7 @@ export function initSwitchboard(opts = {}) {
 
   pollSwitchboard();
   setInterval(pollSwitchboard, POLL_MS);
-  // Re-render every second so ages tick without re-fetching. Paused mid-rename.
-  setInterval(() => { if (cached.length && !editing) renderInto(listEl, countEl, cached, thisSid8); }, 1000);
+  // Re-render every second so ages tick without re-fetching. Paused mid-rename
+  // and while hovering (so interactions don't race the rebuild).
+  setInterval(() => { if (cached.length && !renderPaused()) renderInto(listEl, countEl, cached, thisSid8); }, 1000);
 }

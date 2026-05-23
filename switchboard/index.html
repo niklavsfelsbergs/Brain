@@ -7,7 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=VT323&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=6">
+<!-- RuneScape UF — the in-game chatbox font (CDNFonts). Falls back to a clean
+     bold sans if the CDN is unreachable. -->
+<link href="https://fonts.cdnfonts.com/css/runescape-uf" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
 <div class="stage">
@@ -16,6 +19,7 @@
     <header>
       <span class="log-title">SWITCHBOARD</span>
       <span class="sb-count" id="sbCount">—</span>
+      <button id="termToggle" class="crt-toggle" type="button" title="Toggle embedded terminal — launch a claude session in-app">▶_</button>
       <button id="crtToggle" class="crt-toggle" type="button" title="Toggle CRT mode (or ?crt=1)">▦</button>
     </header>
     <div class="sb-list" id="sbList">
@@ -28,21 +32,57 @@
     <header>
       <span class="log-title">COMMS</span>
       <input class="log-search" id="logSearch" type="text" placeholder="/ filter…" spellcheck="false" autocomplete="off" aria-label="Filter chat">
-      <div class="log-tabs" id="logTabs" role="tablist">
-        <span class="log-tab active" data-tab="all"      role="tab"><span class="dot"></span>ALL</span>
-        <span class="log-tab"        data-tab="jebrim"   role="tab"><span class="dot"></span>JEBRIM</span>
-        <span class="log-tab"        data-tab="zezima"   role="tab"><span class="dot"></span>ZEZIMA</span>
-        <span class="log-tab"        data-tab="dwarves"  role="tab"><span class="dot"></span>DWARVES</span>
-        <span class="log-tab"        data-tab="gnomes"   role="tab"><span class="dot"></span>GNOMES</span>
-        <span class="log-tab"        data-tab="penguins" role="tab"><span class="dot"></span>PENGUINS</span>
-        <span class="log-tab"        data-tab="wisp"     role="tab"><span class="dot"></span>WISP</span>
-        <span class="log-tab"        data-tab="braindead" role="tab"><span class="dot"></span>BRAINDEAD</span>
-        <span class="log-tab"        data-tab="guthix"   role="tab"><span class="dot"></span>GUTHIX</span>
-        <span class="log-tab"        data-tab="commits"  role="tab"><span class="dot"></span>COMMITS</span>
-      </div>
     </header>
     <div class="log-scroll" id="logScroll"></div>
     <button class="jump-latest" id="jumpLatest" type="button"><span class="arrow">↓</span><span id="jumpLatestCount">latest</span></button>
+
+    <!-- OSRS-style bottom bar: channel mute-toggles (left) + settings (right) -->
+    <div class="chat-bar" id="chatBar">
+      <div class="cb-group cb-channels" role="tablist">
+        <button class="cb-btn cb-all" data-act="all" type="button" title="Un-mute every channel">
+          <span class="cb-name">All</span>
+        </button>
+        <button class="cb-btn cb-chan" data-chan="players" type="button" title="Players — Jebrim · Zezima · Wisp (click to mute/show)">
+          <span class="cb-name">Players</span><span class="cb-state">On</span>
+        </button>
+        <button class="cb-btn cb-chan" data-chan="subagents" type="button" title="Sub-agents — Dwarves · Gnomes · Penguins (click to mute/show)">
+          <span class="cb-name">Sub-agents</span><span class="cb-state">On</span>
+        </button>
+        <button class="cb-btn cb-chan" data-chan="braindead" type="button" title="Braindead — dev-brain construction (click to mute/show)">
+          <span class="cb-name">Braindead</span><span class="cb-state">On</span>
+        </button>
+        <button class="cb-btn cb-chan" data-chan="guthix" type="button" title="Guthix — consultation / bankstanding (click to mute/show)">
+          <span class="cb-name">Guthix</span><span class="cb-state">On</span>
+        </button>
+        <button class="cb-btn cb-chan" data-chan="commits" type="button" title="Commit drop-banners (click to mute/show)">
+          <span class="cb-name">Commits</span><span class="cb-state">On</span>
+        </button>
+      </div>
+      <div class="cb-group cb-settings">
+        <button class="cb-btn cb-toggle" data-set="actions" type="button" title="Show/hide the tool-call action stream (Read · Edit · Glob · git)">
+          <span class="cb-name">Actions</span><span class="cb-state">On</span>
+        </button>
+        <button class="cb-btn cb-toggle" data-set="sound" type="button" title="Chime when a session flips to WAITING">
+          <span class="cb-name">Sound</span><span class="cb-state">Off</span>
+        </button>
+        <button class="cb-btn cb-report" data-act="clear" type="button" title="Clear the visible chat (refills as new events arrive)">
+          <span class="cb-name">Clear</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Embedded terminal (S058) — hidden until ▶_ toggled. Hosts a claude
+       session over a PTY bridge (see server.py + terminal.js). -->
+  <div class="terminalbox" id="terminalbox">
+    <header>
+      <span class="log-title">TERMINAL</span>
+      <button id="termNew" class="crt-toggle" type="button" title="New claude session">+ new</button>
+    </header>
+    <div class="term-body">
+      <div class="term-rail" id="termTabs"></div>
+      <div class="term-stack" id="termStack"></div>
+    </div>
   </div>
 
 </div>

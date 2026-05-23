@@ -6,6 +6,8 @@
 >
 > **Discipline.** Updated at the end of every session, after the quest-log entry lands. Overwritten in place — not append-only. History lives in `quest-log/`.
 
+**Last updated (S052).** 2026-05-23 (end of [[S052]] — switchboard rebuild: map killed, surface promoted to `brain/switchboard/`. The visualizer collapsed to its two load-bearing panels (switchboard + chat); the isometric map (sprites, walks, wander, buildings, gather slots, relayoutBubbles) is gone. Three pre-migration dwarves: **D1** stripped the map from `index.html` (commit **9854b32**); **D2** added a hook-side `chat.ndjson` humanized event stream — `emit-event.py` now appends one human-language line per event (`Braindead is editing X`, `Jebrim ran grep over sql/`, idle/spawn/despawn) consumed directly by the chat panel, and the S049 `latest_action` field was repurposed as the switchboard row subtitle (commit **c03f33b**); **D3** audited every viz-dir reference across dev-brain docs for the doc-update wave. Principal then `git mv`'d `index.html`/`_README.md`/`path-map.json` to `brain/switchboard/`; hook `VIZ_DIR` constants in `emit-event.py` + `status-sidecar.py` updated; `.gitignore` patterns updated (commit **1c94a57**). Second wave: **D4** split `index.html` into ES modules (`state.js`, `switchboard.js`, `focus.js`), wrote `brain/switchboard/_about.md`, wired the chat panel to poll `chat.ndjson`; **D5** (this dwarf) walked the doc surfaces. Conceptual rename: "visualizer" → "switchboard" — the load-bearing pane earned the name. Lives at brain root because it observes **both** brains; old `developer-braindead/experiments/` location was a dev-brain artifact by accident of birth. `path-map.json` moved with the rest but is now vestigial — only `emit-event.py`'s path classifier still reads it; simplify that hook in a future pass. Decision in [[D-026]]. Prior: [[S051]] tree + bubble scale pass; [[S050]] singleton despawn race fix; [[S049]] state-aware motion + switchboard action; [[S048]] manifest-driven sprite sync inversion.)
+
 **Last updated.** 2026-05-23 (end of [[S051]] — visualizer tree + bubble scale pass. Trees 3× in the four symbol defs in `experiments/visualizer/index.html` (~1042–1045) — `tree-leafy` 36→108, `tree-pine` 24×38→72×114, `tree-small` 18→54; anchors shifted so trunks stay rooted, `placeTree` scatter picks up size via `<use>`. Speech bubbles 1.25× across `renderIntent` (~3577) and the mirror in `bubbleDims` (~3352) — MAX_W 600→750, min 108→135, formula coeffs 12.4/28→15.5/35, lineH 26→32.5, padY 8→10, font-size 22→27.5, outer stroke 2.4→3 (inner inset 2.4→3 and w-4.8→w-6), inner stroke 0.8→1, rx/ry 10→12.5 and 7→8.75. Wrap char-count cap (50) untouched. **Carried open:** `placeTree` clearance radii (`clearOfBuildings(160)`, `clearOfPaths(45)`) were tuned for small trees — may now read crowded near buildings/paths; bump if live view shows overlap. One file touched (`experiments/visualizer/index.html`). Prior: [[S050]] singleton despawn race fix; [[S049]] state-aware motion + switchboard action; [[S048]] manifest-driven sprite sync inversion.)
 
 **Last updated (S050).** 2026-05-23 (end of [[S050]] — singleton despawn race fix, complement to S048's inversion. Root cause: `despawnBraindead`/`Wisp`/`Guthix` scheduled a 500ms fade-out via `setTimeout` whose closure read the module-level node variable (`braindeadNode`, etc.) at fire time, not at queue time. During bootstrap replay of `state.ndjson` (~18 historical spawn/despawn pairs in this repo, ending on a fresh spawn) every queued timeout closes over the same global; ~500ms after the replay loop ends, the first timeout fires, reads `braindeadNode = g_latest_22:04_spawn`, removes the live sprite, and nulls the global. Result: `braindeadActive=true` (set by the last `spawn-braindead`) but `braindeadNode=null` → `hasSpriteFor` false → S048's `syncSpritesFromManifest` Pass 4 wipes intent → Pass 1 re-adds it from the manifest → pulsating speech cloud (S047's reported symptom). Fix: local-capture pattern (capture `g` in a local var inside the despawn function so the timeout closes over the specific node, not the global) + identity check (`if (braindeadNode === g) braindeadNode = null`) before nulling, parallel to how `despawnPlayerInstance` already operates. New `instant` parameter threaded through `applyEvent`'s `case 'despawn-braindead'` / `'despawn-wisp'` / `'despawn-guthix'` so bootstrap-replay despawns finalize synchronously, eliminating queued timeouts entirely during replay. Sync Pass 3 and `despawnIdleInstances` keep the live fade-out (no arg → `instant=false`). One file: `experiments/visualizer/index.html`. Sibling carry: same fade-vs-respawn race exists in `despawnPlayerInstance` for parallel-instance sprites in a different shape — the old fading remnant blocks `spawnPlayerInstance`'s `getElementById` early-return so within-window respawns silently drop until next sync (2s recovery). Not load-bearing for S047's screenshot (parallel `braindead-3` was stable there) but worth fixing pre-emptively. Prior: [[S048]] manifest-driven sprite sync inversion (b070e9be); [[S049]] map fixes / wander / switchboard action / intent-refresh smoke test (17e701eb); [[S047]] visualizer cluster-stack + helmet clearance (a110d573).)
@@ -19,6 +21,8 @@
 **Last updated (S043).** 2026-05-22 (end of [[S043]] — switchboard state visibility. Added ALL-CAPS state chip + row-bg tint per state; killed the `working→idle` downgrade bug (Braindead-4 read IDLE at 17m while actually working — S037's 3-fires/turn budget makes long working turns silent); `Pending...` placeholder for unresolved actors; new `CLOSING` synthetic state detected from intent narration (`Wrapping up SNNN` shape). One file touched — `experiments/visualizer/index.html`. Prior: [[S042]] visualizer audit; [[S041]] D-024 parallel-coordination; [[S040]] `brain/ideas/`; [[S039]] switchboard GC; [[S038]] promote/consult loop; [[S033]] visualizer audit; [[S034]] Guthix consultation; [[S037]] switchboard Phase 3.).
 
 ## Where we are
+
+[[S052]] collapsed the visualizer to its load-bearing two panels and promoted the surface to `brain/switchboard/`. Principal opened with *"fighting with the animation but it doesn't matter — switchboard most useful, chat secondary, kill the map, give it a dedicated space, split into files."* The map half had been costing more than it returned for six sessions running (S047–S051 all touched it; four of those debugged it); switchboard rows + chat panel were doing the real work. **Three pre-migration dwarves:** D1 stripped the SVG map / sprite defs / walk animations / wander / gather slots / `relayoutBubbles` (9854b32); D2 added `brain/switchboard/chat.ndjson` as a hook-side humanized stream — `emit-event.py` writes one human-language line per event, chat panel reads directly (c03f33b); D3 audited references. **Migration (principal):** `git mv` of `index.html`, `_README.md`, `path-map.json` to `brain/switchboard/`; hook constants and `.gitignore` updated (1c94a57). **Second wave:** D4 split `index.html` into ES modules (`state.js`, `switchboard.js`, `focus.js`) + wrote `brain/switchboard/_about.md` + wired chat panel; D5 (doc updates) walked the dev-brain doc surfaces. Conceptual rename: "visualizer" → "switchboard" — the surface lives at brain root because it observes **both** brains, not just the dev brain that birthed it. Decision in [[D-026]]. `path-map.json` carried with the rest but is vestigial — only `emit-event.py`'s path classifier still consumes it (simplify in a future pass). Old `developer-braindead/experiments/visualizer/` directory retains sprites/, sprite source PNGs, `slice.py`, `slice_tileset.py`, `subtask_smoketest.py`, plus the sibling `experiments/vscode-claude-focus/` project — dead weight from the map era except the VS Code extension which may still be live; cleanup deferred to a future bankstanding pass.
 
 [[S048]] inverted the visualizer's state model. Principal opened with *"why are sprites stuck even when sessions are dead?"* Switchboard liveness was correct (sidecar truth); sprites lingered, bubbles persisted from closed sessions, Jebrim/Zezima stood inert regardless of session presence. Three patch rounds (switchboard-driven GC, spawn-from-manifest, `relayoutBubbles` snapping) each narrowed the symptom but the next bug looked like the last one — derived state maintained by an event stream the visualizer could only see in-flight was structurally divergent from the sidecar's per-session truth. Pivoted to architectural inversion: switchboard manifest is **the** truth source; visualizer becomes a renderer that re-derives sprite+building+intent on every poll. Concretely: `_detect_building(actor, session_id)` added to `status-sidecar.py` (reads `state-actors.json.byId[session_id]`); manifest records carry `building` per session. `syncSpritesFromManifest()` in `experiments/visualizer/index.html` runs every 2s — five passes: (1) spawn missing sprites at `record.building` and move existing ones if building changed; (2) hide static jebrim/zezima when no live session; (3) despawn singletons/instances/sub-agents without backing sessions; (4) clear orphan intents (bubble with no sprite). Hoisted `deriveState` / `ageSec` / `CLOSING_RX` from the switchboard IIFE to module scope so both views classify state identically. Extended the inversion with sprite state classes — CSS rules for `.state-working` (green glow), `.state-waiting_for_user` (gold pulse), `.state-closing` (amber pulse), `.state-idle` (desaturated), `.state-ended` (faded ghost) — encoding the same states the switchboard chips show. `setIntent` now no-ops when text is unchanged (avoid 2s churn). Earlier in the same session also landed (kept from the patch arc): wander wrapper for ambient stationary motion, sprite click-to-focus via the same URI as switchboard rows (sub-agents route to parent via `parentSid8` stamped at spawn in `emit-event.py`), switchboard-row hover → sprite gold-ring pulse. The mental-model upshot: *if it's on the map, it's in the switchboard; if it's in the switchboard, it's on the map*. **Live-verification needed:** ghost-Braindead disappearance within 2s of session close; static jebrim/zezima hide when no session for them; sprite click triggers focus (worked at lookup level mid-session, end-to-end nav not confirmed in final state); state colors render correctly per actor state. Resolves @a110d573's S047 § Open carry (parallel-Braindead orphan-clear pulsation).
 
@@ -64,45 +68,36 @@ Carried forward — [[S031]], [[S030]], [[S029]] context preserved below:
 
 ## Next concrete step — START HERE
 
-**Step 0 — Live-verify S048 inversion + S050 despawn race fix together.** S048 (b070e9be) made `syncSpritesFromManifest` the truth source; S050 (this session, f72c6979) fixed the singleton despawn timeout race that the inversion didn't touch. Together these should fully close S047's "pulsating speech cloud" carry. Open visualizer in live mode (`?live=1`) with two Braindead sessions live, devtools console open. Expected: (a) bare `braindead` (instance 1) has a DOM sprite — was missing in S047 repro; (b) `Object.keys(intents)` always corresponds to actors in `[...document.querySelectorAll('svg.map .actor')].map(g => g.id)` — no orphans, no pulsate; (c) hard refresh after the fix lands to clear the cached pre-fix bundle; (d) state-color classes (`.state-working` etc.) render on the right sprites per S048. If pulsate persists, log inside `despawnBraindead`/`Wisp`/`Guthix` to confirm the timeout finalize fires against the captured `g`, not the global. **Sibling carry to watch for** (S050 § "Open"): `despawnPlayerInstance` has the same fade-vs-respawn race in a structurally less visible shape — old fading remnant blocks `spawnPlayerInstance`'s `getElementById` early-return, dropping within-window respawns until next sync (2s recovery). Pre-emptive fix: either remove the fading remnant in `spawnPlayerInstance` (parallel to `spawnBraindead`'s eager `if (braindeadNode) braindeadNode.remove()`), or thread `instant` through `despawnPlayerInstance` and `case 'despawn-instance'`.
+**Step 0 — Live-verify S052 switchboard rebuild.** Open the new surface: `cd brain/switchboard && python -m http.server 8765`, then `http://localhost:8765/?live=1`. Expected: (a) both panels render — switchboard rows on one side, chat panel on the other, no isometric map; (b) the switchboard row for *this* session shows a subtitle reflecting current activity (latest action humanized); (c) chat panel grows as the hook fires — trigger any tool call (a `Read` is enough) and watch a new human-language line append; (d) click-to-focus still dispatches via `focus.js` (click a row, the addressed VS Code terminal pane should focus); (e) state colors / chips per S043 still render on rows. If anything regresses, the modules were split in D4's pass — start there, not in the hooks.
 
-**Step 0a — Live-verify S042 fixes.** Open visualizer in live mode (`?live=1`). Expected: (a) parallel Braindead sessions disambiguated in switchboard as ·1/·2/·3/·4 (not all ·1); (b) no console warning `no spawn path for actor braindead-<sid8>` when replaying old `state.ndjson` events; (c) any `braindead-<sid8>`-shaped intent event renders a bubble on the bare `braindead` sprite (was silently dropped). Plus visual confirm that an idle dwarf/gnome/penguin actually despawns after 5 min (set INSTANCE_IDLE_MS lower temporarily if needed). Full audit findings + carry-forward bugs in [[D-025]]. **Likely subsumed by Step 0 once that fix lands.**
+**Step 0 (obsolete) — ~~Live-verify S048 inversion + S050 despawn race fix together.~~** ~~S048's manifest-driven sprite sync, S050's singleton despawn timeout race fix.~~ Obsolete — the sprite surface they targeted was removed in S052. Carry-forward only as historical reference if the chat panel surfaces analogous lifecycle bugs.
 
-**Step 0 — Open a fresh VS Code terminal.** ~~Carried from S032.~~ ✅ Confirmed in S037: the terminal-rendering corruption did not recur in fresh terminals. This step is now obsolete; remove next pass.
+**Step 0a (obsolete) — ~~Live-verify S042 fixes.~~** ~~Parallel Braindead disambiguation in switchboard rows still relevant; the sprite-side checks are obsolete.~~ Row disambiguation rolls into Step 0; sprite checks dropped with the map.
+
+**Step 0b — Open a fresh VS Code terminal.** ~~Carried from S032.~~ ✅ Confirmed in S037: the terminal-rendering corruption did not recur in fresh terminals. This step is now obsolete; remove next pass.
 
 **Step 1 — Sidecar registration shape decision.** ✅ Landed in S037 as **option 1** (`UserPromptSubmit` + `Stop` + `SessionEnd`). `_comment_status_sidecar` in `brain/.claude/settings.json` documents the rationale inline. Hot-reload confirmed working — first user prompt after the edit populated the new fields without a Claude Code restart. Lorebook draft on hook-fire-rate-as-budget still pending — write it next bankstanding pass alongside the ASCII-PS lesson from S037.
 
 **Step 1b — Click-to-focus, the rest of the cases.** S038 confirmed the **in-window** case (terminal pane focus via `niksis8.claude-focus` VS Code extension) works live. The **cross-window** case (focus a different VS Code window) is still mechanism-only — never lived against a real two-window setup. Remaining work, deferred until the principal actually opens a second window:
 
 - Open a second VS Code window (`Ctrl+Shift+N`), start a fresh `claude` session, send any prompt to populate `claude_pid_chain`.
-- From *this* window's visualizer, click that row. With current wiring (`vscode://niksis8.claude-focus/...` only), the extension will surface *"no terminal in this window matches"* — the URI lands on whichever window owns the URI handler, which may not own the target terminal.
-- Wire the cross-window fallback: try `vscode://` first, then `claude-focus://` on failure (or fire both — the OS handler is a no-op when the window is already foreground). Either way involves a small change in `experiments/visualizer/index.html` click handler.
+- From *this* window's switchboard, click that row. With current wiring (`vscode://niksis8.claude-focus/...` only), the extension will surface *"no terminal in this window matches"* — the URI lands on whichever window owns the URI handler, which may not own the target terminal.
+- Wire the cross-window fallback: try `vscode://` first, then `claude-focus://` on failure (or fire both — the OS handler is a no-op when the window is already foreground). Post-S052 the click handler lives in `brain/switchboard/focus.js`.
 
 Old-format sessions (last hook fired before S037's chain capture) have only `claude_pid`, no chain. Either send a prompt in them or spawn fresh ones.
 
-**Step 2 — Verify S031's lane-based bubble layout** (carried from S031). Open the visualizer in live mode and trigger a multi-sprite cluster (2–3 dwarves at the same building, or Jebrim + dwarves at quest-hall). Watch:
-
-- Each bubble in the cluster appears in its own X lane above the cluster, not stacked vertically at the cluster center.
-- Each bubble's thought-trail (the 4 cream-fill circles) runs diagonally from its own sprite to its own bubble.
-- No trail circle crosses another bubble's rect (the trail layer is BELOW the bubble layer, but visual confirmation needed).
-- Single-bubble cases still place the bubble directly above the sprite (cluster.length === 1 branch).
-- Inter-cluster fallback: two clusters near each other (e.g., quest-hall and keepsake-vault both populated) still resolve via the upward push.
-- Clusters near map edges — leftmost/rightmost bubbles should not clip the viewBox.
-
-Failure mode to watch for: when `xOff` is small (sprites very close in X), the diagonal is almost vertical and trail circles overlap on the diagonal — may look identical to pre-lane version. Acceptable.
-
-Fallback knobs: PAD (currently 12), CLUSTER_RADIUS (currently 140), STOPS array in renderIntent's trail.
+**Step 2 (obsolete) — ~~Verify S031's lane-based bubble layout.~~** Map gone in S052; lane-layout machinery removed. Drop next pass.
 
 **Step 3 — Live test penguins** (carried from S030). Spawn a penguin from a Jebrim session with a small research brief (e.g., *"current state of polars 0.20 changelog"* or *"EU CBAM effective date and applicable goods"*). Watch:
 
-- Task tool with `subagent_type: "penguin"` routes through ROLE_CONFIG; spawn-penguin event lands with id `P1`, color `penguin-1`, at parent's building or iceberg fallback.
-- Penguin sprite renders at the Iceberg — tuxedoed silhouette, scarf in arctic blue, ID badge "P1". COMMS shows the PENGUINS tab.
+- Task tool with `subagent_type: "penguin"` routes through ROLE_CONFIG; spawn-penguin event lands with id `P1`, color `penguin-1`.
+- ~~Penguin sprite renders at the Iceberg — tuxedoed silhouette, scarf in arctic blue, ID badge "P1".~~ Sprite surface gone in S052; switchboard row + chat-panel humanized lines (`Penguin P1 spawned for research…`) replace the visual.
 - Write attempts: penguin can write to `players/jebrim/research/<YYYY-MM-DD>-<slug>.md`; any other write path blocked by `penguin-write-boundary.py`.
 - Despawn after Task completes; idle GC (1h) via shared `gc_stale_subagents` machinery.
 
-Failure modes: iceberg STAND too close to map edge, tint contrast against dark map background, ROLE_CONFIG generalization breaking dwarf/gnome paths (regression check).
+Failure modes: ROLE_CONFIG generalization breaking dwarf/gnome paths (regression check); chat-panel humanizer handling penguin spawn/despawn lines cleanly.
 
-**Step 4 — Live test parallel Braindead** (carried S029, *partially validated*). Cross-session validation happened naturally during S032 — three Braindeads (S032/a989e89a, S031/f39b5b3f, S030/ab5ad0df) ran concurrently and the visualizer + comms channel held up. **Remaining: tint-2 hue-rotate visual check, instance-badge position, gather-slot offset at the workshop when two crews stand there.**
+**Step 4 — Live test parallel Braindead** (carried S029, *partially validated*). Cross-session validation happened naturally during S032 — three Braindeads ran concurrently and the comms channel held up. **Remaining: ~~tint-2 hue-rotate visual check, instance-badge position, gather-slot offset at the workshop when two crews stand there~~ — all sprite-surface checks obsolete post-S052. Now: confirm switchboard rows disambiguate Braindead·1/·2/·3/·4 across parallel sessions and that the chat panel's humanizer attributes lines to the right instance.**
 
 **Step 5 — Cross-repo sidecar rollout (D-020 follow-up).** To get true cross-machine session visibility, move the status-sidecar hook registration from `brain/.claude/settings.json` to `~/.claude/settings.json` (user-level). The status file path is already designed for this; only the registration needs to migrate. Separate decision — sanity-check Step 1's lower-frequency design first.
 
@@ -156,8 +151,10 @@ Failure modes: iceberg STAND too close to map edge, tint contrast against dark m
 - **First live gnome spawn** — Step 12.
 - **Q-008 pick** — Step 13.
 - **Jebrim 58f8e88a recovery** — Step 14.
-- **`ensureActorExists` braindead-{sid8} suffix-strip miss** — small follow-up from S031. Console shows `visualizer: ensureActorExists has no spawn path for actor braindead-ed610cbe`. Find the path that didn't strip; align with `NON_PLAYER_SUFFIX_ACTORS` from S028.
-- **Dead code from S031 cleanup** — `updateDayNight()` / `dayNightFill()` / `DAY_NIGHT_ANCHORS` / `currentHour()` in `experiments/visualizer/index.html`. The `#day-night` rect they target was deleted in S031; JS no-ops via `if (el)` guard. Sweep next bankstanding pass.
+- ~~**`ensureActorExists` braindead-{sid8} suffix-strip miss** — small follow-up from S031.~~ Obsolete — `ensureActorExists` removed with the map in S052.
+- ~~**Dead code from S031 cleanup** — `updateDayNight()` / `dayNightFill()` / `DAY_NIGHT_ANCHORS` / `currentHour()` in `experiments/visualizer/index.html`.~~ Obsolete — file moved + map code excised in S052.
+- **Cleanup pass on `developer-braindead/experiments/visualizer/`** — post-S052 dead-weight inventory: `sprites/` (PNG sprite sheet + slices), source PNGs, `slice.py`, `slice_tileset.py`, `subtask_smoketest.py`, plus the sibling `experiments/vscode-claude-focus/` extension. First four are pure map-era artifacts; `subtask_smoketest.py` is orphan tooling; `vscode-claude-focus/` is a separate VS Code extension that may still be relevant (in-window click-to-focus from S038). Decide per-item — archive sprites + slice scripts, retire `subtask_smoketest.py` to archive, promote or retire `vscode-claude-focus/`. Bankstanding territory; never delete.
+- **Simplify `emit-event.py` path classifier.** `path-map.json` carried over to `brain/switchboard/` but is now vestigial — only the hook's classifier reads it to humanize file paths into building names, and no map renders. Either drop the classifier (emit raw paths to chat.ndjson) or repurpose path-map as a chat-prose helper. Defer until the chat humanizer's first real-use pass surfaces what's needed.
 - §C Pilot definition, §H.3 brain-zone taxonomy, §H.4 identity ↔ main-brain interaction — unchanged.
 
 ## Carried-over observations
@@ -297,41 +294,35 @@ From [[S003]]–[[S007]]: **structure-first, content earns its way in.** **Build
 ## Files to read first
 
 1. `respawn.md` (this file).
-2. `quest-log/S038_vscode_claude_focus_extension.md` — what just shipped (in-window terminal-pane focus via VS Code extension).
-3. `experiments/vscode-claude-focus/extension.js` + `README.md` — the new extension; ~70 lines of JS plus install/verify notes.
-4. `quest-log/in-progress/S037_terminal_switchboard_phase_3_click_to_focus.md` — the OS-level half S038 complements (still in in-progress because its own self-test passed but the multi-window scenario it targets hasn't been lived against).
-5. `quest-log/S034_guthix_consultation_mode.md` — Guthix two residence modes; doc-only across nine `gielinor/` files.
-6. `bank/decisions/D-022_guthix_consultation_mode.md` — full decision including before/after table, open questions.
-4. `gielinor/meta/guthix.md` — the load-bearing spec post-S034 (two residence modes; consultation as default).
-5. `gielinor/meta/modes.md` — five session modes definition; consultation block.
-6. `quest-log/S032_terminal_switchboard_phases_1_and_2.md` — prior session: Phases 1 + 2 of D-020, terminal-rendering diagnosis.
-7. `bank/decisions/D-020_terminal_switchboard.md` — full design including state machine, contract, phase order, open questions.
-4. `.claude/hooks/status-sidecar.py` — the sidecar script (currently only registered on SessionEnd).
-5. `brain/.claude/settings.json` — see the `_comment_status_sidecar` note explaining the paused registrations.
-6. `experiments/visualizer/index.html` — Phase 2 sidebar lives here. Search `class="switchboard"` for markup, `class=".sb-` for CSS, `initSwitchboard` for JS.
-7. `experiments/visualizer/state-switchboard.json` — the snapshot manifest the browser polls.
-8. `comms/active.md` — recent OPEN/UPDATE/CLOSING entries (S030/S031/S032 ran in parallel; the channel got real-world traffic).
-9. `quest-log/S031_visualizer_world_scale_layout_and_bubble_redesign.md` — visualizer overhaul; lane layout still untested (Step 2).
-10. `quest-log/S030_penguins_subagent_and_research_folder.md` — penguins, still untested live (Step 3).
-11. `quest-log/S029_parallel_braindead_and_comms_channel.md` — parallel sessions design, mostly validated in S032.
-12. `bank/decisions/D-019_parallel_braindead_and_comms_channel.md` — full design including open questions.
-13. `comms/_about.md` — coordination layer protocol.
-14. `spellbook/respawn-ritual.md` + `spellbook/session-close.md` — entry/exit rituals with sibling detection + comms steps.
-15. `.claude/hooks/emit-event.py` — visualizer hook (untouched in S032; reference for the high-frequency-hook lesson).
-16. `bank/decisions/D-017_parallel_player_instances.md` — parent decision for instance routing.
-17. `bank/decisions/D-018_parallel_session_substrate_isolation.md` — the per-session intent-file mandate.
-18. `bank/decisions/D-021_penguins_research_subagent.md` — penguin design.
-19. `gielinor/meta/guthix.md` — bankstanding deity (relevant to the S032 origin story).
-20. `bank/open-questions/Q-008_visualizer_aliveness.md` — parked.
+2. `brain/switchboard/_about.md` — canonical spec for the new surface (written by D4 this session).
+3. `brain/switchboard/index.html` — shell HTML; loads the ES modules below.
+4. `brain/switchboard/switchboard.js` — switchboard rows panel.
+5. `brain/switchboard/state.js` + `brain/switchboard/focus.js` — state polling + click-to-focus modules.
+6. `quest-log/in-progress/S052_98d4ec5e_switchboard-rebuild.md` — this session's quest entry (rebuild narrative).
+7. `bank/decisions/D-026_switchboard_promotion.md` — the decision: why kill the map, why brain root.
+8. `bank/decisions/D-020_terminal_switchboard.md` — origin of the switchboard pane (state machine, contract, S052 amendment).
+9. `bank/decisions/D-024_parallel_player_coordination.md` — comms mirror destination + sibling detection (S052 amendment).
+10. `bank/decisions/D-025_visualizer_character_audit_findings.md` — historical map audit; S052 amendment marks map-targeted carries obsolete.
+11. `developer-braindead/.claude/hooks/emit-event.py` — humanized chat.ndjson writer added this session; `VIZ_DIR` constant points at `brain/switchboard/`.
+12. `developer-braindead/.claude/hooks/status-sidecar.py` — same `VIZ_DIR` update; manifest + mirrors land there.
+13. `comms/active.md` — recent OPEN/UPDATE/CLOSING entries; S052 close at the bottom.
+14. `comms/_about.md` — coordination layer protocol.
+15. `spellbook/respawn-ritual.md` + `spellbook/session-close.md` — entry/exit rituals with sibling detection + comms steps.
+16. `bank/decisions/D-009_visualizer_live_mode_v0.md` — original visualizer decision (historical; the map half is the part S052 retired).
+17. `bank/decisions/D-014_visualizer_chat_panel.md` — chat panel origin; absorbed into the new shape.
+18. `bank/decisions/D-017_parallel_player_instances.md` — parent decision for instance routing.
+19. `bank/decisions/D-018_parallel_session_substrate_isolation.md` — the per-session intent-file mandate.
+20. `bank/decisions/D-019_parallel_braindead_and_comms_channel.md` — parallel-Braindead + comms (historical refs to viz dir are pre-S052).
+21. `bank/decisions/D-021_penguins_research_subagent.md` — penguin design (sprite refs obsolete; role + write boundary still in force).
+22. `gielinor/meta/guthix.md` — bankstanding deity.
+23. `bank/open-questions/Q-008_visualizer_aliveness.md` — parked; revisit under the new shape.
 
-## Note on the visualizer's engine
+## Note on the switchboard's engine
 
-Untouched in S032. The Phase 2 sidebar layered as a third flex child of `.world` and a self-contained IIFE poller; engine surface (event timeline, applyEvent dispatch, CSS-transition movement, RAF tick loop, scrub-seek with `instant` flag) is unchanged. The sidebar reads a separate JSON file via its own fetch; doesn't touch `state.ndjson` or any of the existing visualizer state files. Keep extending; don't rewrite.
-
-New events in S032: none — the switchboard channel is orthogonal to the visualizer's event stream.
+The surface lives at `brain/switchboard/` post-S052. The map is gone; the renderer is two panels — switchboard rows (state chips, subtitles, click-to-focus) and the chat panel (humanized hook events). `index.html` is a thin shell; logic lives in three ES modules — `state.js` (polling `state-switchboard.json` + `chat.ndjson`), `switchboard.js` (rows panel), `focus.js` (click-to-focus dispatch). Hook-side: `emit-event.py` writes the humanized lines to `chat.ndjson`; `status-sidecar.py` writes the manifest at `state-switchboard.json` and mirrors `comms/active.md` from both brains. Keep extending; the modules are scoped so a panel can grow without touching the other.
 
 ## How to run
 
-- **Replay mode (the demo).** Open `experiments/visualizer/index.html` directly in a browser.
-- **Live mode (self-observation).** `cd developer-braindead/experiments/visualizer && python -m http.server 8765`, then `http://localhost:8765/?live=1`. Append `&sid8=<your-sid8>` to highlight "this" session with a gold outline in the new switchboard pane. For parallel-Braindead testing, open two Claude Code windows at brain/ root.
-- **Switchboard reads.** Lives at `~/.claude/status/<sid8>.json` (per-session) + `~/.claude/status/archive/` (>24h-old, swept). The visualizer's mirror snapshot lands at `experiments/visualizer/state-switchboard.json` on every sidecar fire — currently only `SessionEnd` fires. To stress-test the sidebar with live data, decide Step 1.
+- **Replay mode (the demo).** Open `brain/switchboard/index.html` directly in a browser.
+- **Live mode (self-observation).** `cd brain/switchboard && python -m http.server 8765`, then `http://localhost:8765/?live=1`. Append `&sid8=<your-sid8>` to highlight "this" session in the switchboard pane. For parallel-Braindead testing, open two Claude Code windows at brain/ root.
+- **State reads.** Per-session status: `~/.claude/status/<sid8>.json` (+ `~/.claude/status/archive/` for swept entries). Manifest mirror: `brain/switchboard/state-switchboard.json` (written by `status-sidecar.py` on every fire). Chat stream: `brain/switchboard/chat.ndjson` (written by `emit-event.py`, one humanized line per tool event).

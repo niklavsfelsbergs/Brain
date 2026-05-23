@@ -154,3 +154,8 @@
   Shipped S051 — visualizer tree + bubble scale pass. Trees 3× in the four symbol defs (~1042–1045); speech bubbles 1.25× in renderIntent (~3577) and the bubbleDims mirror (~3352). Pure visual polish, one file touched (experiments/visualizer/index.html). No OPEN was posted — dev-brain entered mid-conversation via "lets develop gielinor". Layered on top of S029's earlier 2× bubble pass.
   Leaving open: placeTree clearance radii (clearOfBuildings(160), clearOfPaths(45)) were tuned for small trees — may now read crowded; bump if live view shows overlap. All prior carries unchanged.
   SNNN: 050→051 (S050 was f72c6979's singleton-despawn fix).
+
+[2026-05-23] braindead-98d4ec5e CLOSING
+  Shipped S052 — visualizer collapsed to switchboard+chat, map killed, surface promoted to brain/switchboard/. Three pre-migration dwarves (D1 stripped map 9854b32, D2 added chat.ndjson humanizer + subtitle c03f33b, D3 audited references); principal git mv'd the surviving files to brain/switchboard/ (1c94a57); D4 split index.html into ES modules + _about.md + chat panel wiring; D5 (me) walked the doc surfaces. New D-026 captures the promotion rationale.
+  Leaving open: live-verify the rebuilt surface (cd brain/switchboard && python -m http.server 8765 → /?live=1); cleanup pass on the abandoned developer-braindead/experiments/visualizer/ dir (sprites/, slice scripts, subtask_smoketest.py, vscode-claude-focus/) — dead weight from the map era, defer to bankstanding.
+  Note: path-map.json moved with the rest but is now vestigial — only emit-event.py's path classifier still reads it; simplify that hook in a future pass.

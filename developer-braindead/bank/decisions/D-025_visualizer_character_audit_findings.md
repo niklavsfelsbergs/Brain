@@ -101,3 +101,7 @@ In priority order, with exact code refs:
 - [[S033]] — prior visualizer audit (12 fixes shipped, same shape).
 - [[S027]] — earlier visualizer audit (11 fixes shipped).
 - `gielinor/spellbook/rituals/` — candidate home for the audit-then-fix skill if promoted.
+
+## S052 amendment — 2026-05-23
+
+The map was killed in [[S052]] / [[D-026]] — the visualizer collapsed to switchboard + chat and moved to `brain/switchboard/`. The Tier-3/Tier-4 carry-forwards above that targeted map code (sprite anchor recalibration #2, idle GC for sub-agent sprites #5, lane-layout viewBox-edge clamp #13, animal scatter housekeeping, dead procedural-building helpers) are **obsolete** — the surface they referenced no longer exists. State-file paths in §D3 above now live at `brain/switchboard/state-*.json`. The event-routing and resolver concerns (#1 suffix-strip, #3 manifest instance refresh, #4 actor-unknown, #6 byId crash cleanup, #11 setIntent silent-return) live on through `status-sidecar.py` / `emit-event.py` and remain relevant for the chat panel + switchboard rows.

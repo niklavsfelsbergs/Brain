@@ -90,3 +90,7 @@ Suffixing alone doesn't decide which file is canonical. The discipline line does
 - [[D-020]] — status sidecar; liveness signal source.
 - [[D-022]] — Guthix consultation; in scope as a participant in the global comms file.
 - `gielinor/meta/communication-protocol.md` §"Wrong-instance check" — content-based sibling check; this decision adds the file-system-based one.
+
+## S052 amendment — 2026-05-23
+
+`status-sidecar.py` still mirrors both `comms/active.md` files into the switchboard dir for browser fetch (the http.server roots there). Mirror filenames unchanged (`state-comms-braindead.md`, `state-comms-gielinor.md`); their destination moved from `developer-braindead/experiments/visualizer/` to `brain/switchboard/` per [[D-026]]. Sandbox shape and concurrent-append discipline above are unchanged.

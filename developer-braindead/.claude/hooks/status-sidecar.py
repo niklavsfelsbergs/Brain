@@ -949,6 +949,19 @@ def main() -> None:
     if state is None:
         sys.exit(0)
 
+    # Interactive prompt tools park the session on the user mid-turn — no Stop
+    # fires, so the state would otherwise read "working" while it is actually
+    # waiting for an answer (AskUserQuestion) or plan approval (ExitPlanMode).
+    # Flip to waiting_for_user on their PreToolUse and back to working on
+    # PostToolUse. Registered with a tight matcher in settings.json so the
+    # fire-budget impact is ~0-2 per session, not per tool call.
+    WAIT_TOOLS = {"AskUserQuestion", "ExitPlanMode"}
+    if hook_event in ("PreToolUse", "PostToolUse"):
+        tool_name = payload.get("tool_name") or ""
+        if tool_name not in WAIT_TOOLS:
+            sys.exit(0)   # we only register Pre/Post for the prompt tools
+        state = "waiting_for_user" if hook_event == "PreToolUse" else "working"
+
     sid = payload.get("session_id") or os.environ.get("CLAUDE_CODE_SESSION_ID") or ""
     if not isinstance(sid, str) or not sid:
         sys.exit(0)

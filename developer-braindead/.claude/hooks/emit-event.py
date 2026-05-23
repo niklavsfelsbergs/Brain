@@ -839,6 +839,42 @@ def subtask_for(tool_name: str, tool_input: dict) -> str:
 # implementation specified in the task brief — "let the same call land twice
 # across rapid invocations, log inflation is mild" — is what we do. Truncate
 # pass at write time keeps the file bounded regardless.
+def _shorten_paths(s: str) -> str:
+    """Strip the repo-root prefix (absolute, /c/ git-bash, or ~ form) so chat
+    lines show repo-relative paths instead of the full machine path. Brain
+    paths collapse fully; other GitHub repos keep their repo name + tail."""
+    s = s.replace("\\", "/")
+    s = re.sub(r"(?:[A-Za-z]:/|/[A-Za-z]/|~/)?(?:Users/[^/\s]+/)?Documents/GitHub/brain/?", "", s)
+    s = re.sub(r"(?:[A-Za-z]:/|/[A-Za-z]/|~/)?(?:Users/[^/\s]+/)?Documents/GitHub/", "", s)
+    return s
+
+
+def _strip_cd_prefix(cmd: str) -> str:
+    """Drop one or more leading `cd <path>` segments (newline-, &&-, or
+    semicolon-separated). The brain runs most git work as `cd <repo>\\n<cmd>`;
+    without this the absolute path eats the whole display budget and every
+    commit reads 'git com'."""
+    s = cmd.strip()
+    while True:
+        m = re.match(r"""^cd\s+(?:"[^"]*"|'[^']*'|\S+)\s*(?:&&|;|\n)\s*""", s)
+        if not m:
+            break
+        s = s[m.end():].lstrip()
+    return s
+
+
+def _extract_commit_subject(cmd: str) -> str:
+    """Best-effort pull of a commit subject from a `git commit` command for the
+    chat banner — handles -m "..."/'...' and heredoc (`<<'EOF'` then subject)."""
+    m = re.search(r'-m\s+"([^"]+)"', cmd) or re.search(r"-m\s+'([^']+)'", cmd)
+    if m:
+        return m.group(1).strip()[:80]
+    m = re.search(r"<<-?\s*'?\w+'?[ \t]*\n?\s*([^\n]+)", cmd)
+    if m:
+        return m.group(1).strip()[:80]
+    return ""
+
+
 def _humanize_tool_call(tool_name: str, tool_input: dict) -> str:
     """Synthesize a ≤200-char human-language line for a tool call. Returns ''
     when nothing useful can be said (caller skips the emit)."""
@@ -860,8 +896,13 @@ def _humanize_tool_call(tool_name: str, tool_input: dict) -> str:
         cmd = (tool_input.get("command") or "").strip()
         if not cmd:
             return "Running a shell command"
+        # Drop the leading `cd <repo>` the brain prepends to most commands so
+        # the meaningful command is what we classify/show (else everything
+        # reads "Running: cd <abspath>…" and git phrasings never match).
+        cmd = _strip_cd_prefix(cmd)
+        flat = " ".join(cmd.split())   # collapse newlines/runs for head + display
+        head = flat[:80].lower()
         # Recognized prefixes get nicer phrasing.
-        head = cmd[:80].lower()
         if head.startswith("git status"):
             return "Checking git status"
         if head.startswith("git log"):
@@ -869,12 +910,17 @@ def _humanize_tool_call(tool_name: str, tool_input: dict) -> str:
         if head.startswith("git diff"):
             return "Reviewing diff"
         if head.startswith("git commit"):
-            return "Committing changes"
+            subj = _extract_commit_subject(cmd)
+            return f"Committing: {subj}" if subj else "Committing changes"
+        if head.startswith("git add"):
+            return "Staging changes (git add)"
+        if head.startswith("git push"):
+            return "Pushing to remote"
         if head.startswith("git mv"):
             return "Moving files (git mv)"
-        if "python -m http.server" in cmd:
+        if "python -m http.server" in flat:
             return "Starting local web server"
-        return f"Running: {cmd[:60]}"
+        return f"Running: {_shorten_paths(flat)[:60]}"
     if tool_name == "Grep":
         pat = (tool_input.get("pattern") or "").strip()
         if not pat:

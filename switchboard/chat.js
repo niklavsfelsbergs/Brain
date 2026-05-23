@@ -12,7 +12,8 @@
 // Speaker tab filters, jump-to-latest, and unread badges work uniformly across
 // sources because every entry carries a `data-speaker` attribute.
 
-import { formatWall } from './state.js';
+import { formatWall, formatMinute, humanizeAction } from './state.js';
+import { recordEvent } from './activity.js';
 
 const LOG_BOTTOM_THRESHOLD = 12;
 const MAX_ENTRIES = 500;
@@ -30,6 +31,10 @@ let logScrollLocked = false;
 let logUnreadCount = 0;
 const tabUnread = Object.fromEntries(TAB_SPEAKERS.map(s => [s, 0]));
 const tabBadges = {};
+// S053 declutter state:
+let lastMinuteLabel = null;     // last "HH:MM" rendered by the time-rail
+let lastStreamSpeaker = null;   // last speaker in the action/intent run
+let searchQuery = '';           // live chat search (lowercased)
 
 function isLogAtBottom() {
   return logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - LOG_BOTTOM_THRESHOLD;
@@ -84,6 +89,10 @@ function appendLogEntry(li) {
   logEl.appendChild(li);
   while (logEl.childNodes.length > MAX_ENTRIES) logEl.removeChild(logEl.firstChild);
   bumpTabUnread(li.getAttribute('data-speaker'));
+  // Keep a live search consistent as new entries stream in.
+  if (searchQuery && li.classList.contains('log-entry')) {
+    li.classList.toggle('search-hide', !li.textContent.toLowerCase().includes(searchQuery));
+  }
   if (logScrollLocked) {
     logUnreadCount++;
     updateJumpLatestButton();
@@ -98,17 +107,65 @@ function escapeHtml(s) {
   ));
 }
 
-// D-014: chat-style line with username prefix in actor-colored span.
-// Renders as "[time] <user>:</user> <body>" — username picks up per-speaker color.
-// `tsInput` lets callers stamp historical entries (chat.ndjson carries `ts`).
-function logChatLine(actor, body, cls = '', speaker = 'system', tsInput = null) {
+// Insert a faint "── HH:MM ──" rail whenever the wall-clock minute changes, so
+// individual lines can drop their per-line timestamp. Huge declutter on the
+// action stream where a dozen lines used to each carry [HH:MM:SS].
+function maybeTimeRail(tsInput) {
+  const label = formatMinute(tsInput != null ? tsInput : new Date());
+  if (!label || label === lastMinuteLabel) return;
+  lastMinuteLabel = label;
+  const rail = document.createElement('div');
+  rail.className = 'time-rail';
+  rail.innerHTML = `<span>${label}</span>`;
+  appendLogEntry(rail);
+}
+
+// D-014 + S053: chat-style line. `opts.stream` marks the action/intent stream
+// that participates in speaker-run collapsing — a run of one speaker shows the
+// name once, continuations indent under a tinted rule and drop the timestamp.
+// `opts.bodyHtml` injects pre-built markup (action glyphs); else `body` is
+// escaped. `opts.sid8` tags the row so switchboard hover can flash it.
+function logChatLine(actor, body, cls = '', speaker = 'system', tsInput = null, opts = {}) {
+  maybeTimeRail(tsInput);
+  const stream = opts.stream === true;
+  const continuation = stream && speaker === lastStreamSpeaker;
+
   const li = document.createElement('div');
-  li.className = 'log-entry ' + cls;
+  li.className = 'log-entry ' + cls + (continuation ? ' cont' : '');
   li.setAttribute('data-speaker', speaker);
-  const tStr = formatWall(tsInput != null ? tsInput : new Date());
-  li.innerHTML = `<span class="t">[${tStr}]</span>` +
-                 `<span class="user">${escapeHtml(actor)}</span> ${escapeHtml(body)}`;
+  if (opts.sid8) li.setAttribute('data-sid8', opts.sid8);
+
+  const bodyHtml = opts.bodyHtml != null ? opts.bodyHtml : escapeHtml(body);
+  if (continuation) {
+    li.innerHTML = `<span class="cont-gutter"></span>${bodyHtml}`;
+  } else {
+    const tStr = formatWall(tsInput != null ? tsInput : new Date());
+    li.innerHTML = `<span class="t">[${tStr}]</span>` +
+                   `<span class="user">${escapeHtml(actor)}</span> ${bodyHtml}`;
+  }
   appendLogEntry(li);
+  lastStreamSpeaker = stream ? speaker : null;
+  return li;
+}
+
+// S053: commits render as OSRS-style "drop" banners — a milestone, not a chat
+// murmur. Always breaks a speaker-run and carries data-commit for the COMMITS
+// tab (which filters on the flag, cross-actor).
+function logCommitBanner(actor, detail, speaker, tsInput, sid8) {
+  maybeTimeRail(tsInput);
+  const li = document.createElement('div');
+  li.className = 'log-entry commit-drop';
+  li.setAttribute('data-speaker', speaker);
+  li.setAttribute('data-commit', '1');
+  if (sid8) li.setAttribute('data-sid8', sid8);
+  li.innerHTML =
+    `<span class="cd-spark">✦</span>` +
+    `<span class="cd-label">COMMIT</span>` +
+    `<span class="cd-actor">${escapeHtml(actor)}</span>` +
+    `<span class="cd-detail">${escapeHtml(detail || 'changes')}</span>`;
+  appendLogEntry(li);
+  bumpTabUnread('commits');
+  lastStreamSpeaker = null;
   return li;
 }
 
@@ -280,20 +337,34 @@ function renderNdjsonRecord(rec) {
   const text = String(rec.text || '');
   // ts on records is unix-seconds (status-sidecar.py convention). Convert to ms.
   const tsMs = (typeof rec.ts === 'number') ? rec.ts * 1000 : rec.ts;
-  let cls = '';
-  let body = text;
-  if (rec.kind === 'intent') {
-    cls = 'intent';
-    body = text;
-  } else if (rec.kind === 'action') {
-    cls = 'action';
-    body = text;
-  } else if (rec.kind === 'commit') {
-    cls = 'commit';
-  } else if (rec.kind === 'narrate' || rec.kind === 'system') {
-    cls = rec.kind;
+  const sid8 = rec.sid8 || '';
+
+  // Feed the per-session sparkline (switchboard reads activity.js back).
+  recordEvent(sid8, tsMs);
+
+  if (rec.kind === 'action') {
+    const a = humanizeAction(text);
+    if (a.isCommit) {
+      logCommitBanner(displayName, a.body, speaker, tsMs, sid8);
+      return;
+    }
+    const bodyHtml =
+      `<span class="act-glyph ${a.cls}">${escapeHtml(a.glyph)}</span>` +
+      `<span class="act-body">${escapeHtml(a.body)}</span>`;
+    logChatLine(displayName, a.body, 'action ' + a.cls, speaker, tsMs,
+                { stream: true, bodyHtml, sid8 });
+    return;
   }
-  logChatLine(displayName, body, cls, speaker, tsMs);
+  if (rec.kind === 'intent') {
+    logChatLine(displayName, text, 'intent', speaker, tsMs, { stream: true, sid8 });
+    return;
+  }
+  if (rec.kind === 'commit') {
+    logCommitBanner(displayName, text, speaker, tsMs, sid8);
+    return;
+  }
+  const cls = (rec.kind === 'narrate' || rec.kind === 'system') ? rec.kind : '';
+  logChatLine(displayName, text, cls, speaker, tsMs, { sid8 });
 }
 
 function initChatNdjson() {
@@ -378,6 +449,42 @@ export function initChat(opts = {}) {
       else logEl.setAttribute('data-filter', v);
       clearTabUnread(v);
     });
+  });
+
+  // S053: live chat search — slim header input filters entries by text.
+  const searchEl = document.getElementById('logSearch');
+  if (searchEl) {
+    const applySearch = () => {
+      searchQuery = searchEl.value.trim().toLowerCase();
+      logEl.classList.toggle('searching', !!searchQuery);
+      logEl.querySelectorAll('.log-entry').forEach(el => {
+        el.classList.toggle('search-hide',
+          !!searchQuery && !el.textContent.toLowerCase().includes(searchQuery));
+      });
+    };
+    searchEl.addEventListener('input', applySearch);
+    // "/" focuses search from anywhere; Esc clears + blurs.
+    document.addEventListener('keydown', (e) => {
+      const tag = (document.activeElement && document.activeElement.tagName) || '';
+      if (e.key === '/' && document.activeElement !== searchEl && !/^(INPUT|TEXTAREA)$/.test(tag)) {
+        e.preventDefault();
+        searchEl.focus();
+      } else if (e.key === 'Escape' && document.activeElement === searchEl) {
+        searchEl.value = '';
+        applySearch();
+        searchEl.blur();
+      }
+    });
+  }
+
+  // S053: two-way actor link — switchboard hover dispatches `sb-hover`; flash
+  // the matching session's chat lines (by sid8). Empty detail clears.
+  document.addEventListener('sb-hover', (e) => {
+    logEl.querySelectorAll('.log-entry.actor-flash').forEach(el => el.classList.remove('actor-flash'));
+    const sid8 = e.detail && e.detail.sid8;
+    if (!sid8) return;
+    logEl.querySelectorAll(`.log-entry[data-sid8="${CSS.escape(sid8)}"]`)
+      .forEach(el => el.classList.add('actor-flash'));
   });
 
   // Live-only: poll comms + chat.ndjson. Static page (no ?live=1) leaves the

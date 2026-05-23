@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=VT323&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
 <div class="stage">
@@ -16,15 +16,18 @@
     <header>
       <span class="log-title">SWITCHBOARD</span>
       <span class="sb-count" id="sbCount">—</span>
+      <button id="crtToggle" class="crt-toggle" type="button" title="Toggle CRT mode (or ?crt=1)">▦</button>
     </header>
     <div class="sb-list" id="sbList">
       <div class="sb-empty">no sessions found</div>
     </div>
+    <div class="sb-legend" id="sbLegend"></div>
   </aside>
 
   <div class="logbox">
     <header>
       <span class="log-title">COMMS</span>
+      <input class="log-search" id="logSearch" type="text" placeholder="/ filter…" spellcheck="false" autocomplete="off" aria-label="Filter chat">
       <div class="log-tabs" id="logTabs" role="tablist">
         <span class="log-tab active" data-tab="all"      role="tab"><span class="dot"></span>ALL</span>
         <span class="log-tab"        data-tab="jebrim"   role="tab"><span class="dot"></span>JEBRIM</span>

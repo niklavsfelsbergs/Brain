@@ -40,15 +40,28 @@ Replay mode is gone with the map.
 - `index.html` — shell + layout, mounts the two panels. No inline JS or CSS.
 - `styles.css` — every rule, in one place.
 - `app.js` — entry; reads URL params, kicks off both panels.
-- `state.js` — shared derivation helpers (`deriveSessionState`, `sbAgeSec`,
-  `SB_IDLE_AFTER_SEC`, `SB_CLOSING_RX`, `formatWall`).
+- `state.js` — shared derivation/format helpers (`deriveSessionState`,
+  `sbAgeSec`, `SB_IDLE_AFTER_SEC`, `SB_CLOSING_RX`, `formatWall`,
+  `formatMinute`, `shortenPaths`, `humanizeAction` — the last maps a humanized
+  action line to a verb glyph + color class + cleaned body + isCommit flag).
 - `switchboard.js` — left panel: polls `state-switchboard.json`, sorts, renders
-  rows, handles row clicks via `focus.js`.
+  rows (state chip, subtitle, per-row activity sparkline, WAITING hero),
+  handles row clicks via `focus.js`, dispatches `sb-hover` for the chat
+  actor-flash, builds the roster legend. Double-click a row name to rename the
+  session — labels persist in browser localStorage (`sb-session-names`, keyed by
+  sid8; the server is GET-only, so renames can't write a file). Re-render pauses
+  while a rename input is open.
 - `chat.js` — right panel: polls comms mirrors + `chat.ndjson`, renders entries
   through a unified `appendLogEntry`. Owns scroll-lock, jump-to-latest, tab
-  filter, and unread badges.
+  filter, unread badges, the per-minute time-rail, speaker-run collapsing,
+  action verb-glyphs, commit drop-banners, live search, and the two-way
+  actor-flash (responds to the switchboard's `sb-hover` event).
 - `focus.js` — `dispatchFocus(sid8)` (VS Code `claude-focus://` URI) +
   `copySid8(sid8)`.
+- `activity.js` — shared per-session event-cadence ring buffer. `chat.js`
+  records each `chat.ndjson` event into it; `switchboard.js` reads
+  `activityBuckets(sid8)` back to draw each row's sparkline. Decoupled — the
+  two panels never import each other, only this module.
 - `path-map.json` — still load-bearing for `emit-event.py` (hook side classifies
   paths into buildings even though the map is dead — the classification
   contributes to the `chat.ndjson` action text). Don't touch from here.
@@ -78,6 +91,18 @@ All written by hooks; the switchboard is a passive renderer.
 - `?live=1` — enable polling. Anything truthy also accepted (`?live`).
 - `?sid8=<id>` — highlight the row for this session (gold outline + "(this)"
   label).
+- `?crt=1` — enable the CRT/scanline overlay on load (also toggleable at
+  runtime via the ▦ CRT button, bottom-left).
+
+## Action-text quality (source-side)
+
+The chat panel's action lines are only as clean as `chat.ndjson`.
+`emit-event.py:_humanize_tool_call` strips a leading `cd <repo>` from Bash
+commands before classifying (the brain runs most git work as `cd <repo>\n<cmd>`,
+which otherwise defeats every git phrasing and eats the display budget),
+shortens repo-root paths, and pulls a commit subject out of `-m`/heredoc forms.
+`state.js:humanizeAction` re-applies the same cleanup client-side as a fallback
+(and to clean historical lines), then adds the verb glyph + color.
 
 ## Related decisions
 

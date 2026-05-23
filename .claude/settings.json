@@ -1,7 +1,7 @@
 {
   "_comment": "Brain-root hooks. Loaded for any session opened at brain/ or below. The gielinor/.claude/settings.json holds architectural guarantees scoped to gielinor sessions; this file holds cross-brain instrumentation.",
   "_comment_abs_path": "S052: hook commands use an absolute path instead of ${CLAUDE_PROJECT_DIR}. Sessions launched from a subdirectory (e.g. switchboard/, experiments/) come up with an empty CLAUDE_PROJECT_DIR, which expanded to a broken '/developer-braindead/...' path and silently no-op'd every hook — that session never appeared on the switchboard or emitted events. Absolute path is machine-specific but the brain hasn't migrated hosts; revisit at ascension (death-as-migration).",
-  "_comment_status_sidecar": "D-020 status-sidecar.py registered for UserPromptSubmit + Stop + SessionEnd (3 fires/turn). PreToolUse/PostToolUse intentionally NOT registered — per-tool-call granularity wasn't load-bearing for the switchboard UX and would push fire rate to 2N+3/turn, materially above emit-event.py's baseline. See S032 incident + S033 re-enable decision; lorebook draft on hook-fire-rate-as-budget pending.",
+  "_comment_status_sidecar": "D-020 status-sidecar.py registered for UserPromptSubmit + Stop + SessionEnd (3 fires/turn). PreToolUse/PostToolUse NOT registered broadly — per-tool granularity isn't load-bearing and would push fire rate to 2N+3/turn. EXCEPTION (S053): status-sidecar IS registered for PreToolUse/PostToolUse matched ONLY to AskUserQuestion|ExitPlanMode — these park the session on the user mid-turn with no Stop, so the board would read WORKING while actually WAITING. Tight matcher keeps it ~0-2 fires/session. See S032 incident + S033 re-enable decision; lorebook draft on hook-fire-rate-as-budget pending.",
   "permissions": {
     "defaultMode": "bypassPermissions",
     "allow": [
@@ -19,6 +19,15 @@
             "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/developer-braindead/.claude/hooks/emit-event.py\""
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/developer-braindead/.claude/hooks/status-sidecar.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -28,6 +37,15 @@
           {
             "type": "command",
             "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/developer-braindead/.claude/hooks/emit-event.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/developer-braindead/.claude/hooks/status-sidecar.py\""
           }
         ]
       }

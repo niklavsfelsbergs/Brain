@@ -44,10 +44,12 @@ Section started life as "development rules layer" (the collaboration-contract fr
 
 **Status.** `[ ]` open — **and the load-bearing gap ([[S060]], [[D-027]]).** This was the original mission core: the agent doing real work on a trigger. It has never been built; §B "had direction" by [[S003]] yet the pilot kept deferring while the cognitive architecture grew. Reframed as the next build — pick one recurring job a player already does by hand, wire the thinnest scheduled run on the harness scheduler (sidestepping §G), produce one artifact without the operator in the loop, dry-run/worktree-safe. Input needed: *which* job (Jebrim's / principal's call).
 
-- §C.1 `[ ]` Define data source (TBD — likely Niklavs's BI/analytics work context).
-- §C.2 `[ ]` Define "concerning" (judgment, posture-dependent — ties to [[Q-003]]).
-- §C.3 `[ ]` Define output channel for the morning report.
-- §C.4 `[ ]` Wire scheduled trigger. Phase 2 territory; Phase 1 = manual invocation only ([[A-001]]).
+**Scoped pilot ([[S060]]) — daily shipping-mart freshness audit.** Read-only health check on the gold `shipping_mart`, run every morning after the ~08:00 load. Output: a dated GREEN / flags-with-numbers report. **Build splits in two:** Braindead wires the scheduled-trigger mechanism (the reusable "hands"); Jebrim writes the SQL checks in `shipping-agent/` (the content). Parked at [[S060]] close — built next session.
+
+- §C.1 `[~]` **Data source** — gold `shipping_mart` via the `shipping-agent/` harness (`ship_mart_ro`, read-only, gold-only). Resolved.
+- §C.2 `[~]` **What's "concerning"** — six checks: (1) recency vs the ~08:00 load, (2) volume vs trailing avg, (3) cost invariant `SUM(buckets)==total_eur==real_shipping_cost_eur`, (4) `cost_source` coverage vs baseline (invoice 65 / expected 24 / NULL 8 / avg 2), (5) order-item completeness, (6) cross-fact agreement. Thresholds: self-calibrate off a trailing window where possible; Jebrim sets the floors.
+- §C.3 `[~]` **Output channel** — a dated report to a file first (zero side effect); Slack draft in Jebrim's voice only once trusted.
+- §C.4 `[~]` **Scheduled trigger** — ~08:30 daily via the harness scheduler (sidesteps §G per [[D-027]]); retires the manual-only [[A-001]] for this one job.
 
 ## §D — Body files
 

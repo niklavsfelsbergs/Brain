@@ -600,6 +600,43 @@ def _emit_chat_intent(actor: str, sid8: str, instance: Optional[int], text: str)
         print(f"status-sidecar: chat intent emit failed: {e}", file=sys.stderr)
 
 
+def _emit_chat_checkpoint(actor: str, sid8: str, instance: Optional[int],
+                          kind: str, text: str) -> None:
+    """S062: append a lifecycle-checkpoint line to chat.ndjson. The COMMS feed
+    is a per-session heartbeat now — PICKED UP (a prompt arrived) / NEEDS YOU
+    (an interactive question parks the turn) / DONE (the turn ended). Mirrors
+    _emit_chat_intent; empty text is allowed (the marker itself is the signal)."""
+    event = {
+        "ts": time.time(),
+        "actor": actor or "wisp",
+        "instance": instance,
+        "sid8": sid8 or "",
+        "kind": kind,
+        "text": (text or "")[:CHAT_TEXT_MAX],
+    }
+    try:
+        CHAT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with CHAT_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(event, separators=(",", ":")) + "\n")
+    except Exception as e:
+        print(f"status-sidecar: chat checkpoint emit failed: {e}", file=sys.stderr)
+
+
+def _waiting_question(tool_name: str, tool_input: dict) -> str:
+    """Best-effort question text for a NEEDS YOU checkpoint. AskUserQuestion
+    carries a `questions` list (we show the first + a count of the rest);
+    ExitPlanMode carries a plan (we just flag it's up for review)."""
+    if tool_name == "ExitPlanMode":
+        return "Plan ready for your review"
+    qs = tool_input.get("questions") if isinstance(tool_input, dict) else None
+    if isinstance(qs, list) and qs and isinstance(qs[0], dict):
+        q = (qs[0].get("question") or "").strip()
+        if q:
+            extra = f" (+{len(qs) - 1} more)" if len(qs) > 1 else ""
+            return (q + extra)[:CHAT_TEXT_MAX]
+    return "Waiting on your answer"
+
+
 def _sweep_chat_ndjson() -> None:
     """S052: keep chat.ndjson bounded. Mirror of emit-event.py's sweep — called
     once per UserPromptSubmit (low cadence, post-write so a failure can't
@@ -1203,6 +1240,7 @@ def main() -> None:
         sys.exit(0)
 
     hook_event = payload.get("hook_event_name") or ""
+    tool_name = payload.get("tool_name") or ""   # S062: hoisted — used by the Pre/Post state logic and the checkpoint dispatch below
     state = EVENT_STATE.get(hook_event)
     if state is None:
         sys.exit(0)
@@ -1220,7 +1258,6 @@ def main() -> None:
     #     (other foreground spawns may still be in flight after a parallel
     #     batch). Background spawns don't block the parent → ignore their Pre.
     if hook_event in ("PreToolUse", "PostToolUse"):
-        tool_name = payload.get("tool_name") or ""
         if tool_name in WAIT_TOOLS:
             state = "waiting_for_user" if hook_event == "PreToolUse" else "working"
         elif tool_name in SUBAGENT_TOOLS:
@@ -1351,6 +1388,26 @@ def main() -> None:
             _emit_chat_intent(record.get("actor") or "wisp", sid8, instance, new_intent)
     except Exception as e:
         print(f"status-sidecar: chat intent dispatch failed: {e}", file=sys.stderr)
+
+    # S062: lifecycle checkpoints. Each fires on the event that already brought
+    # the sidecar here, so there's no extra hook cost. PLAN/PROGRESS already flow
+    # as kind=intent above; these are the turn's bookends + the mid-turn ask.
+    try:
+        ck_actor = record.get("actor") or "wisp"
+        if hook_event == "UserPromptSubmit":
+            raw_prompt = payload.get("prompt")
+            if isinstance(raw_prompt, str) and raw_prompt.strip():
+                gist = " ".join(raw_prompt.split())[:200]
+                _emit_chat_checkpoint(ck_actor, sid8, instance, "picked_up", gist)
+        elif hook_event == "PreToolUse" and tool_name in WAIT_TOOLS:
+            q = _waiting_question(tool_name, payload.get("tool_input") or {})
+            _emit_chat_checkpoint(ck_actor, sid8, instance, "needs_you", q)
+        elif hook_event == "Stop" and prev.get("last_event_kind") != "Stop":
+            # Stop can fire twice per turn — only the first is the real turn-end.
+            _emit_chat_checkpoint(ck_actor, sid8, instance, "done",
+                                  (record.get("intent") or "").strip())
+    except Exception as e:
+        print(f"status-sidecar: checkpoint dispatch failed: {e}", file=sys.stderr)
 
     # Sweep runs after the write so a failure in the sweep can't prevent this
     # session's own status from landing.

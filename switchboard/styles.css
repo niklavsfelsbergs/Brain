@@ -1413,3 +1413,65 @@ body.crt::after {
   color: #4a3a28;
 }
 .msg-body .md-hr { border: none; border-top: 1px solid rgba(44,31,16,0.35); margin: 9px 0; }
+
+/* ─── S062: lifecycle checkpoints ───────────────────────────────────────────
+   The feed is a per-session heartbeat now: PICKED UP → (intent: PLAN/PROGRESS)
+   → NEEDS YOU → DONE. Raw tool-actions are silenced; comms posts pulled out.
+   NEEDS YOU is styled loudest — it's the one line that's actionable. */
+.log-entry.checkpoint { align-items: baseline; margin-top: 3px; }
+.ck-label {
+  flex: 0 0 auto;
+  font: 700 0.78em/1.4 inherit;
+  letter-spacing: 0.05em;
+  padding: 1px 7px;
+  border-radius: 3px;
+  margin-right: 9px;
+  white-space: nowrap;
+}
+.ck-body { color: #1a120a; }
+
+/* PICKED UP — a task arrives. Calm, gold-edged. */
+.ck-label.ck-picked_up {
+  color: var(--gold-dk);
+  border: 1px solid color-mix(in srgb, var(--gold-dk) 45%, transparent);
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+}
+
+/* DONE — turn complete. Quiet green, low-key. */
+.log-entry.checkpoint.ck-done { color: #1a6660; }
+.ck-label.ck-done {
+  color: #14524d;
+  border: 1px solid color-mix(in srgb, #1a6660 40%, transparent);
+  background: color-mix(in srgb, #1a6660 12%, transparent);
+}
+.log-entry.checkpoint.ck-done .ck-body { color: #2f4f49; font-style: italic; }
+
+/* NEEDS YOU — the loudest line in the feed. Amber wash + heavy left rule +
+   slow pulse so a parked session is impossible to miss. */
+.log-entry.checkpoint.ck-needs_you {
+  border-left: 4px solid #d8a234;
+  padding: 3px 6px 3px 9px;
+  margin: 4px 0;
+  border-radius: 0 4px 4px 0;
+  animation: ckNeedsPulse 1.9s ease-in-out infinite;
+}
+.ck-label.ck-needs_you { color: #fff; background: #b9791a; border: 1px solid #8a5a10; }
+.log-entry.checkpoint.ck-needs_you .ck-body { color: #2a1c08; font-weight: 600; }
+@keyframes ckNeedsPulse {
+  0%, 100% { background: color-mix(in srgb, #d8a234 15%, transparent); }
+  50%      { background: color-mix(in srgb, #d8a234 30%, transparent); }
+}
+
+/* S062: the principal speaks — Niklavs' own prompts anchor each exchange under
+   his name (gold left-bar, bold uppercase), distinct from the agent voices. */
+.log-entry.principal { border-left: 3px solid var(--gold); padding-left: 7px; margin-top: 5px; }
+.log-entry.principal .user {
+  color: #1a120a;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.log-entry.principal .body { color: #1a120a; font-weight: 600; }
+
+/* S062: read-only peek pill — a session viewed (e.g. live in VS Code), not owned. */
+.tt-dot[data-state="readonly"] { background: #4b6f9c; box-shadow: 0 0 5px #4b6f9c; }

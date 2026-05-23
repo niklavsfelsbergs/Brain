@@ -187,6 +187,17 @@ function logCommitBanner(actor, detail, speaker, tsInput, sid8) {
   return li;
 }
 
+// S062: lifecycle checkpoint line — the load-bearing feed content now that raw
+// tool-actions are silenced. A labeled, glyphed milestone in a session's turn
+// (PICKED UP / NEEDS YOU / DONE). Breaks any speaker-run (not a stream line) so
+// each checkpoint stands alone; NEEDS YOU is styled loudest in styles.css.
+function logCheckpoint(actor, label, glyph, text, kind, speaker, tsInput, sid8) {
+  const bodyHtml =
+    `<span class="ck-label ck-${kind}">${escapeHtml(glyph)} ${escapeHtml(label)}</span>` +
+    (text ? `<span class="ck-body">${escapeHtml(text)}</span>` : '');
+  return logChatLine(actor, text, 'checkpoint ck-' + kind, speaker, tsInput, { bodyHtml, sid8 });
+}
+
 // ─── comms feed: parse state-comms-<origin>.md → render headers + bodies ───
 const HEADER_RE = /^\[([^\]]+)\]\s+(\S+)\s+(.+)$/;
 const HEADER_PREVIEW_CHARS = 90;
@@ -410,22 +421,34 @@ function renderNdjsonRecord(rec) {
   // Feed the per-session sparkline (switchboard reads activity.js back).
   recordEvent(sid8, tsMs);
 
+  // S062: raw tool-actions no longer render as feed lines — the feed is a
+  // per-session lifecycle ticker now, not a keystroke log. We still consume the
+  // action records silently: they drive the switchboard's live action line and
+  // each row's activity sparkline. Commits stay as milestone banners.
   if (rec.kind === 'action') {
     const a = humanizeAction(text);
-    recordAction(sid8, a.body, tsMs);   // S061: feed the switchboard's live action line
-    if (a.isCommit) {
-      logCommitBanner(displayName, a.body, speaker, tsMs, sid8);
-      return;
-    }
-    const bodyHtml =
-      `<span class="act-glyph ${a.cls}">${escapeHtml(a.glyph)}</span>` +
-      `<span class="act-body">${escapeHtml(a.body)}</span>`;
-    logChatLine(displayName, a.body, 'action ' + a.cls, speaker, tsMs,
-                { stream: true, bodyHtml, sid8 });
+    recordAction(sid8, a.body, tsMs);
+    if (a.isCommit) logCommitBanner(displayName, a.body, speaker, tsMs, sid8);
     return;
   }
+  // PLAN / PROGRESS — the agent's in-voice heartbeat (the "medium" beats).
   if (rec.kind === 'intent') {
     logChatLine(displayName, text, 'intent', speaker, tsMs, { stream: true, sid8 });
+    return;
+  }
+  // S062 lifecycle checkpoints — the turn's bookends + the mid-turn ask.
+  // The principal's own prompt (UserPromptSubmit → picked_up) renders as Niklavs
+  // speaking, anchoring the exchange under his name rather than the agent's.
+  if (rec.kind === 'picked_up') {
+    logChatLine('Niklavs', text, 'principal', 'niklavs', tsMs, { sid8 });
+    return;
+  }
+  if (rec.kind === 'needs_you') {
+    logCheckpoint(displayName, 'NEEDS YOU', '✋', text, 'needs_you', speaker, tsMs, sid8);
+    return;
+  }
+  if (rec.kind === 'done') {
+    logCheckpoint(displayName, 'DONE', '✓', text || 'back to you', 'done', speaker, tsMs, sid8);
     return;
   }
   if (rec.kind === 'commit') {
@@ -596,10 +619,13 @@ export function initChat(opts = {}) {
       .forEach(el => el.classList.add('actor-flash'));
   });
 
-  // Live-only: poll comms + chat.ndjson. Static page (no ?live=1) leaves the
-  // panel empty — the operator pulls up a frozen surface for inspection.
+  // Live-only: poll chat.ndjson. Static page (no ?live=1) leaves the panel
+  // empty — the operator pulls up a frozen surface for inspection.
+  // S062: comms OPEN/DONE posts pulled out of the feed — it's a per-session
+  // lifecycle ticker now, not a coordination log. The comms mirrors still exist
+  // on disk for sessions to read each other; initCommsFeed() stays defined but
+  // unwired (a future panel could surface coordination separately).
   if (live) {
-    initCommsFeed();
     initChatNdjson();
   }
 }

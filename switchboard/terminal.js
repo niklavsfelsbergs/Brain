@@ -55,7 +55,7 @@ function spawnConvo() {
 // localStorage on page load: its pill exists and (on first activation) its
 // history replays, but no live `claude` process is spawned until the user
 // actually clicks into it — that's the lazy half of the persistence design.
-function createConvo({ sessionId = null, sid8 = null, title = null, dormant = false }) {
+function createConvo({ sessionId = null, sid8 = null, title = null, dormant = false, readonly = false }) {
   const id = ++seq;
 
   // pane: scrollable message list + input bar
@@ -100,6 +100,7 @@ function createConvo({ sessionId = null, sid8 = null, title = null, dormant = fa
   c.sid8 = sid8;
   c.title = title;
   c.dormant = dormant;
+  c.readonly = readonly;
   convos.push(c);
 
   tab.addEventListener('click', (e) => { if (e.target !== close) { activate(id); wakeConvo(c); } });
@@ -114,6 +115,12 @@ function createConvo({ sessionId = null, sid8 = null, title = null, dormant = fa
   if (dormant) {
     setDot(c, 'saved');
     c.tab.title = sessionId || sid8 || '';
+  }
+  if (readonly) {
+    // External session (e.g. live in VS Code): viewable, not controllable.
+    ta.disabled = true;
+    send.disabled = true;
+    ta.placeholder = 'read-only — this session is running in VS Code';
   }
   return c;
 }
@@ -190,7 +197,7 @@ function submit(c) {
 
   // An actual message is blocked while a turn runs — leave the text in place so
   // it isn't lost (Enter becomes a no-op until the turn ends).
-  if (c.turnActive || c.ended) return;
+  if (c.turnActive || c.ended || c.readonly) return;
   c.ta.value = '';
   autosize(c.ta);
   if (c.ws && c.ws.readyState === 1) {
@@ -480,17 +487,25 @@ function closeConvo(id) {
 }
 
 // Clicking a switchboard row routes here (via focus.js). If a pill for that
-// sid8 already exists it's activated + woken; if not — e.g. a session started
-// in VS Code — a pill is created and the session is taken over: its history
-// loads and the chatbox resumes it. (Takeover is one-way; the VS Code side may
-// not be resumable afterward, which the principal accepts.)
+// sid8 already exists, it's an app-owned convo — activate + wake it (resume is
+// safe; the app is its only owner). If not — e.g. a session running in VS Code —
+// open a READ-ONLY peek of its transcript instead of taking it over (S062): a
+// session can have only one live owner, so resuming one VS Code is running would
+// conflict (that was the "message doesn't send" bug). Peek = view, don't hijack.
 function focusBySid8(sid8) {
   if (!sid8) return false;
-  let c = convos.find((t) => t.sid8 === sid8);
-  if (!c) c = createConvo({ sid8, dormant: true });   // attach to a board session
+  const owned = convos.find((t) => t.sid8 === sid8);
+  if (owned) {                               // app-owned: open + resume
+    setPanelOpen(true);
+    activate(owned.id);
+    wakeConvo(owned);
+    return true;
+  }
+  // External session: read-only peek (no resume, no WebSocket).
+  const peek = createConvo({ sid8, dormant: true, readonly: true });
   setPanelOpen(true);
-  activate(c.id);
-  wakeConvo(c);
+  activate(peek.id);
+  peekConvo(peek);
   return true;
 }
 
@@ -537,7 +552,7 @@ function restoreConvos() {
 
 // Lazy resume: fetch + replay the transcript, then reconnect with --resume.
 async function wakeConvo(c) {
-  if (!c.dormant || c.waking) return;
+  if (c.readonly || !c.dormant || c.waking) return;
   c.waking = true;
   setDot(c, 'connecting');
   // For a board-attached convo we only have the sid8; /history resolves it to
@@ -570,9 +585,40 @@ async function wakeConvo(c) {
   c.waking = false;
 }
 
+// Read-only peek (S062): load + render a session's transcript WITHOUT resuming
+// it. For sessions the app doesn't own (e.g. live in VS Code) — view, never take
+// over. No WebSocket, no --resume; the input stays disabled.
+async function peekConvo(c) {
+  if (c.waking) return;
+  c.waking = true;
+  setDot(c, 'connecting');
+  const key = c.sessionId || c.sid8;
+  try {
+    const res = await fetch(`/history?session=${encodeURIComponent(key)}`);
+    if (res.status === 404) {
+      systemLine(c, 'no transcript on disk for this session.', true);
+      setDot(c, 'closed');
+      c.dormant = false; c.waking = false;
+      return;
+    }
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sessionId) c.sessionId = data.sessionId;
+      if (data.title) c.title = data.title;
+      c.label.textContent = labelFor(c);
+      renderHistory(c, data, { readonly: true });
+    }
+  } catch (err) {
+    systemLine(c, 'could not load history: ' + err, true);
+  }
+  c.dormant = false;
+  c.waking = false;
+  setDot(c, 'readonly');
+}
+
 // Replay a /history payload into the pane using the live render primitives, so
 // restored history looks identical to a conversation that streamed in live.
-function renderHistory(c, data) {
+function renderHistory(c, data, opts = {}) {
   for (const turn of (data.turns || [])) {
     c.cur = null; c.think = null;
     if (turn.role === 'user') {
@@ -592,7 +638,7 @@ function renderHistory(c, data) {
     }
   }
   c.cur = null; c.think = null;
-  systemLine(c, '— resumed —');
+  systemLine(c, opts.readonly ? '— read-only · this session is running in VS Code —' : '— resumed —');
   scroll(c);
 }
 

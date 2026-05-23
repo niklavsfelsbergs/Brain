@@ -1,0 +1,524 @@
+:root {
+  --parchment: #efe2bb;
+  --parchment-dk: #d8c694;
+  --ink: #28201a;
+  --ink-soft: #50402f;
+  --frame-bg: #14100c;
+  --frame-edge: #2c2018;
+  --gold: #d8ad36;
+  --gold-dk: #997620;
+  /* C1 (S022): per-actor chat tints. `-text` reads on the light tan COMMS
+     panel; `-dot` reads on the dark frame. Used by chat user-prefix,
+     speaker-bullet, tab-dot, and legend so changing the canonical color in
+     one place propagates everywhere. */
+  --jebrim-text: #1f4b8a;      --jebrim-dot: #9bc4ff;
+  --zezima-text: #a44a14;      --zezima-dot: #ffb56b;
+  --dwarves-text: #8a5a10;     --dwarves-dot: #ffd24a;     --dwarves-swatch: #cf9a2c;
+  --gnomes-text: #5b3d6e;      --gnomes-dot: #c8a8e0;      --gnomes-swatch: #8b6caf;
+  --penguins-text: #1e3a5c;    --penguins-dot: #9bb6d8;    --penguins-swatch: #4b6f9c;
+  --wisp-text: #8a7020;        --wisp-dot: #fff4c8;
+  --braindead-text: #1a6660;   --braindead-dot: #7fa6a0;
+  --guthix-text: #1f7045;      --guthix-dot: #8af0c6;     --guthix-swatch: #2f6a44;
+  --commits-text: #6e2c14;     --commits-dot: #ff9344;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  background:
+    radial-gradient(ellipse at top, #2a1f15 0%, #14100c 60%, #0a0805 100%);
+  color: var(--parchment);
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 18px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.stage {
+  max-width: none;
+  margin: 0;
+  padding: 14px;
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ─── Switchboard pane (D-020, Phase 2) ───
+   Polls state-switchboard.json (written by status-sidecar.py on every
+   turn-bracketing hook event) and renders one row per live Claude Code
+   session. The point: see at a glance which terminal is waiting for the
+   principal, which is mid-work, which is idle — without alt-tabbing
+   through every window. Width 280px. */
+.switchboard {
+  margin-top: 0;
+  background: #c8b48a;
+  border: 2px solid #2c1f10;
+  width: 280px;
+  flex-shrink: 0;
+  align-self: stretch;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    inset 0 0 0 1px #8a7048,
+    inset 1px 1px 0 #e0caa0,
+    inset -1px -1px 0 #5a4020,
+    0 6px 16px rgba(0,0,0,0.5);
+  color: #1a0f06;
+  display: flex;
+  flex-direction: column;
+}
+.switchboard > header {
+  background: linear-gradient(180deg, #4a3520 0%, #2e2010 100%);
+  border-bottom: 2px solid #0a0604;
+  box-shadow: inset 0 -1px 0 #5a4126, inset 0 1px 0 #7a5e3a;
+  padding: 4px 12px;
+  font-family: 'VT323', 'Jacquard 12', serif;
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  color: #ffcb46;
+  text-shadow: 1px 1px 0 #1a0f06;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+}
+.switchboard > header::before {
+  content: "";
+  width: 7px; height: 7px;
+  background: #5fff5f;
+  box-shadow: 0 0 4px #5fff5f, 1px 1px 0 #1a0f06;
+  animation: pulse 1400ms ease-in-out infinite;
+}
+.switchboard .sb-count {
+  margin-left: auto;
+  font-size: 13px;
+  color: #ffcb46;
+  opacity: 0.75;
+  letter-spacing: 0.04em;
+}
+.switchboard .sb-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px;
+  background: linear-gradient(180deg, #d0bc94 0%, #beaa82 100%);
+  font-family: 'Trebuchet MS', 'Verdana', 'Tahoma', sans-serif;
+}
+.switchboard .sb-list::-webkit-scrollbar { width: 10px; }
+.switchboard .sb-list::-webkit-scrollbar-track { background: #8a7048; border-left: 1px solid #2c1f10; }
+.switchboard .sb-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a3520 0%, #2c1f10 100%);
+  border: 1px solid #1a0f06;
+}
+.sb-row {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  grid-template-rows: auto auto;
+  gap: 1px 8px;
+  padding: 6px 6px 7px;
+  margin-bottom: 4px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(44,31,16,0.35);
+  border-left-width: 4px;
+  cursor: pointer;
+  transition: background 100ms;
+}
+.sb-row:hover { background: rgba(255,255,255,0.35); }
+.sb-row .sb-dot {
+  grid-row: 1 / 2; grid-column: 1 / 2;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-top: 4px;
+  box-shadow: 1px 1px 0 #1a0f06, 0 0 4px currentColor;
+}
+.sb-row .sb-who {
+  grid-row: 1 / 2; grid-column: 2 / 3;
+  font-weight: bold;
+  font-size: 13px;
+  color: #1a0f06;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-row .sb-who .sb-sid {
+  font-family: 'VT323', monospace;
+  font-weight: normal;
+  font-size: 12px;
+  color: #5a4020;
+  margin-left: 4px;
+  opacity: 0.7;
+}
+.sb-row .sb-state {
+  grid-row: 1 / 2; grid-column: 3 / 4;
+  font-family: 'VT323', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 0 5px 1px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  line-height: 1.45;
+  align-self: center;
+  background: rgba(255,255,255,0.28);
+  text-transform: uppercase;
+}
+.sb-row .sb-age {
+  grid-row: 1 / 2; grid-column: 4 / 5;
+  font-family: 'VT323', monospace;
+  font-size: 12px;
+  color: #5a4020;
+  align-self: center;
+}
+/* S052: subtitle row — a single ≤100-char human-language line composed by
+   status-sidecar.py (was per-row intent_text + latest_action heartbeat
+   pre-S052). One row, two lines max via -webkit-line-clamp. */
+.sb-row .sb-intent {
+  grid-row: 2 / 3; grid-column: 2 / 5;
+  font-size: 12px;
+  color: #2c1f10;
+  line-height: 1.25;
+  font-style: italic;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+/* State coloring on the dot + left border + chip + row tint */
+.sb-row[data-state="waiting_for_user"] {
+  border-left-color: #d8a234;
+  background: rgba(255, 220, 130, 0.45);
+}
+.sb-row[data-state="waiting_for_user"] .sb-dot {
+  color: #d8a234;
+  background: #ffd84d;
+  animation: sbWaitingPulse 1100ms ease-in-out infinite;
+}
+.sb-row[data-state="waiting_for_user"] .sb-state {
+  color: #6a4a10;
+  background: rgba(255, 216, 77, 0.85);
+  border-color: #a87820;
+  animation: sbWaitingChip 1100ms ease-in-out infinite;
+}
+@keyframes sbWaitingPulse {
+  0%,100% { transform: scale(1); box-shadow: 1px 1px 0 #1a0f06, 0 0 4px #ffd84d; }
+  50%     { transform: scale(1.25); box-shadow: 1px 1px 0 #1a0f06, 0 0 10px #ffd84d; }
+}
+@keyframes sbWaitingChip {
+  0%,100% { background: rgba(255, 216, 77, 0.85); }
+  50%     { background: rgba(255, 240, 160, 1); }
+}
+.sb-row[data-state="working"] {
+  border-left-color: #2e7a2e;
+  background: rgba(140, 220, 140, 0.18);
+}
+.sb-row[data-state="working"] .sb-dot {
+  color: #2e7a2e;
+  background: #5fff5f;
+}
+.sb-row[data-state="working"] .sb-state {
+  color: #1f5a1f;
+  background: rgba(140, 220, 140, 0.40);
+  border-color: #2e7a2e;
+}
+.sb-row[data-state="closing"] {
+  border-left-color: #c45a18;
+  background: rgba(220, 130, 50, 0.18);
+}
+.sb-row[data-state="closing"] .sb-dot {
+  color: #c45a18;
+  background: #f0903c;
+  animation: sbClosingPulse 1800ms ease-in-out infinite;
+}
+.sb-row[data-state="closing"] .sb-state {
+  color: #6a2a08;
+  background: rgba(240, 144, 60, 0.40);
+  border-color: #c45a18;
+}
+@keyframes sbClosingPulse {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.55; }
+}
+.sb-row[data-state="idle"] {
+  border-left-color: #6a5a40;
+  background: rgba(120, 95, 50, 0.14);
+  opacity: 0.85;
+}
+.sb-row[data-state="idle"] .sb-dot {
+  color: #6a5a40;
+  background: #a89878;
+  box-shadow: 1px 1px 0 #1a0f06;
+}
+.sb-row[data-state="idle"] .sb-state {
+  color: #4a3a20;
+  background: rgba(168, 152, 120, 0.40);
+  border-color: #6a5a40;
+}
+.sb-row[data-state="ended"] {
+  border-left-color: #4a3520;
+  background: rgba(74, 53, 32, 0.14);
+  opacity: 0.55;
+}
+.sb-row[data-state="ended"] .sb-dot {
+  color: #4a3520;
+  background: #6a5a40;
+  box-shadow: 1px 1px 0 #1a0f06;
+}
+.sb-row[data-state="ended"] .sb-state {
+  color: #2c1f10;
+  background: rgba(106, 90, 64, 0.35);
+  border-color: #4a3520;
+}
+.sb-row.sb-this {
+  outline: 1px solid #ffcb46;
+  outline-offset: -1px;
+}
+.sb-row.sb-this .sb-who::after {
+  content: " (this)";
+  font-weight: normal;
+  font-size: 11px;
+  color: #5a4020;
+  font-family: 'VT323', monospace;
+}
+.sb-empty {
+  padding: 14px;
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: #5a4020;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ─── COMMS / chatbox (OSRS-style, D-014) ─── */
+/* Classic RuneScape chat: black-brown panel, bright yellow body, white
+   usernames, cyan system lines. Sharp 1px inner border, no soft glow. */
+.logbox {
+  margin-top: 0;
+  background: #c8b48a;
+  border: 2px solid #2c1f10;
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    inset 0 0 0 1px #8a7048,
+    inset 1px 1px 0 #e0caa0,
+    inset -1px -1px 0 #5a4020,
+    0 6px 16px rgba(0,0,0,0.5);
+  color: #1a0f06;
+  display: flex;
+  flex-direction: column;
+}
+.logbox header {
+  background: linear-gradient(180deg, #4a3520 0%, #2e2010 100%);
+  border-bottom: 2px solid #0a0604;
+  box-shadow: inset 0 -1px 0 #5a4126, inset 0 1px 0 #7a5e3a;
+  padding: 4px 12px;
+  font-family: 'VT323', 'Jacquard 12', serif;
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  color: #ffcb46;
+  text-shadow: 1px 1px 0 #1a0f06;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+}
+.logbox header::before {
+  content: "";
+  width: 7px; height: 7px;
+  background: #5fff5f;
+  box-shadow: 0 0 4px #5fff5f, 1px 1px 0 #1a0f06;
+  animation: pulse 1400ms ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
+.log-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 12px;
+  font-family: 'Trebuchet MS', 'Verdana', 'Tahoma', sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #1a0f06;
+  background: linear-gradient(180deg, #d0bc94 0%, #beaa82 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.log-scroll::-webkit-scrollbar { width: 10px; }
+.log-scroll::-webkit-scrollbar-track { background: #8a7048; border-left: 1px solid #2c1f10; }
+.log-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a3520 0%, #2c1f10 100%);
+  border: 1px solid #1a0f06;
+}
+/* I2: jump-to-latest pip, surfaces when user scrolls up. Position covers the
+   scrollbar's lower edge so it's reachable without leaving the panel. */
+.jump-latest {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px 4px;
+  font-family: 'VT323', monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #ffcb46;
+  background: #3a2812;
+  border: 1px solid #0a0604;
+  box-shadow: inset 1px 1px 0 #5a4126, inset -1px -1px 0 #1a0f06, 0 2px 4px rgba(0,0,0,0.4);
+  cursor: pointer;
+  user-select: none;
+  text-transform: uppercase;
+  line-height: 1;
+  transition: color 100ms, background 100ms;
+}
+.jump-latest:hover { color: #ffff7a; background: #4a3520; }
+.jump-latest.visible { display: inline-flex; }
+.jump-latest .arrow { font-weight: bold; }
+.log-entry {
+  padding: 0 0 1px;
+  color: #0a0604;
+}
+.log-entry .t {
+  color: #6a5230;
+  margin-right: 6px;
+  font-weight: normal;
+}
+/* Username prefix — actor-tinted, darker for legibility against tan bg */
+.log-entry .user {
+  margin-right: 2px;
+}
+.log-entry .user::after { content: ":"; }
+/* Per-actor username tint — derived from --<actor>-text CSS vars (C1). */
+.log-entry[data-speaker="jebrim"]    .user { color: var(--jebrim-text); }
+.log-entry[data-speaker="zezima"]    .user { color: var(--zezima-text); }
+.log-entry[data-speaker="dwarves"]   .user { color: var(--dwarves-text); }
+.log-entry[data-speaker="wisp"]      .user { color: var(--wisp-text); }
+.log-entry[data-speaker="braindead"] .user { color: var(--braindead-text); }
+.log-entry[data-speaker="guthix"]    .user { color: var(--guthix-text); }
+.log-entry[data-speaker="gnomes"]    .user { color: var(--gnomes-text); }
+.log-entry[data-speaker="penguins"]  .user { color: var(--penguins-text); }
+.log-entry[data-speaker="commits"]   .user { color: var(--commits-text); }
+/* Body text stays black for all chat lines */
+.log-entry.intent,
+.log-entry.action { color: #0a0604; }
+.log-entry.intent { font-style: italic; }
+/* Narration / system: muted dark italic */
+.log-entry.narrate,
+.log-entry.system,
+.log-entry.read    { color: #4a3520; font-style: italic; }
+.log-entry.commit  { color: var(--commits-text); border-top: 1px dashed color-mix(in srgb, var(--commits-text) 35%, transparent); margin-top: 3px; padding-top: 3px; }
+.log-entry.session-start { color: #1e5a1e; font-weight: bold; margin-top: 4px; }
+/* S043 (D-024): comms-channel entries from gielinor/comms/ + developer-braindead/comms/.
+   OPEN/CLOSING headers carry a faint left rule so multi-line entries read as a single
+   post; body lines are indented and slightly muted. */
+.log-entry.comms-open    { border-left: 2px solid color-mix(in srgb, currentColor 50%, transparent); padding-left: 6px; margin-top: 4px; }
+.log-entry.comms-update  { border-left: 2px dashed color-mix(in srgb, currentColor 40%, transparent); padding-left: 6px; margin-top: 4px; }
+.log-entry.comms-closing { border-left: 2px dotted color-mix(in srgb, currentColor 40%, transparent); padding-left: 6px; margin-top: 4px; opacity: 0.85; }
+.log-entry.comms-dialog  { border-left: 2px solid color-mix(in srgb, var(--gold) 60%, transparent); padding-left: 6px; margin-top: 4px; }
+/* Body collapsed by default — header click expands. Discipline aims at 2-3
+   lines per body; collapsed default keeps the panel readable even for the
+   legacy multi-paragraph entries that predate the cap. */
+.log-entry.comms-body    { display: none; color: #3b2814; padding-left: 18px; font-size: 11.5px; }
+.log-entry.comms-body.show { display: block; }
+.log-entry.comms-body .t { opacity: 0; }  /* hide timestamp on continuation lines */
+.log-entry.comms-toggleable { cursor: pointer; }
+.log-entry.comms-toggleable::after { content: " ▸"; opacity: 0.45; font-size: 10px; margin-left: 4px; }
+.log-entry.comms-toggleable.expanded::after { content: " ▾"; opacity: 0.7; }
+
+/* ─── COMMS tabs (OSRS-style buttons) ─── */
+.logbox header .log-title {
+  color: #ffcb46;
+  font-family: 'VT323', 'Jacquard 12', serif;
+  text-shadow: 1px 1px 0 #1a0f06;
+}
+.log-tabs {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: auto;
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+.log-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 4px;
+  color: #c8a878;
+  background: #3a2812;
+  border: 1px solid #0a0604;
+  box-shadow: inset 1px 1px 0 #5a4126, inset -1px -1px 0 #1a0f06;
+  cursor: pointer;
+  user-select: none;
+  text-transform: uppercase;
+  line-height: 1;
+  transition: color 100ms, background 100ms;
+}
+.log-tab:hover { color: #ffcb46; background: #4a3520; }
+.log-tab.active {
+  color: #ffff7a;
+  background: #5a3f1f;
+  box-shadow: inset 1px 1px 0 #1a0f06, inset -1px -1px 0 #5a4126;
+}
+.log-tab .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  box-shadow: 0 0 4px currentColor, 1px 1px 0 #1a0f06;
+}
+/* Tab dots — C1: background = light dot tint, glow color = dark text tint. */
+.log-tab[data-tab="all"]       .dot { background: #ffffff; color: #c8c8c8; }
+.log-tab[data-tab="jebrim"]    .dot { background: var(--jebrim-dot);    color: var(--jebrim-text); }
+.log-tab[data-tab="zezima"]    .dot { background: var(--zezima-dot);    color: var(--zezima-text); }
+.log-tab[data-tab="dwarves"]   .dot { background: var(--dwarves-dot);   color: var(--dwarves-text); }
+.log-tab[data-tab="gnomes"]    .dot { background: var(--gnomes-dot);    color: var(--gnomes-text); }
+.log-tab[data-tab="penguins"]  .dot { background: var(--penguins-dot);  color: var(--penguins-text); }
+.log-tab[data-tab="wisp"]      .dot { background: var(--wisp-dot);      color: var(--wisp-text); }
+.log-tab[data-tab="braindead"] .dot { background: var(--braindead-dot); color: var(--braindead-text); }
+.log-tab[data-tab="guthix"]    .dot { background: var(--guthix-dot);    color: var(--guthix-text); }
+.log-tab[data-tab="commits"]   .dot { background: var(--commits-dot);   color: var(--commits-text); }
+.log-tab.active .dot { box-shadow: 0 0 5px currentColor, inset 1px 1px 0 rgba(0,0,0,0.4); }
+/* I4: unread badge on inactive filter tabs. */
+.log-tab .tab-count {
+  display: none;
+  min-width: 14px;
+  padding: 0 4px;
+  margin-left: 2px;
+  font-size: 11px;
+  line-height: 13px;
+  font-weight: bold;
+  text-align: center;
+  color: #1a0f06;
+  background: #ffcb46;
+  border: 1px solid #1a0f06;
+  border-radius: 7px;
+}
+.log-tab .tab-count.has-unread { display: inline-block; }
+
+/* filter — hide non-matching entries when a filter is active */
+.log-scroll[data-filter="jebrim"]    .log-entry:not([data-speaker="jebrim"])    { display: none; }
+.log-scroll[data-filter="zezima"]    .log-entry:not([data-speaker="zezima"])    { display: none; }
+.log-scroll[data-filter="dwarves"]   .log-entry:not([data-speaker="dwarves"])   { display: none; }
+.log-scroll[data-filter="wisp"]      .log-entry:not([data-speaker="wisp"])      { display: none; }
+.log-scroll[data-filter="braindead"] .log-entry:not([data-speaker="braindead"]) { display: none; }
+.log-scroll[data-filter="guthix"]    .log-entry:not([data-speaker="guthix"])    { display: none; }
+.log-scroll[data-filter="commits"]   .log-entry:not([data-speaker="commits"])   { display: none; }
+.log-scroll[data-filter="gnomes"]    .log-entry:not([data-speaker="gnomes"])    { display: none; }
+.log-scroll[data-filter="penguins"]  .log-entry:not([data-speaker="penguins"])  { display: none; }
+
+/* Speaker bullets — derived from --<actor>-text vars (C1). */
+.log-entry[data-speaker="jebrim"]    .t::before { content: "● "; color: var(--jebrim-text); }
+.log-entry[data-speaker="zezima"]    .t::before { content: "● "; color: var(--zezima-text); }
+.log-entry[data-speaker="dwarves"]   .t::before { content: "● "; color: var(--dwarves-text); }
+.log-entry[data-speaker="wisp"]      .t::before { content: "● "; color: var(--wisp-text); }
+.log-entry[data-speaker="braindead"] .t::before { content: "● "; color: var(--braindead-text); }
+.log-entry[data-speaker="gnomes"]    .t::before { content: "● "; color: var(--gnomes-text); }
+.log-entry[data-speaker="penguins"]  .t::before { content: "● "; color: var(--penguins-text); }
+.log-entry[data-speaker="guthix"]    .t::before { content: "● "; color: var(--guthix-text); }
+.log-entry[data-speaker="commits"]   .t::before { content: "● "; color: var(--commits-text); }

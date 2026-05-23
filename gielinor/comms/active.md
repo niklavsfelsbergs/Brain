@@ -101,3 +101,30 @@
 [2026-05-23 15:05] zezima-e5df54a2 CLOSING
   Completed: S056 — personal research, Latvia apartment buying. Two Riga apartments evaluated end-to-end (8 penguins total). #1 (~70-unit building held in domājamās daļas) → WALK (structural/legal danger; conversion needs ~70-owner unanimity, mortgage likely declined). #2 (Duntes 28 "Duntes Ozoli", €120k) → confirmed proper dzīvokļa īpašums, fair-to-favourable price, but principal PASSED on spatial fit (narrow long room, ~58 m² real) + no reserve fund. 10 research/synthesis files in zezima/research/. Quest complete → completed/. Harvested 3 drafts (2 bank/latvia-property, 1 niksis8_character). Zezima's first real session + domain knowledge.
   Leaving open: nothing — quest closed. Future apartment viewings reuse the saved research + due-diligence checklist. 3 drafts await triage (/drafts or next alching).
+
+[2026-05-23 15:21] jebrim-4ab96002 OPEN
+  Fresh respawn, no task yet. Live siblings: jebrim-9837afe8 (S055 closed, idle on out-of-tree bi-analytics), zezima-e5df54a2 (S056 closed, idle), braindead-ac10ec71 + braindead-e433ac17 (dev-brain, switchboard work). Steering clear of out-of-tree repos (shipping-agent/, bi-analytics/) + switchboard files until a thread is picked. In-progress/ holds 2 quests: S040 Outlook MCP (parked at Azure sign-in) + S054 audit-2 (deliverable shipped, complete-ready). Awaiting principal direction.
+
+[2026-05-23 15:28] jebrim-f382c0eb OPEN
+  Fresh respawn, greeting only — no task yet. Live siblings: jebrim-9837afe8 (idle, S055 closed, out-of-tree bi-analytics), zezima-e5df54a2 (working, S056 closed), braindead-2de9789c/ac10ec71/e433ac17 (dev-brain/switchboard). Steering clear of out-of-tree repos + switchboard + zezima/ until a thread is picked. In-progress/ holds S040 Outlook MCP (parked at Azure sign-in) + S054 audit-2 (deliverable shipped, complete-ready). Awaiting direction.
+
+[2026-05-23 15:54] jebrim-4685b18c OPEN
+  Fresh respawn, greeting only — no task yet. Live siblings: braindead-2de9789c/ac10ec71/e433ac17/f8b5358d (dev-brain switchboard work, out of namespace); one unscoped idle session (85d0e427). No live jebrim/zezima. Steering clear of out-of-tree repos (shipping-agent/, bi-analytics/) + switchboard until a thread is picked. In-progress/ holds S040 Outlook MCP (parked at Azure sign-in) + S054 audit-2 (deliverable shipped, complete-ready). Awaiting direction.
+
+[2026-05-23 19:54] jebrim-7c51a92b OPEN
+  Status query — "what's on the table." Read-only survey, no task committed. Live siblings: braindead-fd0e0707 + braindead-7c9033f4 (dev-brain switchboard work, out of namespace). No live jebrim/zezima. Steering clear of out-of-tree repos (shipping-agent/, bi-analytics/) + switchboard until a thread is picked. In-progress/ holds S040 Outlook MCP (parked at Azure sign-in) + S054 audit-2 (complete-ready). Awaiting direction.
+
+[2026-05-23] jebrim-8b0ef56a OPEN
+  Status query — "what's on the table." Read-only survey, no task committed. Live siblings: braindead-7c9033f4 + braindead-fd0e0707 (dev-brain switchboard, out of namespace); no live jebrim/zezima. Steering clear of out-of-tree repos (shipping-agent/, bi-analytics/) + switchboard until a thread is picked. In-progress/ holds S040 Outlook MCP (parked at Azure sign-in) + S054 audit-2 (complete-ready). Awaiting direction.
+
+[2026-05-23] jebrim-f4bb6eab OPEN
+  Shipping-agent work — principal cued "work on the shipping agent," exact thread TBD. Target: out-of-tree repo Documents/GitHub/shipping-agent/ (working tree clean, 1 local commit ahead — push denied by design). No live jebrim/zezima siblings. Queued threads: temp% missing-orderitems investigation (probe MFA19911824351), build_report.py multi-series legend-isolation follow-up, personal-folder real-use validation, latent build_report --out crash. Awaiting principal thread pick before touching write surface.
+
+[2026-05-23] jebrim-f4bb6eab UPDATE
+  Thread picked: S057 — harvest learnings from a pasted shipping-agent quota-reduction conversation (not an investigation). In-brain writes only (jebrim drafts + quest-log + this comms); no out-of-tree repo touched. Landed 4 drafts: bank (carrier dim envelopes × TCG canvas-shape), skill (dim-gate carrier-swap before sizing), 2 examine (inherited-confidence, money-period labeling). All pending alching. Flagged out-of-tree follow-up: dimension-gating rule should also land in shipping-agent/how_to.md §0 (needs principal nod). No sibling conflict.
+
+[2026-05-23] jebrim-f4bb6eab UPDATE
+  S057 expanded (principal cue "do it all"). Now ALSO editing out-of-tree shipping-agent/how_to.md — taught the agent itself, not just the brain. Added §0 rules 30–34 (new "investigation & savings work" subsection): dim-gate swaps, lead-with-moves, net-out-overlap, period-on-money, no-inherited-confidence. Re-harvest found 2 learnings T1 missed (lead-with-moves, overlap) → new brain skill savings-investigation-deliverable-shape.md. Brain now 5 drafts. Both repos edited, NOTHING committed (awaiting principal sign-off). No sibling conflict (no live jebrim/zezima).
+
+[2026-05-23] jebrim-1f0ae59a OPEN
+  S058 — shipping-contract corpus ingest into out-of-tree shipping-agent/. Built contracts/ (top-level, gitignored raw, md-only tracked): copied 77 current contract files into eu/ (49) + us/ (28), preserving entity→carrier structure; dropped .msg/.pptx/.jpg/.zip noise. Skipped 0.OLD (2.7GB low-signal) + EU Tender 2026 (best synthesized in bi-analytics-main/.../2_EU_tender_2026) per principal calls. My uncommitted files: .gitignore + contracts/_about.md. **Live sibling jebrim-f4bb6eab (S057) is ALSO in shipping-agent — its uncommitted how_to.md (§0 rules 30–34) is NOT mine; leave it out of any commit I make.** Nothing committed yet (awaiting principal sign-off).

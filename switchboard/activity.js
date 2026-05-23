@@ -30,6 +30,25 @@ export function recordEvent(sid8, ts) {
   if (arr.length > MAX_PER_SESSION) arr.splice(0, arr.length - MAX_PER_SESSION);
 }
 
+// ─── latest action per session (S061) ───
+// The switchboard row's action line wants to tick at the chat panel's poll
+// cadence (every 2s), not at the slower status-sidecar fire cadence — otherwise
+// a lone session working a long single turn shows a frozen line. The chat panel
+// already parses every action out of chat.ndjson, so it records the freshest
+// one here; the switchboard reads it back. Hook-side `latest_action` stays the
+// first-paint fallback (before chat.ndjson has been polled).
+const lastActions = new Map();   // sid8 -> { text, ts }
+
+export function recordAction(sid8, text, ts) {
+  if (!sid8 || !text) return;
+  lastActions.set(sid8, { text: String(text), ts: toSec(ts) });
+}
+
+export function latestAction(sid8) {
+  const a = sid8 && lastActions.get(sid8);
+  return a ? a.text : '';
+}
+
 // Bucketize the rolling window into `buckets` slots, oldest→newest (left→right).
 // Returns an array of event counts per slot.
 export function activityBuckets(sid8, buckets = 16) {

@@ -70,6 +70,12 @@ CHAT_TAIL_KEEP = 2000
 SUBTITLE_INTENT_FRESH_SEC = 300
 SUBTITLE_MAX_LEN = 280       # S058: was 100 — longer in-voice narration (2–3×).
 
+# S061: the session's opening message. Captured once from the first
+# UserPromptSubmit and never overwritten — it's the stable human handle the
+# switchboard row shows for tracking, independent of actor resolution (a
+# session still resolving to "unknown" is trackable by what it was asked).
+FIRST_PROMPT_MAX = 140
+
 # S043 (D-024 visualizer wiring): mirror both comms channels into the viz dir
 # so the COMMS panel can render inter-session dialogue. Same sandbox reason as
 # state-switchboard.json — the browser cannot fetch outside the server root.
@@ -672,6 +678,22 @@ def _write_manifest() -> None:
                     continue
                 if j.get("state") == "ended":
                     continue
+                # Liveness gate. A terminal closed hard or crashed never fires
+                # SessionEnd, so its status file freezes at working/
+                # waiting_for_user with a stale last_event_ts and would squat on
+                # the live board until the 24h archive sweep (STALE_SEC). Drop
+                # any row whose last hook fire is older than the liveness window
+                # — the same threshold the cross-session GC uses. A genuinely
+                # long working turn fires no hooks but stays well inside an hour;
+                # a session parked on a Stop past the window is treated as
+                # abandoned (reopen the terminal and it resurfaces on the next
+                # fire). This is the fix for the 3h+ "zombie" rows.
+                try:
+                    last_ts = float(j.get("last_event_ts") or 0)
+                except (TypeError, ValueError):
+                    last_ts = 0.0
+                if last_ts and (time.time() - last_ts) > LIVE_SESSION_SEC:
+                    continue
                 # Real-time actor refresh. The status file's `actor` was set
                 # by whichever sidecar fire wrote it last — typically
                 # UserPromptSubmit, which fires BEFORE the agent has had a
@@ -1171,6 +1193,17 @@ def main() -> None:
     out_path = STATUS_DIR / f"{sid8}.json"
     prev = _load_existing(out_path)
 
+    # S061: opening message — captured once, never overwritten. Carries across
+    # every fire from prev; only the first UserPromptSubmit fills it. Gives the
+    # switchboard row a stable, human-readable identity from turn one even while
+    # the actor is still "Pending..." (no intent narrated yet).
+    first_prompt = prev.get("first_prompt") or ""
+    if hook_event == "UserPromptSubmit" and not first_prompt:
+        raw_prompt = payload.get("prompt")
+        if isinstance(raw_prompt, str) and raw_prompt.strip():
+            collapsed = " ".join(raw_prompt.split())   # newlines/runs → single spaces
+            first_prompt = collapsed[:FIRST_PROMPT_MAX]
+
     # Phase 3 (D-020): record the ancestor process chain from the hook's
     # parent up. focus-window.ps1 iterates this chain to find the first live
     # Code.exe with a MainWindowHandle. Cached after the first fire — the
@@ -1216,6 +1249,7 @@ def main() -> None:
         "last_event_kind": hook_event,
         "last_event_ts": now_ts,
         "started_at": prev.get("started_at") or now_ts,
+        "first_prompt": first_prompt,
         "intent": intent or carry_intent,
         "project_dir": str(project_dir) if project_dir else (prev.get("project_dir") or ""),
         "cwd": os.getcwd(),

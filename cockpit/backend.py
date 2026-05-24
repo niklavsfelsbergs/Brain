@@ -53,27 +53,51 @@ COMMS_FILES = {
     "braindead": STATE_DIR / "state-comms-braindead.md",
 }
 
-# Attention order — lower rank surfaces higher on the board.
+# Attention order — lower rank surfaces higher on the board. D-029 two-axis
+# vocabulary: base states only; flavor (alching / crew / wrapped) rides in the
+# `tags` list, not here. `stalled` sits just under the two ball-in-your-court
+# states so a possible crash surfaces near the top.
 STATE_RANK = {
-    "waiting_for_answers": 0,
-    "waiting_for_user": 1,
-    "waiting_for_subagents": 2,
-    "alching": 3,
-    "working": 4,
-    "wrapped_up": 6,
+    "needs_you": 0,
+    "your_move": 1,
+    "stalled": 2,
+    "busy": 4,
     "idle": 7,
-    "ended": 8,
-    "unknown": 9,
+    "done": 8,
+    "ended": 9,
+    "unknown": 10,
 }
 
 # Reader-derived idle. The status sidecar deliberately never stamps "idle" — the
-# hook doesn't fire while a session sits parked, so the *reader* has to decay a
-# stale waiting_for_user into idle (its docstring spells out this contract). A
-# turn ends on Stop → waiting_for_user; once it's been quiet past this window
-# it's no longer "needs you", so we drop it out of the attention tally + bell.
-# Only waiting_for_user decays (an end-of-turn park); waiting_for_answers is a
-# live mid-turn question and stays hot. 5 min matches the old switchboard.
+# hook doesn't fire while a session sits parked, so the *reader* decays a stale
+# `your_move` into idle. A turn ends on Stop → your_move; once it's been quiet
+# past this window it's no longer "needs you", so we drop it out of the attention
+# tally. Only your_move decays (an end-of-turn park); needs_you is a live
+# mid-turn question and stays hot. 5 min matches the old switchboard.
 IDLE_AFTER_SEC = 300
+
+# Reader-derived stalled (D-029). A `busy` session with no action heartbeat for
+# this long is probably crashed/wedged — the board shows STALLED so the operator
+# goes and checks. The heartbeat is the freshest of last_event_ts and the latest
+# action in state.ndjson (re-read per poll — see _last_action_ts_map). Generous
+# so a marathon single tool call doesn't false-trip; it self-corrects the instant
+# the tool returns and bumps the action stream.
+STALL_AFTER_SEC = 300
+STATE_NDJSON = STATE_DIR / "state.ndjson"
+
+# Legacy → D-029 token aliases. A session that hasn't fired a hook since the
+# vocabulary change still carries an old token in its status file; map it on
+# read so the board renders correctly through the transition (it self-heals to
+# the new token on the session's next event). Harmless once all sessions cycle.
+LEGACY_STATE = {
+    "working": "busy",
+    "waiting_for_user": "your_move",
+    "waiting_for_answers": "needs_you",
+    "waiting_for_subagents": "busy",   # crew tag re-derives on next fire
+    "alching": "busy",                 # flavor lost until next fire; state stays sane
+    "wrapped_up": "done",
+    "closing": "done",
+}
 
 CTYPES = {
     ".html": "text/html",
@@ -151,6 +175,49 @@ def _pending_subagents(session_id):
     return out
 
 
+def _last_action_ts_map(max_bytes: int = 256_000) -> dict:
+    """{sid8: latest_action_unix_ts} from a capped tail-read of state.ndjson.
+
+    D-029 knob #3: the action heartbeat is re-read here per poll instead of
+    trusting the manifest's frozen `latest_action_ts`. emit-event.py writes an
+    action on EVERY tool call; status-sidecar (which rewrites the manifest)
+    fires only on the tight matchers — so during an ordinary-tool working turn
+    the manifest's stamp goes stale even though state.ndjson is fresh. Reading
+    the stream directly is what lets `stalled` tell a wedged session from a
+    busy one. Capped tail-read so ndjson growth can't crater poll latency."""
+    out: dict = {}
+    if not STATE_NDJSON.exists():
+        return out
+    try:
+        with open(STATE_NDJSON, "rb") as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - max_bytes))
+            tail = f.read().decode("utf-8", errors="ignore")
+    except OSError:
+        return out
+    for line in tail.splitlines():
+        if '"type":"action"' not in line:
+            continue
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        if ev.get("type") != "action":
+            continue
+        sid8 = (ev.get("sessionId") or "")[:8]
+        if not sid8:
+            continue
+        ts_iso = ev.get("wallTime") or ""
+        try:
+            ts = datetime.datetime.fromisoformat(ts_iso).timestamp()
+        except (ValueError, TypeError):
+            continue
+        if ts > out.get(sid8, 0):
+            out[sid8] = ts
+    return out
+
+
 def build_session_model():
     """The single normalized model the three views project from (D-028)."""
     manifest = _read_json(MANIFEST, {"sessions": []})
@@ -158,32 +225,47 @@ def build_session_model():
     if not isinstance(names, dict):
         names = {}
     now = time.time()
+    action_ts = _last_action_ts_map()        # {sid8: latest action ts} — heartbeat (D-029)
     sessions = []
     for s in manifest.get("sessions", []):
-        state = s.get("state", "unknown")
+        state = LEGACY_STATE.get(s.get("state", "unknown"), s.get("state", "unknown"))
+        sid8 = s.get("sid8")
         started = s.get("started_at") or s.get("last_event_ts") or now
         last = s.get("last_event_ts") or now
         idle_sec = max(0, int(now - last))
+        # Action heartbeat = freshest of last_event_ts and the latest action in
+        # state.ndjson. A long real turn keeps ticking via the action stream
+        # even though status-sidecar doesn't fire on ordinary tools; a wedged
+        # turn freezes both. See _last_action_ts_map / STALL_AFTER_SEC.
+        heartbeat = max(last, action_ts.get(sid8, 0))
+        quiet_sec = max(0, int(now - heartbeat))
         # Decay a quiet end-of-turn park into idle (see IDLE_AFTER_SEC). Done
         # here, after idle_sec is known, so the attention flag + rank below read
         # the decayed state — a finished-but-open session stops counting as
         # "needs you".
-        if state == "waiting_for_user" and idle_sec > IDLE_AFTER_SEC:
+        if state == "your_move" and idle_sec > IDLE_AFTER_SEC:
             state = "idle"
+        # Decay a heartbeat-silent busy turn into stalled (D-029) — the "go
+        # check this" signal the board never had.
+        elif state == "busy" and quiet_sec > STALL_AFTER_SEC:
+            state = "stalled"
         sessions.append({
-            "sid8": s.get("sid8"),
+            "sid8": sid8,
             "session_id": s.get("session_id"),
             "actor": s.get("actor", "unknown"),
-            "name": names.get(s.get("sid8"), ""),   # /rename label (S073)
+            "name": names.get(sid8, ""),   # /rename label (S073)
             "instance": s.get("instance", 1),
             "state": state,
+            "tags": s.get("tags", []),     # flavor: alching / crew / wrapped (D-029)
             "host": s.get("host", "unknown"),
             "age_sec": max(0, int(now - started)),
             "idle_sec": idle_sec,
             "first_prompt": s.get("first_prompt", ""),
             "doing": s.get("latest_action") or s.get("subtitle") or s.get("intent") or "",
             "intent": s.get("intent", ""),
-            "attention": state in ("waiting_for_user", "waiting_for_answers"),
+            # The two ball-in-your-court states drive the count + the pings.
+            # stalled surfaces via rank + its own chip, not the "need you" tally.
+            "attention": state in ("needs_you", "your_move"),
             "subagents": _pending_subagents(s.get("session_id")),
             "rank": STATE_RANK.get(state, 99),
         })

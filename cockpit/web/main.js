@@ -24,23 +24,36 @@ const ACTORS = [
   { key: "braindead", label: "Braindead · dev", addr: "Lets develop gielinor. " },
 ];
 
+// D-029: two distinct pings. NEEDS YOU (mid-turn block) is urgent; YOUR MOVE
+// (turn parked) is gentle. Both ride one shared oscillator helper.
 let _ac;
-function beep() {
+function _tone(freq, startOffset, dur, peak) {
+  _ac = _ac || new (window.AudioContext || window.webkitAudioContext)();
+  if (_ac.state === "suspended") _ac.resume();
+  const o = _ac.createOscillator();
+  const g = _ac.createGain();
+  o.connect(g);
+  g.connect(_ac.destination);
+  o.type = "sine";
+  o.frequency.value = freq;
+  const t = _ac.currentTime + startOffset;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(peak, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+}
+// NEEDS YOU — urgent: two quick ascending notes.
+function pingHot() {
   try {
-    _ac = _ac || new (window.AudioContext || window.webkitAudioContext)();
-    if (_ac.state === "suspended") _ac.resume();
-    const o = _ac.createOscillator();
-    const g = _ac.createGain();
-    o.connect(g);
-    g.connect(_ac.destination);
-    o.type = "sine";
-    o.frequency.value = 660;
-    const t = _ac.currentTime;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.16, t + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-    o.start(t);
-    o.stop(t + 0.36);
+    _tone(784, 0, 0.18, 0.18);
+    _tone(1047, 0.16, 0.22, 0.18);
+  } catch {}
+}
+// YOUR MOVE — gentle: a single soft low note.
+function pingSoft() {
+  try {
+    _tone(523, 0, 0.4, 0.1);
   } catch {}
 }
 function lsBool(key, def) {
@@ -171,7 +184,7 @@ function App() {
   const [feedOpen, setFeedOpen] = useState(() => lsBool("cockpit-feed", true));
   const [boardOpen, setBoardOpen] = useState(() => lsBool("cockpit-board", true));
   const [zoom, setZoom] = useState(loadZoom);
-  const prevWaiting = useRef(new Set());
+  const prevWaiting = useRef(new Map());   // sid8 -> last state, for ping transitions
   const [, bumpNames] = useState(0);
   useEffect(() => subscribeNames(() => bumpNames((n) => n + 1)), []);
 
@@ -297,15 +310,16 @@ function App() {
     ...liveTerms()
       .filter((t) => t.sid8 && !known.has(t.sid8))
       .map((t) => {
-        // real state from the feed: recent activity → working; needs_you → waiting;
-        // a close checkpoint or silence → idle. No feed entry yet → idle.
+        // real state from the feed (D-029 tokens): needs_you → NEEDS YOU;
+        // recent activity → busy; a close checkpoint or silence → idle.
+        // No feed entry yet → idle.
         const fs = feedState[t.sid8];
         let state = "idle";
         if (fs) {
           const age = Date.now() / 1000 - fs.ts;
-          if (fs.kind === "needs_you") state = "waiting_for_user";
+          if (fs.kind === "needs_you") state = "needs_you";
           else if (fs.kind === "done") state = "idle";
-          else if (age < 120) state = "working";
+          else if (age < 120) state = "busy";
         }
         return {
           sid8: t.sid8,
@@ -313,24 +327,39 @@ function App() {
           actor: t.label || "chat",
           instance: 1,
           state,
+          tags: [],
           age_sec: 0,
           idle_sec: fs ? Math.max(0, Math.floor(Date.now() / 1000 - fs.ts)) : 0,
           first_prompt: "",
           doing: fs && fs.text ? fs.text : "running in this cockpit",
           intent: "",
-          attention: state === "waiting_for_user",
+          attention: state === "needs_you",
           subagents: [],
           host: "cockpit",
-          rank: 6,
+          rank: state === "needs_you" ? 0 : state === "busy" ? 4 : 7,
         };
       }),
   ];
 
-  // ring once when a session newly needs you
+  // D-029: two distinct pings, fired on a session's *transition* into an
+  // attention state. needs_you (hot) takes priority over your_move (soft) when
+  // both land in the same poll, so a fleet update is one sound, not a chord.
   useEffect(() => {
-    const now = new Set(sessions.filter((s) => s.attention).map((s) => s.sid8));
-    if (soundOn) for (const id of now) if (!prevWaiting.current.has(id)) { beep(); break; }
-    prevWaiting.current = now;
+    let hot = false;
+    let soft = false;
+    const cur = new Map();
+    for (const s of sessions) {
+      cur.set(s.sid8, s.state);
+      if (s.state !== prevWaiting.current.get(s.sid8)) {
+        if (s.state === "needs_you") hot = true;
+        else if (s.state === "your_move") soft = true;
+      }
+    }
+    if (soundOn) {
+      if (hot) pingHot();
+      else if (soft) pingSoft();
+    }
+    prevWaiting.current = cur;
   }, [sessions, soundOn]);
 
   const toggleSound = () => setSoundOn((v) => { setLsBool("cockpit-sound", !v); return !v; });

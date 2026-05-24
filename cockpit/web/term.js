@@ -123,12 +123,15 @@ class TermConn {
       }
       // Shift+Enter → insert a newline instead of submitting. Plain xterm sends \r
       // for both Enter and Shift+Enter (indistinguishable in legacy keyboard mode),
-      // so Shift+Enter just submits. We send a literal \n (LF), which claude's TUI
-      // treats as "insert newline" while \r stays "submit". Submit (plain Enter) is
-      // untouched. \n is a control char so it resets the /rename mirror too.
+      // so Shift+Enter just submits. The earlier attempt sent a bare \n (LF), but
+      // claude's TUI does NOT reliably treat an incoming \n as newline-insert — that
+      // never worked. The sequence claude actually binds to newline-on-Shift+Enter
+      // is the CSI-u encoding ESC[13;2u (keycode 13 = Enter, modifier 2 = Shift),
+      // the same thing `/terminal-setup` configures for VSCode/iTerm. Submit (plain
+      // Enter, \r) is untouched; Ctrl+J (\n) stays as the zero-setup fallback. (S078)
       if (e.key === "Enter" && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
         this._linebuf = "";
-        this._send({ type: "input", data: "\n" });
+        this._send({ type: "input", data: "\x1b[13;2u" });
         return false; // swallow xterm's \r
       }
       return true;
@@ -160,6 +163,32 @@ class TermConn {
 
     this.term.onData((d) => this._handleData(d));
     this.term.onResize(({ cols, rows }) => this._send({ type: "resize", cols, rows }));
+
+    // Keep xterm sized to its container through EVERY layout change — the flex
+    // settle right after open, panel collapse/divider drag, zoom reflow, re-parent
+    // onto a different-sized host. Relying on the mount fit + window 'resize' +
+    // explicit fitTerms()/applyTermZoom() calls left gaps where xterm's row count
+    // drifted from the visible box: stale rows lingered at the bottom and the
+    // prompt could sit below the fold. A ResizeObserver on the host closes them.
+    // rAF-debounced (a resize burst reflows once/frame); re-pins to bottom after
+    // the refit while following. No feedback loop — fitting xterm's canvas doesn't
+    // change the 100%×100% container's box. (S078)
+    this._fitRaf = 0;
+    if (window.ResizeObserver) {
+      this._ro = new ResizeObserver(() => {
+        if (this._fitRaf) return;
+        this._fitRaf = requestAnimationFrame(() => {
+          this._fitRaf = 0;
+          this.fitNow();
+          if (this._follow) {
+            this.term.scrollToBottom();
+            const vp = this.container.querySelector(".xterm-viewport");
+            if (vp) vp.scrollTop = vp.scrollHeight;
+          }
+        });
+      });
+      this._ro.observe(this.container);
+    }
 
     live.set(this.cid, this);
     this._connect();
@@ -224,7 +253,15 @@ class TermConn {
       if (!d) return;
       const follow = this._follow;
       this.term.write(d, () => {
-        if (follow) this.term.scrollToBottom();
+        if (!follow) return;
+        // Drive BOTH, same as the <Term> open pin loop: scrollToBottom() moves
+        // xterm's displayed line (ydisp → screen render), but the native
+        // .xterm-viewport's scrollTop must be synced too or it desyncs — thumb
+        // adrift, prompt below the fold while output streams. S077 fixed this on
+        // the open path only; the streaming path here was still scrollToBottom-only.
+        this.term.scrollToBottom();
+        const vp = this.container.querySelector(".xterm-viewport");
+        if (vp) vp.scrollTop = vp.scrollHeight;
       });
     });
   }
@@ -303,6 +340,13 @@ class TermConn {
       cancelAnimationFrame(this._wraf);
       this._wraf = 0;
     }
+    if (this._fitRaf) {
+      cancelAnimationFrame(this._fitRaf);
+      this._fitRaf = 0;
+    }
+    try {
+      this._ro && this._ro.disconnect();
+    } catch {}
     try {
       this.ws && this.ws.close();
     } catch {}

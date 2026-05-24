@@ -122,29 +122,43 @@ INTENT_MAX_LEN = 280
 # sessions while keeping the active list scannable.
 STALE_SEC = 24 * 60 * 60
 
-# Hook events we care about, mapped to the state they imply. Anything not in
-# this map is ignored — the script exits silently.
+# Hook events we care about, mapped to the base state they imply. Anything not
+# in this map is ignored — the script exits silently.
+#
+# D-029 two-axis vocabulary. The base state answers "what do I do about this
+# session?"; activity flavor (alching / crew / wrapped) rides as a separate
+# `tags` list, NOT as competing state values. Base tokens:
+#   busy       — agent is progressing (absorbs the old `working` AND the old
+#                `waiting_for_subagents`; crew is a tag now).
+#   needs_you  — blocked mid-turn on the principal's answer (hot; never decays).
+#   your_move  — turn ended, parked for the next prompt (soft).
+#   done       — gracefully wrapped, terminal lingering (was `wrapped_up`).
+#   ended      — process gone (filtered off the board; kept as an internal token).
+# `idle` and `stalled` are reader-derived in the cockpit backend, not stamped
+# here (the hook can't fire while a session sits quiet — same reason idle was
+# always reader-derived).
 EVENT_STATE = {
-    "UserPromptSubmit": "working",
-    "PreToolUse": "working",
-    "PostToolUse": "working",
-    "Stop": "waiting_for_user",
+    "UserPromptSubmit": "busy",
+    "PreToolUse": "busy",
+    "PostToolUse": "busy",
+    "Stop": "your_move",
     "SessionEnd": "ended",
 }
 
 # Interactive prompt tools park the session on the principal mid-turn (no Stop
-# fires) → waiting_for_answers (an open question, distinct from a Stop-parked
-# waiting_for_user). Sub-agent spawners block the session on its crew
-# until the foreground Task returns → waiting_for_subagents ("AWAITING CREW").
-# Both are registered with a tight Pre/Post matcher in settings.json so the
-# fire-budget impact is ~0-2 per session each, not per tool call.
+# fires) → needs_you (an open question, distinct from a Stop-parked your_move).
+# Sub-agent spawners block the session on its crew until the foreground Task
+# returns → the session stays `busy` with a `crew` tag (D-029: crew is a flavor
+# tag now, not its own state). Both are registered with a tight Pre/Post matcher
+# in settings.json so the fire-budget impact is ~0-2 per session each, not per
+# tool call.
 WAIT_TOOLS = {"AskUserQuestion", "ExitPlanMode"}
 SUBAGENT_TOOLS = {"Task", "Agent"}
 
 # A "/rename …" prompt is caught and BLOCKED by rename-intercept.py (exit 2): it
 # relabels the board row and runs no model turn, so no Stop ever follows it.
-# Without special-casing, this hook's UserPromptSubmit→working stamp would strand
-# the session at WORKING until its next *real* prompt — i.e. renaming a session
+# Without special-casing, this hook's UserPromptSubmit→busy stamp would strand
+# the session at BUSY until its next *real* prompt — i.e. renaming a session
 # makes it look busy when nothing is happening. We detect the same two shapes
 # rename-intercept recognizes and treat the prompt as a no-op (leave state
 # untouched). Also keeps a /rename from being captured as the session's
@@ -160,14 +174,17 @@ def _is_rename_prompt(prompt) -> bool:
 
 # S059: per-session mode marker. The event stream alone can't tell that a
 # session is mid-ritual; the agent writes a single token to
-# `.claude/intent/<sid8>.mode` to flag a lifecycle state the events can't infer:
-#   "alching"    — a per-player tending ritual is in progress. Overrides the
-#                  "working" event-state only (waiting-for-you, awaiting-crew,
-#                  and ended all still win) → state="alching".
+# `.claude/intent/<sid8>.mode` to flag a lifecycle state the events can't infer.
+# D-029 maps these onto the two-axis model:
+#   "alching"    — a per-player tending ritual is in progress. Becomes a flavor
+#                  *tag* ("alching") on the base state — the session stays `busy`
+#                  and just gets annotated. No longer a competing state value, so
+#                  the old precedence ladder is gone.
 #   "wrapped_up" — close-session finished; the terminal lingers but there's
-#                  nothing left to do. Holds across working/waiting until the
-#                  process ends → state="wrapped_up". Auto-cleared on the next
-#                  UserPromptSubmit (a fresh prompt means work resumed).
+#                  nothing left to do. This one genuinely sets a base state
+#                  (`done`) + a "wrapped" tag — it's a real lifecycle end, so it
+#                  wins over your_move. Auto-cleared on the next UserPromptSubmit
+#                  (a fresh prompt means work resumed).
 # Absent/empty marker = normal event-derived state. The marker is a persistent
 # file, so the session's own next hook fire picks it up (≤1 fire of lag). The
 # agent owns writing it (alching.md, close-session.md); the hook reads it here
@@ -1009,24 +1026,23 @@ def _write_manifest() -> None:
                     j["subtitle"] = _derive_subtitle(j)
                 except Exception as e:
                     print(f"status-sidecar: subtitle derivation failed for {j.get('sid8')}: {e}", file=sys.stderr)
-                # Awaiting-crew override. The base event map stamps "working"
-                # for every tool call, so a session blocked on a foreground
-                # Task would otherwise read WORKING. Re-derive the
-                # working <-> waiting_for_subagents pair here from the spawn
+                # Crew-tag refresh (D-029). A foreground Task/Agent in flight
+                # keeps the session `busy` and rides as a `crew` *tag* — no
+                # longer its own state. Re-derived per row from the spawn
                 # role-files: refreshes on ANY live session's fire (the blocked
                 # parent emits nothing while waiting) and self-heals a missed
-                # PostToolUse. Leaves waiting_for_user / ended untouched — those
-                # are owned states, not the working pair.
+                # PostToolUse. Only touches `busy` rows; needs_you / your_move /
+                # done / ended own their state and tags here.
                 try:
-                    if j.get("state") in ("working", "waiting_for_subagents"):
+                    if j.get("state") == "busy":
                         ids = pending_map.get(j.get("session_id") or "", [])
+                        tags = [t for t in (j.get("tags") or []) if t != "crew"]
                         if ids:
-                            j["state"] = "waiting_for_subagents"
+                            tags.append("crew")
                             j["subtitle"] = "awaiting crew — " + " ".join(ids[:6])
-                        else:
-                            j["state"] = "working"
+                        j["tags"] = tags
                 except Exception as e:
-                    print(f"status-sidecar: awaiting-crew refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
+                    print(f"status-sidecar: crew tag refresh failed for {j.get('sid8')}: {e}", file=sys.stderr)
                 sessions.append(j)
         sessions.sort(key=lambda x: x.get("last_event_ts") or 0, reverse=True)
         out = {
@@ -1483,51 +1499,55 @@ def main() -> None:
     if hook_event in ("PreToolUse", "PostToolUse"):
         if tool_name in WAIT_TOOLS:
             # PreToolUse on AskUserQuestion/ExitPlanMode = the agent is actively
-            # asking and blocked on the answer → its OWN state, distinct from the
-            # Stop-parked "waiting for your next prompt" (waiting_for_user). The
-            # board labels it "Waiting for answers…" so an open question reads
-            # apart from an idle, finished turn.
-            state = "waiting_for_answers" if hook_event == "PreToolUse" else "working"
+            # asking and blocked on the answer → `needs_you` (hot), distinct from
+            # the Stop-parked `your_move`. The board labels it NEEDS YOU so an
+            # open question reads apart from a finished, parked turn. Post → busy.
+            state = "needs_you" if hook_event == "PreToolUse" else "busy"
         elif tool_name in SUBAGENT_TOOLS:
             tool_input = payload.get("tool_input") or {}
             background = bool(
                 tool_input.get("run_in_background")
                 or tool_input.get("runInBackground")
             )
-            if hook_event == "PreToolUse":
-                if background:
-                    sys.exit(0)   # background spawn — parent keeps working
-                state = "waiting_for_subagents"
-            else:
-                # A foreground spawn returned. Stay awaiting if this session
-                # still has other in-flight foreground spawns (parallel batch),
-                # else back to working. The manifest per-row refresh is the
-                # ultimate authority — any session's next fire re-derives this
-                # pair — so a missed PostToolUse self-heals.
-                state = ("waiting_for_subagents"
-                         if _count_pending_subagents(sid) > 0 else "working")
+            if hook_event == "PreToolUse" and background:
+                sys.exit(0)   # background spawn — parent keeps working, no crew block
+            # Foreground spawn (Pre or Post): the session stays `busy`; the
+            # `crew` tag (derived below from the spawn role-files) carries the
+            # "awaiting crew" detail. D-029 folded the old waiting_for_subagents
+            # state into busy + tag, so there's no Pre/Post state to flip here.
+            state = "busy"
         else:
             sys.exit(0)   # only registered Pre/Post for prompt + spawn tools
 
     project_dir = _project_dir()
     actor, intent = _detect_actor(project_dir, sid8, sid)
 
-    # S059: per-session mode marker override. Layered on top of the event-state
-    # and the Pre/Post tool overrides above, so the precedence is:
-    #   ended > waiting_for_answers > waiting_for_user > waiting_for_subagents > alching > working.
-    # alching replaces a plain "working" turn; "needs you" and "awaiting crew"
-    # still win because they're more actionable. wrapped_up holds across
-    # working/waiting until the process ends.
+    # S059 / D-029: per-session mode marker → two-axis projection. The marker no
+    # longer competes with the base state (the old precedence ladder is gone):
+    #   wrapped_up → a real lifecycle end, so it DOES set base state `done`
+    #                (+ "wrapped" tag); wins over your_move because the session
+    #                is genuinely finished. Skipped only when already `ended`.
+    #   alching    → a flavor *tag* on whatever the base state is (typically
+    #                busy). Never hides a needs_you/your_move block on the
+    #                principal — those keep their base state, just tagged.
     mode = _read_mode_marker(project_dir, sid8)
     if hook_event == "SessionEnd":
         _clear_mode_marker(project_dir, sid8)          # process gone — tidy up
     elif hook_event == "UserPromptSubmit" and mode == "wrapped_up":
         _clear_mode_marker(project_dir, sid8)          # fresh prompt → resumed
         mode = ""
+    tags: list[str] = []
     if mode == "wrapped_up" and state != "ended":
-        state = "wrapped_up"
-    elif mode == "alching" and state == "working":
-        state = "alching"
+        state = "done"
+        tags.append("wrapped")
+    elif mode == "alching":
+        tags.append("alching")
+
+    # Crew tag: a foreground Task/Agent still out annotates a busy session. The
+    # manifest per-row refresh re-derives this (and self-heals a missed Post),
+    # but stamping it on the canonical <sid8>.json here keeps the two consistent.
+    if state == "busy" and "crew" not in tags and _count_pending_subagents(sid) > 0:
+        tags.append("crew")
 
     now_ts = time.time()
     out_path = STATUS_DIR / f"{sid8}.json"
@@ -1591,6 +1611,7 @@ def main() -> None:
         "started_at": prev.get("started_at") or now_ts,
         "first_prompt": first_prompt,
         "intent": intent or carry_intent,
+        "tags": tags,
         "project_dir": str(project_dir) if project_dir else (prev.get("project_dir") or ""),
         "cwd": os.getcwd(),
         # cockpit marker wins over any stale cached "vscode" (resumed sessions)

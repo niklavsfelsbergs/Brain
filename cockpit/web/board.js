@@ -4,16 +4,23 @@ import { html } from "htm/preact";
 import { useState, useRef } from "preact/hooks";
 import { nameFor } from "./names.js";
 
+// D-029 two-axis vocabulary: base state (the chip) + flavor tags (below).
 const STATE_LABEL = {
-  working: "WORKING",
-  waiting_for_answers: "Waiting for answers…",
-  waiting_for_user: "WAITING ON YOU",
-  waiting_for_subagents: "AWAITING CREW",
-  alching: "ALCHING",
-  wrapped_up: "WRAPPED UP",
+  busy: "BUSY",
+  needs_you: "NEEDS YOU",
+  your_move: "YOUR MOVE",
+  stalled: "STALLED",
   idle: "IDLE",
-  ended: "ENDED",
+  done: "DONE",
+  ended: "ENDED",        // filtered off the board; here for completeness
   unknown: "…",
+};
+
+// Flavor tags ride on the chip — small annotations, never their own state.
+const TAG_LABEL = {
+  alching: "alching",
+  crew: "crew",
+  wrapped: "wrapped",
 };
 
 function fmtAge(s) {
@@ -71,7 +78,10 @@ function Row({ s, selected, onSelect, onRename }) {
                 : ""}`}
         </span>
         ${s.host === "vscode" ? html`<span class="tag">vscode</span>` : ""}
-        <span class="chip">${STATE_LABEL[s.state] || s.state}</span>
+        <span class="chip">${STATE_LABEL[s.state] || (s.state || "").replace(/_/g, " ")}</span>
+        ${(s.tags || []).map(
+          (t) => html`<span class=${"flavor flavor-" + t}>${TAG_LABEL[t] || t}</span>`
+        )}
         <span class="age">${fmtAge(s.age_sec)}</span>
       </div>
       ${s.first_prompt && html`<div class="prompt">${s.first_prompt}</div>`}

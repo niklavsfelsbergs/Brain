@@ -31,7 +31,8 @@ function fmtAge(s) {
 
 function Row({ s, selected, onSelect, onRename }) {
   const cls =
-    `row state-${s.state}` + (s.attention ? " attention" : "") + (selected ? " selected" : "");
+    `row state-${s.state}` + (s.attention ? " attention" : "") +
+    (s.stale ? " stale" : "") + (selected ? " selected" : "");
   // Custom label: cockpit-terminal renames live in localStorage (nameFor),
   // VSCode-session renames come off disk via the model (s.name). Either wins
   // over the bare actor name, and suppresses the ·N instance suffix. (S073)
@@ -82,6 +83,9 @@ function Row({ s, selected, onSelect, onRename }) {
         ${(s.tags || []).map(
           (t) => html`<span class=${"flavor flavor-" + t}>${TAG_LABEL[t] || t}</span>`
         )}
+        ${s.stale
+          ? html`<span class="stale-age" title="no activity since — state may be out of date">${fmtAge(s.quiet_sec)} ago</span>`
+          : ""}
         <span class="age">${fmtAge(s.age_sec)}</span>
       </div>
       ${s.first_prompt && html`<div class="prompt">${s.first_prompt}</div>`}

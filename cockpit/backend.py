@@ -239,16 +239,17 @@ def build_session_model():
         # turn freezes both. See _last_action_ts_map / STALL_AFTER_SEC.
         heartbeat = max(last, action_ts.get(sid8, 0))
         quiet_sec = max(0, int(now - heartbeat))
-        # Decay a quiet end-of-turn park into idle (see IDLE_AFTER_SEC). Done
-        # here, after idle_sec is known, so the attention flag + rank below read
-        # the decayed state — a finished-but-open session stops counting as
-        # "needs you".
-        if state == "your_move" and idle_sec > IDLE_AFTER_SEC:
-            state = "idle"
-        # Decay a heartbeat-silent busy turn into stalled (D-029) — the "go
-        # check this" signal the board never had.
-        elif state == "busy" and quiet_sec > STALL_AFTER_SEC:
-            state = "stalled"
+        # Staleness (S080). A session quiet past the threshold may not reflect
+        # live reality — its hooks haven't fired recently (the cockpit was just
+        # reopened, or the session is genuinely parked). Rather than FLATTEN it
+        # to a generic idle/stalled — which made a reopened cockpit read all-idle
+        # and erased what each session was last doing — keep the last real state
+        # and mark it `stale`. The board greys a stale row and shows the quiet
+        # age; the row drops out of the attention tally so a parked session never
+        # inflates "N need you" (the S074 invariant); and it sinks in the sort.
+        # Supersedes D-029's your_move→idle / busy→stalled display decay — same
+        # intent (a quiet session reads as not-live), more informative.
+        stale = quiet_sec > IDLE_AFTER_SEC
         sessions.append({
             "sid8": sid8,
             "session_id": s.get("session_id"),
@@ -256,6 +257,8 @@ def build_session_model():
             "name": names.get(sid8, ""),   # /rename label (S073)
             "instance": s.get("instance", 1),
             "state": state,
+            "stale": stale,                # quiet past IDLE_AFTER_SEC → grey + age, not live (S080)
+            "quiet_sec": quiet_sec,        # seconds since the last heartbeat (for the stale age)
             "tags": s.get("tags", []),     # flavor: alching / crew / wrapped (D-029)
             "host": s.get("host", "unknown"),
             "age_sec": max(0, int(now - started)),
@@ -263,11 +266,14 @@ def build_session_model():
             "first_prompt": s.get("first_prompt", ""),
             "doing": s.get("latest_action") or s.get("subtitle") or s.get("intent") or "",
             "intent": s.get("intent", ""),
-            # The two ball-in-your-court states drive the count + the pings.
-            # stalled surfaces via rank + its own chip, not the "need you" tally.
-            "attention": state in ("needs_you", "your_move"),
+            # The two ball-in-your-court states drive the count + the pings — but a
+            # stale (not-live) row never counts, so a parked session can't inflate
+            # the tally (S074 invariant preserved without flattening the state).
+            "attention": state in ("needs_you", "your_move") and not stale,
             "subagents": _pending_subagents(s.get("session_id")),
-            "rank": STATE_RANK.get(state, 99),
+            # Stale rows sink to the idle slot regardless of their last state, so
+            # live sessions stay on top; the real state still shows (greyed).
+            "rank": STATE_RANK.get("idle", 7) if stale else STATE_RANK.get(state, 99),
         })
     sessions.sort(key=lambda x: (x["rank"], x["age_sec"]))
     return {"generated_at": now, "sessions": sessions}

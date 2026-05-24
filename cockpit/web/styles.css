@@ -348,6 +348,12 @@ html, body {
 .row { cursor: pointer; transition: border-color 0.1s; }
 .row:hover { border-color: var(--ink-faint); }
 .row.selected { background: var(--panel-2); }
+/* stale row (S080): last-known state, not live-confirmed (quiet past the
+   threshold — e.g. a just-reopened cockpit). Dim it and show the quiet age,
+   keeping the real chip/label visible (greyed) instead of flattening to idle. */
+.row.stale { opacity: 0.5; }
+.row.stale:hover { opacity: 0.72; }
+.stale-age { font-size: 10px; font-style: italic; color: var(--ink-faint); margin-left: 6px; }
 
 .console-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .console-empty { margin: auto; color: var(--ink-faint); font-size: 13px; }

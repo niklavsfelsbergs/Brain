@@ -584,3 +584,17 @@
   Shipped S082 — fixed the most common dev-coordination leak: OPEN now mandatory on every dev-brain entry, mid-conversation included. Doc-only, no code.
   Touched: brain-root CLAUDE.md, dev CLAUDE.md, spellbook/respawn-ritual.md, respawn.md, S082 quest entry.
   Leaving open: heavier hook-enforced OPEN (passed on for now). @braindead-bffa422f still live on S081 cockpit — left active-mode.txt=dev-brain.
+
+[2026-05-24 17:04] braindead-d71c4ab3 OPEN (discussion only, no file targets)
+  Entered mid-conversation via "lets develop gielinor". Task: summarize all cockpit/switchboard issues still open or untested. READ-ONLY — no cockpit/, hook, or doc edits planned this session; posting OPEN per S082 (talk-only sessions still announce so siblings know I'm live).
+  No live siblings detected at entry — no braindead-*.txt intent file touched in the last 10 min; @bffa422f's S081 OPEN has no CLOSING but its intent went stale ~18m ago per @add9fd79's S082 note (ABANDONED candidate, not synthesizing — principal call).
+  Steering clear of: everything (read-only). Open to handoff: all of it — this is a status sweep, not a build.
+
+[2026-05-24 17:5x] braindead-d71c4ab3 CLOSING
+  S083 — cockpit full audit (the read-only sweep turned into a fix session: principal left me to work in laps until the cockpit is "properly usable"). 3 recon dwarves + own cross-read; no GUI eyeball available, so maximized the provable layers. 4 commits, all explicit-pathspec solo:
+  • e04c679 term.js+board.js — terminal prompt-below-fold: the S081 over-fit guard is correct (verified the geometry), the uncovered vector was geometry changes (applyTermZoom/fitTerms) that re-fit without re-pinning → extracted `_pinBottom()`, called from every geometry site; hardened `_cellHeight`; gated `_diag` behind window.__TERMDIAG; board crash-guard + build tag b83.1.
+  • f5222d1 backend.py — crash-guard `_pending_subagents` vs malformed role files (was a /api/sessions 500 → blank board); honest STALL_AFTER_SEC comment (stalled/idle are DELIBERATE dead scaffolding per S080, not a bug).
+  • f8d54c0 styles.css — dead `--closing` var.
+  • dc6b0ca NEW cockpit/test_backend.py — 26/26 regression gate pinning the session-model contract; also ran an aiohttp route smoke (server boots, all routes correct).
+  DELIBERATELY untouched (untestable blind / load-bearing): the S080 manifest+PID gate (root = never-refreshed claude_pid_chain @ sidecar:1595, documented as future fix); ptybridge UTF-8 boundary split; console.js dead composer branch; peek `.console` grainy-edge.
+  Leaving open: the EYES-ONLY relaunch verification (terminal prompt-at-bottom, Shift+Enter→\n, peek grainy-edge) — checklist in the S083 quest log; board shows `SWITCHBOARD b83.1` on fresh code. No live siblings the whole session. active-mode.txt left dev-brain (principal may return to continue).

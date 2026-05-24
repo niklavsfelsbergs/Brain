@@ -375,44 +375,46 @@ export function Term({ conn }) {
   useEffect(() => {
     const host = ref.current;
     if (host && conn.container.parentNode !== host) host.appendChild(conn.container);
-    // Re-parenting the xterm element on open/row-switch resets its viewport to the
-    // top of the scrollback, and fit() reflows the row count — so the scroll-to-
-    // newest must happen AFTER fit + layout commit. A synchronous scrollToBottom
-    // races the reflow and lands at the top; for a still-streaming session the next
-    // write re-pins it (you never notice), but for an IDLE one (agent done thinking,
-    // no more output) nothing corrects it and you're stuck at the top. Fix: fit, then
-    // scroll on the next two frames (past xterm's renderer committing the new dims),
-    // and once more after a short beat as a belt-and-suspenders for WebView2's slower
-    // transform/relayout under .term-host.
+    // Re-parenting the xterm element on open/row-switch resets the viewport and
+    // fit() reflows the row count. The subtle failure here is a SCROLLBAR DESYNC,
+    // not a "stuck at top": scrollToBottom() moves xterm's displayed line (ydisp)
+    // so the SCREEN renders the newest output (prompt visible, looks bottom-ed),
+    // but the native .xterm-viewport element's scrollTop is left at 0 because at
+    // sync time its scrollHeight wasn't laid out yet. Thumb at top, content at
+    // bottom — and a wheel-down off scrollTop=0 maps back to a line near the TOP,
+    // so the screen "jumps up." Fix: every frame for a short window, drive BOTH —
+    // scrollToBottom() for the render AND the viewport element's scrollTop directly
+    // so the native thumb agrees with ydisp. Re-fit through the early reflow frames;
+    // bail the instant the user wheels up (_follow flips false). Same pin-every-
+    // frame philosophy as the console history view (console.js).
     conn._follow = true; // opening/switching to a row → follow the newest output
-    let raf1 = 0, raf2 = 0;
-    const settle = () => {
-      conn.fitNow();
-      raf1 = requestAnimationFrame(() => {
-        conn.term.scrollToBottom();
-        raf2 = requestAnimationFrame(() => conn.term.scrollToBottom());
-      });
+    const vp = conn.container.querySelector(".xterm-viewport"); // the native scroll element
+    let raf = 0, n = 0;
+    const PIN_FRAMES = 48; // ~0.8s @60fps — outlasts WebView2's re-parent/fit relayout
+    const pin = () => {
+      if (!conn._follow) { raf = 0; return; } // user scrolled up → leave them there
+      if (n < 6) conn.fitNow();               // re-fit through the early reflow frames
+      conn.term.scrollToBottom();             // ydisp → bottom (drives the screen render)
+      if (vp) vp.scrollTop = vp.scrollHeight; // and sync the native scrollbar thumb to match
+      raf = ++n < PIN_FRAMES ? requestAnimationFrame(pin) : 0;
     };
-    settle();
-    const t = setTimeout(settle, 120);
+    conn.fitNow();
+    raf = requestAnimationFrame(pin);
     const onResize = () => conn.fitNow();
     window.addEventListener("resize", onResize);
     conn.term.focus();
     return () => {
-      clearTimeout(t);
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
+      if (raf) cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
       // intentionally NOT detaching/disposing — the terminal stays alive when
       // you switch rows; release() tears it down.
     };
   }, [conn]);
-  // The cockpit scales the whole UI with CSS `zoom` (--zoom) on .app-grid, but
   // xterm.js can't live under a scaled ancestor — mouse→cell mapping drifts so a
-  // selection lands rows below the pointer and the fit comes up short. .term-frame
-  // is a normal flex item (so the column layout is safe); the inner .term-host
-  // counter-scales with `transform` (visual-only — can't disturb layout footprint
-  // like zoom did) back to net 1.0, and .term-frame clips any spill. Terminal size
-  // comes from xterm fontSize, not the zoom. See styles.css .term-frame/.term-host.
+  // selection lands rows below the pointer and the fit comes up short. Since S073
+  // the --zoom lives on the side pillars/rails/console-head, NOT on the terminal's
+  // ancestry: .term-frame and .term-host carry no zoom and no transform, so xterm
+  // gets a clean 1:1 coordinate system. The terminal tracks the zoom knob via its
+  // FONT (term.js termFontFor × --zoom), not its box. See styles.css .term-frame.
   return html`<div class="term-frame"><div class="term-host" ref=${ref}></div></div>`;
 }

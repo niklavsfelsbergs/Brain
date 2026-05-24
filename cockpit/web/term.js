@@ -134,6 +134,13 @@ class TermConn {
       // handled before the \ commits to the line buffer); a lone 0x0A has no such
       // race and needs no protocol. Back to the documented primitive. (S081c.)
       if (e.key === "Enter" && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // preventDefault so the browser doesn't ALSO deliver Enter to xterm's
+        // hidden textarea: `return false` stops xterm's own keydown path, but in
+        // this WebView2 build the textarea can still emit a \r that submits
+        // ALONGSIDE our \n (the likely reason 6 byte-attempts all "submitted").
+        // Belt-and-suspenders — kill both default paths, send only the LF. (S083)
+        e.preventDefault();
+        if (window.__TERMDIAG) console.log("[term-diag] shift+enter caught -> sending \\n (0x0A)");
         this._linebuf = "";
         this._send({ type: "input", data: "\n" });
         return false; // swallow xterm's \r (submit stays plain Enter)
@@ -305,6 +312,11 @@ class TermConn {
     } else if (d.charCodeAt(0) < 0x20) {
       this._linebuf = ""; // control / escape (arrows, Ctrl-U, Ctrl-C): drop the mirror
     }
+    // [term-diag] opt-in: log control bytes xterm sends to the PTY. After a
+    // shift+enter this reveals whether a stray \r (code 13) ALSO leaks through —
+    // the smoking gun for "newline still submits." window.__TERMDIAG = 1.
+    if (window.__TERMDIAG && d.charCodeAt(0) < 0x20)
+      console.log("[term-diag] onData->PTY ctrl:", JSON.stringify(d), "codes", [...d].map((c) => c.charCodeAt(0)));
     this._send({ type: "input", data: d });
   }
 

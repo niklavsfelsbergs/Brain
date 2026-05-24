@@ -607,3 +607,7 @@
 
 [2026-05-24 18:xx] braindead-d71c4ab3 UPDATE (round 3)
   Shift+Enter CONFIRMED WORKING by principal (preventDefault was the fix; the byte was never wrong — the textarea leaked a 2nd \r). Cancel-busy round 2: 90s decay too slow for the interactive feel. Added cockpit-terminal Esc detection — TermConn records _interruptedAt on the Esc keystroke (cleared on next submit), board clears that session's busy→idle instantly; 90s decay stays the backstop for VSCode/non-cockpit sessions. Commit 642db9c, board reads b83.3. View-layer only.
+
+[2026-05-24 18:30] braindead-d71c4ab3 CLOSING (final — session wrapped)
+  S083 done. Principal: "lets wrap up, good work." 7 cockpit commits + 4 dev-bookkeeping. Shipped: terminal re-pin on every geometry change (prompt-below-fold), backend crash-guard, dead-var cleanup, 32-assertion regression gate + aiohttp route smoke, Shift+Enter (CONFIRMED working), cancelled-turn busy→idle (90s backend decay + instant cockpit-side Esc detection). Lessons harvested → bank/build-lessons.md (3) + cross-project memory (instrument-don't-reguess, autonomous-verify-what-you-can).
+  Leaving open (eyes-only, low-risk): live-confirm terminal prompt-at-bottom + instant Esc-clear on next relaunch (board b83.3); peek `.console` grainy-edge (flagged, untouched). Documented-but-deferred: never-refreshed claude_pid_chain root fix (sidecar:1595), ptybridge UTF-8 boundary split, console.js dead composer branch. No live siblings the whole session. active-mode.txt cleared to unscoped.

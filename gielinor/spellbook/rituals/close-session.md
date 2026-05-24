@@ -137,10 +137,11 @@ The agent judges per-item stability — "is this observation likely to still be 
 2. *"Did I notice something about myself or how I operate?"* → write to `players/<active>/examine/drafts/<YYYY-MM-DD>-<slug>.md`. Global (`gielinor/examine/drafts/`) only if the observation is clearly cross-player and the principal cues it.
 3. *"Did I notice something about Niklavs through this work?"* → write to `players/<active>/niksis8_character/drafts/<YYYY-MM-DD>-<slug>.md`. Global routing handled by bankstanding, not here.
 4. *"Did anything earn a pin?"* → write to `players/<active>/keepsake/proposals/<YYYY-MM-DD>-<slug>.md`. Almost always no.
+5. *"Did the principal correct me, push back on a judgment, or did something I did this session prove wrong / get reverted / surface a non-obvious failure mode?"* → the **highest-signal** learnings. Capture the specific moment as a self-observation in `players/<active>/examine/drafts/<YYYY-MM-DD>-<slug>.md` (or `gielinor/examine/drafts/` if clearly cross-player). If the lesson generalizes beyond this player and this task — a working-style or judgment lesson — **also** write it to the cross-conversation memory at `~/.claude/projects/.../memory/` per that system's protocol (one fact per file; update `MEMORY.md`). **This question is exempt from the empty-set bias below: if a correction, reverted change, or caught misjudgment happened this session, it MUST produce a captured learning.** Born 2026-05-24 — the principal directed that wrap-ups always harvest learnings from scenarios like the [[S083]] (dev brain) regression he caught.
 
 **Discipline.**
 
-- **Cap 1–5 drafts per session.** Bias to less. Empty-set is a valid and common answer. A session where nothing earned its way produces zero drafts; this is healthy.
+- **Cap 1–5 drafts per session.** Bias to less. Empty-set is a valid and common answer for questions 1–4. A session where nothing crystallized produces zero of those; this is healthy. **Question 5 (corrections/reverts/caught misjudgments) is the exception** — if one happened, it must produce a learning regardless of the cap.
 - **Observation-backed only.** Drafts must cite the specific turn or moment that produced them, per `gielinor/meta/drafts-mechanics.md`. Aspirational drafts ("I should be more careful about X" with no anchor) fail the discipline.
 - **Player-scope first.** Per [[D-012]] (D2=B), drafts land in the active player's namespace by default. Cross-player promotion is bankstanding's job.
 

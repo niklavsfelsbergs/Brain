@@ -51,3 +51,7 @@ Fix (`status-sidecar.py`): detect a `/rename` prompt — the same two shapes `re
 ## Open
 
 Continue the verification pass: S076 click-to-open, then S075 / S074 / S072 leftovers. Decide whether finds #1/#2 above warrant a follow-up session.
+
+**Cascade.** `cockpit/web/term.js` (scroll desync, `62d5128`); `cockpit/backend.py` + `cockpit/web/board.js` + `cockpit/web/main.js` + `cockpit/web/styles.css` (board-side rename, `5738e8c`); `developer-braindead/.claude/hooks/status-sidecar.py` (rename strand fix, `6cde459`); this quest-log + `respawn.md` + `comms/active.md`.
+
+**Main-brain changes.** none — all changes were in `cockpit/` and `developer-braindead/`; nothing crossed into `gielinor/`.

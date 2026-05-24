@@ -76,13 +76,14 @@ STATE_RANK = {
 # mid-turn question and stays hot. 5 min matches the old switchboard.
 IDLE_AFTER_SEC = 300
 
-# Reader-derived stalled (D-029). A `busy` session with no action heartbeat for
-# this long is probably crashed/wedged — the board shows STALLED so the operator
-# goes and checks. The heartbeat is the freshest of last_event_ts and the latest
-# action in state.ndjson (re-read per poll — see _last_action_ts_map). Generous
-# so a marathon single tool call doesn't false-trip; it self-corrects the instant
-# the tool returns and bumps the action stream.
-STALL_AFTER_SEC = 300
+# Reserved (D-029) — NOT currently wired. The original two-axis plan derived a
+# `stalled` chip for a `busy` session whose action heartbeat went silent past this
+# window. S080 superseded that display-decay with stale-greying (see
+# build_session_model's `stale`): the row keeps its last real state + a quiet age
+# instead of being relabelled, which reads as more informative. Nothing assigns
+# `stalled` today; this constant + the `stalled` STATE_RANK/label/CSS are kept so
+# re-introducing a distinct STALLED signal is a one-liner if it's ever wanted.
+STALL_AFTER_SEC = 300  # unused — see note above
 STATE_NDJSON = STATE_DIR / "state.ndjson"
 
 # Legacy → D-029 token aliases. A session that hasn't fired a hook since the
@@ -166,10 +167,17 @@ def _pending_subagents(session_id):
     if not session_id:
         return out
     for kind, path in ROLE_FILES.items():
-        rec = (_read_json(path, {}).get("bySession") or {}).get(session_id)
-        if not rec:
+        # Guard every level — a corrupt/truncated role file could parse to a
+        # non-dict (or carry a non-dict byToolUseId), and an unguarded .items()
+        # would 500 the whole /api/sessions. Mirrors the sidecar's isinstance
+        # guards in _pending_subagents_by_session.
+        data = _read_json(path, {})
+        by_session = data.get("bySession") if isinstance(data, dict) else None
+        rec = by_session.get(session_id) if isinstance(by_session, dict) else None
+        by_tuid = rec.get("byToolUseId") if isinstance(rec, dict) else None
+        if not isinstance(by_tuid, dict):
             continue
-        for tuid, info in (rec.get("byToolUseId") or {}).items():
+        for tuid, info in by_tuid.items():
             ident = info.get("id") if isinstance(info, dict) else None
             out.append({"kind": kind, "id": ident or tuid})
     return out

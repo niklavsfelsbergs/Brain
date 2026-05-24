@@ -1,26 +1,30 @@
 # Jebrim — last alched
 
-2026-05-24 (B-006 bankstanding Phase 0, principal-self).
+2026-05-24 (S060, principal-self alching).
 
 **Promotions (1):**
 
-- examine/confirmed (1): `2026-05-23-reached-for-filename-inference-over-opening-files.md` — promoted on 2nd occurrence of the trust-surface-label-over-content tendency. Gate met by S059: cited "cost-basis unreconciled" from his own stale bank note without re-checking ground truth, principal-corrected. Parent tendency behind the confirmed sibling [[2026-05-24-my-own-bank-note-went-stale]].
+- spellbook/skills (1): `stress-testing-an-agent-by-embodying-it.md` — promoted on ≥2× use (S059 + S060 limit-test campaigns); named, reusable methodology for evaluating a standalone agent by embodying it in dwarves + grading vs its own rulebook + ground-truth-verifying every number.
 
-**Holds (1):**
+**Bank refresh (1):**
 
-- examine/drafts: `2026-05-22-reviewing-from-outside-a-system-i-am-inside` — still self-gated (promote on 2nd occurrence of reaching for a pre-system comparative baseline). S059's self-stocktake didn't reproduce the wrong-baseline miss; gate not met. Held again.
+- `bank/notes/projects/shipping-agent-quality-assessment-2026-05-24.md` — appended S060 follow-up: S059's cause-attribution self-gating fix landed; new scope/denominator gap found + fixed (4 teachings, live-validated); the "full rigor, doesn't self-trigger on the fast path" pattern.
+
+**Holds (2):**
+
+- examine/drafts: `2026-05-24-primed-probe-contaminates-spontaneity-test` — 1st occurrence; gate on 2nd time a probe's framing cues the dimension under test. Generalizable form already in cross-session memory (`feedback-neutral-probe-for-spontaneity`).
+- examine/drafts: `2026-05-22-reviewing-from-outside-a-system-i-am-inside` — held again; gate (2nd wrong-baseline review) not met by S060 (behavioral test, no comparative-baseline review).
 
 **Step results:**
 
-- Phase 0 spawn-decision: 2 pending drafts (<10), same-day alch, no new in-progress turns → principal-self.
-- Step 1 (identity drafts): 2 reviewed → 1 promoted (Draft B), 1 held (Draft A). niksis8_character/drafts + keepsake/proposals empty.
-- Step 2 (bank drafts): bank/drafts/notes empty. Staleness: convergence note already RECONCILED in S059; nothing archived.
-- Step 3 (completed graduation): none — S059 already self-harvested into bank/notes/projects/shipping-agent-quality-assessment-2026-05-24 + examine confirmed.
-- Step 3a (self-obs sweep): no new in-progress turns since 02:42; the one S059 self-obs captured live as confirmed. None drafted.
-- Step 4 (current.md budgets): examine / niksis8_character / keepsake all under budget, unchanged today.
-- Step 5 (rejected/ patterns): no new rejections; 2 pre-existing in niksis8_character/rejected (2026-05-21), no pattern.
-- Step 6 (skill graduation): no spellbook drafts; S059's savings-investigation skill lives in the shipping-agent repo, not Jebrim's bank; no ≥2× Jebrim-methodology pattern.
+- Spawn-decision: 3 pending drafts (<10), same-day prior alch (B-006), no never-alched → principal-self.
+- Step 1 (identity drafts): 2 examine reviewed → 0 promoted, 2 held. niksis8_character/drafts + keepsake/proposals empty.
+- Step 2 (bank): bank/drafts/notes empty. Staleness → 1 refresh (S060 addendum to the quality-assessment note).
+- Step 3 / 3a (completed graduation / self-obs): no new completed quests (S060 still in-progress); the one self-obs captured as the held examine draft. None new.
+- Step 4 (current.md budgets): examine / niksis8_character / keepsake under budget, untouched today.
+- Step 5 (rejected patterns): no new rejections; 2 pre-existing in niksis8_character/rejected (2026-05-21), no pattern.
+- Step 6 (skill graduation): 1 existing skill draft promoted (above); no new skill candidates.
 
-**Note:** Jebrim still carries 3 stale in-progress quests (S040 outlook-mcp, S054 shipping-audit-2, S057 harvest) — untouched today, his own sessions to resolve. Not bankstanding's to tend.
+**Note:** S060 itself stays in-progress (commit follow-up parked — shipping-agent edits + brain both uncommitted, awaiting principal go). Jebrim still carries S040 / S054 / S057 stale in-progress (untouched, his own to resolve).
 
-**Context:** Bankstanding B-006 Phase 0. Prior alch: 2026-05-24 (B-005).
+**Context:** Explicit alch on principal cue ("alch") at S060 session tail. Prior alch: 2026-05-24 (B-006 Phase 0).

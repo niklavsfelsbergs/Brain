@@ -31,6 +31,16 @@ Reasoning ceiling excellent; first-pass risk-disclosure / self-gating is the gap
 
 `skills/savings-investigation.md` (new), `how_to.md` (load-on-cue trigger + rule-34 confidence-label format + 30-34 header pointer + §1 index row), `skills/_about.md`. Awaiting principal decision to commit/extend.
 
+## S060 follow-up (2026-05-24) — re-test + teachings applied
+
+Re-ran the limit-test campaign against the post-S059 rulebook (10 Qs / 3 tiers; every number ground-truth-verified; zero hallucination).
+
+- **S059's headline fix LANDED for cause-attribution.** Rate-vs-mix decomposition + own-counter falsification now self-trigger first-pass, unprompted (H2: refused a false "UPS +20% in April" premise, decomposed it to fuel + oversize-mix, gated its *own* counter-claim without challenge). The asymmetric-skepticism gap S059 named is closed at the cause layer.
+- **New residual gap, one level up — scope/denominator self-gating.** On quick-answer cost questions the agent silently picks a scope ("we/our" → TCG) and, when that choice flips the headline's *sign*, doesn't surface the fork (M1: answered "+8.5%, more expensive" on TCG while all-lines per-parcel *fell* ~28% on cheap new volume). Same asymmetric-skepticism root, relocated cause → scope. Capability present (surfaced cleanly when building a deliverable or when cued); the spontaneous trigger on the fast path was missing.
+- **4 teachings applied + live-validated (S060):** scope/denominator self-gate (`savings-investigation.md` item 4 + rule 4); "we/our" = all-lines default + state-the-scope + surface-fork-on-sign-flip (rule 12); carrier-name UPPERCASE casing (`= 'FedEx'` → 0 rows; rule 14 + `query-patterns.md`); own-share/percent sanity-check. Re-ran the sign-flip prompt on a neutral brief → the agent now leads like-for-like AND surfaces the fork spontaneously, citing rule 12. **Commit held** pending principal go as of S060 close (edits in the shipping-agent working tree; brain uncommitted).
+
+Pattern worth carrying: the agent's gaps cluster as **"full rigor present, doesn't self-trigger on the fast path."** The durable fix is a generative self-gate, not another scar-rule. Methodology now a skill: [[stress-testing-an-agent-by-embodying-it]].
+
 ## Related
 
 - Skill (in shipping-agent repo, not my bank): `savings-investigation.md` — the falsification gate this assessment validates.

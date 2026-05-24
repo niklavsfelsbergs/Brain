@@ -231,20 +231,35 @@ html, body {
 
 /* ====== Phase 2: two-column layout + session console ====== */
 
-/* zoom scales everything; vw/vh compensation keeps it filling the window exactly */
+/* The app grid itself is NOT scaled. xterm.js cannot live under ANY scaled
+   ancestor — neither `zoom` nor `transform` — because it mixes layout-box reads
+   (offsetWidth/clientHeight, NOT scaled by transform) with getBoundingClientRect +
+   wheel deltas (which ARE), so its mouse→cell and wheel→line math drift. S069
+   proved this with selection; the net-1.0 `zoom × counter-transform` cancellation
+   it shipped fixed selection but left scroll broken (open an idle terminal →
+   scroll-up locks, scroll-down jumps to top). S073 fix: give the terminal a truly
+   unscaled ancestry. `zoom` moves OFF .app-grid onto the side pillars, rails, modal,
+   and the column headers (none contain xterm, so scaling them is safe); the
+   console column + the terminal stay at native scale. The terminal still tracks
+   the zoom — by scaling its FONT (term.js termFontFor × --zoom), not its box. */
 .app-grid {
   display: flex;
-  zoom: var(--zoom);
-  width: calc(100vw / var(--zoom));
-  height: calc(100vh / var(--zoom));
+  width: 100vw;
+  height: 100vh;
 }
 
-/* xterm.js can't render under the global `zoom` above — a scaled ancestor makes
-   text-selection land rows below the pointer and the fit come up short. .term-frame
-   is a normal flex item, so the column layout is always safe; the inner .term-host
-   counter-scales with `transform` (visual-only: no layout-footprint change, unlike
-   zoom) so the terminal renders at net 1.0, and .term-frame clips the spill. The
-   terminal is sized via xterm fontSize (term.js), not the zoom. */
+/* everything that should grow/shrink with --zoom but holds no xterm. Fixed-width
+   pillars/rails scale their box cleanly; the modal scales centered; the headers
+   use an inverse-width so a zoomed box still fits its unscaled column (no overflow)
+   and the three header bars stay equal height. The peek .console (read-only VS Code
+   transcript — normal DOM scroll, no xterm) scales whole. */
+.board-col, .feed-col, .rail, .modal { zoom: var(--zoom); }
+.term-col > .console-head { zoom: var(--zoom); width: calc(100% / var(--zoom)); }
+.console { zoom: var(--zoom); width: calc(100% / var(--zoom)); height: calc(100% / var(--zoom)); }
+
+/* The embedded terminal: no zoom, no transform — a clean coordinate system for
+   xterm. .term-frame is a plain flex item (column layout safe); .term-host just
+   pads it. Terminal size comes from xterm fontSize (term.js), not any scaling. */
 .term-frame {
   position: relative;
   width: 100%;
@@ -254,12 +269,7 @@ html, body {
 }
 .term-host {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(100% * var(--zoom));
-  height: calc(100% * var(--zoom));
-  transform: scale(calc(1 / var(--zoom)));
-  transform-origin: top left;
+  inset: 0;
   padding: 8px 12px;
   box-sizing: border-box;
 }

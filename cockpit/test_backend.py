@@ -201,11 +201,40 @@ def test_robust_to_missing_and_malformed():
         check(f"sparse row -> no crash (raised {e!r})", False)
 
 
+def test_busy_idle_decay_on_cancel():
+    """S083: Claude fires no hook on Esc-cancel, so a cancelled turn sticks at
+    busy. A busy session gone heartbeat-silent past BUSY_IDLE_AFTER_SEC decays to
+    idle (no ping, no attention) — while a busy session with a fresh heartbeat
+    stays busy."""
+    tmp = _sandbox()
+    now = time.time()
+    backend.MANIFEST.write_text(json.dumps({"sessions": [
+        {"sid8": "f0000000", "session_id": "f0000000-0000-0000-0000-000000000000",
+         "actor": "jebrim", "state": "busy", "last_event_ts": now - 5},      # fresh -> busy
+        {"sid8": "f1000000", "session_id": "f1000000-0000-0000-0000-000000000000",
+         "actor": "zezima", "state": "busy", "last_event_ts": now - 150},    # 150s silent -> idle (cancelled)
+        {"sid8": "f2000000", "session_id": "f2000000-0000-0000-0000-000000000000",
+         "actor": "guthix", "state": "your_move", "last_event_ts": now - 150},  # your_move unaffected by busy-decay
+    ]}), encoding="utf-8")
+    m = backend.build_session_model()
+    by = {s["sid8"]: s for s in m["sessions"]}
+
+    check("fresh busy stays busy", by["f0000000"]["state"] == "busy")
+    check("silent busy (150s) decays to idle", by["f1000000"]["state"] == "idle")
+    check("decayed-idle is NOT attention (no false ping)", by["f1000000"]["attention"] is False)
+    check("decayed-idle (150s < 300) not yet stale-greyed", by["f1000000"]["stale"] is False)
+    check("your_move is NOT touched by the busy-decay", by["f2000000"]["state"] == "your_move")
+
+    att = sum(1 for s in m["sessions"] if s["attention"])
+    check("attention tally = 1 (only the live your_move; cancelled busy excluded)", att == 1)
+
+
 def main():
     test_pending_subagents_crashguard()
     test_stale_greying_and_attention()
     test_legacy_token_aliasing()
     test_action_heartbeat()
+    test_busy_idle_decay_on_cancel()
     test_robust_to_missing_and_malformed()
     print(f"\n{_PASS} passed, {_FAIL} failed")
     sys.exit(1 if _FAIL else 0)

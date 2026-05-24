@@ -2,6 +2,7 @@
   "_comment": "Brain-root hooks. Loaded for any session opened at brain/ or below. The gielinor/.claude/settings.json holds architectural guarantees scoped to gielinor sessions; this file holds cross-brain instrumentation.",
   "_comment_abs_path": "S052: hook commands use an absolute path instead of ${CLAUDE_PROJECT_DIR}. Sessions launched from a subdirectory (e.g. switchboard/, experiments/) come up with an empty CLAUDE_PROJECT_DIR, which expanded to a broken '/developer-braindead/...' path and silently no-op'd every hook — that session never appeared on the switchboard or emitted events. Absolute path is machine-specific but the brain hasn't migrated hosts; revisit at ascension (death-as-migration).",
   "_comment_status_sidecar": "D-020 status-sidecar.py registered for UserPromptSubmit + Stop + SessionEnd (3 fires/turn). PreToolUse/PostToolUse NOT registered broadly — per-tool granularity isn't load-bearing and would push fire rate to 2N+3/turn. EXCEPTION (S053): status-sidecar IS registered for PreToolUse/PostToolUse matched ONLY to AskUserQuestion|ExitPlanMode — these park the session on the user mid-turn with no Stop, so the board would read WORKING while actually WAITING. Tight matcher keeps it ~0-2 fires/session. S057 EXTENDED the same matcher to Task|Agent for the waiting_for_subagents (AWAITING CREW) state — a foreground spawn blocks the parent until the crew returns; Pre sets the state, Post re-derives it. The manifest per-row override in _write_manifest is the authority (refreshes from any session's fire, self-heals a missed Post); the Pre/Post registration just covers the lone-blocked-session case. See S032 incident + S033 re-enable decision; lorebook draft on hook-fire-rate-as-budget pending.",
+  "_comment_session_start": "status-sidecar.py on SessionStart carries a session's /rename board label across a /clear: /clear keeps claude.exe alive but mints a new session UUID (new sid8), orphaning the state-names.json label keyed on the old sid8. The hook acts only on source=='clear', matching the just-ended predecessor by shared claude.exe pid. Fires once per session — negligible cost.",
   "permissions": {
     "defaultMode": "bypassPermissions",
     "allow": [
@@ -88,7 +89,6 @@
         ]
       }
     ],
-    "_comment_session_start": "status-sidecar.py on SessionStart carries a session's /rename board label across a /clear: /clear keeps claude.exe alive but mints a new session UUID (new sid8), orphaning the state-names.json label keyed on the old sid8. The hook acts only on source=='clear', matching the just-ended predecessor by shared claude.exe pid. Fires once per session — negligible cost.",
     "SessionStart": [
       {
         "hooks": [

@@ -76,18 +76,16 @@ STATE_RANK = {
 # mid-turn question and stays hot. 5 min matches the old switchboard.
 IDLE_AFTER_SEC = 300
 
-# Cancel/wedge fallback for `busy` (S083, principal report). Claude Code fires NO
-# hook on an Esc-interrupt — the `Stop` hook only fires on natural completion, and
-# there's no UserPromptCancel event (confirmed via the docs + open issues). So a
-# cancelled turn's UserPromptSubmit->busy stamp never clears and the row sticks at
-# BUSY forever. A genuinely working turn keeps its heartbeat fresh through the
-# action stream (emit-event writes one per tool call); a cancelled turn goes silent
-# at once. So a `busy` session quiet past this short window is treated as
-# no-longer-working and reader-decayed to `idle` (no ping, no attention inflation,
-# real chip changes from BUSY). Tradeoff: a long single tool call or a long pure-
-# thinking stretch (> this) briefly reads IDLE, then snaps back to BUSY on its next
-# action — soft and self-correcting. Bump if genuine long-quiet work false-trips.
-BUSY_IDLE_AFTER_SEC = 90
+# NOTE — do NOT re-add a timeout-based busy->idle decay here. S083 tried it
+# (BUSY_IDLE_AFTER_SEC=90, for the "cancelled turn sticks at BUSY" report) and it
+# FALSE-TRIPPED genuine work: a session thinking, writing a long response, or in a
+# long single tool/MCP query fires no action for >90s and was wrongly flipped to
+# IDLE while actively working (Jebrim's analytical turns hit this constantly).
+# There is no server-side way to tell "cancelled" from "quietly working" — no hook
+# fires on an Esc-interrupt. The cancel case is handled WITHOUT a timeout: the
+# cockpit detects the Esc keystroke in its own terminal and clears busy->idle
+# instantly (see term.js _interruptedAt / main.js termInterrupted). A busy session
+# otherwise stays BUSY and only greys (not relabels) once quiet past IDLE_AFTER_SEC.
 
 # Reserved (D-029) — NOT currently wired. The original two-axis plan derived a
 # `stalled` chip for a `busy` session whose action heartbeat went silent past this
@@ -260,11 +258,6 @@ def build_session_model():
         # turn freezes both. See _last_action_ts_map / STALL_AFTER_SEC.
         heartbeat = max(last, action_ts.get(sid8, 0))
         quiet_sec = max(0, int(now - heartbeat))
-        # Cancel/wedge fallback: a busy session gone heartbeat-silent is almost
-        # certainly cancelled (no Stop hook fires on Esc) or wedged — decay it to
-        # idle so it stops claiming BUSY. See BUSY_IDLE_AFTER_SEC. (S083)
-        if state == "busy" and quiet_sec > BUSY_IDLE_AFTER_SEC:
-            state = "idle"
         # Staleness (S080). A session quiet past the threshold may not reflect
         # live reality — its hooks haven't fired recently (the cockpit was just
         # reopened, or the session is genuinely parked). Rather than FLATTEN it

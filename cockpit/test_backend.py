@@ -201,32 +201,32 @@ def test_robust_to_missing_and_malformed():
         check(f"sparse row -> no crash (raised {e!r})", False)
 
 
-def test_busy_idle_decay_on_cancel():
-    """S083: Claude fires no hook on Esc-cancel, so a cancelled turn sticks at
-    busy. A busy session gone heartbeat-silent past BUSY_IDLE_AFTER_SEC decays to
-    idle (no ping, no attention) — while a busy session with a fresh heartbeat
-    stays busy."""
+def test_busy_stays_busy_when_quiet():
+    """S083 REGRESSION GUARD (the Jebrim bug): a genuinely-working session that
+    goes hook/action-silent — long thinking, a long single tool/MCP query, writing
+    a long response — must STAY busy, never flip to idle. An earlier timeout-decay
+    (BUSY_IDLE_AFTER_SEC=90) false-tripped real work and was REMOVED: there's no
+    server-side way to tell 'cancelled' from 'quietly working'. The cancel case is
+    handled cockpit-side via the Esc keystroke, not here. A quiet busy session only
+    greys (keeps the BUSY chip) past IDLE_AFTER_SEC — never relabels to idle."""
     tmp = _sandbox()
     now = time.time()
     backend.MANIFEST.write_text(json.dumps({"sessions": [
         {"sid8": "f0000000", "session_id": "f0000000-0000-0000-0000-000000000000",
-         "actor": "jebrim", "state": "busy", "last_event_ts": now - 5},      # fresh -> busy
+         "actor": "jebrim", "state": "busy", "last_event_ts": now - 5},     # fresh
         {"sid8": "f1000000", "session_id": "f1000000-0000-0000-0000-000000000000",
-         "actor": "zezima", "state": "busy", "last_event_ts": now - 150},    # 150s silent -> idle (cancelled)
+         "actor": "jebrim", "state": "busy", "last_event_ts": now - 200},   # 200s silent (long query/think)
         {"sid8": "f2000000", "session_id": "f2000000-0000-0000-0000-000000000000",
-         "actor": "guthix", "state": "your_move", "last_event_ts": now - 150},  # your_move unaffected by busy-decay
+         "actor": "jebrim", "state": "busy", "last_event_ts": now - 9000},  # 2.5h quiet
     ]}), encoding="utf-8")
     m = backend.build_session_model()
     by = {s["sid8"]: s for s in m["sessions"]}
 
     check("fresh busy stays busy", by["f0000000"]["state"] == "busy")
-    check("silent busy (150s) decays to idle", by["f1000000"]["state"] == "idle")
-    check("decayed-idle is NOT attention (no false ping)", by["f1000000"]["attention"] is False)
-    check("decayed-idle (150s < 300) not yet stale-greyed", by["f1000000"]["stale"] is False)
-    check("your_move is NOT touched by the busy-decay", by["f2000000"]["state"] == "your_move")
-
-    att = sum(1 for s in m["sessions"] if s["attention"])
-    check("attention tally = 1 (only the live your_move; cancelled busy excluded)", att == 1)
+    check("200s-silent busy STILL busy (no false idle — the Jebrim regression)", by["f1000000"]["state"] == "busy")
+    check("200s-silent busy not yet greyed (<300s)", by["f1000000"]["stale"] is False)
+    check("2.5h-quiet busy still BUSY (greyed, not relabelled)", by["f2000000"]["state"] == "busy")
+    check("2.5h-quiet busy is greyed (stale)", by["f2000000"]["stale"] is True)
 
 
 def main():
@@ -234,7 +234,7 @@ def main():
     test_stale_greying_and_attention()
     test_legacy_token_aliasing()
     test_action_heartbeat()
-    test_busy_idle_decay_on_cancel()
+    test_busy_stays_busy_when_quiet()
     test_robust_to_missing_and_malformed()
     print(f"\n{_PASS} passed, {_FAIL} failed")
     sys.exit(1 if _FAIL else 0)

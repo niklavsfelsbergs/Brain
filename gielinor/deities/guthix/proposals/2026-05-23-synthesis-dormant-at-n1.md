@@ -1,6 +1,7 @@
 # Proposal: mark bankstanding step 3 (cross-player synthesis) dormant until N≥2
 
 **Drafted:** 2026-05-23 (B-004 closure, guthix-dfcbc740)
+**LANDED:** 2026-05-24 (B-006) — dormancy gate applied to `bankstanding.md` step 3 after a 5th consecutive N=1 no-op.
 
 ## 1. Observation
 

@@ -101,6 +101,16 @@ If the principal confirms (`yes`, `flip`, `Hey Guthix`), perform the player→Gu
 
 **Scope.** Applies in **player mode** and **unscoped mode**. Does not fire in dev-brain mode (Braindead is the construction actor; system questions in dev-brain are usually construction tasks). Does not fire in consultation or bankstanding (already with Guthix).
 
+## Offer choices as multiple-choice with a recommendation
+
+At a genuine branch point — more than one reasonable way forward — present the options as an explicit multiple-choice question (via `AskUserQuestion`) rather than a paragraph of trade-offs, and **always name which option is recommended and why**. Put the recommended option first, suffix its label "(Recommended)", and carry the reasoning in its description.
+
+Lower the threshold for offering structured choices — but never offer them neutrally. A bare menu offloads a decision the agent should hold a view on; the recommendation is what keeps the agent accountable for that view while leaving the call to the principal.
+
+Calibration: still skip the question when there's an obvious default or the answer wouldn't change what the agent does next (the compression rule above still applies). The recommendation requirement is the guard against using the tool to dodge having an opinion.
+
+See [[D-025]] for the founding decision.
+
 ## Intent narration (visualizer sidecar)
 
 After stating the Plan, write the intent line **in the active actor's voice** (1–3 sentences, ≤280 chars) to `.claude/intent/<actor>-<sid8>.txt` at the brain root, where `<sid8>` is the first 8 characters of `CLAUDE_CODE_SESSION_ID` (the env var Claude Code exposes per session). The per-session filename is the **only** sanctioned shape — it prevents two parallel sessions of the same actor from clobbering each other's bubble on disk (see [[D-018]]) AND serves as the on-disk session anchor that lets the hook recover actor attribution after a `state.ndjson` truncation/reset (the disk-fallback path in `current_main_actor`). Applies to **every** actor: players (`jebrim`, `zezima`), Braindead, Guthix, and Wisp. If `CLAUDE_CODE_SESSION_ID` is genuinely unavailable (very rare), surface that to the principal rather than falling back to bare files — bare files have no session ownership and break the recovery path. The visualizer reads the file and renders a speech bubble near the actor (wraps to two lines centered) and also pushes the same string into the COMMS chat panel as `<Actor>: <text>`.

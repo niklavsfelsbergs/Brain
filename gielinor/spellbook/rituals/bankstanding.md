@@ -92,6 +92,8 @@ This is the same surface as the `/drafts` command, scoped to globals — banksta
 
 ### 3. Cross-player synthesis — promote recurring patterns to the global layer
 
+**Dormancy gate.** This step requires ≥2 players carrying confirmed content in `examine/` or `niksis8_character/`. If only one player is operational (others pre-operational / placeholder), the step is structurally dormant — there is no cross-player recurrence to detect. Note "step 3 dormant (N=1)" in the trace and move on; do not re-deliberate. Re-activate when a second player has confirmed entries.
+
 Read across what's been confirmed in each player's `examine/` and `niksis8_character/`. Look for **patterns that recur across players**:
 
 - A self-observation Zezima has confirmed that also shows up confirmed in Jebrim → propose graduating to **global** `examine/drafts/`. The pattern transcends the character; the global layer is where it belongs.

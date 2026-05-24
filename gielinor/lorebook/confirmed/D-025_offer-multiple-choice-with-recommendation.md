@@ -1,6 +1,6 @@
 # Offer choices as multiple-choice with a recommendation and why
 
-**Type:** operating rule (communication). Drafted 2026-05-24 (dev-brain session, sid 89f41770). **Status: draft — awaiting principal promotion.**
+**Type:** operating rule (communication). Drafted 2026-05-24 (dev-brain session, sid 89f41770). Confirmed 2026-05-24 (B-006 bankstanding).
 
 **What changed.** When a response reaches a genuine branch point — more than one reasonable way forward — present the options as an explicit **multiple-choice question** rather than prose, and **always name which option I recommend and why**. Lower the threshold for offering structured choices, but never offer them neutrally: each set comes with an opinionated default.
 

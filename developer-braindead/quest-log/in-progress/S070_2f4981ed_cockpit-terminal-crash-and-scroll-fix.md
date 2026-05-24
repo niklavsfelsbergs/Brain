@@ -19,15 +19,17 @@ The principal never saw it because the paste handler rode **uncommitted** on top
 
 **Fix.** One-word rename: `attachCustomKeyHandler` → `attachCustomKeyEventHandler`. The handler signature `(e: KeyboardEvent) => boolean` already matched the correct API. Owned-session ids persist in `localStorage` (`cockpit-owned-terms`) and are only dropped on explicit release/close, so a failed resume did not lose them — reopen resumes from disk.
 
-## Fix 2 — terminal opens scrolled to the top (`cockpit/web/term.js`, `Term()` effect)
+## Fix 2 — terminal scrolls to the top when the agent finishes (`cockpit/web/term.js`)
 
-**Root cause.** On open/row-switch the effect re-parents the xterm node (resets viewport to top of scrollback) and `fit()` reflows the rows. The prior code scrolled synchronously + once at 60ms, which races the reflow's layout commit. For a **streaming** session the next PTY write re-pins to bottom (invisible), but for an **idle** session (agent done, no more output) nothing corrects it → stuck at top. Hence "only when the agent is done thinking."
+**First attempt (insufficient — kept as the on-open path).** Guessed it was an on-open re-parent/`fit()` race and made the open-time `scrollToBottom()` fire across two rAFs + a 120ms re-run. Principal: "still happened." That ruled out the on-open theory.
 
-**Fix.** `fit()`, then `scrollToBottom()` across the next two animation frames (after xterm commits the new dims), plus one re-run at 120ms as a belt-and-suspenders for WebView2's slower transform/relayout under `.term-host`. rAF handles cancelled in cleanup.
+**Real root cause (researched — xterm.js [#5620](https://github.com/xtermjs/xterm.js/issues/5620), github/copilot-cli [#1805](https://github.com/github/copilot-cli/issues/1805)).** Claude's TUI (and other AI CLIs) render by **clear-screen-then-full-rewrite**. When a turn completes and the whole screen is rewritten with a long response, that burst fires rapid scroll/clear events that xterm.js **misreads as a user scroll-up** — it sets its internal "scrolled away" state, stops following output, and locks the viewport at the top. This happens *during the completion rewrite*, not on open, which is why a one-shot open-time `scrollToBottom()` can't touch it. "Only when the agent is done thinking" = the long completion rewrite is what trips it.
+
+**Fix (the documented pattern, scoped to `TermConn`).** (1) **Batch** PTY output into one `term.write` per animation frame (`_write`/`_wq`/`_wraf`), so xterm sees one coherent frame instead of the burst's half-states. (2) Carry a sticky **`_follow`** flag that **only a real wheel-up clears** (and a wheel-down that reaches the bottom restores) — the TUI's synthetic scroll churn never touches it. (3) In the batched write's **render callback**, `scrollToBottom()` if `_follow`, re-pinning after the rewrite renders. Reset `_follow = true` on open/row-switch; cancel the pending write-rAF in `close()` so a queued flush can't write into a disposed terminal. The on-open double-rAF scroll (first attempt) stays for the idle-switch case where no further output arrives to trigger the flush re-pin.
 
 ## Committed
 
-`git` SOLO with explicit pathspecs (D-024): `cockpit/web/term.js` + `cockpit/backend.py` (the `/api/clipboard` bridge the paste handler depends on — coherent unit; also lands the S069-ceded markup `fontSize:18` + `.term-frame`/`.term-host` div that pairs with the already-committed `styles.css`).
+`a072ce5` SOLO with explicit pathspecs (D-024): `cockpit/web/term.js` + quest-log + comms. The fix lands on top of the sibling's **`9fe6f2b`** ("cockpit: fix paste in WebView2 terminal via server-side clipboard bridge"), which had committed both `backend.py` (the `/api/clipboard` bridge) **and** the broken `term.js` paste handler — that commit is what took the cockpit down. By the time I staged, `backend.py` was already clean (sibling-committed), so my commit carried only the corrected `term.js` (rename + scroll fix + the S069-ceded markup `fontSize:18` / `.term-frame`/`.term-host` div, which pairs with `styles.css` from S069's `c3f2e3f3`).
 
 **Left uncommitted (separate sibling WIP, not mine):** `cockpit/web/main.js` (feed-state board merge), `cockpit/web/console.js` (read-only console scroll tweak), `cockpit/_probe_ask.py` (S065 cruft), and the gielinor/ + visualizer-mirror files.
 

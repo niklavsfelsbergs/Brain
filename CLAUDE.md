@@ -21,6 +21,8 @@ Dev-brain mode is entered only when a message **starts with** `Lets develop giel
 
 On entry, run the dev-brain entry sequence per `developer-braindead/CLAUDE.md`: read `developer-braindead/respawn.md` first, then operate under dev-brain conventions (`developer-braindead/_about.md`, dev-brain `spellbook/`, `quest-log/`, etc.). This is a mini-respawn — symmetric to mid-session player switching in gielinor. If a player was activated in this session, their `quest-log/in-progress/` gets a hand-off note per the mini-respawn procedure in `gielinor/spellbook/rituals/respawn.md`. If no player was active this session, nothing is handed off — prior-session in-progress quests are not this session's to mark.
 
+**The entry sequence includes sibling-detection and posting an `OPEN` to `developer-braindead/comms/active.md`** (`respawn-ritual.md` steps 6–8). A mid-conversation pivot via this cue is **not** exempt — it runs the same ritual a clean respawn does. This is the system's most common discipline leak: the recurring *"did not post an OPEN — dev-brain entered mid-conversation"* note across `comms/active.md` means ~70% of sessions skipped it. `OPEN` is the half that *prevents* collisions (announce your files, check for live siblings before editing); `CLOSING` only records them after. Fire it on every entry.
+
 ## Returning to the main brain from dev-brain mode
 
 Address a player at the start of a message — `Hey Jebrim, ...`, `Hey Zezima, ...`, or `Hey unscoped, ...`. This re-enters gielinor and routes per `gielinor/CLAUDE.md`. Without an address at the start, dev-brain mode is **sticky**.

@@ -1,0 +1,10 @@
+# S082 — 2026-05-24 — OPEN-on-entry discipline fix
+
+- Started as a cockpit tire-kicking session (dev-brain via "lets develop gielinor"), pivoted to a design talk on **how parallel dev sessions coordinate** — grounded in [[D-019]] / [[D-024]], `comms/active.md`, and the per-session `sid8` namespacing.
+- Diagnosed the real leak: `OPEN` gets skipped ~70% of the time because dev-brain is entered mid-conversation, bypassing the respawn checkpoint where steps 6–8 fire. The channel is full of the *"did not post an OPEN — dev-brain entered mid-conversation"* note (S034, S037–S043, S046, S057, S060…). `CLOSING` is the autopsy; `OPEN` is the seatbelt — and the seatbelt was the one being skipped.
+- Live specimen caught: sibling `braindead-bffa422f` (on S081 cockpit/terminal-friction triage) entered mid-conversation, posted no `OPEN`, and was stuck showing `busy` while idle ~18 min — one of the very symptoms it was debugging.
+- **Fix (doc-only, no code):** made `OPEN` + sibling-detection non-skippable on *every* dev-brain entry, mid-conversation included, with the *why* attached so it doesn't re-rot. Touched the brain-root router [[CLAUDE.md]], the dev-brain [[CLAUDE.md]], and `spellbook/respawn-ritual.md` (strengthened the *Invoked* line + a *Notes* bullet with receipts; pinned the edge case that a talk/test-only session still posts an `OPEN` with "discussion only, no file targets").
+- Ate my own cooking: posted a real `OPEN` for this session (add9fd79) before editing, steering clear of cockpit/hooks. Considered but did *not* build the heavier enforcement option (a `SessionStart`/`UserPromptSubmit` hook that refuses to proceed without an `OPEN`) — living with the doc fix first per principal.
+
+**Cascade.** `developer-braindead/CLAUDE.md`, `developer-braindead/spellbook/respawn-ritual.md`, `developer-braindead/comms/active.md` (OPEN + CLOSING), this quest entry, `respawn.md` (prepended Last-updated line).
+**Main-brain changes.** None. Root `CLAUDE.md` is the brain-root router, not `gielinor/`; no `gielinor/` files were touched.

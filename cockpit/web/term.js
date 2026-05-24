@@ -55,6 +55,14 @@ class TermConn {
     this.drive = true;
     this.label = "";
     this._linebuf = ""; // mirror of the current input line, for /rename interception
+    // Output write-batching + "stick to bottom" state. Claude's TUI renders by
+    // clear-screen-then-full-rewrite; that burst fires scroll events xterm reads as
+    // a user scroll-up, so it stops following output and locks at the top (xterm.js
+    // #5620). We batch the burst into one write/frame and re-pin to bottom after it
+    // renders — but only while _follow is true, and ONLY a real wheel-up clears it.
+    this._follow = true;
+    this._wq = ""; // pending output queue
+    this._wraf = 0; // rAF id for the pending flush
 
     this.container = document.createElement("div");
     this.container.style.cssText = "width:100%;height:100%;";
@@ -107,6 +115,18 @@ class TermConn {
       true,
     );
 
+    // Only a deliberate wheel-up stops us following the bottom; scrolling back down
+    // to the bottom resumes it. The TUI's clear/rewrite scroll churn never touches
+    // _follow, so a completed turn stays pinned to the newest output.
+    this.container.addEventListener(
+      "wheel",
+      (e) => {
+        if (e.deltaY < 0) this._follow = false;
+        else if (e.deltaY > 0 && this._isAtBottom()) this._follow = true;
+      },
+      { passive: true },
+    );
+
     this.term.onData((d) => this._handleData(d));
     this.term.onResize(({ cols, rows }) => this._send({ type: "resize", cols, rows }));
 
@@ -146,6 +166,36 @@ class TermConn {
       } catch {}
     }
     this._doPaste(text);
+  }
+
+  _isAtBottom() {
+    try {
+      const b = this.term.buffer.active;
+      return b.viewportY >= b.baseY;
+    } catch {
+      return true;
+    }
+  }
+
+  // Batch PTY output into one write per animation frame, then re-pin to the bottom
+  // after it renders (write's callback fires post-parse). Batching collapses the
+  // TUI's clear/rewrite burst so xterm sees one coherent frame instead of many
+  // half-states; the post-render scrollToBottom counters the spurious scroll the
+  // clear-screen would otherwise leave us in. Gated on _follow so a user who scrolled
+  // up to read history is never yanked back down.
+  _write(data) {
+    this._wq += data;
+    if (this._wraf) return;
+    this._wraf = requestAnimationFrame(() => {
+      this._wraf = 0;
+      const d = this._wq;
+      this._wq = "";
+      if (!d) return;
+      const follow = this._follow;
+      this.term.write(d, () => {
+        if (follow) this.term.scrollToBottom();
+      });
+    });
   }
 
   // Best-effort /rename interception. We mirror the current input line as the
@@ -188,7 +238,7 @@ class TermConn {
       } catch {
         return;
       }
-      if (f.t === "out") this.term.write(f.d);
+      if (f.t === "out") this._write(f.d);
       else if (f.t === "session") {
         this.sessionId = f.sessionId;
         this.id = f.sid8;
@@ -218,6 +268,10 @@ class TermConn {
   }
 
   close() {
+    if (this._wraf) {
+      cancelAnimationFrame(this._wraf);
+      this._wraf = 0;
+    }
     try {
       this.ws && this.ws.close();
     } catch {}
@@ -277,6 +331,7 @@ export function Term({ conn }) {
     // scroll on the next two frames (past xterm's renderer committing the new dims),
     // and once more after a short beat as a belt-and-suspenders for WebView2's slower
     // transform/relayout under .term-host.
+    conn._follow = true; // opening/switching to a row → follow the newest output
     let raf1 = 0, raf2 = 0;
     const settle = () => {
       conn.fitNow();

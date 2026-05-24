@@ -33,8 +33,14 @@ The principal never saw it because the paste handler rode **uncommitted** on top
 
 **Left uncommitted (separate sibling WIP, not mine):** `cockpit/web/main.js` (feed-state board merge), `cockpit/web/console.js` (read-only console scroll tweak), `cockpit/_probe_ask.py` (S065 cruft), and the gielinor/ + visualizer-mirror files.
 
+## Resolution
+
+Both fixes confirmed and committed. Principal turned the laptop off overnight, so the 3 sessions' processes were dead on relaunch — but the cockpit's owned-id list (localStorage, persistent WebView2 profile per S066) + claude's on-disk transcripts meant `claude --resume` brought all 3 back once the crash no longer threw. Principal confirmed: **"yeah they're back"** (crash fix) and **"I think we're good"** (scroll fix — soft confirm after live use). Launched the cockpit for the principal via `wscript Switchboard.vbs` (the `!` prefix only works at the Claude Code prompt, not raw PowerShell — clarified).
+
+Commits: **a072ce5** (crash rename + first scroll attempt), **c0f15d5** (research + verify-TODO docs), and the close commit (scroll v2 `term.js` + this quest-log + respawn + comms).
+
 ## Open / next
 
-- Principal to confirm both fixes live (relaunch → send a message; open an idle terminal → lands at bottom).
-- The scroll fix targets the **embedded PTY terminal**. If the complaint was the **read-only Console peek** (`console.js`), that's a separate surface a sibling is already touching — revisit.
-- Cockpit polish backlog (S066/S068) still stands.
+- Soft-confirm caveat: if scroll-lock recurs under heavier load, next lever is buffering Claude's synchronized-output frames (`ESC[?2026h/l`) and flushing atomically — copilot-cli #1805 "Layer 3".
+- Scroll fix targets the **embedded PTY terminal**; the **read-only Console peek** (`console.js`) is a sibling's surface — revisit if its scroll misbehaves.
+- Cockpit polish backlog (S066/S068) still stands: board-merge confirm, place→close→reopen persistence cycle, `/rename` best-effort, offline-vendor Preact.

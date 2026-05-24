@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import threading
 import uuid
 from pathlib import Path
@@ -81,8 +82,18 @@ async def pty_handler(request):
     resuming = bool(resume) and _is_uuid(resume)
     session_id = resume if resuming else str(uuid.uuid4())
 
+    # The cockpit is often launched from a VSCode-hosted shell, which leaks
+    # VSCODE_PID/TERM_PROGRAM into every child — so a claude spawned here would
+    # masquerade as a "vscode" session on the board (status-sidecar._detect_host).
+    # Strip those and stamp CLAUDE_COCKPIT so the hook attributes it to "cockpit".
+    env = dict(os.environ)
+    env.pop("VSCODE_PID", None)
+    if env.get("TERM_PROGRAM") == "vscode":
+        env.pop("TERM_PROGRAM", None)
+    env["CLAUDE_COCKPIT"] = "1"
+
     try:
-        proc = PtyProcess.spawn(DEFAULT_SHELL, cwd=str(BRAIN_ROOT), dimensions=(rows, cols))
+        proc = PtyProcess.spawn(DEFAULT_SHELL, cwd=str(BRAIN_ROOT), env=env, dimensions=(rows, cols))
     except Exception as exc:
         await _ws_send(ws, {"t": "out", "d": f"\r\n[cockpit] failed to start shell: {exc}\r\n"})
         await ws.close()

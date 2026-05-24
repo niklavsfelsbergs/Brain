@@ -120,7 +120,8 @@ EVENT_STATE = {
 }
 
 # Interactive prompt tools park the session on the principal mid-turn (no Stop
-# fires) → waiting_for_user. Sub-agent spawners block the session on its crew
+# fires) → waiting_for_answers (an open question, distinct from a Stop-parked
+# waiting_for_user). Sub-agent spawners block the session on its crew
 # until the foreground Task returns → waiting_for_subagents ("AWAITING CREW").
 # Both are registered with a tight Pre/Post matcher in settings.json so the
 # fire-budget impact is ~0-2 per session each, not per tool call.
@@ -379,6 +380,11 @@ def _detect_host() -> str:
     """Best-effort terminal substrate detection from env. Phase 3 will use
     this to pick the focus mechanism. Unknown means "we'll figure it out
     later" — never blocks the status write."""
+    # A cockpit-spawned PTY stamps this so its sessions read as "cockpit", not
+    # "vscode" — the cockpit often launches from a VSCode shell whose VSCODE_PID
+    # leaks into every child. See cockpit/ptybridge.py. Checked first so it wins.
+    if os.environ.get("CLAUDE_COCKPIT"):
+        return "cockpit"
     if os.environ.get("TERM_PROGRAM") == "vscode" or os.environ.get("VSCODE_PID"):
         return "vscode"
     if os.environ.get("WT_SESSION"):
@@ -1268,7 +1274,12 @@ def main() -> None:
     #     batch). Background spawns don't block the parent → ignore their Pre.
     if hook_event in ("PreToolUse", "PostToolUse"):
         if tool_name in WAIT_TOOLS:
-            state = "waiting_for_user" if hook_event == "PreToolUse" else "working"
+            # PreToolUse on AskUserQuestion/ExitPlanMode = the agent is actively
+            # asking and blocked on the answer → its OWN state, distinct from the
+            # Stop-parked "waiting for your next prompt" (waiting_for_user). The
+            # board labels it "Waiting for answers…" so an open question reads
+            # apart from an idle, finished turn.
+            state = "waiting_for_answers" if hook_event == "PreToolUse" else "working"
         elif tool_name in SUBAGENT_TOOLS:
             tool_input = payload.get("tool_input") or {}
             background = bool(
@@ -1295,7 +1306,7 @@ def main() -> None:
 
     # S059: per-session mode marker override. Layered on top of the event-state
     # and the Pre/Post tool overrides above, so the precedence is:
-    #   ended > waiting_for_user > waiting_for_subagents > alching > working.
+    #   ended > waiting_for_answers > waiting_for_user > waiting_for_subagents > alching > working.
     # alching replaces a plain "working" turn; "needs you" and "awaiting crew"
     # still win because they're more actionable. wrapped_up holds across
     # working/waiting until the process ends.
@@ -1374,7 +1385,8 @@ def main() -> None:
         "intent": intent or carry_intent,
         "project_dir": str(project_dir) if project_dir else (prev.get("project_dir") or ""),
         "cwd": os.getcwd(),
-        "host": prev.get("host") or _detect_host(),
+        # cockpit marker wins over any stale cached "vscode" (resumed sessions)
+        "host": _detect_host() if os.environ.get("CLAUDE_COCKPIT") else (prev.get("host") or _detect_host()),
         "claude_pid": claude_pid,
         "claude_pid_chain": claude_pid_chain,
         "claude_hwnd": claude_hwnd,

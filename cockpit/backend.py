@@ -51,15 +51,16 @@ COMMS_FILES = {
 
 # Attention order — lower rank surfaces higher on the board.
 STATE_RANK = {
-    "waiting_for_user": 0,
-    "waiting_for_subagents": 1,
-    "alching": 2,
-    "working": 3,
-    "closing": 4,
-    "wrapped_up": 5,
-    "idle": 6,
-    "ended": 7,
-    "unknown": 8,
+    "waiting_for_answers": 0,
+    "waiting_for_user": 1,
+    "waiting_for_subagents": 2,
+    "alching": 3,
+    "working": 4,
+    "closing": 5,
+    "wrapped_up": 6,
+    "idle": 7,
+    "ended": 8,
+    "unknown": 9,
 }
 
 CTYPES = {
@@ -134,7 +135,7 @@ def build_session_model():
             "first_prompt": s.get("first_prompt", ""),
             "doing": s.get("latest_action") or s.get("subtitle") or s.get("intent") or "",
             "intent": s.get("intent", ""),
-            "attention": state == "waiting_for_user",
+            "attention": state in ("waiting_for_user", "waiting_for_answers"),
             "subagents": _pending_subagents(s.get("session_id")),
             "rank": STATE_RANK.get(state, 99),
         })

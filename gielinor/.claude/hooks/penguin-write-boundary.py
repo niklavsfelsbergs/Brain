@@ -39,7 +39,12 @@ import json
 import sys
 from pathlib import Path
 
-BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+# gielinor/ (this hook lives at gielinor/.claude/hooks/). MUST match dwarf- and
+# gnome-write-boundary's depth — an earlier extra `.parent` resolved to the repo
+# root, which pulled developer-braindead/ paths into the in-brain test and let a
+# penguin write to developer-braindead/quest-log/in-progress/ slip through the
+# allow-list. (S085, Codex finding.)
+BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent
 
 ALLOWED_PATTERNS = [
     "/research/",

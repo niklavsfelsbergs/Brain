@@ -9,7 +9,6 @@ const STATE_LABEL = {
   waiting_for_user: "WAITING ON YOU",
   waiting_for_subagents: "AWAITING CREW",
   alching: "ALCHING",
-  closing: "CLOSING",
   wrapped_up: "WRAPPED UP",
   idle: "IDLE",
   ended: "ENDED",

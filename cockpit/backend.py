@@ -3,9 +3,11 @@
 Phase 1: reads the hook-written state files in ../switchboard/ (preserved
 contracts, see D-028) and serves one shaped /api/sessions for the fleet board.
 
-Phase 2: drives headless `claude` over stream-json (/chat WS) and replays any
-session's on-disk transcript (/history) — the proven mechanism lifted from the
-old switchboard/server.py (S060), minus the unused /pty bridge.
+Phase 2: replays any session's on-disk transcript (/history). The live drive
+path is the real interactive claude in a PTY (/pty, ptybridge.py — the S066 B
+pivot, on subscription). The old headless `claude -p` /chat WS driver was
+removed in S073: it was metered post-2026-06-15 and had become dead code (the
+client placed every session through the PTY, never /chat).
 
 All assets go out Cache-Control: no-store so the browser never serves stale code.
 """
@@ -20,7 +22,7 @@ import time
 import uuid
 from pathlib import Path
 
-from aiohttp import web, WSMsgType
+from aiohttp import web
 
 COCKPIT_DIR = Path(__file__).resolve().parent
 BRAIN_ROOT = COCKPIT_DIR.parent
@@ -28,14 +30,6 @@ STATE_DIR = BRAIN_ROOT / "switchboard"   # where the hooks write (D-026 VIZ_DIR)
 WEB_DIR = COCKPIT_DIR / "web"
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 CLAUDE_EXE = shutil.which("claude") or "claude"
-
-# Interactive-prompt tools need a TTY to answer. Headless `claude -p` auto-
-# dismisses them with an error ("Answer questions?") the instant they're called —
-# no stream-json client can intercept or supply the answer (probed 2026-05-24).
-# A session driven through the cockpit that called these hung at waiting_for_user
-# with a dead question card. Deny them so the driven model asks in plain prose
-# instead, which the composer answers like any other turn. See D-028.
-NO_TTY_TOOLS = "AskUserQuestion ExitPlanMode"
 
 MANIFEST = STATE_DIR / "state-switchboard.json"
 ROLE_FILES = {
@@ -56,12 +50,20 @@ STATE_RANK = {
     "waiting_for_subagents": 2,
     "alching": 3,
     "working": 4,
-    "closing": 5,
     "wrapped_up": 6,
     "idle": 7,
     "ended": 8,
     "unknown": 9,
 }
+
+# Reader-derived idle. The status sidecar deliberately never stamps "idle" — the
+# hook doesn't fire while a session sits parked, so the *reader* has to decay a
+# stale waiting_for_user into idle (its docstring spells out this contract). A
+# turn ends on Stop → waiting_for_user; once it's been quiet past this window
+# it's no longer "needs you", so we drop it out of the attention tally + bell.
+# Only waiting_for_user decays (an end-of-turn park); waiting_for_answers is a
+# live mid-turn question and stays hot. 5 min matches the old switchboard.
+IDLE_AFTER_SEC = 300
 
 CTYPES = {
     ".html": "text/html",
@@ -123,6 +125,13 @@ def build_session_model():
         state = s.get("state", "unknown")
         started = s.get("started_at") or s.get("last_event_ts") or now
         last = s.get("last_event_ts") or now
+        idle_sec = max(0, int(now - last))
+        # Decay a quiet end-of-turn park into idle (see IDLE_AFTER_SEC). Done
+        # here, after idle_sec is known, so the attention flag + rank below read
+        # the decayed state — a finished-but-open session stops counting as
+        # "needs you".
+        if state == "waiting_for_user" and idle_sec > IDLE_AFTER_SEC:
+            state = "idle"
         sessions.append({
             "sid8": s.get("sid8"),
             "session_id": s.get("session_id"),
@@ -131,7 +140,7 @@ def build_session_model():
             "state": state,
             "host": s.get("host", "unknown"),
             "age_sec": max(0, int(now - started)),
-            "idle_sec": max(0, int(now - last)),
+            "idle_sec": idle_sec,
             "first_prompt": s.get("first_prompt", ""),
             "doing": s.get("latest_action") or s.get("subtitle") or s.get("intent") or "",
             "intent": s.get("intent", ""),
@@ -145,135 +154,6 @@ def build_session_model():
 
 async def api_sessions(request):
     return web.json_response(build_session_model(), headers=NO_STORE)
-
-
-# ─── the driver: headless claude over stream-json (Phase 2) ─────────────────
-
-async def _ws_send(ws, obj) -> bool:
-    try:
-        await ws.send_str(json.dumps(obj))
-        return True
-    except Exception:
-        return False
-
-
-async def chat_handler(request):
-    """One WebSocket ⇄ one headless `claude` process (stream-json).
-
-    Fresh connection mints a session uuid; `?resume=<uuid>` reattaches to an
-    existing on-disk session (browser reload / opening a cockpit-owned row).
-    On resume claude loads context silently — it does NOT re-emit the transcript;
-    the client replays visible history from /history. Protocol:
-      server → client : {"t":"session",sessionId,sid8,resumed} once, then
-                        {"t":"event",ev}, {"t":"stderr",d}, {"t":"exit",code}.
-      client → server : {"type":"input","text"} | {"type":"interrupt"}.
-    """
-    ws = web.WebSocketResponse(heartbeat=30, max_msg_size=0)
-    await ws.prepare(request)
-
-    resume = request.query.get("resume", "").strip()
-    if resume and _is_uuid(resume):
-        session_id, resumed = resume, True
-    else:
-        session_id, resumed = str(uuid.uuid4()), False
-    await _ws_send(ws, {"t": "session", "sessionId": session_id,
-                        "sid8": session_id[:8], "resumed": resumed})
-
-    args = [
-        CLAUDE_EXE, "-p",
-        "--input-format", "stream-json",
-        "--output-format", "stream-json",
-        "--include-partial-messages",
-        "--verbose",
-        "--permission-mode", "bypassPermissions",
-        "--disallowedTools", NO_TTY_TOOLS,
-    ]
-    args += ["--resume", session_id] if resumed else ["--session-id", session_id]
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            *args, cwd=str(BRAIN_ROOT),
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            limit=8 * 1024 * 1024,
-        )
-    except Exception as exc:
-        await _ws_send(ws, {"t": "stderr", "d": f"failed to launch claude: {exc}"})
-        await ws.close()
-        return ws
-
-    async def pump_stdout():
-        try:
-            async for raw in proc.stdout:
-                line = raw.decode("utf-8", "replace").strip()
-                if not line:
-                    continue
-                try:
-                    ev = json.loads(line)
-                except ValueError:
-                    await _ws_send(ws, {"t": "stderr", "d": line})
-                    continue
-                if not await _ws_send(ws, {"t": "event", "ev": ev}):
-                    break
-        finally:
-            await _ws_send(ws, {"t": "exit", "code": proc.returncode})
-            if not ws.closed:
-                await ws.close()
-
-    async def pump_stderr():
-        try:
-            async for raw in proc.stderr:
-                s = raw.decode("utf-8", "replace").rstrip()
-                if s:
-                    await _ws_send(ws, {"t": "stderr", "d": s})
-        except Exception:
-            pass
-
-    out_task = asyncio.create_task(pump_stdout())
-    err_task = asyncio.create_task(pump_stderr())
-
-    async def send_stdin(payload) -> bool:
-        try:
-            proc.stdin.write((json.dumps(payload) + "\n").encode("utf-8"))
-            await proc.stdin.drain()
-            return True
-        except Exception:
-            return False
-
-    interrupt_seq = 0
-    try:
-        async for msg in ws:
-            if msg.type != WSMsgType.TEXT:
-                if msg.type == WSMsgType.ERROR:
-                    break
-                continue
-            try:
-                obj = json.loads(msg.data)
-            except (ValueError, TypeError):
-                continue
-            kind = obj.get("type")
-            if kind == "input":
-                if not await send_stdin({
-                    "type": "user",
-                    "message": {"role": "user", "content": obj.get("text", "")},
-                }):
-                    break
-            elif kind == "interrupt":
-                interrupt_seq += 1
-                await send_stdin({
-                    "type": "control_request",
-                    "request_id": f"int_{interrupt_seq}",
-                    "request": {"subtype": "interrupt"},
-                })
-    finally:
-        for fn in (lambda: proc.stdin.close(), proc.terminate):
-            try:
-                fn()
-            except Exception:
-                pass
-        out_task.cancel()
-        err_task.cancel()
-    return ws
 
 
 # ─── transcript replay: .jsonl → visual turns (Phase 2) ─────────────────────
@@ -517,7 +397,6 @@ def make_app():
     app.router.add_get("/api/sessions", api_sessions)
     app.router.add_get("/api/feed", api_feed)
     app.router.add_get("/api/clipboard", api_clipboard)
-    app.router.add_get("/chat", chat_handler)
     from ptybridge import pty_handler  # real interactive claude over a PTY (S066 B)
     app.router.add_get("/pty", pty_handler)
     app.router.add_get("/history", history_handler)

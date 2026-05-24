@@ -9,7 +9,7 @@ import { html } from "htm/preact";
 import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
-import { isOwned, place, openOwned, openPeek, release } from "./fleet.js";
+import { openPeek, release } from "./fleet.js";
 import { openTerm, Term, termForSid8, resumeTerm, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
 import { nameFor, subscribeNames } from "./names.js";
 
@@ -340,9 +340,9 @@ function App() {
   const zoomReset = () => setZoom(ZDEF);
 
   const selectRow = (s) => {
-    // a cockpit-launched terminal hosting this session wins; else headless/peek
+    // a cockpit-launched terminal hosting this session wins; else a read-only peek
     const t = termForSid8(s.sid8);
-    const c = t || (isOwned(s.session_id) ? openOwned(s.session_id) : openPeek(s.session_id));
+    const c = t || openPeek(s.session_id);
     c.label = s.actor + (s.instance > 1 ? "·" + s.instance : "");
     setSel(c);
   };

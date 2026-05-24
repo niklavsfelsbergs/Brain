@@ -10,7 +10,7 @@ import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { openPeek, release } from "./fleet.js";
-import { openTerm, Term, termForSid8, termInterrupted, resumeTerm, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
+import { openTerm, Term, TermComposer, termForSid8, termInterrupted, resumeTerm, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
 import { nameFor, subscribeNames } from "./names.js";
 
 // Actor → the address the cockpit writes as the first message. The actor
@@ -509,6 +509,7 @@ function App() {
                 }}>release</button>
               </div>
               <div style="flex:1;min-height:0;"><${Term} key=${sel.cid} conn=${sel} /></div>
+              <${TermComposer} key=${sel.cid + "-c"} conn=${sel} />
             </div>`
           : html`<${Console} key=${sel.cid} conn=${sel} title=${title} onRelease=${doRelease} />`}
       </div>

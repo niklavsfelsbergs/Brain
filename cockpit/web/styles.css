@@ -323,6 +323,57 @@ html, body {
   box-sizing: border-box;
 }
 
+/* Compose-bar under the PTY terminal (S086). The terminal couples input to its
+   scroll grid, so reading back scrolls the prompt away. This fixed bar sits
+   below the xterm and pipes text+Enter straight to the PTY (term.js
+   submitComposed), so the terminal can be scrolled freely above while you write.
+   zoom (like .term-col > .console-head) because it's plain DOM, not xterm — it
+   must scale with the UI but must NOT live under the terminal's unscaled
+   subtree. flex:none so it holds a fixed slot and the <Term/> wrapper keeps
+   flex:1; the term ResizeObserver refits xterm when this bar grows/shrinks. */
+.term-composer {
+  zoom: var(--zoom);
+  width: 100%;
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  background: var(--panel);
+  border-top: 2px solid var(--gold-dk);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--gold) 24%, transparent);
+}
+.term-compose-input {
+  flex: 1;
+  resize: none;
+  min-height: 116px; /* ~3 lines tall by default (S086) */
+  max-height: 280px;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--gold-dk);
+  border-radius: 7px;
+  padding: 9px 11px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+.term-compose-input:focus { outline: none; border-color: var(--gold); }
+.term-compose-input::placeholder { color: var(--ink-faint); }
+.term-send {
+  flex: none;
+  align-self: stretch;
+  border: 1px solid var(--gold-dk);
+  border-radius: 7px;
+  padding: 0 16px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--bg);
+  background: var(--gold);
+}
+.term-send:hover { filter: brightness(1.1); }
+
 .board-col {
   width: var(--board-w);
   flex: none;

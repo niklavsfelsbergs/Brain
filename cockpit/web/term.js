@@ -8,7 +8,7 @@
 // runs a *fleet* of terminals. The Preact <Term/> just re-parents the live
 // xterm element on mount. Styling is inline to stay off the shared styles.css.
 
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { setName } from "./names.js";
 
@@ -123,7 +123,16 @@ class TermConn {
       this._diag("keydown"); // [term-diag] opt-in: window.__TERMDIAG (no-op otherwise)
       // Esc cancels the running turn — record it (no hook fires on interrupt) so the
       // board can clear a stuck busy→idle immediately. Let Esc through to claude.
-      if (e.key === "Escape") this._interruptedAt = Date.now();
+      if (e.key === "Escape") {
+        this._interruptedAt = Date.now();
+        // Clear any half-typed line so it can't merge into the next message. The
+        // line lives in claude's in-terminal input box; Esc cancels the turn but
+        // leaves the box as-is, so a later composed send would prepend it.
+        // Backspace away the mirrored chars (best-effort, same trick as /rename),
+        // then let Esc through to claude to interrupt. (S086)
+        if (this._linebuf.length) this._send({ type: "input", data: "\x7f".repeat(this._linebuf.length) });
+        this._linebuf = "";
+      }
       const ctrlV = (e.key === "v" || e.key === "V") && (e.ctrlKey || e.metaKey) && !e.altKey;
       const shiftIns = e.key === "Insert" && e.shiftKey;
       if (ctrlV || shiftIns) {
@@ -211,6 +220,54 @@ class TermConn {
 
   _send(obj) {
     if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(obj));
+  }
+
+  // Send a message composed in the fixed compose-bar (TermComposer) straight to
+  // the PTY, instead of typing into claude's in-terminal prompt. THIS is what
+  // lets the user scroll the terminal history freely while writing: the prompt
+  // lives in the scroll grid, but the compose-bar is a separate fixed element
+  // below the xterm. Plain prompts + Enter only — interactive TUI bits (slash
+  // autocomplete, @-picker, plan approval, AskUserQuestion arrow-menus) still
+  // need a click into the terminal itself. (S086)
+  submitComposed(text) {
+    const t = String(text || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
+    if (!t.trim()) return false;
+    // /rename parity with terminal-typed input — claim it, don't send to claude.
+    const m = /^\/rename\s+(.+)$/.exec(t.trim());
+    if (m && this.id) {
+      setName(this.id, m[1].trim().slice(0, 48));
+      return true;
+    }
+    if (!this.ws || this.ws.readyState !== 1) return false; // not connected yet — keep the text
+    // Clear any text the user half-typed directly into claude's in-terminal box
+    // (the terminal is focused by default) so it can't get prepended to this
+    // composed message. Best-effort via the _linebuf mirror — same as /rename.
+    if (this._linebuf.length) this._send({ type: "input", data: "\x7f".repeat(this._linebuf.length) });
+    this._interruptedAt = 0; // a submit means the session is live again (stop the busy→idle override)
+    this._linebuf = "";
+    this._follow = true; // jump back to the newest so the message + reply are in view
+    if (t.includes("\n")) {
+      // multi-line: bracketed paste (the proven WebView2 path, bracketed because
+      // claude enables DECSET 2004) inserts the lines into claude's input box
+      // without submitting; the trailing CR then submits the whole block.
+      this.term.paste(t);
+      this._send({ type: "input", data: "\r" });
+    } else {
+      this._send({ type: "input", data: t + "\r" });
+    }
+    this._pinBottom();
+    return true;
+  }
+
+  // Esc from the compose-bar cancels the running turn (parity with Esc typed in
+  // the terminal). Record _interruptedAt so the board clears a stuck busy→idle at
+  // once — no hook fires on an interrupt. Cleared on the next submit. (S086)
+  sendEsc() {
+    this._interruptedAt = Date.now();
+    // Clear any half-typed in-terminal line first (see submitComposed), then Esc.
+    if (this._linebuf.length) this._send({ type: "input", data: "\x7f".repeat(this._linebuf.length) });
+    this._linebuf = "";
+    this._send({ type: "input", data: "\x1b" });
   }
 
   // Single funnel for all paste sources, with a short dedup window so the keydown
@@ -586,4 +643,56 @@ export function Term({ conn }) {
   // gets a clean 1:1 coordinate system. The terminal tracks the zoom knob via its
   // FONT (term.js termFontFor × --zoom), not its box. See styles.css .term-frame.
   return html`<div class="term-frame"><div class="term-host" ref=${ref}></div></div>`;
+}
+
+// A fixed compose-bar rendered (by main.js) as a sibling BELOW <Term/>. Typing
+// here pipes to the PTY via conn.submitComposed, so the terminal history above
+// can be scrolled freely while you write — the in-terminal prompt is part of the
+// scroll grid, this bar isn't. Enter sends, Shift+Enter inserts a newline, Esc
+// cancels the running turn. It's an additive convenience for the read-back-while-
+// composing case, not a replacement: interactive TUI prompts still want a click
+// into the terminal. Lives outside the terminal's unscaled subtree, so it scales
+// with the UI zoom like the column header does (styles.css .term-composer). (S086)
+export function TermComposer({ conn }) {
+  const [text, setText] = useState("");
+  const taRef = useRef(null);
+  const resetHeight = () => {
+    const ta = taRef.current;
+    if (ta) ta.style.height = "";
+  };
+  const submit = () => {
+    if (conn.submitComposed(text)) {
+      setText("");
+      resetHeight();
+    }
+  };
+  const onInput = (e) => {
+    setText(e.target.value);
+    const ta = e.target; // autogrow up to the CSS max-height, then the textarea scrolls
+    ta.style.height = "auto";
+    ta.style.height = Math.min(ta.scrollHeight, 280) + "px";
+  };
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      conn.sendEsc();
+      setText(""); // also clear what's typed in the bar itself
+      resetHeight();
+    }
+  };
+  return html`<div class="term-composer">
+    <textarea
+      ref=${taRef}
+      class="term-compose-input"
+      value=${text}
+      onInput=${onInput}
+      onKeyDown=${onKeyDown}
+      placeholder=""
+      rows="1"
+    ></textarea>
+    <button class="term-send" onClick=${submit} title="send to the terminal (Enter)">send</button>
+  </div>`;
 }

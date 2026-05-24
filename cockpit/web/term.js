@@ -82,6 +82,11 @@ class TermConn {
     this._follow = true;
     this._wq = ""; // pending output queue
     this._wraf = 0; // rAF id for the pending flush
+    // Esc-cancel tracking. No hook fires on an interrupt (Stop only fires on
+    // natural completion), so a cancelled turn's status stays stuck at busy. The
+    // cockpit SEES the Esc keystroke here, so it can tell the board to clear
+    // busy→idle at once. Set on Esc, cleared on the next submit. (S083)
+    this._interruptedAt = 0;
 
     this.container = document.createElement("div");
     this.container.style.cssText = "width:100%;height:100%;";
@@ -116,6 +121,9 @@ class TermConn {
     this.term.attachCustomKeyEventHandler((e) => {
       if (e.type !== "keydown") return true;
       this._diag("keydown"); // [term-diag] opt-in: window.__TERMDIAG (no-op otherwise)
+      // Esc cancels the running turn — record it (no hook fires on interrupt) so the
+      // board can clear a stuck busy→idle immediately. Let Esc through to claude.
+      if (e.key === "Escape") this._interruptedAt = Date.now();
       const ctrlV = (e.key === "v" || e.key === "V") && (e.ctrlKey || e.metaKey) && !e.altKey;
       const shiftIns = e.key === "Insert" && e.shiftKey;
       if (ctrlV || shiftIns) {
@@ -296,6 +304,7 @@ class TermConn {
   // label. Cursor moves / pastes can desync the mirror — accepted per the user.
   _handleData(d) {
     if (d === "\r" || d === "\n") {
+      this._interruptedAt = 0; // a submit means the session is live again — stop the busy→idle override
       const m = /^\/rename\s+(.+)$/.exec(this._linebuf.trim());
       if (m && this.id) {
         const name = m[1].trim().slice(0, 48);
@@ -489,6 +498,15 @@ export function liveTerms() {
 // A live terminal already hosting this board session, if any (row click → it).
 export function termForSid8(sid8) {
   return bySid8.get(sid8) || null;
+}
+
+// True if the cockpit saw an Esc-cancel in this session's own terminal and the
+// user hasn't submitted again since. No hook fires on interrupt, so the manifest
+// stays stuck at busy; the board uses this to clear busy→idle at once. Cleared on
+// the next submit (see _handleData). (S083)
+export function termInterrupted(sid8) {
+  const c = bySid8.get(sid8);
+  return !!(c && c._interruptedAt);
 }
 
 // Re-read --zoom and rescale every live terminal's font, then refit. Called by

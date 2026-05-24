@@ -10,7 +10,7 @@ import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { openPeek, release } from "./fleet.js";
-import { openTerm, Term, termForSid8, resumeTerm, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
+import { openTerm, Term, termForSid8, termInterrupted, resumeTerm, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
 import { nameFor, subscribeNames } from "./names.js";
 
 // Actor → the address the cockpit writes as the first message. The actor
@@ -303,7 +303,14 @@ function App() {
   // Merge the hook manifest with the cockpit's own live terminals, so a session
   // the cockpit is running (e.g. a just-resumed, still-idle one) shows on the
   // board before it fires its first hook event. Manifest wins on dupes (richer).
-  const manifest = data.sessions || [];
+  // The cockpit saw an Esc-cancel in this session's own terminal, but no hook
+  // fires on interrupt so the manifest is stuck at busy. Clear it to idle at once
+  // (the 90s backend decay is the backstop for non-cockpit/VSCode sessions).
+  const manifest = (data.sessions || []).map((s) =>
+    s.state === "busy" && termInterrupted(s.sid8)
+      ? { ...s, state: "idle", attention: false, rank: 7 }
+      : s,
+  );
   const known = new Set(manifest.map((s) => s.sid8));
   const sessions = [
     ...manifest,

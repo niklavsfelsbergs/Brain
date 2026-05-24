@@ -334,7 +334,10 @@ class TermConn {
     const cols = this.term.cols || 120;
     const rows = this.term.rows || 30;
     const mode = this.resumeId ? `resume=${this.resumeId}` : "launch=claude";
-    const ws = new WebSocket(`${proto}://${location.host}/pty?${mode}&cols=${cols}&rows=${rows}`);
+    // /pty is token-gated (S085): the backend bakes a per-process secret into the
+    // served HTML as window.__CT; send it or the handshake is rejected (403).
+    const tok = window.__CT ? `&token=${encodeURIComponent(window.__CT)}` : "";
+    const ws = new WebSocket(`${proto}://${location.host}/pty?${mode}&cols=${cols}&rows=${rows}${tok}`);
     this.ws = ws;
     ws.onmessage = (e) => {
       let f;

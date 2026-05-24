@@ -32,11 +32,20 @@ import os
 import threading
 import uuid
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from aiohttp import web, WSMsgType
 
 BRAIN_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SHELL = ["powershell.exe", "-NoLogo"]
+# Terminal dimensions are attacker-influenceable (query params); clamp to sane
+# bounds so a hostile/garbage value can't wedge the PTY or winpty.
+COLS_MIN, COLS_MAX = 20, 500
+ROWS_MIN, ROWS_MAX = 5, 200
+
+
+def _clamp(v, lo, hi):
+    return max(lo, min(hi, v))
 
 
 async def _ws_send(ws, obj) -> bool:
@@ -63,7 +72,24 @@ def _is_uuid(s):
 
 
 async def pty_handler(request):
-    """One WebSocket ⇄ one PTY running interactive claude."""
+    """One WebSocket ⇄ one PTY running interactive claude.
+
+    Auth (S085): /pty spawns and drives a PowerShell PTY, so an unauthenticated
+    handler is a localhost RCE — any webpage the user visits while the cockpit is
+    running could open this WS and run commands. Two gates, both before the WS
+    upgrade: (1) a per-process token baked into the same-origin HTML (a cross-
+    origin page can't read it, so it can't forge a connection) — fail-closed;
+    (2) an Origin check rejecting any cross-host browser origin. The legit
+    pywebview page (served from this same host) passes both.
+    """
+    if request.query.get("token") != request.app.get("cockpit_token"):
+        return web.Response(status=403, text="forbidden")
+    origin = request.headers.get("Origin")
+    if origin:
+        netloc = urlsplit(origin).netloc
+        if netloc and netloc != request.host:
+            return web.Response(status=403, text="forbidden")
+
     ws = web.WebSocketResponse(heartbeat=30, max_msg_size=0)
     await ws.prepare(request)
     loop = asyncio.get_running_loop()
@@ -75,8 +101,8 @@ async def pty_handler(request):
         await ws.close()
         return ws
 
-    cols = _qint(request, "cols", 120)
-    rows = _qint(request, "rows", 30)
+    cols = _clamp(_qint(request, "cols", 120), COLS_MIN, COLS_MAX)
+    rows = _clamp(_qint(request, "rows", 30), ROWS_MIN, ROWS_MAX)
     launch = request.query.get("launch", "").strip()
     resume = request.query.get("resume", "").strip()
     resuming = bool(resume) and _is_uuid(resume)
@@ -110,8 +136,10 @@ async def pty_handler(request):
         # powershell resolves the `claude` .cmd shim via its own lookup,
         # sidestepping CreateProcess PATH quirks. Interactive — no -p.
         proc.write(f"claude --session-id {session_id}\r")
-    elif launch:
-        proc.write(launch + "\r")
+    # NOTE (S085): the old `elif launch: proc.write(launch + "\r")` arbitrary
+    # passthrough is GONE — it let any caller run an arbitrary command in the PTY
+    # (RCE). Only the two fixed launches above are accepted; an unknown `launch`
+    # value just leaves the user at a fresh PowerShell prompt, runs nothing.
 
     queue: asyncio.Queue = asyncio.Queue()
     stop = threading.Event()
@@ -164,7 +192,8 @@ async def pty_handler(request):
                     break
             elif kind == "resize":
                 try:
-                    proc.setwinsize(int(obj["rows"]), int(obj["cols"]))
+                    proc.setwinsize(_clamp(int(obj["rows"]), ROWS_MIN, ROWS_MAX),
+                                    _clamp(int(obj["cols"]), COLS_MIN, COLS_MAX))
                 except Exception:
                     pass
     finally:

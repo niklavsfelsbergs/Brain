@@ -16,6 +16,7 @@ S083 _pending_subagents crash-guard against malformed role files.
 """
 from __future__ import annotations
 
+import asyncio
 import datetime
 import json
 import sys
@@ -229,6 +230,44 @@ def test_busy_stays_busy_when_quiet():
     check("2.5h-quiet busy is greyed (stale)", by["f2000000"]["stale"] is True)
 
 
+async def _pty_auth_checks():
+    """S085: /pty must be unforgeable from a cross-origin page. The token is the
+    primary gate (fail-closed); the Origin check is defense-in-depth. None of the
+    rejection paths reach the winpty import or spawn a PTY (they return before the
+    WS upgrade), so this is safe to run headless."""
+    from aiohttp.test_utils import TestClient, TestServer
+
+    app = backend.make_app()
+    token = app["cockpit_token"]
+    check("make_app mints a non-empty token", isinstance(token, str) and len(token) >= 16)
+
+    async with TestClient(TestServer(app)) as client:
+        r = await client.get("/")
+        body = await r.text()
+        check("index.html injects window.__CT", "window.__CT" in body)
+        check("injected HTML carries the make_app token", token in body)
+
+        r = await client.get("/pty?launch=claude&cols=80&rows=24")
+        check("/pty without a token -> 403 (fail-closed)", r.status == 403)
+
+        r = await client.get("/pty?launch=evil-payload&token=" + token)
+        # even WITH a token, an unknown launch must not be an arbitrary command —
+        # the handler only honors launch=claude / resume=<uuid>. (Can't assert the
+        # PTY contents here; the code path simply has no raw-passthrough branch.)
+        check("/pty with valid token -> not 403 (auth passed)", r.status != 403)
+
+        r = await client.get("/pty?launch=claude&token=" + token,
+                             headers={"Origin": "https://evil.example"})
+        check("/pty with a foreign Origin -> 403", r.status == 403)
+
+        r = await client.get("/pty?launch=claude&token=wrong")
+        check("/pty with a wrong token -> 403", r.status == 403)
+
+
+def test_pty_auth():
+    asyncio.run(_pty_auth_checks())
+
+
 def main():
     test_pending_subagents_crashguard()
     test_stale_greying_and_attention()
@@ -236,6 +275,7 @@ def main():
     test_action_heartbeat()
     test_busy_stays_busy_when_quiet()
     test_robust_to_missing_and_malformed()
+    test_pty_auth()
     print(f"\n{_PASS} passed, {_FAIL} failed")
     sys.exit(1 if _FAIL else 0)
 

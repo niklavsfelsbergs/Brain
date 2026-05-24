@@ -18,6 +18,7 @@ import datetime
 import json
 import os
 import re
+import secrets
 import shutil
 import time
 import uuid
@@ -581,11 +582,23 @@ async def static_handler(request):
     if not str(target).startswith(str(WEB_DIR)) or not target.is_file():
         target = WEB_DIR / "index.html"
     ctype = CTYPES.get(target.suffix, "application/octet-stream")
+    # Bake the per-process /pty token into the HTML document. A cross-origin page
+    # cannot READ this response body (same-origin policy), so it can't learn the
+    # token — which is exactly what gates the PTY bridge against drive-by RCE. The
+    # legit page reads it from window.__CT and sends it on the /pty WS. (S085)
+    if target.suffix == ".html":
+        doc = target.read_text(encoding="utf-8")
+        inject = f"<script>window.__CT={json.dumps(request.app.get('cockpit_token', ''))};</script>"
+        doc = doc.replace("</head>", inject + "</head>", 1) if "</head>" in doc else inject + doc
+        return web.Response(text=doc, content_type=ctype, headers=NO_STORE)
     return web.Response(body=target.read_bytes(), content_type=ctype, headers=NO_STORE)
 
 
 def make_app():
     app = web.Application()
+    # Per-process secret gating /pty (ptybridge reads request.app["cockpit_token"]).
+    # Minted fresh each launch; baked into the served HTML by static_handler.
+    app["cockpit_token"] = secrets.token_urlsafe(18)
     app.router.add_get("/api/sessions", api_sessions)
     app.router.add_get("/api/open-vscode", api_open_vscode)
     app.router.add_post("/api/rename", api_rename)

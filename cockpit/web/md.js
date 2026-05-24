@@ -4,12 +4,33 @@ function esc(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// Link hardening (S085). esc() above neutralizes <>& but NOT quotes or URL
+// schemes, so a raw `[t](url)` could inject an attribute (url contains a ")
+// or run script (url is `javascript:`/`data:`). safeUrl drops any explicit
+// scheme that isn't http(s)/mailto (relative/anchor links pass through); the
+// surviving href is then quote-escaped before it lands in the attribute.
+function safeUrl(u) {
+  const t = (u || "").trim();
+  const m = /^([a-z][a-z0-9+.-]*):/i.exec(t);
+  if (m) {
+    const scheme = m[1].toLowerCase();
+    if (scheme !== "http" && scheme !== "https" && scheme !== "mailto") return "";
+  }
+  return t;
+}
+
 function inline(s) {
   return s
     .replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, txt, url) => {
+      const safe = safeUrl(url);
+      // Unsafe scheme → render the link text only, no anchor.
+      return safe
+        ? `<a href="${safe.replace(/"/g, "&quot;")}" target="_blank" rel="noopener noreferrer">${txt}</a>`
+        : txt;
+    });
 }
 
 export function mdToHtml(text) {

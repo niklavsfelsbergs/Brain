@@ -123,15 +123,17 @@ class TermConn {
       }
       // Shift+Enter → insert a newline instead of submitting. Plain xterm sends \r
       // for both Enter and Shift+Enter (indistinguishable in legacy keyboard mode),
-      // so Shift+Enter just submits. The earlier attempt sent a bare \n (LF), but
-      // claude's TUI does NOT reliably treat an incoming \n as newline-insert — that
-      // never worked. The sequence claude actually binds to newline-on-Shift+Enter
-      // is the CSI-u encoding ESC[13;2u (keycode 13 = Enter, modifier 2 = Shift),
-      // the same thing `/terminal-setup` configures for VSCode/iTerm. Submit (plain
-      // Enter, \r) is untouched; Ctrl+J (\n) stays as the zero-setup fallback. (S078)
+      // so Shift+Enter just submits. Iteration history: S072 sent bare \n (LF) —
+      // claude's TUI ignores it; S078 sent the CSI-u ESC[13;2u — that only works
+      // once claude has negotiated the kitty keyboard protocol, which this PTY/
+      // WebView2 build evidently does NOT, so it still failed. ESC+CR (\x1b\r) is
+      // the Alt/Option+Enter byte, which claude's input binds to newline-insert
+      // with no terminal-protocol setup required — the protocol-independent path.
+      // Submit (plain Enter, \r) untouched. (S080 — UNVERIFIED; if it still fails,
+      // next fallback is literal backslash + CR "\\\r", the documented \<Enter>.)
       if (e.key === "Enter" && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
         this._linebuf = "";
-        this._send({ type: "input", data: "\x1b[13;2u" });
+        this._send({ type: "input", data: "\x1b\r" });
         return false; // swallow xterm's \r
       }
       return true;

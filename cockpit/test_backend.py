@@ -1,0 +1,215 @@
+"""Cockpit backend regression gate — the session-model contract.
+
+Standalone, no pytest: `python cockpit/test_backend.py` (exit 0 = green). Add it
+to the cheap pre-commit gates alongside `node --check` + `py_compile`.
+
+Why this file exists: the cockpit's status pipeline has regressed repeatedly
+across sessions — the board blanked (S080), the idle tally lied (S074), CLOSING
+was a dead chip (S074), a malformed role file could 500 /api/sessions (S083). The
+GUI can only be eyeballed on a relaunch; this pins the *logic* so a future edit
+can't silently break the contract. It sandboxes backend.py's module-level file
+constants into a tempdir, writes synthetic state, and asserts the shaped model.
+
+Covers: stale-greying (S080) keeps last-known state + drops from the attention
+tally; D-029 legacy-token aliasing; the action heartbeat; rank ordering; and the
+S083 _pending_subagents crash-guard against malformed role files.
+"""
+from __future__ import annotations
+
+import datetime
+import json
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import backend  # noqa: E402
+
+_PASS = 0
+_FAIL = 0
+
+
+def check(name, cond):
+    global _PASS, _FAIL
+    print(("PASS " if cond else "FAIL ") + name)
+    if cond:
+        _PASS += 1
+    else:
+        _FAIL += 1
+
+
+def _sandbox():
+    """Point backend's file constants at a fresh tempdir so tests never touch the
+    live switchboard/ state. Returns the tmp Path."""
+    tmp = Path(tempfile.mkdtemp(prefix="cockpit-test-"))
+    backend.MANIFEST = tmp / "state-switchboard.json"
+    backend.NAMES = tmp / "state-names.json"
+    backend.STATE_NDJSON = tmp / "state.ndjson"
+    backend.ROLE_FILES = {
+        "dwarf": tmp / "state-dwarves.json",
+        "gnome": tmp / "state-gnomes.json",
+        "penguin": tmp / "state-penguins.json",
+    }
+    (tmp / "state-names.json").write_text("{}", encoding="utf-8")
+    (tmp / "state.ndjson").write_text("", encoding="utf-8")
+    return tmp
+
+
+def _utc_now_iso():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def test_pending_subagents_crashguard():
+    """S083: a corrupt/truncated role file must never 500 /api/sessions."""
+    tmp = _sandbox()
+    # top-level list, non-dict bySession, non-dict byToolUseId — all malformed
+    (tmp / "state-dwarves.json").write_text('["not a dict"]', encoding="utf-8")
+    (tmp / "state-gnomes.json").write_text('{"bySession": "nope"}', encoding="utf-8")
+    (tmp / "state-penguins.json").write_text(
+        '{"bySession": {"S1": {"byToolUseId": "garbage"}}}', encoding="utf-8")
+    try:
+        out = backend._pending_subagents("S1")
+        check("malformed role files -> no crash, empty list", out == [])
+    except Exception as e:  # noqa: BLE001
+        check(f"malformed role files -> no crash (raised {e!r})", False)
+
+    # valid shape still resolves
+    (tmp / "state-dwarves.json").write_text(
+        json.dumps({"bySession": {"S1": {"byToolUseId": {"tu1": {"id": "D1"}}}}}),
+        encoding="utf-8")
+    out = backend._pending_subagents("S1")
+    check("valid role file -> [dwarf D1]", out == [{"kind": "dwarf", "id": "D1"}])
+
+    # missing/empty session id is a no-op
+    check("no session id -> empty", backend._pending_subagents("") == [])
+
+
+def test_stale_greying_and_attention():
+    """S080: a quiet session keeps its real state (greyed), not flattened; it
+    drops out of the attention tally; live ball-in-court states stay hot."""
+    tmp = _sandbox()
+    now = time.time()
+    manifest = {"sessions": [
+        {"sid8": "a0000000", "session_id": "S-a", "actor": "jebrim",
+         "state": "busy", "last_event_ts": now - 5},
+        {"sid8": "b0000000", "session_id": "S-b", "actor": "zezima",
+         "state": "your_move", "last_event_ts": now - 10},
+        {"sid8": "c0000000", "session_id": "S-c", "actor": "guthix",
+         "state": "your_move", "last_event_ts": now - 9000},   # 2.5h quiet -> stale
+        {"sid8": "d0000000", "session_id": "S-d", "actor": "braindead",
+         "state": "needs_you", "last_event_ts": now - 3},
+    ]}
+    backend.MANIFEST.write_text(json.dumps(manifest), encoding="utf-8")
+    m = backend.build_session_model()
+    by = {s["sid8"]: s for s in m["sessions"]}
+
+    check("live your_move is attention", by["b0000000"]["attention"] is True)
+    check("live needs_you is attention", by["d0000000"]["attention"] is True)
+    check("stale your_move is NOT attention", by["c0000000"]["attention"] is False)
+    check("stale flag set on the 2.5h-quiet row", by["c0000000"]["stale"] is True)
+    check("live busy is NOT stale", by["a0000000"]["stale"] is False)
+    check("stale row keeps real state (your_move, not flattened)",
+          by["c0000000"]["state"] == "your_move")
+
+    att = sum(1 for s in m["sessions"] if s["attention"])
+    check("attention tally = 2 (live needs_you + live your_move; stale excluded)",
+          att == 2)
+
+    order = [s["sid8"] for s in m["sessions"]]
+    check("needs_you sorts to the top", order[0] == "d0000000")
+    check("live your_move ranks above live busy",
+          order.index("b0000000") < order.index("a0000000"))
+    check("stale row sinks below live busy",
+          order.index("c0000000") > order.index("a0000000"))
+
+
+def test_legacy_token_aliasing():
+    """D-029: a session still carrying a pre-vocabulary token renders through the
+    transition via LEGACY_STATE."""
+    tmp = _sandbox()
+    now = time.time()
+    cases = {
+        "working": "busy", "waiting_for_user": "your_move",
+        "waiting_for_answers": "needs_you", "waiting_for_subagents": "busy",
+        "alching": "busy", "wrapped_up": "done", "closing": "done",
+    }
+    sessions = [{"sid8": f"{i:08x}", "session_id": f"S{i}", "actor": "x",
+                 "state": old, "last_event_ts": now - 2}
+                for i, old in enumerate(cases)]
+    backend.MANIFEST.write_text(json.dumps({"sessions": sessions}), encoding="utf-8")
+    m = backend.build_session_model()
+    got = {s["session_id"]: s["state"] for s in m["sessions"]}
+    for i, (old, new) in enumerate(cases.items()):
+        check(f"legacy '{old}' -> '{new}'", got[f"S{i}"] == new)
+
+
+def test_action_heartbeat():
+    """D-029: a busy session with a fresh action in state.ndjson reads low quiet
+    even when its last hook fire is older — the heartbeat keeps it alive."""
+    tmp = _sandbox()
+    now = time.time()
+    # sid8 MUST equal session_id[:8] — that's the join key between the manifest row
+    # and the action stream (backend keys the heartbeat map on sessionId[:8]).
+    sid_full = "a0000000-0000-0000-0000-000000000000"
+    backend.MANIFEST.write_text(json.dumps({"sessions": [
+        {"sid8": "a0000000", "session_id": sid_full, "actor": "jebrim",
+         "state": "busy", "last_event_ts": now - 200},   # last hook fire 200s ago
+    ]}), encoding="utf-8")
+    # NOTE: compact separators, matching emit-event.py (json.dumps(..., separators=
+    # (",", ":"))). backend._last_action_ts_map fast-path-filters on the literal
+    # substring '"type":"action"' (no space) — so the heartbeat SILENTLY breaks if
+    # emit-event ever pretty-prints. This line pins the real on-disk format.
+    backend.STATE_NDJSON.write_text(json.dumps({
+        "type": "action", "sessionId": sid_full, "wallTime": _utc_now_iso(),
+    }, separators=(",", ":")) + "\n", encoding="utf-8")
+    m = backend.build_session_model()
+    a = m["sessions"][0]
+    check("fresh action heartbeat -> quiet_sec < 60", a["quiet_sec"] < 60)
+    check("busy + fresh heartbeat is NOT stale", a["stale"] is False)
+
+
+def test_robust_to_missing_and_malformed():
+    """build_session_model must degrade gracefully, never raise."""
+    tmp = _sandbox()
+    # no manifest file at all
+    if backend.MANIFEST.exists():
+        backend.MANIFEST.unlink()
+    try:
+        m = backend.build_session_model()
+        check("missing manifest -> empty model", m["sessions"] == [])
+    except Exception as e:  # noqa: BLE001
+        check(f"missing manifest -> no crash (raised {e!r})", False)
+
+    # garbage manifest
+    backend.MANIFEST.write_text("{ not json", encoding="utf-8")
+    try:
+        m = backend.build_session_model()
+        check("garbage manifest -> empty model", m["sessions"] == [])
+    except Exception as e:  # noqa: BLE001
+        check(f"garbage manifest -> no crash (raised {e!r})", False)
+
+    # a session row missing most fields
+    backend.MANIFEST.write_text(json.dumps({"sessions": [{"sid8": "a0000000"}]}),
+                                encoding="utf-8")
+    try:
+        m = backend.build_session_model()
+        s = m["sessions"][0]
+        check("sparse row -> defaults applied (actor unknown)", s["actor"] == "unknown")
+        check("sparse row -> tags default []", s["tags"] == [])
+    except Exception as e:  # noqa: BLE001
+        check(f"sparse row -> no crash (raised {e!r})", False)
+
+
+def main():
+    test_pending_subagents_crashguard()
+    test_stale_greying_and_attention()
+    test_legacy_token_aliasing()
+    test_action_heartbeat()
+    test_robust_to_missing_and_malformed()
+    print(f"\n{_PASS} passed, {_FAIL} failed")
+    sys.exit(1 if _FAIL else 0)
+
+
+if __name__ == "__main__":
+    main()

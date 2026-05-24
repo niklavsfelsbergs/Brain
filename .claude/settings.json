@@ -87,6 +87,17 @@
           }
         ]
       }
+    ],
+    "_comment_session_start": "status-sidecar.py on SessionStart carries a session's /rename board label across a /clear: /clear keeps claude.exe alive but mints a new session UUID (new sid8), orphaning the state-names.json label keyed on the old sid8. The hook acts only on source=='clear', matching the just-ended predecessor by shared claude.exe pid. Fires once per session — negligible cost.",
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/developer-braindead/.claude/hooks/status-sidecar.py\""
+          }
+        ]
+      }
     ]
   }
 }

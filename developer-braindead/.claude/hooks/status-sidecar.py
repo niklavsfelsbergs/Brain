@@ -52,6 +52,10 @@ VIZ_DIR = DEV_BRAIN.parent / "switchboard"
 MANIFEST_PATH = VIZ_DIR / "state-switchboard.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 ACTORS_PATH = VIZ_DIR / "state-actors.json"
+# {sid8: label} — disk-backed board renames (S073), written by rename-intercept.py
+# and backend.py /api/rename. Read here to carry a label across /clear: /clear
+# mints a new session UUID (new sid8) so the old sid8's label would be orphaned.
+NAMES_PATH = VIZ_DIR / "state-names.json"
 # Sub-agent role-state files (written by emit-event.py). Read here to derive
 # the "awaiting crew" state — a session with in-flight foreground spawns is
 # blocked waiting for its dwarves/gnomes/penguins to return.
@@ -1353,6 +1357,86 @@ def _clear_mode_marker(project_dir: Path | None, sid8: str) -> None:
         print(f"status-sidecar: mode marker clear failed for {sid8}: {e}", file=sys.stderr)
 
 
+def _claude_exe_pid(chain) -> int:
+    """The session's own claude.exe pid from a recorded or freshly-walked ppid
+    chain. This is the stable per-terminal process identity — unchanged across a
+    /clear (which is in-process), distinct per parallel terminal. 0 when the
+    chain carries no claude.exe entry."""
+    for e in chain or []:
+        if isinstance(e, dict) and (e.get("name") or "").lower() == "claude.exe":
+            try:
+                return int(e.get("pid") or 0)
+            except (TypeError, ValueError):
+                return 0
+    return 0
+
+
+def _write_name_status(sid8: str, name: str) -> None:
+    """Read-modify-write state-names.json — same store and shape as
+    rename-intercept.py / backend.api_rename, so all three share one file. Only
+    ever adds a label here (carry-forward never clears)."""
+    try:
+        names = json.loads(NAMES_PATH.read_text(encoding="utf-8"))
+        if not isinstance(names, dict):
+            names = {}
+    except (OSError, ValueError):
+        names = {}
+    names[sid8] = name
+    VIZ_DIR.mkdir(parents=True, exist_ok=True)
+    NAMES_PATH.write_text(json.dumps(names, indent=2), encoding="utf-8")
+
+
+def _carry_name_across_clear(new_sid8: str) -> None:
+    """On a /clear, Claude Code mints a new session UUID (new sid8) but keeps the
+    same claude.exe process, so the board label in state-names.json — keyed on
+    the OLD sid8 — is orphaned and the post-/clear row shows up unnamed. Recover
+    it: find the just-ended predecessor session in the SAME terminal (the most
+    recent OTHER status file whose claude.exe pid matches ours) and copy its
+    label onto the new sid8.
+
+    Keyed on the claude.exe pid because /clear is in-process: a fresh terminal
+    startup is a different process (no match → no-op) and a resume reuses the old
+    UUID (same sid8 → label never lost). Best-effort and idempotent — any failure
+    just leaves the new row showing the bare actor label, exactly as before."""
+    if not new_sid8:
+        return
+    try:
+        existing = _load_existing(NAMES_PATH)
+        if isinstance(existing, dict) and existing.get(new_sid8):
+            return  # already labelled — nothing to carry
+        my_cx = _claude_exe_pid(_ppid_chain(os.getppid()))
+        if not my_cx or not STATUS_DIR.exists():
+            return
+        best_name, best_ts = "", -1.0
+        for p in STATUS_DIR.iterdir():
+            if not p.is_file() or p.suffix != ".json":
+                continue
+            try:
+                j = json.loads(p.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if not isinstance(j, dict):
+                continue
+            old_sid8 = j.get("sid8") or p.stem
+            if old_sid8 == new_sid8:
+                continue
+            if _claude_exe_pid(j.get("claude_pid_chain")) != my_cx:
+                continue
+            label = existing.get(old_sid8) if isinstance(existing, dict) else None
+            if not label:
+                continue
+            try:
+                ts = float(j.get("last_event_ts") or 0)
+            except (TypeError, ValueError):
+                ts = 0.0
+            if ts > best_ts:
+                best_name, best_ts = label, ts
+        if best_name:
+            _write_name_status(new_sid8, best_name)
+    except Exception as e:
+        print(f"status-sidecar: name carry-forward failed for {new_sid8}: {e}", file=sys.stderr)
+
+
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
@@ -1360,6 +1444,19 @@ def main() -> None:
         sys.exit(0)
 
     hook_event = payload.get("hook_event_name") or ""
+
+    # SessionStart on /clear: the session UUID just changed but claude.exe is the
+    # same process, so the /rename label keyed on the old sid8 is orphaned. Carry
+    # it forward onto the new sid8. Only source=="clear" acts; startup/resume/
+    # compact no-op (new process has no predecessor match / reuses the old UUID).
+    # No status record is written here — the first UserPromptSubmit does that.
+    if hook_event == "SessionStart":
+        if (payload.get("source") or "").lower() == "clear":
+            sid = payload.get("session_id") or os.environ.get("CLAUDE_CODE_SESSION_ID") or ""
+            if isinstance(sid, str) and sid:
+                _carry_name_across_clear(sid[:8].lower())
+        sys.exit(0)
+
     tool_name = payload.get("tool_name") or ""   # S062: hoisted — used by the Pre/Post state logic and the checkpoint dispatch below
     state = EVENT_STATE.get(hook_event)
     if state is None:

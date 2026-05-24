@@ -22,6 +22,7 @@
 
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -135,6 +136,23 @@ EVENT_STATE = {
 # fire-budget impact is ~0-2 per session each, not per tool call.
 WAIT_TOOLS = {"AskUserQuestion", "ExitPlanMode"}
 SUBAGENT_TOOLS = {"Task", "Agent"}
+
+# A "/rename …" prompt is caught and BLOCKED by rename-intercept.py (exit 2): it
+# relabels the board row and runs no model turn, so no Stop ever follows it.
+# Without special-casing, this hook's UserPromptSubmit→working stamp would strand
+# the session at WORKING until its next *real* prompt — i.e. renaming a session
+# makes it look busy when nothing is happening. We detect the same two shapes
+# rename-intercept recognizes and treat the prompt as a no-op (leave state
+# untouched). Also keeps a /rename from being captured as the session's
+# first_prompt. (S077)
+_RENAME_SENTINEL = re.compile(r"<cockpit-rename>\s*(.*?)\s*</cockpit-rename>", re.DOTALL)
+_RENAME_RAW = re.compile(r"^/rename\s+(.+)$", re.IGNORECASE)
+
+
+def _is_rename_prompt(prompt) -> bool:
+    if not isinstance(prompt, str):
+        return False
+    return bool(_RENAME_SENTINEL.search(prompt) or _RENAME_RAW.match(prompt.strip()))
 
 # S059: per-session mode marker. The event stream alone can't tell that a
 # session is mid-ritual; the agent writes a single token to
@@ -1351,6 +1369,12 @@ def main() -> None:
     if not isinstance(sid, str) or not sid:
         sys.exit(0)
     sid8 = sid[:8]
+
+    # A blocked /rename prompt fires UserPromptSubmit but runs no turn (rename-
+    # intercept.py exits 2), so no Stop follows. Skip it entirely — otherwise the
+    # working stamp below would strand the session at WORKING. (S077)
+    if hook_event == "UserPromptSubmit" and _is_rename_prompt(payload.get("prompt") or ""):
+        sys.exit(0)
 
     # Pre/Post fire only for the two tight matchers in settings.json:
     #   WAIT_TOOLS — interactive prompts that park the session on the principal

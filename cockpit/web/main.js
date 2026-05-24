@@ -10,7 +10,7 @@ import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { isOwned, place, openOwned, openPeek, release } from "./fleet.js";
-import { openTerm, Term, termForSid8, resumeTerm, ownedTermIds, liveTerms } from "./term.js";
+import { openTerm, Term, termForSid8, resumeTerm, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
 import { nameFor, subscribeNames } from "./names.js";
 
 // Actor → the address the cockpit writes as the first message. The actor
@@ -51,6 +51,69 @@ function setLsBool(key, val) {
   try {
     localStorage.setItem(key, val ? "1" : "0");
   } catch {}
+}
+
+// ---- view knobs: UI zoom + side-pillar widths, all persisted ----
+const ZMIN = 0.6, ZMAX = 2.2, ZSTEP = 0.1, ZDEF = 1.35;
+const BOARD_DEF = 372, FEED_DEF = 340, PANE_MIN = 220, PANE_MAX = 760;
+const ROOT = document.documentElement;
+const setVar = (name, val) => ROOT.style.setProperty(name, val);
+const cssZoom = () => parseFloat(getComputedStyle(ROOT).getPropertyValue("--zoom")) || ZDEF;
+const clampZoom = (z) => Math.min(ZMAX, Math.max(ZMIN, Math.round(z * 100) / 100));
+const clampPane = (px) => Math.min(PANE_MAX, Math.max(PANE_MIN, Math.round(px)));
+function loadZoom() {
+  const v = parseFloat(localStorage.getItem("cockpit-zoom"));
+  return v >= ZMIN && v <= ZMAX ? v : ZDEF;
+}
+function loadPane(key, def) {
+  const v = parseFloat(localStorage.getItem(key));
+  return v >= PANE_MIN && v <= PANE_MAX ? v : def;
+}
+
+// A draggable divider between two pillars. `side` 'board' grows --board-w from the
+// grid's left edge; 'feed' grows --feed-w from its right edge. clientX and the grid
+// rect are both viewport px (the grid is sized to fill the viewport under `zoom`),
+// so the rendered offset is divided by --zoom to get the layout-px width the CSS
+// `width` property expects. Widths live in CSS vars + localStorage, not React state
+// — no re-render needed mid-drag. onResized refits terminals once the layout settles.
+function Resizer({ side, onResized }) {
+  const isBoard = side === "board";
+  const varName = isBoard ? "--board-w" : "--feed-w";
+  const lsKey = isBoard ? "cockpit-board-w" : "cockpit-feed-w";
+  const begin = (e) => {
+    e.preventDefault();
+    const grid = e.currentTarget.closest(".app-grid");
+    if (!grid) return;
+    const rect = grid.getBoundingClientRect();
+    const z = cssZoom();
+    const move = (ev) => {
+      const px = isBoard ? (ev.clientX - rect.left) / z : (rect.right - ev.clientX) / z;
+      setVar(varName, clampPane(px) + "px");
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      document.body.classList.remove("resizing");
+      const cur = clampPane(parseFloat(getComputedStyle(ROOT).getPropertyValue(varName)));
+      try { localStorage.setItem(lsKey, String(cur)); } catch {}
+      onResized && onResized();
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    document.body.classList.add("resizing");
+  };
+  const reset = () => {
+    const def = isBoard ? BOARD_DEF : FEED_DEF;
+    setVar(varName, def + "px");
+    try { localStorage.setItem(lsKey, String(def)); } catch {}
+    onResized && onResized();
+  };
+  return html`<div
+    class="gutter"
+    onPointerDown=${begin}
+    onDblClick=${reset}
+    title="drag to resize · double-click to reset"
+  ></div>`;
 }
 
 function PlaceModal({ onPlace, onClose }) {
@@ -105,16 +168,101 @@ function App() {
   const [sel, setSel] = useState(null);
   const [showPlace, setShowPlace] = useState(false);
   const [soundOn, setSoundOn] = useState(() => lsBool("cockpit-sound", true));
-  const [showFeed, setShowFeed] = useState(() => lsBool("cockpit-feed", true));
+  const [feedOpen, setFeedOpen] = useState(() => lsBool("cockpit-feed", true));
+  const [boardOpen, setBoardOpen] = useState(() => lsBool("cockpit-board", true));
+  const [zoom, setZoom] = useState(loadZoom);
   const prevWaiting = useRef(new Set());
   const [, bumpNames] = useState(0);
   useEffect(() => subscribeNames(() => bumpNames((n) => n + 1)), []);
+
+  // refs so the once-bound keyboard handler reads fresh collapse state
+  const boardRef = useRef(boardOpen); boardRef.current = boardOpen;
+  const feedRef = useRef(feedOpen); feedRef.current = feedOpen;
+  const refit = () => requestAnimationFrame(fitTerms);
+
+  // apply persisted pillar widths once on mount (zoom is applied by its own effect)
+  useEffect(() => {
+    setVar("--board-w", loadPane("cockpit-board-w", BOARD_DEF) + "px");
+    setVar("--feed-w", loadPane("cockpit-feed-w", FEED_DEF) + "px");
+  }, []);
+
+  // zoom → CSS var + persist + rescale terminal fonts
+  useEffect(() => {
+    setVar("--zoom", String(zoom));
+    try { localStorage.setItem("cockpit-zoom", String(zoom)); } catch {}
+    applyTermZoom();
+  }, [zoom]);
+
+  // persist collapse state; refit terminals when the console column resizes
+  useEffect(() => { setLsBool("cockpit-board", boardOpen); }, [boardOpen]);
+  useEffect(() => { setLsBool("cockpit-feed", feedOpen); }, [feedOpen]);
+  useEffect(() => { const id = requestAnimationFrame(fitTerms); return () => cancelAnimationFrame(id); }, [boardOpen, feedOpen]);
+
+  const toggleFocus = () => {
+    const anyOpen = boardRef.current || feedRef.current;
+    setBoardOpen(!anyOpen);
+    setFeedOpen(!anyOpen);
+  };
+
+  // Ctrl/Cmd + scroll = zoom; Ctrl/Cmd + = / - / 0 = zoom; Ctrl+B / Ctrl+J / Ctrl+\
+  // = layout. Capture phase + stopPropagation so these never reach xterm (which
+  // would otherwise scroll, or send ^B/^J to the PTY) or trigger WebView2 page zoom.
+  useEffect(() => {
+    const onWheel = (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setZoom((z) => clampZoom(z + (e.deltaY < 0 ? ZSTEP : -ZSTEP)));
+    };
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const k = e.key;
+      const hit = () => { e.preventDefault(); e.stopPropagation(); };
+      if (k === "=" || k === "+") { hit(); setZoom((z) => clampZoom(z + ZSTEP)); }
+      else if (k === "-" || k === "_") { hit(); setZoom((z) => clampZoom(z - ZSTEP)); }
+      else if (k === "0") { hit(); setZoom(ZDEF); }
+      else if (k === "b" || k === "B") { hit(); setBoardOpen((v) => !v); }
+      else if (k === "j" || k === "J") { hit(); setFeedOpen((v) => !v); }
+      else if (k === "\\") { hit(); toggleFocus(); }
+    };
+    window.addEventListener("wheel", onWheel, { passive: false, capture: true });
+    window.addEventListener("keydown", onKey, true);
+    return () => {
+      window.removeEventListener("wheel", onWheel, { capture: true });
+      window.removeEventListener("keydown", onKey, true);
+    };
+  }, []);
+  // latest feed event per session — lets the board merge give cockpit-own
+  // (unmanifested) terminals a real state instead of a hardcoded "idle".
+  const [feedState, setFeedState] = useState({});
 
   // On cockpit open, resume owned terminals from disk (claude --resume) so
   // sessions survive a close/reopen or reload. They relaunch live and reappear
   // on the board; click a row to view. `release` is how you stop one returning.
   useEffect(() => {
     for (const uuid of ownedTermIds()) resumeTerm(uuid);
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    async function poll() {
+      try {
+        const r = await fetch("/api/feed");
+        const j = await r.json();
+        if (!alive) return;
+        const m = {};
+        for (const it of j.items || [])
+          if (it.sid8 && it.ts && (!m[it.sid8] || it.ts > m[it.sid8].ts))
+            m[it.sid8] = { kind: it.kind, ts: it.ts, text: it.text || "" };
+        setFeedState(m);
+      } catch {}
+    }
+    poll();
+    const id = setInterval(poll, 2000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
   }, []);
 
   useEffect(() => {
@@ -148,22 +296,34 @@ function App() {
     ...manifest,
     ...liveTerms()
       .filter((t) => t.sid8 && !known.has(t.sid8))
-      .map((t) => ({
-        sid8: t.sid8,
-        session_id: t.sessionId,
-        actor: t.label || "chat",
-        instance: 1,
-        state: "idle",
-        age_sec: 0,
-        idle_sec: 0,
-        first_prompt: "",
-        doing: "running in this cockpit",
-        intent: "",
-        attention: false,
-        subagents: [],
-        host: "cockpit",
-        rank: 6,
-      })),
+      .map((t) => {
+        // real state from the feed: recent activity → working; needs_you → waiting;
+        // a close checkpoint or silence → idle. No feed entry yet → idle.
+        const fs = feedState[t.sid8];
+        let state = "idle";
+        if (fs) {
+          const age = Date.now() / 1000 - fs.ts;
+          if (fs.kind === "needs_you") state = "waiting_for_user";
+          else if (fs.kind === "done") state = "idle";
+          else if (age < 120) state = "working";
+        }
+        return {
+          sid8: t.sid8,
+          session_id: t.sessionId,
+          actor: t.label || "chat",
+          instance: 1,
+          state,
+          age_sec: 0,
+          idle_sec: fs ? Math.max(0, Math.floor(Date.now() / 1000 - fs.ts)) : 0,
+          first_prompt: "",
+          doing: fs && fs.text ? fs.text : "running in this cockpit",
+          intent: "",
+          attention: state === "waiting_for_user",
+          subagents: [],
+          host: "cockpit",
+          rank: 6,
+        };
+      }),
   ];
 
   // ring once when a session newly needs you
@@ -174,7 +334,10 @@ function App() {
   }, [sessions, soundOn]);
 
   const toggleSound = () => setSoundOn((v) => { setLsBool("cockpit-sound", !v); return !v; });
-  const toggleFeed = () => setShowFeed((v) => { setLsBool("cockpit-feed", !v); return !v; });
+  const toggleFeed = () => setFeedOpen((v) => !v);
+  const zoomIn = () => setZoom((z) => clampZoom(z + ZSTEP));
+  const zoomOut = () => setZoom((z) => clampZoom(z - ZSTEP));
+  const zoomReset = () => setZoom(ZDEF);
 
   const selectRow = (s) => {
     // a cockpit-launched terminal hosting this session wins; else headless/peek
@@ -209,17 +372,30 @@ function App() {
 
   return html`
     <div class="app-grid">
-      <${Board}
-        sessions=${sessions}
-        err=${err}
-        selectedId=${sel && sel.id}
-        onSelect=${selectRow}
-        onNew=${() => setShowPlace(true)}
-        soundOn=${soundOn}
-        onToggleSound=${toggleSound}
-        feedOn=${showFeed}
-        onToggleFeed=${toggleFeed}
-      />
+      ${boardOpen
+        ? html`<${Board}
+              sessions=${sessions}
+              err=${err}
+              selectedId=${sel && sel.id}
+              onSelect=${selectRow}
+              onNew=${() => setShowPlace(true)}
+              soundOn=${soundOn}
+              onToggleSound=${toggleSound}
+              feedOn=${feedOpen}
+              onToggleFeed=${toggleFeed}
+              zoom=${zoom}
+              onZoomIn=${zoomIn}
+              onZoomOut=${zoomOut}
+              onZoomReset=${zoomReset}
+              onCollapseBoard=${() => setBoardOpen(false)}
+              onToggleFocus=${toggleFocus}
+              focused=${!boardOpen && !feedOpen}
+            />
+            <${Resizer} side="board" onResized=${refit} />`
+        : html`<div class="rail rail-left" onClick=${() => setBoardOpen(true)} title="show board (Ctrl+B)">
+            <button title="show board (Ctrl+B)" onClick=${(e) => { e.stopPropagation(); setBoardOpen(true); }}>›</button>
+            <button title="new conversation" onClick=${(e) => { e.stopPropagation(); setShowPlace(true); }}>+</button>
+          </div>`}
       <div class="console-col">
         ${!sel
           ? html`<div class="console-empty">select a session, or place a new one</div>`
@@ -237,7 +413,12 @@ function App() {
             </div>`
           : html`<${Console} key=${sel.cid} conn=${sel} title=${title} onRelease=${doRelease} />`}
       </div>
-      ${showFeed && html`<${FeedPanel} onJump=${jumpTo} />`}
+      ${feedOpen
+        ? html`<${Resizer} side="feed" onResized=${refit} />
+            <${FeedPanel} onJump=${jumpTo} onCollapse=${() => setFeedOpen(false)} />`
+        : html`<div class="rail rail-right" onClick=${() => setFeedOpen(true)} title="show feed (Ctrl+J)">
+            <button title="show feed (Ctrl+J)" onClick=${(e) => { e.stopPropagation(); setFeedOpen(true); }}>‹</button>
+          </div>`}
       ${showPlace && html`<${PlaceModal} onPlace=${doPlace} onClose=${() => setShowPlace(false)} />`}
     </div>
   `;

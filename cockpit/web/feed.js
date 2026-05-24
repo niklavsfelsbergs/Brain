@@ -34,7 +34,7 @@ function FeedItem({ i, onJump }) {
   `;
 }
 
-export function FeedPanel({ onJump }) {
+export function FeedPanel({ onJump, onCollapse }) {
   const [items, setItems] = useState([]);
   // Actions ON by default — with them off a working session looks dead (only
   // sparse lifecycle checkpoints show). Choice persists. (S066)
@@ -82,15 +82,19 @@ export function FeedPanel({ onJump }) {
     <aside class="feed-col">
       <div class="feed-head">
         <span>FEED</span>
-        <label class="feed-toggle">
-          <input type="checkbox" checked=${showActions} onChange=${(e) => {
-            setShowActions(e.target.checked);
-            try {
-              localStorage.setItem("cockpit-feed-actions", e.target.checked ? "1" : "0");
-            } catch {}
-          }} />
-          actions
-        </label>
+        <span class="feed-head-right">
+          <label class="feed-toggle">
+            <input type="checkbox" checked=${showActions} onChange=${(e) => {
+              setShowActions(e.target.checked);
+              try {
+                localStorage.setItem("cockpit-feed-actions", e.target.checked ? "1" : "0");
+              } catch {}
+            }} />
+            actions
+          </label>
+          ${onCollapse &&
+          html`<button class="icon-btn" title="collapse feed (Ctrl+J)" onClick=${onCollapse}>›</button>`}
+        </span>
       </div>
       <div class="feed-items" ref=${elRef}>
         ${shown.length === 0 && html`<div class="feed-empty">quiet</div>`}

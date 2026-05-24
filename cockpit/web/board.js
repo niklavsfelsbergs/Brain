@@ -5,6 +5,7 @@ import { nameFor } from "./names.js";
 
 const STATE_LABEL = {
   working: "WORKING",
+  waiting_for_answers: "Waiting for answers…",
   waiting_for_user: "WAITING ON YOU",
   waiting_for_subagents: "AWAITING CREW",
   alching: "ALCHING",
@@ -50,7 +51,11 @@ function Row({ s, selected, onSelect }) {
   `;
 }
 
-export function Board({ sessions, err, selectedId, onSelect, onNew, soundOn, onToggleSound, feedOn, onToggleFeed }) {
+export function Board({
+  sessions, err, selectedId, onSelect, onNew,
+  soundOn, onToggleSound, feedOn, onToggleFeed,
+  zoom, onZoomIn, onZoomOut, onZoomReset, onCollapseBoard, onToggleFocus, focused,
+}) {
   const waiting = sessions.filter((s) => s.attention).length;
   return html`
     <aside class="board-col">
@@ -72,11 +77,12 @@ export function Board({ sessions, err, selectedId, onSelect, onNew, soundOn, onT
           <button
             class=${"icon-btn" + (feedOn ? " on" : "")}
             onClick=${onToggleFeed}
-            title="toggle the activity feed"
+            title="toggle the activity feed (Ctrl+J)"
           >
             ▦
           </button>
           <button class="newbtn" onClick=${onNew} title="start a new conversation">+ new</button>
+          <button class="icon-btn" onClick=${onCollapseBoard} title="collapse board (Ctrl+B)">‹</button>
         </span>
       </header>
       <div class="board">
@@ -92,6 +98,21 @@ export function Board({ sessions, err, selectedId, onSelect, onNew, soundOn, onT
             />`
         )}
       </div>
+      <footer class="board-foot">
+        <span class="zoomctl">
+          <button onClick=${onZoomOut} title="zoom out (Ctrl+-)">−</button>
+          <button class="zval" onClick=${onZoomReset} title="reset zoom (Ctrl+0)">${Math.round(zoom * 100)}%</button>
+          <button onClick=${onZoomIn} title="zoom in (Ctrl+=)">+</button>
+        </span>
+        <span class="spacer"></span>
+        <button
+          class=${"icon-btn" + (focused ? " on" : "")}
+          onClick=${onToggleFocus}
+          title="focus mode — hide side panels (Ctrl+\\)"
+        >
+          ⤢
+        </button>
+      </footer>
     </aside>
   `;
 }

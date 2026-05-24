@@ -71,7 +71,7 @@ export function Console({ conn, title, onRelease }) {
   const [, force] = useReducer((x) => x + 1, 0);
   const rafRef = useRef(0);
   const turnsRef = useRef(null);
-  const pinned = useRef(false);
+  const pinned = useRef(true); // stick to the bottom (newest) until the user scrolls up
   const [input, setInput] = useState("");
 
   useEffect(() => {
@@ -87,18 +87,29 @@ export function Console({ conn, title, onRelease }) {
     return unsub;
   }, [conn]);
 
-  // jump to bottom on first load (newest visible), then stick when near bottom
+  // Stick to the bottom (newest) until the user scrolls up. A single synchronous
+  // scrollTop=scrollHeight on load races markdown/font/<details> layout — measured
+  // too early it lands short of, or at the top of, the transcript, and a static
+  // replayed history (no further renders) never corrects, so a row-jump leaves you
+  // at the top. Instead: track the user's scroll to set/clear the pin, and on every
+  // content render scroll to bottom on the NEXT frame, after layout has settled.
   useEffect(() => {
     const el = turnsRef.current;
     if (!el) return;
-    if (!pinned.current) {
-      if (el.scrollHeight > el.clientHeight) {
-        el.scrollTop = el.scrollHeight;
-        pinned.current = true;
-      }
-      return;
-    }
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 140) el.scrollTop = el.scrollHeight;
+    const onScroll = () => {
+      pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [conn]);
+  useEffect(() => {
+    if (!pinned.current) return;
+    const el = turnsRef.current;
+    if (!el) return;
+    const id = requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+    });
+    return () => cancelAnimationFrame(id);
   });
 
   const model = conn.model;

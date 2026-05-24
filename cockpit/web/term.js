@@ -20,6 +20,25 @@ const live = new Map(); // cid  -> TermConn
 const bySid8 = new Map(); // sid8 -> TermConn
 let SEQ = 0;
 
+// Terminal font tracks the UI zoom. The .term-host subtree is counter-scaled to
+// net 1.0 (so xterm gets true pixels — see styles.css), which means the global
+// `zoom` does NOT grow the terminal text on its own; we scale xterm's fontSize by
+// --zoom instead. BASE_FONT 13 × the default --zoom 1.35 ≈ the prior 18px.
+const BASE_FONT = 13;
+function uiZoom() {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--zoom"));
+  return v > 0 ? v : 1.35;
+}
+function termFontFor(z) {
+  return Math.max(8, Math.round(BASE_FONT * z));
+}
+function setTermFont(term, f) {
+  try {
+    if (term.options) term.options.fontSize = f; // xterm 5
+    else if (term.setOption) term.setOption("fontSize", f); // xterm 4
+  } catch {}
+}
+
 // Owned session uuids persist so a reopened cockpit can resume them from disk
 // (claude --resume) instead of starting fresh. release()/close() forgets one.
 const OWNED = "cockpit-owned-terms";
@@ -71,9 +90,10 @@ class TermConn {
       cursorBlink: true,
       fontFamily: 'ui-monospace, "Cascadia Code", Consolas, monospace',
       // sized via xterm because the terminal subtree is counter-scaled to net
-      // 1.0 (see .term-host in styles.css), not via the global --zoom (1.35).
-      // 13 × 1.35 ≈ the prior visual size.
-      fontSize: 18,
+      // 1.0 (see .term-host in styles.css), not via the global --zoom. We track
+      // the zoom by scaling fontSize ourselves (BASE_FONT × --zoom), so the
+      // terminal text grows/shrinks with the rest of the UI.
+      fontSize: termFontFor(uiZoom()),
       scrollback: 8000,
       // warm interior to fit the OSRS wood/parchment frame (the S066 reskin
       // leaves the terminal interior to us): --bg ground, --ink text, gold cursor.
@@ -101,6 +121,16 @@ class TermConn {
         this._pasteFromClipboard();
         return false; // don't let xterm send a raw ^V to the PTY
       }
+      // Shift+Enter → insert a newline instead of submitting. Plain xterm sends \r
+      // for both Enter and Shift+Enter (indistinguishable in legacy keyboard mode),
+      // so Shift+Enter just submits. We send a literal \n (LF), which claude's TUI
+      // treats as "insert newline" while \r stays "submit". Submit (plain Enter) is
+      // untouched. \n is a control char so it resets the /rename mirror too.
+      if (e.key === "Enter" && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        this._linebuf = "";
+        this._send({ type: "input", data: "\n" });
+        return false; // swallow xterm's \r
+      }
       return true;
     });
     this.container.addEventListener(
@@ -121,6 +151,7 @@ class TermConn {
     this.container.addEventListener(
       "wheel",
       (e) => {
+        if (e.ctrlKey || e.metaKey) return; // Ctrl+wheel is the cockpit zoom gesture, not scroll
         if (e.deltaY < 0) this._follow = false;
         else if (e.deltaY > 0 && this._isAtBottom()) this._follow = true;
       },
@@ -315,6 +346,28 @@ export function liveTerms() {
 // A live terminal already hosting this board session, if any (row click → it).
 export function termForSid8(sid8) {
   return bySid8.get(sid8) || null;
+}
+
+// Re-read --zoom and rescale every live terminal's font, then refit. Called by
+// main.js whenever the UI zoom changes. rAF-coalesced so a rapid Ctrl+wheel
+// burst reflows xterm once per frame, not once per notch.
+let _zoomRaf = 0;
+export function applyTermZoom() {
+  if (_zoomRaf) return;
+  _zoomRaf = requestAnimationFrame(() => {
+    _zoomRaf = 0;
+    const f = termFontFor(uiZoom());
+    for (const c of live.values()) {
+      setTermFont(c.term, f);
+      c.fitNow();
+    }
+  });
+}
+
+// Refit every live terminal to its container (font unchanged). Called when the
+// console column changes width — panel collapse/expand or a divider drag.
+export function fitTerms() {
+  for (const c of live.values()) c.fitNow();
 }
 
 export function Term({ conn }) {

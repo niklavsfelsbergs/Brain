@@ -268,21 +268,32 @@ export function Term({ conn }) {
   useEffect(() => {
     const host = ref.current;
     if (host && conn.container.parentNode !== host) host.appendChild(conn.container);
-    // size after the element is laid out, then once more after paint; scroll to
-    // the newest output each time — re-parenting the xterm element on a row-jump
-    // resets its viewport to the top of the scrollback, so without this you land
-    // at the top of the session and have to scroll down to the live prompt.
-    conn.fitNow();
-    conn.term.scrollToBottom();
-    const t = setTimeout(() => {
+    // Re-parenting the xterm element on open/row-switch resets its viewport to the
+    // top of the scrollback, and fit() reflows the row count — so the scroll-to-
+    // newest must happen AFTER fit + layout commit. A synchronous scrollToBottom
+    // races the reflow and lands at the top; for a still-streaming session the next
+    // write re-pins it (you never notice), but for an IDLE one (agent done thinking,
+    // no more output) nothing corrects it and you're stuck at the top. Fix: fit, then
+    // scroll on the next two frames (past xterm's renderer committing the new dims),
+    // and once more after a short beat as a belt-and-suspenders for WebView2's slower
+    // transform/relayout under .term-host.
+    let raf1 = 0, raf2 = 0;
+    const settle = () => {
       conn.fitNow();
-      conn.term.scrollToBottom();
-    }, 60);
+      raf1 = requestAnimationFrame(() => {
+        conn.term.scrollToBottom();
+        raf2 = requestAnimationFrame(() => conn.term.scrollToBottom());
+      });
+    };
+    settle();
+    const t = setTimeout(settle, 120);
     const onResize = () => conn.fitNow();
     window.addEventListener("resize", onResize);
     conn.term.focus();
     return () => {
       clearTimeout(t);
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
       window.removeEventListener("resize", onResize);
       // intentionally NOT detaching/disposing — the terminal stays alive when
       // you switch rows; release() tears it down.

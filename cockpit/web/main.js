@@ -191,6 +191,12 @@ function App() {
   // refs so the once-bound keyboard handler reads fresh collapse state
   const boardRef = useRef(boardOpen); boardRef.current = boardOpen;
   const feedRef = useRef(feedOpen); feedRef.current = feedOpen;
+  // refs for keyboard session-nav (Ctrl+↑/↓, Ctrl+1–9). The key handler binds
+  // once on mount, so it reads the live fleet + selection + selectRow off refs
+  // rather than the stale mount-time closures. Assigned each render below.
+  const sessionsRef = useRef([]);
+  const selSid8Ref = useRef(null);
+  const selectRowRef = useRef(null);
   const refit = () => requestAnimationFrame(fitTerms);
 
   // apply persisted pillar widths once on mount (zoom is applied by its own effect)
@@ -218,14 +224,31 @@ function App() {
   };
 
   // Ctrl/Cmd + scroll = zoom; Ctrl/Cmd + = / - / 0 = zoom; Ctrl+B / Ctrl+J / Ctrl+\
-  // = layout. Capture phase + stopPropagation so these never reach xterm (which
-  // would otherwise scroll, or send ^B/^J to the PTY) or trigger WebView2 page zoom.
+  // = layout; Ctrl+↑/↓ = move the board selection (wraps); Ctrl+1–9 = jump to the
+  // Nth session; Ctrl+Shift+` = new conversation. Capture phase + stopPropagation
+  // so these never reach xterm (which would otherwise scroll, or send control bytes
+  // to the PTY) or trigger WebView2 page zoom.
   useEffect(() => {
     const onWheel = (e) => {
       if (!(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       e.stopPropagation();
       setZoom((z) => clampZoom(z + (e.deltaY < 0 ? ZSTEP : -ZSTEP)));
+    };
+    // session-nav helpers read the live fleet/selection off refs (handler is
+    // bound once). Keyboard selection never yanks VSCode forward (focusVscode:false).
+    const navBy = (delta) => {
+      const list = sessionsRef.current || [];
+      const pick = selectRowRef.current;
+      if (!list.length || !pick) return;
+      let i = list.findIndex((s) => s.sid8 === selSid8Ref.current);
+      if (i < 0) i = delta > 0 ? -1 : 0; // nothing selected → ↓ first, ↑ last
+      pick(list[(i + delta + list.length) % list.length], { focusVscode: false });
+    };
+    const navTo = (n) => {
+      const list = sessionsRef.current || [];
+      const pick = selectRowRef.current;
+      if (pick && n >= 1 && n <= list.length) pick(list[n - 1], { focusVscode: false });
     };
     const onKey = (e) => {
       if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
@@ -237,6 +260,11 @@ function App() {
       else if (k === "b" || k === "B") { hit(); setBoardOpen((v) => !v); }
       else if (k === "j" || k === "J") { hit(); setFeedOpen((v) => !v); }
       else if (k === "\\") { hit(); toggleFocus(); }
+      else if (k === "ArrowUp") { hit(); navBy(-1); }
+      else if (k === "ArrowDown") { hit(); navBy(1); }
+      // e.code is layout/shift-proof: Ctrl+Shift+1 reports key "!" but code "Digit1".
+      else if (/^Digit[1-9]$/.test(e.code)) { hit(); navTo(Number(e.code.slice(5))); }
+      else if (e.shiftKey && e.code === "Backquote") { hit(); setShowPlace(true); }
     };
     window.addEventListener("wheel", onWheel, { passive: false, capture: true });
     window.addEventListener("keydown", onKey, true);
@@ -375,12 +403,13 @@ function App() {
   const zoomOut = () => setZoom((z) => clampZoom(z - ZSTEP));
   const zoomReset = () => setZoom(ZDEF);
 
-  const selectRow = (s) => {
+  const selectRow = (s, { focusVscode = true } = {}) => {
     // VSCode-hosted sessions: focus their terminal pane in VSCode (S073). The
     // claude-focus extension matches sid8 → claude_pid_chain → the pane and
     // show()s it. Still falls through to a read-only peek so the cockpit keeps
-    // a selection + transcript view.
-    if (s.host === "vscode") {
+    // a selection + transcript view. Skipped on keyboard-nav (focusVscode:false)
+    // so arrowing across a vscode row doesn't repeatedly steal window focus.
+    if (focusVscode && s.host === "vscode") {
       fetch("/api/open-vscode?sid8=" + encodeURIComponent(s.sid8)).catch(() => {});
     }
     // a cockpit-launched terminal hosting this session wins; else a read-only peek
@@ -429,13 +458,23 @@ function App() {
     ? nameFor(sel.id) || sel.label || (sel.id ? sel.id.slice(0, 8) : "new conversation")
     : "";
 
+  // The open session's sid8, robust across both connection kinds: a PTY term's
+  // .id is already the sid8; a peek's .id is the full session_id. slice(0,8) of
+  // either yields the sid8 the board rows carry. (Fixes the never-matching
+  // s.session_id === sel.id compare that left PTY rows unhighlighted.)
+  const selSid8 = sel && sel.id ? sel.id.slice(0, 8) : null;
+  // keep the once-bound key handler's refs current
+  sessionsRef.current = sessions;
+  selSid8Ref.current = selSid8;
+  selectRowRef.current = selectRow;
+
   return html`
     <div class="app-grid">
       ${boardOpen
         ? html`<${Board}
               sessions=${sessions}
               err=${err}
-              selectedId=${sel && sel.id}
+              selectedSid8=${selSid8}
               onSelect=${selectRow}
               onNew=${() => setShowPlace(true)}
               onRename=${renameSession}

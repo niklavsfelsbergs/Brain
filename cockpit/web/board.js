@@ -102,7 +102,7 @@ function Row({ s, selected, onSelect, onRename }) {
 }
 
 export function Board({
-  sessions, err, selectedId, onSelect, onNew, onRename,
+  sessions, err, selectedSid8, onSelect, onNew, onRename,
   soundOn, onToggleSound, feedOn, onToggleFeed,
   zoom, onZoomIn, onZoomOut, onZoomReset, onCollapseBoard, onToggleFocus, focused,
 }) {
@@ -110,7 +110,7 @@ export function Board({
   return html`
     <aside class="board-col">
       <header class="topbar">
-        <h1>SWITCHBOARD<span style="font-size:9px;opacity:.45;font-weight:400;letter-spacing:0;margin-left:5px;" title="cockpit build tag — confirms fresh code loaded after relaunch">b83.4</span></h1>
+        <h1>SWITCHBOARD<span style="font-size:9px;opacity:.45;font-weight:400;letter-spacing:0;margin-left:5px;" title="cockpit build tag — confirms fresh code loaded after relaunch">b84.1</span></h1>
         <span class="count">
           ${sessions.length} live${waiting
             ? html` · <b class="warn">${waiting} need you</b>`
@@ -143,7 +143,7 @@ export function Board({
             html`<${Row}
               key=${s.sid8}
               s=${s}
-              selected=${s.session_id === selectedId}
+              selected=${s.sid8 === selectedSid8}
               onSelect=${onSelect}
               onRename=${onRename}
             />`

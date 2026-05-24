@@ -104,6 +104,7 @@ modes), surfaces each with claim + anchor + a y/n/edit recommendation, takes bat
 and executes via `git mv` (Bash bypasses the `confirmed/`-write hook for player-owned
 moves). It does **not** update `last-alched.md`, sweep bank staleness, or graduate skills.
 
+<a id="death-and-spawn"></a>
 ## Death & spawn — what survives
 
 Source: [`gielinor/meta/death-and-spawn.md`](../gielinor/meta/death-and-spawn.md).

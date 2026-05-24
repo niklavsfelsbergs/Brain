@@ -1,0 +1,1876 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Brain — technical documentation</title>
+<style>
+  :root {
+    --bg:#11130f; --panel:#181b14; --ink:#e6e3d6; --mut:#9a9684; --line:#2c3024;
+    --gold:#d6b24a; --gold-dim:#8c7530; --link:#cdb86a; --code-bg:#0e100b; --accent:#3f7a6a;
+    --warn:#caa24a;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .layout { display:grid; grid-template-columns:280px 1fr; min-height:100vh; }
+  /* Sidebar */
+  nav {
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    background:var(--panel); border-right:1px solid var(--line); padding:26px 18px;
+  }
+  nav .brand { font-weight:700; letter-spacing:.04em; color:var(--gold); font-size:15px;
+    margin:0 0 4px 8px; text-transform:uppercase; }
+  nav .sub { color:var(--mut); font-size:12px; margin:0 0 18px 8px; }
+  nav a {
+    display:block; padding:7px 10px; margin:2px 0; border-radius:6px;
+    color:var(--ink); text-decoration:none; font-size:14px; border-left:2px solid transparent;
+  }
+  nav a:hover { background:rgba(214,178,74,.08); }
+  nav a.active { background:rgba(214,178,74,.13); border-left-color:var(--gold); color:var(--gold); }
+  /* Content */
+  main { padding:48px 56px 120px; max-width:920px; }
+  .doc-page { padding-bottom:40px; margin-bottom:40px; border-bottom:1px dashed var(--line); }
+  .doc-page:last-child { border-bottom:none; }
+  h1,h2,h3,h4 { line-height:1.25; font-weight:650; scroll-margin-top:24px; }
+  h1 { font-size:30px; color:var(--gold); margin:.2em 0 .6em; }
+  h2 { font-size:22px; margin:1.7em 0 .5em; padding-bottom:.25em; border-bottom:1px solid var(--line); }
+  h3 { font-size:17px; margin:1.4em 0 .4em; color:#d9d3bf; }
+  h4 { font-size:15px; margin:1.2em 0 .3em; color:var(--mut); text-transform:uppercase; letter-spacing:.03em; }
+  p { margin:.7em 0; }
+  a { color:var(--link); text-decoration:none; border-bottom:1px solid rgba(205,184,106,.25); }
+  a:hover { border-bottom-color:var(--link); }
+  strong { color:#f1eedd; }
+  ul,ol { padding-left:1.4em; }
+  li { margin:.25em 0; }
+  hr { border:none; border-top:1px solid var(--line); margin:2em 0; }
+  code { background:var(--code-bg); border:1px solid var(--line); border-radius:4px;
+    padding:.1em .4em; font:13.5px/1.4 "SFMono-Regular",Consolas,"Liberation Mono",monospace; color:#d8cfa6; }
+  pre { background:var(--code-bg); border:1px solid var(--line); border-radius:8px;
+    padding:16px 18px; overflow-x:auto; }
+  pre code { background:none; border:none; padding:0; color:#cfd6c4; font-size:13px; line-height:1.5; }
+  blockquote { margin:1.2em 0; padding:.6em 1.1em; background:rgba(63,122,106,.08);
+    border-left:3px solid var(--accent); border-radius:0 6px 6px 0; color:#cdd6c8; }
+  blockquote strong { color:var(--warn); }
+  table { border-collapse:collapse; width:100%; margin:1.1em 0; font-size:14px; display:block; overflow-x:auto; }
+  th,td { border:1px solid var(--line); padding:8px 11px; text-align:left; vertical-align:top; }
+  th { background:rgba(214,178,74,.08); color:var(--gold); font-weight:600; }
+  tr:nth-child(even) td { background:rgba(255,255,255,.015); }
+  .topbar { display:none; }
+  @media (max-width:820px) {
+    .layout { grid-template-columns:1fr; }
+    nav { position:static; height:auto; border-right:none; border-bottom:1px solid var(--line); }
+    main { padding:28px 22px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <p class="brand">The Brain</p>
+    <p class="sub">technical documentation</p>
+    <a href="#page-readme" data-target="page-readme">Index</a>
+<a href="#page-01-orientation" data-target="page-01-orientation">01 · Orientation</a>
+<a href="#page-02-glossary" data-target="page-02-glossary">02 · Glossary</a>
+<a href="#page-03-layers-and-memory" data-target="page-03-layers-and-memory">03 · Layers & memory</a>
+<a href="#page-04-write-discipline" data-target="page-04-write-discipline">04 · Write discipline</a>
+<a href="#page-05-actors-and-modes" data-target="page-05-actors-and-modes">05 · Actors & modes</a>
+<a href="#page-06-rituals" data-target="page-06-rituals">06 · Rituals</a>
+<a href="#page-07-communication-and-coordination" data-target="page-07-communication-and-coordination">07 · Communication</a>
+<a href="#page-08-enforcement-and-hooks" data-target="page-08-enforcement-and-hooks">08 · Enforcement & hooks</a>
+<a href="#page-09-cockpit" data-target="page-09-cockpit">09 · The cockpit</a>
+<a href="#page-10-dev-brain" data-target="page-10-dev-brain">10 · The dev brain</a>
+<a href="#page-11-appendix" data-target="page-11-appendix">11 · Appendix</a>
+  </nav>
+  <main>
+    <section id="page-readme" class="doc-page">
+<h1 id="the-brain-technical-documentation">The Brain — technical documentation</h1>
+<blockquote>
+<p>A navigable map of how this system is built: the cognitive layers, the actors that
+operate them, the modes and roles that scope behaviour, the rituals that drive a
+session, the hooks that enforce the rules, and the cockpit you drive it all from.</p>
+</blockquote>
+<p>This folder is the <strong>front door</strong>. The system already self-documents densely — every
+layer carries an <code>_about.md</code>, the rulebook lives in <a href="../gielinor/meta/"><code>gielinor/meta/</code></a>,
+and each ritual has its own file under <a href="../gielinor/spellbook/rituals/"><code>gielinor/spellbook/rituals/</code></a>.
+What was missing was a single coherent structure tying those scattered authoritative
+files together. That is what <code>docs/</code> is.</p>
+<h2 id="reading-principle-this-is-a-map-not-a-copy">Reading principle — this is a map, not a copy</h2>
+<p>These pages <strong>describe and link</strong>; they are not a second copy of the rulebook. Where a
+detail is authoritative somewhere else, the page links there and summarises rather than
+restating it verbatim. This keeps the docs from drifting when a ritual or rule changes:
+the source file is the truth; this is the index over it.</p>
+<p><strong>If a page and its linked source disagree, the source wins</strong> — and that is a bug in this
+doc worth fixing.</p>
+<h2 id="where-to-start">Where to start</h2>
+<p>New to the system? Read in this order:</p>
+<ol>
+<li><strong><a href="#page-01-orientation">01 — Orientation</a></strong> — what the brain is, the two-brain split, the design invariants, and the six architectural guarantees.</li>
+<li><strong><a href="#page-02-glossary">02 — Glossary</a></strong> — the RuneScape→technical decoder. Almost nothing below parses without it; skim it first.</li>
+<li><strong><a href="#page-03-layers-and-memory">03 — Layers &amp; memory</a></strong> — the data model: the cognitive layers and the memory types they map to.</li>
+<li><strong><a href="#page-04-write-discipline">04 — Write discipline</a></strong> — how knowledge enters (drafts), gets approved (confirmed), and is never destroyed (archive).</li>
+<li><strong><a href="#page-05-actors-and-modes">05 — Actors &amp; modes</a></strong> — who operates the brain (players, Guthix, the wisp), and the modes and roles that scope each session.</li>
+<li><strong><a href="#page-06-rituals">06 — Rituals</a></strong> — the procedures that drive a session: respawn, close, alching, bankstanding, drafts-triage; and what survives a crash or reset.</li>
+<li><strong><a href="#page-07-communication-and-coordination">07 — Communication &amp; coordination</a></strong> — the response protocol, the visualizer sidecars, and how parallel sessions stay out of each other's way.</li>
+<li><strong><a href="#page-08-enforcement-and-hooks">08 — Enforcement &amp; hooks</a></strong> — the hook layer: what's a hard gate vs. what's discipline, and the state files the observability hooks emit.</li>
+<li><strong><a href="#page-09-cockpit">09 — The cockpit</a></strong> — how you actually drive the brain: parallel interactive sessions over a real PTY.</li>
+<li><strong><a href="#page-10-dev-brain">10 — The dev brain</a></strong> — <code>developer-braindead/</code>, the construction log this documentation was written from.</li>
+<li><strong><a href="#page-11-appendix">Appendix</a></strong> — ideas capture, body files, a quick layer-routing reference, and the source cross-reference index.</li>
+</ol>
+<h2 id="the-one-paragraph-version">The one-paragraph version</h2>
+<p>The brain is a personal AI agent whose memory is a structured tree of markdown files,
+organised into RuneScape-themed <strong>cognitive layers</strong>. It operates through <strong>players</strong> —
+coherent characters (Jebrim, Zezima) with their own knowledge and voice — plus <strong>Guthix</strong>,
+a caretaker deity for system-scope work, and a <strong>wisp</strong> for the unscoped state. Knowledge
+enters freely as <strong>drafts</strong> and is promoted to <strong>confirmed</strong> identity only with the
+principal's sign-off; nothing is ever deleted, only archived. <strong>Hooks</strong> enforce the
+non-negotiable lines (no writes to <code>confirmed/</code>, no deletes, sub-agent write boundaries).
+A second tree, <a href="../developer-braindead/"><code>developer-braindead/</code></a>, is the <strong>construction
+log</strong> for building the first — a working notebook, not a cognition. You drive the whole
+fleet from the <strong>cockpit</strong>, a desktop console that runs interactive Claude Code sessions
+over a real terminal.</p>
+<p>Canonical entry points in the codebase: <a href="../CLAUDE.md"><code>CLAUDE.md</code></a> (the brain-root router),
+<a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a> (the main-brain master rulebook), and
+<a href="../developer-braindead/CLAUDE.md"><code>developer-braindead/CLAUDE.md</code></a> (the dev-brain conventions).</p>
+</section>
+
+<section id="page-01-orientation" class="doc-page">
+<h1 id="01-orientation">01 — Orientation</h1>
+<h2 id="what-the-brain-is">What the brain is</h2>
+<p>A <strong>personal AI agent</strong> whose long-term memory is a structured tree of markdown files.
+The agent is not a knowledge vault and not a chatbot with a notes folder — it is modelled
+as an entity with a <em>body</em> (the host, config, scheduling), a <em>brain</em> (the layered markdown
+memory), <em>gates</em> (the hooks that enforce its rules), <em>tools</em> (MCP servers, the shell), and
+a <em>personality</em> expressed through the characters it operates as.</p>
+<p>The memory is organised into <strong>cognitive layers</strong> borrowed from RuneScape terminology —
+<code>bank</code> (semantic memory), <code>quest-log</code> (episodic memory), <code>spellbook</code> (procedural memory),
+<code>inventory</code> (working memory), <code>examine</code> (self-model), and more. The theme is not
+decoration: it gives every kind of content a named home and makes the metaphors
+(alching, bankstanding, respawn) carry real operational meaning. See the
+<a href="#page-02-glossary">Glossary</a> to decode the vocabulary.</p>
+<p>The agent operates through <strong>players</strong> — coherent characters with their own knowledge,
+domain, and voice. Players are not masks worn by the user; they are characters in their
+own right who act on the user's behalf. See <a href="#page-05-actors-and-modes">Actors &amp; modes</a>.</p>
+<p>Authoritative source: <a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a> → <em>What you are</em>.</p>
+<h2 id="the-two-brain-split">The two-brain split</h2>
+<p>The repository houses <strong>two</strong> brain systems. The distinction is fundamental and is the
+first thing the <a href="../CLAUDE.md">brain-root router</a> resolves on every session.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><a href="../gielinor/"><code>gielinor/</code></a></th>
+<th><a href="../developer-braindead/"><code>developer-braindead/</code></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Role</strong></td>
+<td>The <strong>main brain</strong> — the cognitive system the agent <em>is</em></td>
+<td>The <strong>dev brain</strong> — the construction log for <em>building</em> the main brain</td>
+</tr>
+<tr>
+<td><strong>Nature</strong></td>
+<td>A living cognition; players, rituals, identity</td>
+<td>A working notebook; no players, no cognition runs over it</td>
+</tr>
+<tr>
+<td><strong>Actor</strong></td>
+<td>Players / Guthix / wisp</td>
+<td>Braindead (the construction crew)</td>
+</tr>
+<tr>
+<td><strong>Writes to the other?</strong></td>
+<td>Only on explicit principal cue (read), never writes</td>
+<td>Reads and writes <code>gielinor/</code> freely — that's its job</td>
+</tr>
+</tbody>
+</table>
+<p>A session at the repository root <strong>defaults to the main brain</strong>. Dev-brain mode is entered
+only when a message <em>starts with</em> <code>Lets develop gielinor</code> (strict matching, same as player
+address). Returning to the main brain is done by addressing a player at the start of a
+message. Full rules: <a href="../CLAUDE.md"><code>CLAUDE.md</code></a> (root router) and
+<a href="../developer-braindead/CLAUDE.md"><code>developer-braindead/CLAUDE.md</code></a>.</p>
+<p>This documentation was written from the <strong>dev brain</strong> — it is itself a construction
+artifact describing the main brain. See <a href="#page-10-dev-brain">10 — The dev brain</a>.</p>
+<h2 id="the-design-invariants">The design invariants</h2>
+<p>Five principles run through every layer and ritual. If you understand only these, you
+understand the shape of the system.</p>
+<ol>
+<li>
+<p><strong>Agent with a body, not a vault.</strong> The brain has lifetime; behaviour shapes it; the
+   principal shapes the agent. Content has a <em>home</em> by shape, not a dumping ground.</p>
+</li>
+<li>
+<p><strong>Identity is gated.</strong> Anything that defines who the agent thinks <em>it</em> is, who it thinks
+   <em>the user</em> is, or what has been <em>decided</em> about the system requires the principal's
+   sign-off. The agent proposes; the principal approves. See
+   <a href="#page-04-write-discipline">Write discipline</a>.</p>
+</li>
+<li>
+<p><strong>Knowledge enters as drafts, graduates on approval.</strong> Observations flow into the brain
+   freely as <code>drafts/</code>. Promotion to canonical <code>confirmed/</code> knowledge happens only through
+   review (the alching and bankstanding rituals, or <code>/drafts</code>). Draft when in doubt — a
+   rejection is cheap, a missed observation is invisible.</p>
+</li>
+<li>
+<p><strong>Nothing is destroyed.</strong> The agent never deletes content; it <em>moves</em> it into an
+   <code>archive/</code> (superseded) or <code>rejected/</code> (never qualified). A wrong move stays recoverable
+   forever, and patterns in rejections are themselves data. See
+   <a href="#archive-discipline">Archive discipline</a>.</p>
+</li>
+<li>
+<p><strong>The quest-log is for narrative; everything else has a home.</strong> The session story logs
+   itself freely; substantive content (knowledge, methods, self-observations) must be
+   <em>routed</em> to its proper layer rather than left to drift into the log. See
+   <a href="#routing">layer-routing</a>.</p>
+</li>
+</ol>
+<h2 id="the-six-architectural-guarantees">The six architectural guarantees</h2>
+<p>Five of the invariants above are <em>philosophy</em>; these six lines are <strong>enforced by hooks</strong> —
+the agent cannot bypass them. They are the difference between discipline (which can slip)
+and a gate (which cannot).</p>
+<ol>
+<li><strong>No writes to any <code>confirmed/</code> path.</strong> Identity is gated at the filesystem level.</li>
+<li><strong>No deletes — ever.</strong> Forbidden commands are blocked; the agent moves to <code>archive/</code>.</li>
+<li><strong>Dwarf write boundary.</strong> Dwarf sub-agents have a restricted, task-local write surface.</li>
+<li><strong>Gnome write boundary.</strong> Gnome sub-agents are restricted to the housekeeping surface.</li>
+<li><strong>Penguin write boundary.</strong> Penguin sub-agents are restricted to research output.</li>
+<li><strong>No sub-spawning from a sub-agent.</strong> Only the principal spawns dwarves/gnomes/penguins.</li>
+</ol>
+<p>These are implemented by the enforcement hooks in
+<a href="../gielinor/.claude/hooks/"><code>gielinor/.claude/hooks/</code></a> and wired in <code>settings.json</code>. The
+full mechanism — including the important detail that role hooks (3–5) are <em>inert for a
+principal session</em> and the [S085] fix that made the guarantees real gates for brain-root
+sessions rather than mere prompt discipline — is in
+<a href="#page-08-enforcement-and-hooks">08 — Enforcement &amp; hooks</a>.</p>
+<p>Authoritative source for the guarantees: <a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a> →
+<em>The six architectural guarantees</em>.</p>
+<hr />
+<p>Next: <strong><a href="#page-02-glossary">02 — Glossary</a></strong> — decode the vocabulary before going deeper.</p>
+</section>
+
+<section id="page-02-glossary" class="doc-page">
+<h1 id="02-glossary">02 — Glossary</h1>
+<p>The system speaks RuneScape. The theme is load-bearing — each term names a real layer,
+ritual, or actor. This page is the decoder; skim it before reading anything else.</p>
+<h2 id="the-world">The world</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it actually is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gielinor</strong></td>
+<td>The main brain — the cognitive system the agent <em>is</em>. The world the agent inhabits. (<a href="../gielinor/"><code>gielinor/</code></a>)</td>
+</tr>
+<tr>
+<td><strong>The dev brain / Braindead</strong></td>
+<td><code>developer-braindead/</code>, the construction log for building the main brain, and the actor who works it.</td>
+</tr>
+<tr>
+<td><strong>Respawn</strong></td>
+<td>Session start. The load ritual that reads durable identity and surfaces in-flight work.</td>
+</tr>
+<tr>
+<td><strong>Death</strong></td>
+<td>Session end — either a crash (interrupted) or a deliberate reset. Governs what survives.</td>
+</tr>
+<tr>
+<td><strong>Ascension</strong></td>
+<td>Future: migrating the brain to a new host/substrate. Not yet built.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-cognitive-layers-memory">The cognitive layers (memory)</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Memory type</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bank</strong></td>
+<td>Semantic</td>
+<td>What a character <em>knows</em> — facts about projects, systems, stakeholders, data sources.</td>
+</tr>
+<tr>
+<td><strong>Quest-log</strong></td>
+<td>Episodic</td>
+<td>What <em>happened</em> — the per-session narrative, turn by turn.</td>
+</tr>
+<tr>
+<td><strong>Spellbook</strong></td>
+<td>Procedural</td>
+<td><em>How</em> to do a class of work — rituals (fixed) and skills (per-character methods).</td>
+</tr>
+<tr>
+<td><strong>Inventory</strong></td>
+<td>Working</td>
+<td>What's <em>carried now</em> — volatile session state; lost on reset.</td>
+</tr>
+<tr>
+<td><strong>Examine</strong></td>
+<td>Self-model</td>
+<td>What a character/the agent knows about <em>itself</em>.</td>
+</tr>
+<tr>
+<td><strong>Keepsake</strong></td>
+<td>Pinned priority</td>
+<td>Always-surface pins — load-bearing deadlines, commitments, focus.</td>
+</tr>
+<tr>
+<td><strong>Lorebook</strong></td>
+<td>Self-improvement log</td>
+<td>Decisions the agent made about <em>how it operates</em> (<code>D-NNN</code>).</td>
+</tr>
+<tr>
+<td><strong>Research</strong></td>
+<td>Source material</td>
+<td>Full external-research writeups; bank notes are <em>picked</em> from here.</td>
+</tr>
+<tr>
+<td><strong>niksis8 / niksis8_character</strong></td>
+<td>User-model</td>
+<td>What the agent knows about Niklavs — universally, or through a player's relationship-lens.</td>
+</tr>
+<tr>
+<td><strong>Meta</strong></td>
+<td>Rulebook</td>
+<td>The in-force operating rules. User-controlled. (<a href="../gielinor/meta/"><code>gielinor/meta/</code></a>)</td>
+</tr>
+</tbody>
+</table>
+<p>Detail: <a href="#page-03-layers-and-memory">03 — Layers &amp; memory</a>.</p>
+<h2 id="the-rituals-procedures">The rituals (procedures)</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Alching</strong></td>
+<td>Per-player <em>tending</em> — review drafts, promote knowledge, archive stale notes, for <strong>one</strong> player's own layers. (From "high alchemy" — turning items into value.)</td>
+</tr>
+<tr>
+<td><strong>Bankstanding</strong></td>
+<td>System-level cross-cutting tending — triage the inbox, graduate cross-player patterns to globals, log behavioural changes. Voiced as Guthix.</td>
+</tr>
+<tr>
+<td><strong>Drafts-triage</strong></td>
+<td>A lightweight cut of alching's promotion gate. The <code>/drafts</code> command.</td>
+</tr>
+<tr>
+<td><strong>Close-session</strong></td>
+<td>The wrap-up ritual — reconcile, persist resume state, harvest observations, commit.</td>
+</tr>
+<tr>
+<td><strong>Mini-respawn</strong></td>
+<td>The partial reload that runs when the active actor switches mid-session.</td>
+</tr>
+</tbody>
+</table>
+<p>Detail: <a href="#page-06-rituals">06 — Rituals</a>.</p>
+<h2 id="the-actors">The actors</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Player</strong></td>
+<td>A coherent character the agent operates as (Jebrim, Zezima). Own knowledge, domain, voice.</td>
+</tr>
+<tr>
+<td><strong>Guthix</strong></td>
+<td>The brain's caretaker <em>deity</em> — the system-scope actor for consultation and bankstanding. Not a player.</td>
+</tr>
+<tr>
+<td><strong>The wisp</strong></td>
+<td>The unscoped state — the actor of a session that has had no prompt yet. Narrow by design.</td>
+</tr>
+<tr>
+<td><strong>Principal</strong></td>
+<td>The interactive role with full capability — introspects, proposes identity changes, spawns sub-agents.</td>
+</tr>
+<tr>
+<td><strong>Dwarf</strong></td>
+<td>A sub-agent for repo-bound functional work. Restricted write surface.</td>
+</tr>
+<tr>
+<td><strong>Gnome</strong></td>
+<td>A sub-agent for structural housekeeping (running rituals). System-namespace.</td>
+</tr>
+<tr>
+<td><strong>Penguin</strong></td>
+<td>A sub-agent for external research. (RuneScape lore: penguins are intelligence operatives.)</td>
+</tr>
+</tbody>
+</table>
+<p>Detail: <a href="#page-05-actors-and-modes">05 — Actors &amp; modes</a>.</p>
+<h2 id="the-machinery">The machinery</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cockpit</strong></td>
+<td>The desktop console you drive the fleet from — interactive Claude Code over a real PTY. (<a href="../cockpit/"><code>cockpit/</code></a>)</td>
+</tr>
+<tr>
+<td><strong>Switchboard</strong></td>
+<td>The earlier name and still the directory (<a href="../switchboard/"><code>switchboard/</code></a>) where hooks write fleet state. The cockpit reads it.</td>
+</tr>
+<tr>
+<td><strong>Hooks</strong></td>
+<td>Python scripts fired by Claude Code on tool events — either <em>enforcement</em> gates or <em>observability</em> emitters.</td>
+</tr>
+<tr>
+<td><strong>Intent file</strong></td>
+<td>A per-session sidecar (<code>.claude/intent/&lt;actor&gt;-&lt;sid8&gt;.txt</code>) holding the actor's in-voice "what I'm doing" line for the visualizer.</td>
+</tr>
+<tr>
+<td><strong>Comms / <code>active.md</code></strong></td>
+<td>The append-only log where parallel sessions announce work and avoid collisions.</td>
+</tr>
+<tr>
+<td><strong>sid8</strong></td>
+<td>The first 8 characters of <code>CLAUDE_CODE_SESSION_ID</code> — the per-session anchor used everywhere for attribution.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="id-and-filename-conventions">ID and filename conventions</h2>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SNNN</code></td>
+<td>A session number (e.g. <code>S084</code>). Quest-log files: <code>SNNN_&lt;sid8&gt;_&lt;slug&gt;.md</code>.</td>
+</tr>
+<tr>
+<td><code>D-NNN</code></td>
+<td>A decision — <code>lorebook/</code> in the main brain, <code>bank/decisions/</code> in the dev brain.</td>
+</tr>
+<tr>
+<td><code>A-NNN / Q-NNN / R-NNN / I-NNN</code></td>
+<td>Dev-brain entry IDs: assumption / open-question / research / idea.</td>
+</tr>
+<tr>
+<td><code>B-NNN / G-NNN</code></td>
+<td>Guthix-scope: bankstanding trace / consultation note.</td>
+</tr>
+<tr>
+<td><code>__&lt;sid8&gt;</code> suffix</td>
+<td>Disambiguates parallel-session files (resume files, quest-logs) — see [D-024].</td>
+</tr>
+</tbody>
+</table>
+<p>Full naming reference: <a href="#naming">04 — Write discipline</a>.</p>
+<hr />
+<p>Next: <strong><a href="#page-03-layers-and-memory">03 — Layers &amp; memory</a></strong> — the data model in detail.</p>
+</section>
+
+<section id="page-03-layers-and-memory" class="doc-page">
+<h1 id="03-layers-memory">03 — Layers &amp; memory</h1>
+<p>The brain's memory is differentiated by <strong>what it stores</strong>, not when it's written. Each
+layer maps to a kind of memory and carries an <code>_about.md</code> stating its job and conventions —
+<strong>read the <code>_about.md</code> on first access to any layer.</strong> This page is the map of the layers;
+the write rules that govern them are in <a href="#page-04-write-discipline">04 — Write discipline</a>.</p>
+<h2 id="global-vs-per-player">Global vs. per-player</h2>
+<p>Layers exist at two scopes:</p>
+<ul>
+<li><strong>Global layers</strong> apply to the agent as a whole, regardless of which player is active.</li>
+<li><strong>Per-player layers</strong> belong to one character. Each player (<code>gielinor/players/&lt;name&gt;/</code>)
+  carries a full set; players don't read each other's per-player layers during normal work.</li>
+</ul>
+<p>A third scope, <strong>deity layers</strong> (<code>gielinor/deities/guthix/</code>), belongs to Guthix — bank,
+quest-log, inventory, keepsake, and proposals at system scope.</p>
+<h2 id="global-layers">Global layers</h2>
+<p>Source: <a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a> → <em>Layer index</em>.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Path</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>examine</strong></td>
+<td><a href="../gielinor/examine/"><code>gielinor/examine/</code></a></td>
+<td>The agent's self-model at the system level.</td>
+</tr>
+<tr>
+<td><strong>niksis8</strong></td>
+<td><a href="../gielinor/niksis8/"><code>gielinor/niksis8/</code></a></td>
+<td>What the agent knows about Niklavs universally.</td>
+</tr>
+<tr>
+<td><strong>keepsake</strong></td>
+<td><a href="../gielinor/keepsake/"><code>gielinor/keepsake/</code></a></td>
+<td>Always-surface pins (cross-player).</td>
+</tr>
+<tr>
+<td><strong>lorebook</strong></td>
+<td><a href="../gielinor/lorebook/"><code>gielinor/lorebook/</code></a></td>
+<td>The self-improvement log — decisions about how the agent operates (<code>D-NNN</code>).</td>
+</tr>
+<tr>
+<td><strong>spellbook</strong></td>
+<td><a href="../gielinor/spellbook/"><code>gielinor/spellbook/</code></a></td>
+<td>Rituals (fixed procedures) and cross-player skills.</td>
+</tr>
+<tr>
+<td><strong>meta</strong></td>
+<td><a href="../gielinor/meta/"><code>gielinor/meta/</code></a></td>
+<td>The current rulebook. User-controlled.</td>
+</tr>
+<tr>
+<td><strong>players</strong></td>
+<td><a href="../gielinor/players/"><code>gielinor/players/</code></a></td>
+<td>The characters the agent embodies, plus an <code>inbox/</code> for unscoped captures.</td>
+</tr>
+<tr>
+<td><strong>deities</strong></td>
+<td><a href="../gielinor/deities/"><code>gielinor/deities/</code></a></td>
+<td>System-scope actors (Guthix).</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Construction history note.</strong> The lorebook is the agent's log of changes to <em>itself</em>.
+The history of <em>building</em> the brain lives in the dev brain, not here — see
+<a href="#page-10-dev-brain">10 — The dev brain</a>.</p>
+</blockquote>
+<h2 id="per-player-layers">Per-player layers</h2>
+<p>Source: <a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a> → <em>Layer index</em> (per-player), and
+<a href="../gielinor/players/_about.md"><code>gielinor/players/_about.md</code></a>.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Memory type</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>bank</strong></td>
+<td>Semantic</td>
+<td>What the character knows. Notes are gated behind drafts → alching.</td>
+</tr>
+<tr>
+<td><strong>research</strong></td>
+<td>Source material</td>
+<td>Full research writeups (penguin- or principal-authored). Bank notes are <em>picked</em> from here.</td>
+</tr>
+<tr>
+<td><strong>quest-log</strong></td>
+<td>Episodic</td>
+<td>Per-session narrative — <code>in-progress/</code>, <code>completed/</code>, <code>archive/</code>.</td>
+</tr>
+<tr>
+<td><strong>spellbook</strong></td>
+<td>Procedural</td>
+<td>How <em>this</em> character does things — skills (gated behind drafts).</td>
+</tr>
+<tr>
+<td><strong>inventory</strong></td>
+<td>Working</td>
+<td>What's carried now. Volatile; lost on reset.</td>
+</tr>
+<tr>
+<td><strong>examine</strong></td>
+<td>Self-model</td>
+<td>This character's self-knowledge.</td>
+</tr>
+<tr>
+<td><strong>niksis8_character</strong></td>
+<td>User-model</td>
+<td>What this player knows about Niklavs through their relationship.</td>
+</tr>
+<tr>
+<td><strong>keepsake</strong></td>
+<td>Pinned priority</td>
+<td>This character's always-surface pins.</td>
+</tr>
+</tbody>
+</table>
+<p>The current roster is in <a href="../gielinor/players/"><code>gielinor/players/</code></a> — <strong>Jebrim</strong> (work /
+analytics) and <strong>Zezima</strong> (personal / reflection). Their domains and voices are described
+in <a href="#page-05-actors-and-modes">05 — Actors &amp; modes</a>.</p>
+<h2 id="the-memory-type-framing">The memory-type framing</h2>
+<p>The layer names map onto a cognitive-memory model:</p>
+<pre><code>                 ┌─ semantic   → bank        (&quot;what I know&quot;)
+   long-term ────┼─ episodic   → quest-log   (&quot;what happened&quot;)
+                 └─ procedural → spellbook   (&quot;how I do things&quot;)
+
+   working      → inventory                  (&quot;what I'm holding now&quot;, volatile)
+
+                 ┌─ self       → examine      (&quot;who I think I am&quot;)
+   identity  ────┼─ user       → niksis8(_character) (&quot;who I think you are&quot;)
+                 └─ decisions  → lorebook     (&quot;what I've decided about myself&quot;)
+
+   priority     → keepsake                    (&quot;what must always surface&quot;)
+</code></pre>
+<p>The split that matters most operationally: <strong>identity layers are gated</strong> (examine,
+niksis8, niksis8_character, lorebook, keepsake) while <strong>working and episodic layers are
+free</strong> (inventory, quest-log). Knowledge (bank, skills) sits in between — written freely as
+drafts, promoted under review. The next page makes this precise.</p>
+<h2 id="internal-structure-of-a-gated-layer">Internal structure of a gated layer</h2>
+<p>A gated identity layer keeps four sub-folders with distinct meanings:</p>
+<pre><code>examine/
+  drafts/      # proposals awaiting review
+  confirmed/   # approved, currently in force   ← hook-protected, never written by the agent
+  archive/     # mirrors confirmed/ — &quot;this used to be true; it isn't anymore&quot;
+  rejected/    # mirrors drafts/   — &quot;this was proposed; it never qualified&quot;
+</code></pre>
+<p><code>confirmed/</code> may also carry a <code>current.md</code> executive summary alongside the atomic entries.
+The respawn ritual reads everything in <code>confirmed/</code>; it does <strong>not</strong> read <code>drafts/</code>. See
+<a href="#page-04-write-discipline">04 — Write discipline</a> for the full flow and
+<a href="#archive-discipline">archive-discipline</a> for the archive/rejected
+distinction.</p>
+<hr />
+<p>Next: <strong><a href="#page-04-write-discipline">04 — Write discipline</a></strong> — how content enters, graduates,
+and is retired.</p>
+</section>
+
+<section id="page-04-write-discipline" class="doc-page">
+<h1 id="04-write-discipline">04 — Write discipline</h1>
+<p>How content enters the brain, how it graduates to canonical knowledge, how it is retired,
+and where each shape of content belongs. This is the operational heart of the system.</p>
+<p>Authoritative sources: <a href="../gielinor/meta/write-rules.md"><code>gielinor/meta/write-rules.md</code></a>,
+<a href="../gielinor/meta/drafts-mechanics.md"><code>gielinor/meta/drafts-mechanics.md</code></a>,
+<a href="../gielinor/meta/archive-discipline.md"><code>gielinor/meta/archive-discipline.md</code></a>,
+<a href="../gielinor/meta/layer-routing.md"><code>gielinor/meta/layer-routing.md</code></a>.</p>
+<h2 id="the-principle">The principle</h2>
+<blockquote>
+<p>Anything that defines who the agent thinks I am, who the agent (or a player) thinks it
+is, or what has been decided about the system requires my sign-off. Knowledge accumulates
+via drafts that I review.</p>
+</blockquote>
+<p>Observations enter freely as <strong>drafts</strong>. Promotion to canonical knowledge — identity,
+character, decisions, and per-player bank — is <strong>gated</strong> behind principal approval.</p>
+<h2 id="the-per-layer-write-table">The per-layer write table</h2>
+<p>Each layer falls into one of three disciplines. Full table in
+<a href="../gielinor/meta/write-rules.md"><code>write-rules.md</code></a>; summarised:</p>
+<table>
+<thead>
+<tr>
+<th>Discipline</th>
+<th>Meaning</th>
+<th>Layers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Auto-write</strong></td>
+<td>The agent writes directly, no gate</td>
+<td><code>quest-log/</code>, <code>inventory/</code>, <code>research/</code></td>
+</tr>
+<tr>
+<td><strong>Draft-then-approve</strong></td>
+<td>Agent writes a draft; principal promotes it</td>
+<td><code>bank/notes</code>, <code>spellbook/skills</code>, <code>examine/</code>, <code>niksis8(_character)/</code>, <code>lorebook/</code>, <code>keepsake/</code> (via proposals)</td>
+</tr>
+<tr>
+<td><strong>User-only</strong></td>
+<td>The principal edits directly</td>
+<td><code>meta/*.md</code>, <code>spellbook/rituals/*.md</code>, <code>keepsake/current.md</code>, confirmed entries</td>
+</tr>
+</tbody>
+</table>
+<h3 id="enforced-vs-guided">Enforced vs. guided</h3>
+<p>A critical distinction (see <a href="#page-08-enforcement-and-hooks">08 — Enforcement &amp; hooks</a>):</p>
+<ul>
+<li><strong>Hooks enforce</strong> the hardest lines: no writes to any <code>confirmed/</code> path, no deletes, the
+  sub-agent write boundaries, no sub-spawning.</li>
+<li><strong>CLAUDE.md guides</strong> the rest: the draft-then-approve flow, the <code>bank/</code> and <code>skills/</code>
+  draft gates, treating <code>meta/</code> as user-controlled. Hooks can't tell a proposed promotion
+  from a routine edit, so the agent must hold these itself.</li>
+</ul>
+<h3 id="user-only-with-explicit-permission">"User-only" with explicit permission</h3>
+<p>The user-only column is a <strong>default, not a prohibition.</strong> When the principal explicitly
+authorises a write to <code>keepsake/current.md</code>, <code>meta/*.md</code>, or a ritual file ("yes, write
+it" / "go ahead, apply the fix"), the agent makes the write directly. Ambient agreement
+("sounds good") does <strong>not</strong> count — the check is explicit. The hook-enforced lines remain
+non-overridable regardless. Founding decision: [D-017].</p>
+<h2 id="the-drafts-confirmed-lifecycle">The drafts → confirmed lifecycle</h2>
+<p>Source: <a href="../gielinor/meta/drafts-mechanics.md"><code>drafts-mechanics.md</code></a>.</p>
+<pre><code>  observe ──▶ drafts/ ──▶ review ──┬──▶ confirmed/   (approved)
+                                    ├──▶ confirmed/   (edited, then approved)
+                                    └──▶ rejected/    (turned down, with a note)
+</code></pre>
+<ol>
+<li><strong>Capture.</strong> The agent writes an observation into <code>drafts/</code> whenever it notices
+   something worth recording. Bias: <strong>draft when in doubt.</strong></li>
+<li><strong>Review.</strong> The principal surfaces pending drafts via <code>/drafts</code>, alching, or
+   bankstanding. (Drafts are <strong>not</strong> pushed at session start.)</li>
+<li><strong>Decision.</strong> Per draft: approve → <code>confirmed/</code>; reject → <code>rejected/</code> (kept, not
+   deleted — patterns in rejections matter); or edit-and-approve.</li>
+</ol>
+<p><strong>The observation rule.</strong> Drafts must be observation-backed, not aspirational. Not <em>"I
+should be more careful about deletes"</em> but <em>"2026-05-12: I proposed deleting the wrong
+file because I matched on filename without checking path; confirm full path first."</em>
+Specificity is what makes self-knowledge actionable.</p>
+<p>Equivalent flows for the non-<code>drafts/</code> layers: <code>keepsake/proposals/</code> → pinned into
+<code>current.md</code>; <code>lorebook/drafts/</code> → <code>lorebook/confirmed/D-NNN_*.md</code>.</p>
+<p><a id="archive-discipline"></a></p>
+<h2 id="archive-discipline-nothing-is-destroyed">Archive discipline — nothing is destroyed</h2>
+<p>Source: <a href="../gielinor/meta/archive-discipline.md"><code>archive-discipline.md</code></a>. Enforced by the
+<a href="../gielinor/.claude/hooks/block-deletes.py"><code>block-deletes.py</code></a> hook.</p>
+<p>The agent <strong>never deletes; it moves.</strong> Each layer has an <code>archive/</code> that mirrors the
+structure of its active content — a file at <code>bank/notes/x/y/z.md</code> archives to
+<code>bank/archive/notes/x/y/z.md</code>, preserving the relative path. Two histories are kept, with
+different meanings:</p>
+<ul>
+<li><strong><code>archive/</code></strong> = "this used to be true; it isn't anymore." (Mirrors <code>confirmed/</code>.)</li>
+<li><strong><code>rejected/</code></strong> = "this was proposed; it never qualified." (Mirrors <code>drafts/</code>.)</li>
+</ul>
+<p>Why: recoverability (a wrong move is reversible forever), pattern memory (rejections reveal
+where the agent's model drifts), and trust (the principal can authorise aggressive
+reorganisation because it is never destructive). Filenames stay unique in their
+destination; on collision, append a timestamp — never overwrite.</p>
+<p><a id="routing"></a></p>
+<h2 id="layer-routing-what-content-lands-where">Layer routing — what content lands where</h2>
+<p>The quest-log is the path of least resistance (auto-write, no gate), so content drifts
+there unless actively routed. The routing question is always: <strong>what shape is this?</strong>
+Full table in <a href="../gielinor/meta/layer-routing.md"><code>layer-routing.md</code></a>; the high-frequency
+rows:</p>
+<table>
+<thead>
+<tr>
+<th>If the content is…</th>
+<th>…it lands in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Narrative of what happened this session</td>
+<td><code>quest-log/in-progress/SNNN_&lt;sid8&gt;_&lt;slug&gt;.md</code></td>
+</tr>
+<tr>
+<td>Resume state ("where we are / next step")</td>
+<td><code>inventory/&lt;quest-slug&gt;-resume__&lt;sid8&gt;.md</code></td>
+</tr>
+<tr>
+<td>Knowledge about a thing (mart, query, stakeholder)</td>
+<td><code>bank/drafts/notes/</code> → alching → <code>bank/notes/</code></td>
+</tr>
+<tr>
+<td>A full research writeup with sources</td>
+<td><code>research/&lt;date&gt;-&lt;slug&gt;.md</code>; pick into <code>bank/</code> during alching</td>
+</tr>
+<tr>
+<td>A reusable method / workflow</td>
+<td><code>spellbook/drafts/skills/</code> → alching → <code>spellbook/skills/</code></td>
+</tr>
+<tr>
+<td>Self-observation about a player</td>
+<td><code>examine/drafts/</code> → approve → <code>confirmed/</code></td>
+</tr>
+<tr>
+<td>An observation about Niklavs</td>
+<td><code>niksis8(_character)/drafts/</code> → approve → <code>confirmed/</code></td>
+</tr>
+<tr>
+<td>A load-bearing deadline/commitment</td>
+<td><code>keepsake/proposals/</code> → pin to <code>current.md</code></td>
+</tr>
+<tr>
+<td>A decision about how the agent operates</td>
+<td><code>lorebook/drafts/</code> → <code>lorebook/confirmed/D-NNN_*.md</code></td>
+</tr>
+<tr>
+<td>Construction history (dev-brain only)</td>
+<td><code>developer-braindead/bank/decisions/D-NNN_*.md</code></td>
+</tr>
+<tr>
+<td>A pre-everything idea (<code>note this idea:</code>)</td>
+<td><code>brain/ideas/YYYY-MM-DD-&lt;actor&gt;-&lt;slug&gt;.md</code></td>
+</tr>
+</tbody>
+</table>
+<p>Cross-cutting subtleties worth internalising: <strong>research vs. bank</strong> (the 2,000-word writeup
+is research; the four load-bearing sentences picked from it are the bank note);
+<strong>methodology vs. domain knowledge</strong> ("how to decompose moving-target work" is a <em>skill</em>;
+"the EU Tender architecture" is a <em>bank note</em>). When genuinely ambiguous — <strong>ask</strong>; a
+wrong-layer write costs a cleanup move later (and per archive discipline, never a delete).</p>
+<h2 id="ritual-write-reach">Ritual write-reach</h2>
+<p>Beyond the per-layer discipline, each ritual can only touch <em>certain layers at all</em>. This
+matrix (from <a href="../gielinor/meta/write-rules.md"><code>write-rules.md</code></a> → <em>Ritual write-reach</em>) is
+covered per-ritual in <a href="#page-06-rituals">06 — Rituals</a>, but in brief: <strong>alching</strong> writes only
+the active player's layers; <strong>bankstanding</strong> writes only globals (never per-player);
+<strong>consultation</strong> writes only Guthix's own deity layers; <strong>close-session</strong> writes drafts /
+quest-log / inventory / inbox but never promotes to confirmed.</p>
+<p><a id="naming"></a></p>
+<h2 id="file-naming-conventions">File &amp; naming conventions</h2>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Where</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SNNN_&lt;sid8&gt;_&lt;slug&gt;.md</code></td>
+<td><code>quest-log/in-progress/</code></td>
+<td>A session's narrative. <code>sid8</code> disambiguates parallel sessions ([D-024]).</td>
+</tr>
+<tr>
+<td><code>&lt;quest-slug&gt;-resume__&lt;sid8&gt;.md</code></td>
+<td><code>inventory/</code></td>
+<td>Resume state for a quest. Legacy un-suffixed names remain readable.</td>
+</tr>
+<tr>
+<td><code>YYYY-MM-DD-&lt;slug&gt;.md</code></td>
+<td><code>drafts/</code>, <code>research/</code></td>
+<td>Date prefix = when the observation/research happened.</td>
+</tr>
+<tr>
+<td><code>D-NNN_&lt;slug&gt;.md</code></td>
+<td><code>lorebook/confirmed/</code>, dev <code>bank/decisions/</code></td>
+<td>A decision. IDs are stable and never reused.</td>
+</tr>
+<tr>
+<td><code>YYYY-MM-DD-&lt;actor&gt;-&lt;slug&gt;.md</code></td>
+<td><code>brain/ideas/</code></td>
+<td>A captured idea, indexed by the actor at capture time.</td>
+</tr>
+</tbody>
+</table>
+<p><code>sid8</code> = first 8 chars of <code>CLAUDE_CODE_SESSION_ID</code>. It anchors per-session files, intent
+files, status records, and parallel-session disambiguation throughout the system.</p>
+<hr />
+<p>Next: <strong><a href="#page-05-actors-and-modes">05 — Actors &amp; modes</a></strong> — who operates these layers, and
+the modes and roles that scope each session.</p>
+</section>
+
+<section id="page-05-actors-and-modes" class="doc-page">
+<h1 id="05-actors-modes">05 — Actors &amp; modes</h1>
+<p>Three orthogonal axes describe any moment of operation:</p>
+<ul>
+<li><strong>Actor</strong> — <em>who</em> is speaking (which player, Guthix, the wisp, Braindead).</li>
+<li><strong>Session mode</strong> — <em>what kind</em> of session this is (player / unscoped / consultation / alching / bankstanding).</li>
+<li><strong>Role</strong> — <em>which side</em> of the invocation (principal, or sub-agent: dwarf / gnome / penguin).</li>
+</ul>
+<p>Authoritative sources: <a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a> → <em>Player invocation by
+address</em>; <a href="../gielinor/meta/modes.md"><code>gielinor/meta/modes.md</code></a>;
+<a href="../gielinor/meta/guthix.md"><code>gielinor/meta/guthix.md</code></a>.</p>
+<h2 id="the-actor-model">The actor model</h2>
+<table>
+<thead>
+<tr>
+<th>Actor</th>
+<th>What it is</th>
+<th>Domain / voice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Jebrim</strong></td>
+<td>Player</td>
+<td>Work — BI / ETL / reports, repo-anchored analytical execution. Voice: analytical, terse, deliverable-first; names the output, flags assumptions, cites paths. (<a href="../gielinor/players/jebrim/persona.md">persona</a>)</td>
+</tr>
+<tr>
+<td><strong>Zezima</strong></td>
+<td>Player</td>
+<td>Personal life, reading, slow reflective synthesis. Voice: unhurried, prose over bullets, comfortable with not-knowing. (<a href="../gielinor/players/zezima/persona.md">persona</a>)</td>
+</tr>
+<tr>
+<td><strong>Guthix</strong></td>
+<td>Caretaker deity (not a player)</td>
+<td>System-scope. Reads across everything; tends the brain itself. Voice: measured, balanced, never warm or playful. (<a href="../gielinor/meta/guthix.md">guthix.md</a>)</td>
+</tr>
+<tr>
+<td><strong>The wisp</strong></td>
+<td>Unscoped state</td>
+<td>The actor of a session that has had no prompt yet. Narrow by design. Voice: almost nothing, uncommitted.</td>
+</tr>
+<tr>
+<td><strong>Braindead</strong></td>
+<td>Dev-brain construction crew</td>
+<td>Builds the main brain. Voice: plainspoken, faintly gruff build-state. (<a href="../developer-braindead/CLAUDE.md">dev CLAUDE.md</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>Players are characters in their own right, not personas of the user. Each carries a full
+<a href="#per-player-layers">per-player layer set</a>. Guthix is a <em>deity</em> — he
+has no relationship-self (<code>examine/</code>, <code>niksis8_character/</code>) because he isn't a character
+the user has a relationship with; he has system-scope layers under
+<a href="../gielinor/deities/guthix/"><code>gielinor/deities/guthix/</code></a>.</p>
+<h2 id="addressing-how-the-actor-is-set">Addressing — how the actor is set</h2>
+<p>The active actor is set by <strong>address at the start of a message</strong>, not by a prompt. The
+agent reads the first message and routes; it does not ask "who should I be?"</p>
+<ul>
+<li><code>Hey Jebrim, …</code> → Jebrim. <code>Hey Zezima, …</code> → Zezima.</li>
+<li><code>Hey Guthix, …</code> → Guthix (consultation, unless a ritual cue follows).</li>
+<li><code>Hey unscoped, …</code> → the wisp (globals only).</li>
+<li><strong>No address</strong> → continue in the current actor. <strong>Sticky.</strong></li>
+</ul>
+<p><strong>Matching is strict.</strong> The address must be at the very start; <code>Hey {name}</code> followed by
+comma / whitespace / end-of-message; case-insensitive on the name; exact match against the
+known roster. A misspelling ("Hey Zezma") is treated as <em>no address</em> — stay put. A name
+mentioned mid-sentence does <strong>not</strong> switch.</p>
+<p><strong>Dev-brain mode</strong> is entered the same way, by a message starting with <code>Lets develop
+gielinor</code> — see <a href="#page-10-dev-brain">10 — The dev brain</a>.</p>
+<h3 id="mid-session-switching-and-the-mini-respawn">Mid-session switching and the mini-respawn</h3>
+<p>When a later message addresses a different actor, the <a href="#respawn">mini-respawn</a>
+runs: the outgoing player's <code>quest-log/in-progress/</code> gets a hand-off note, the intent file
+flips, and (for Guthix) the visualizer spawns/despawns the deity sprite. "Outgoing" means
+the actor active <em>in this session</em>, not any player with stale files on disk.</p>
+<h3 id="cross-player-delegation">Cross-player delegation</h3>
+<p>Address sets the <strong>principal</strong>; mid-message phrases delegate a sub-task to another player
+as a <strong>dwarf</strong> without switching the principal: <code>ask {name} to …</code>, <code>have {name} …</code>, <code>get
+{name} to …</code>, <code>{name} should …</code>. Example: <code>Hey Zezima, ask Jebrim to look up X</code> runs Zezima
+as principal and spawns a Jebrim-scoped dwarf for the sub-task. When unsure whether a
+reference is a delegation or just a topic mention — ask.</p>
+<h2 id="session-modes">Session modes</h2>
+<p>Five mutually-exclusive modes. The mode shapes which layers are read, which are written,
+and the voice. Full detail in <a href="../gielinor/meta/modes.md"><code>modes.md</code></a>; the matrix:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Set by</th>
+<th>Reads</th>
+<th>Writes (proposes to)</th>
+<th>Voice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Player</strong></td>
+<td><code>Hey {player}</code></td>
+<td>globals + active player</td>
+<td>active player's layers (+ globals per draft rules)</td>
+<td>the player</td>
+</tr>
+<tr>
+<td><strong>Unscoped</strong></td>
+<td><code>Hey unscoped</code>, or no-prompt session start</td>
+<td>globals only</td>
+<td><code>players/inbox/</code>, global identity drafts</td>
+<td>the wisp</td>
+</tr>
+<tr>
+<td><strong>Consultation</strong></td>
+<td><code>Hey Guthix</code> (no ritual cue)</td>
+<td><strong>everything</strong></td>
+<td>Guthix's own deity layers only (mostly chat-only)</td>
+<td>Guthix</td>
+</tr>
+<tr>
+<td><strong>Alching</strong></td>
+<td><code>let's alch</code> / <code>/alch</code> in a player session</td>
+<td>only the active player</td>
+<td>only the active player's layers</td>
+<td>the player</td>
+</tr>
+<tr>
+<td><strong>Bankstanding</strong></td>
+<td><code>Hey Guthix, bankstand</code> / <code>let's bankstand</code></td>
+<td><strong>everything</strong></td>
+<td>globals only (never per-player) + godly proposals</td>
+<td>Guthix</td>
+</tr>
+</tbody>
+</table>
+<p>The defining tension: <strong>alching tends one player's house; bankstanding tends the system but
+can't touch per-player layers.</strong> Consultation and bankstanding are the same actor (Guthix)
+and intent file (<code>guthix.txt</code>) — bankstanding is consultation that has flipped on
+write-reach via an explicit cue. The unscoped <em>wisp</em> is deliberately narrow: the moment the
+principal speaks substantively without an address, the agent should suggest flipping to
+Guthix consultation rather than answering as the wisp (see
+<a href="#guthix-routing">07 — Communication</a>).</p>
+<h2 id="roles-principal-vs-sub-agent">Roles — principal vs. sub-agent</h2>
+<p>Orthogonal to mode. Any session is run by a <strong>principal</strong> or a <strong>sub-agent</strong> of one of
+three kinds. Sub-agents share the brain on disk but have restricted, <strong>hook-enforced</strong>
+write surfaces (<a href="#page-08-enforcement-and-hooks">08 — Enforcement</a>).</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Purpose</th>
+<th>May write to</th>
+<th>Spec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Principal</strong></td>
+<td>Interactive session, full capability. Introspects, proposes identity changes, runs rituals, spawns sub-agents.</td>
+<td>everything its mode allows</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Dwarf</strong></td>
+<td>Repo-bound functional sub-task.</td>
+<td>inherited player's <code>bank/notes/</code>, <code>quest-log/</code>, <code>inventory/</code> only</td>
+<td><a href="../gielinor/spellbook/skills/spawning-dwarves.md">spawning-dwarves</a></td>
+</tr>
+<tr>
+<td><strong>Gnome</strong></td>
+<td>Structural housekeeping (runs session-close / alching / drafts-triage). System-namespace.</td>
+<td>drafts / proposals / inventory / quest-log across players + global drafts + <code>players/inbox/</code>; <strong>never</strong> <code>confirmed/</code>, lorebook decisions, <code>keepsake/current.md</code>, <code>meta/</code>, rituals, body files</td>
+<td><a href="../gielinor/spellbook/skills/spawning-gnomes.md">spawning-gnomes</a></td>
+</tr>
+<tr>
+<td><strong>Penguin</strong></td>
+<td>External research operative.</td>
+<td>active player's <code>research/</code>, <code>quest-log/</code>, <code>inventory/</code> only; <strong>never</strong> <code>bank/</code> (bank notes are picked from research during alching)</td>
+<td><a href="../gielinor/spellbook/skills/spawning-penguins.md">spawning-penguins</a></td>
+</tr>
+</tbody>
+</table>
+<p>Founding decisions: gnomes [D-016], penguins [D-021].</p>
+<p><strong>Player inheritance.</strong> A dwarf or penguin inherits the principal's player by default;
+cross-player invocation is allowed but must be named explicitly. Gnomes do <strong>not</strong> inherit —
+they are system-namespace, and the spawn brief carries the player(s) in scope as a
+parameter.</p>
+<p><strong>Who can run what.</strong> Dwarves run no rituals. Gnomes can run session-close, alching, and
+drafts-triage when the principal spawns them at the ritual's step-0 spawn-decision.
+Bankstanding stays principal-only at the top level (it may spawn gnomes for its Phase-0
+alching loop). <strong>No sub-agent spawns further sub-agents</strong> — guarantee #6, hook-enforced.</p>
+<p><strong>When to spawn (the heuristic).</strong> The numbers live in
+<a href="../gielinor/spellbook/skills/spawning-gnomes.md">spawning-gnomes.md</a> (single source of
+truth). In short: spawn a <em>dwarf</em> when ≥2 genuinely independent repo paths plus an
+amplifier (scope, wall-time, or context bloat); a <em>penguin</em> when external sources are
+needed plus an amplifier; a <em>gnome</em> when a housekeeping ritual trips its step-0 threshold.
+The anti-pattern across all three is spawning a single sub-agent, or spawning to dodge a
+decision.</p>
+<h2 id="routing-reference-when-to-suggest-a-different-actor">Routing reference — when to suggest a different actor</h2>
+<p>Two routing heuristics live in the <a href="#page-07-communication-and-coordination">communication protocol</a>:</p>
+<ul>
+<li><strong>Wrong-instance check</strong> — if a message reads like nonsense for the active player
+  (wrong domain, stakeholders, register), raise that the principal may be in the wrong
+  terminal <em>before</em> answering.</li>
+<li><strong>Guthix routing</strong> — if a message reads system-scope rather than player-domain, suggest
+  flipping to Guthix consultation for a proper cross-read.</li>
+</ul>
+<p>Both are one-line offers, not silent switches.</p>
+<hr />
+<p>Next: <strong><a href="#page-06-rituals">06 — Rituals</a></strong> — the procedures these actors run.</p>
+</section>
+
+<section id="page-06-rituals" class="doc-page">
+<h1 id="06-rituals">06 — Rituals</h1>
+<p>Rituals are the brain's control flow — the fixed procedures that drive a session from
+start to close. They live in <a href="../gielinor/spellbook/rituals/"><code>gielinor/spellbook/rituals/</code></a>
+and are <strong>user-edited</strong> (user-only write discipline). This page summarises each; the ritual
+file is authoritative for the exact steps.</p>
+<p>A ritual's <em>write-reach</em> (which layers it may touch at all) is set by the
+<a href="#ritual-write-reach">ritual write-reach matrix</a>; its <em>voice</em> is set
+by the active mode (<a href="#page-05-actors-and-modes">05 — Actors &amp; modes</a>).</p>
+<p><a id="respawn"></a></p>
+<h2 id="respawn-session-start">Respawn — session start</h2>
+<p>Source: <a href="../gielinor/spellbook/rituals/respawn.md"><code>respawn.md</code></a>.</p>
+<ul>
+<li><strong>Trigger.</strong> Automatically at every session start; also as a <strong>mini-respawn</strong> on a
+  mid-session actor switch.</li>
+<li><strong>Reads.</strong> Body/CLAUDE.md imports; global <code>keepsake/current.md</code>, all <code>examine/confirmed/</code>
+  and <code>niksis8/confirmed/</code>; if a player is active, that player's persona, confirmed
+  identity, <code>quest-log/in-progress/</code>, and inventory resume files. Sibling-detection reads
+  <code>~/.claude/status/*.json</code> and <code>comms/active.md</code>. Cued layers (<code>bank/</code>, skills, lorebook)
+  are <strong>not</strong> preloaded — they're fetched on demand.</li>
+<li><strong>Writes.</strong> Reads-only in principle, except: posts an <code>OPEN</code> to <code>comms/active.md</code>, and
+  maintains per-turn quest-log discipline once live. The mini-respawn also writes a hand-off
+  note to the outgoing player and archives the outgoing intent file.</li>
+<li><strong>Produces.</strong> Agent loaded with durable identity, active player in foreground, in-flight
+  quests surfaced via a <strong>reconciliation prompt</strong> (surface what was in flight; offer
+  Resume / Abandon / Reconcile — never auto-resume), an alching recommendation if
+  thresholds are breached, and an <code>OPEN</code> posted.</li>
+</ul>
+<blockquote>
+<p>Load order is canonical — <strong>do not improvise it.</strong> Read the ritual file.</p>
+</blockquote>
+<p><a id="close-session"></a></p>
+<h2 id="close-session-session-wrap">Close-session — session wrap</h2>
+<p>Source: <a href="../gielinor/spellbook/rituals/close-session.md"><code>close-session.md</code></a>.</p>
+<ul>
+<li><strong>Trigger.</strong> Principal cue at session end ("let's close the session" / "wrap up" —
+  loose matching). Covers <strong>all</strong> players with non-empty <code>quest-log/in-progress/</code>, not just
+  the active one.</li>
+<li><strong>Writes.</strong> Reconciles every <code>pending</code> action; compacts and moves quest-logs to
+  <code>completed/</code>; writes resume state to <code>inventory/&lt;slug&gt;-resume__&lt;sid8&gt;.md</code>; harvests
+  drafts; posts a <code>CLOSING</code> to comms; commits; writes a <code>wrapped_up</code> <code>.mode</code> marker.
+  <strong>No promotions to <code>confirmed/</code>, no <code>keepsake/current.md</code> pins.</strong></li>
+<li><strong>Procedure gist.</strong> Spawn-decision (gnome vs. self) → reconcile pending → persist
+  chat-only drafts → resume state + compact log → continue-vs-complete the quest →
+  inventory hygiene → <strong>observation harvest</strong> (corrections/reverts harvest is mandatory) →
+  surface drafts → <code>CLOSING</code> → commit (scoped; never pushes; this step overrides the global
+  "always ask before committing") → state the close.</li>
+</ul>
+<blockquote>
+<p>The harvest step is where lessons get captured. Per a 2026-05-24 directive, <strong>both</strong>
+session-close rituals (main and dev) require harvesting correction/regression learnings
+at every wrap.</p>
+</blockquote>
+<p><a id="alching"></a></p>
+<h2 id="alching-per-player-tending">Alching — per-player tending</h2>
+<p>Source: <a href="../gielinor/spellbook/rituals/alching.md"><code>alching.md</code></a>. Mode:
+<a href="#session-modes">alching</a>.</p>
+<ul>
+<li><strong>Trigger.</strong> Explicit cue in a player session (<code>let's alch</code> / <code>/alch</code>); recommended at
+  respawn on threshold breach; or as Phase 0 of bankstanding. Never auto-runs.</li>
+<li><strong>Reach.</strong> Reads and writes <strong>only the active player's</strong> layers. Does not read globals or
+  other players.</li>
+<li><strong>Procedure gist.</strong> Review identity drafts → promote bank drafts + sweep <code>bank/notes/</code>
+  for staleness → graduate <strong>completed</strong> quest episodes into bank drafts → self-observation
+  sweep → enforce <code>keepsake/current.md</code> budgets → review <code>rejected/</code> patterns → skill
+  graduation → stamp <code>last-alched.md</code>.</li>
+<li><strong>Marker.</strong> When principal-run, writes an <code>alching</code> <code>.mode</code> marker so the cockpit shows
+  the <code>ALCHING</code> chip.</li>
+</ul>
+<p><a id="bankstanding"></a></p>
+<h2 id="bankstanding-system-level-tending">Bankstanding — system-level tending</h2>
+<p>Source: <a href="../gielinor/spellbook/rituals/bankstanding.md"><code>bankstanding.md</code></a>. Mode:
+<a href="#session-modes">bankstanding</a>, voiced as Guthix.</p>
+<ul>
+<li><strong>Trigger.</strong> Principal cue only (<code>Hey Guthix, bankstand</code> / <code>let's bankstand</code>). No
+  auto-triggers (Phase 1).</li>
+<li><strong>Reach.</strong> Reads <strong>everything</strong>; proposes only to <strong>global</strong> layers (<code>examine/</code>,
+  <code>niksis8/</code>, <code>keepsake/</code>, <code>lorebook/</code>, <code>players/inbox/</code>) plus godly proposals. <strong>Cannot
+  write per-player layers</strong> — it can only flag a player overdue for alching.</li>
+<li><strong>Procedure gist.</strong> <strong>Phase 0</strong> — alch each changed player first (the one sanctioned
+  mid-ritual mode transition: per-player writes allowed during Phase 0, then back to
+  globals-only) → triage <code>players/inbox/</code> → review global identity drafts → cross-player
+  synthesis (promote recurring patterns to globals) → enforce global budgets → review
+  <code>rejected/</code> patterns → log behavioural changes to <code>lorebook/drafts/</code>.</li>
+</ul>
+<p><strong>Godly proposals.</strong> During bankstanding only, Guthix may <em>propose</em> changes to surfaces
+normally user-only (<code>meta/</code>, rituals, hooks, even the architecture). Proposals land in
+<a href="../gielinor/deities/guthix/proposals/"><code>deities/guthix/proposals/</code></a>; the principal reviews.
+The hook-enforced lines remain non-overridable even for him.</p>
+<p><a id="drafts-triage"></a></p>
+<h2 id="drafts-triage-the-lightweight-promotion-gate">Drafts-triage — the lightweight promotion gate</h2>
+<p>Source: <a href="../gielinor/spellbook/rituals/drafts-triage.md"><code>drafts-triage.md</code></a>. The <code>/drafts</code>
+command.</p>
+<p>A thin cut of alching's step 1 — promotion only. Surveys pending drafts in scope (active
+player + global identity drafts; narrows to globals-only in dev-brain/consultation/unscoped
+modes), surfaces each with claim + anchor + a y/n/edit recommendation, takes batch verdicts,
+and executes via <code>git mv</code> (Bash bypasses the <code>confirmed/</code>-write hook for player-owned
+moves). It does <strong>not</strong> update <code>last-alched.md</code>, sweep bank staleness, or graduate skills.</p>
+<p><a id="death-and-spawn"></a></p>
+<h2 id="death-spawn-what-survives">Death &amp; spawn — what survives</h2>
+<p>Source: <a href="../gielinor/meta/death-and-spawn.md"><code>gielinor/meta/death-and-spawn.md</code></a>.</p>
+<p><strong>Death-as-crash.</strong> The runtime context is gone; recovery depends on disk. Discipline: the
+quest-log appends <strong>every turn</strong> (not at session end); every external action is logged
+<code>pending</code> before execution and updated after. A fresh session that finds an in-progress
+entry with an unresolved <code>pending</code> runs the reconciliation prompt.</p>
+<p><strong>Death-as-reset.</strong> A deliberate fresh start. What persists:</p>
+<table>
+<thead>
+<tr>
+<th>Persists</th>
+<th>Lost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bank/</code>, <code>research/</code>, <code>spellbook/</code>, all <code>confirmed/</code>, <code>keepsake/</code>, <code>lorebook/</code>, <code>meta/</code>, <code>quest-log/completed/</code></td>
+<td><code>inventory/</code>, all <code>drafts/</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>quest-log/in-progress/</code> and body files are the principal's choice. The asymmetry is
+deliberate: <strong>confirmed knowledge and history survive; working state and unapproved
+proposals don't.</strong> Identity is durable; mid-thought is not. (Reset is rare; there is no
+<code>/reset</code> command yet.)</p>
+<p><strong>Death-as-migration (ascension).</strong> Moving to a new host. Phase-3 work; the
+<code>ascension.md</code> ritual does not exist yet — when built, the whole brain travels and only the
+body (config, scheduling) changes.</p>
+<hr />
+<p>Next: <strong><a href="#page-07-communication-and-coordination">07 — Communication &amp; coordination</a></strong> — the
+response protocol and how parallel sessions coexist.</p>
+</section>
+
+<section id="page-07-communication-and-coordination" class="doc-page">
+<h1 id="07-communication-coordination">07 — Communication &amp; coordination</h1>
+<p>How the agent talks to the principal, how it narrates itself to the visualizer, and how
+parallel sessions stay out of each other's way.</p>
+<p>Authoritative sources:
+<a href="../gielinor/meta/communication-protocol.md"><code>gielinor/meta/communication-protocol.md</code></a>;
+<a href="../gielinor/comms/_about.md"><code>gielinor/comms/_about.md</code></a>.</p>
+<h2 id="the-understanding-plan-preamble">The Understanding / Plan preamble</h2>
+<p>Every response opens with a brief restatement of the ask and the intended action, <em>before</em>
+the substantive reply:</p>
+<pre><code>**Understanding:** You want me to [restate the ask].
+**Plan:** I'll [restate the intended action].
+
+[the substantive response]
+</code></pre>
+<p>Two short lines, bold labels, one sentence each. The preamble exists to <strong>catch
+misunderstandings before the agent commits to the wrong task</strong> — a wrong restatement is a
+cheap correction; a wrong implementation is not. It applies in <strong>every</strong> mode and role;
+voice adapts, structure does not.</p>
+<p><strong>Compression.</strong> When the ask is unambiguous and small ("show me file X"), collapse to a
+single action line ("Opening that now."). The test: if the restatement of the ask and of
+the action would say the same thing twice, collapse.</p>
+<p><strong>Internal rituals stay silent.</strong> Respawn, mini-respawn, and threshold checks don't appear
+in the preamble. The exception: a threshold <em>recommendation</em> (e.g. "alching is overdue")
+surfaces as one line after the Plan.</p>
+<h2 id="two-routing-safety-checks">Two routing safety checks</h2>
+<p>Both are one-line offers after the Plan, never silent switches:</p>
+<ul>
+<li>
+<p><strong>Wrong-instance check.</strong> Parallel sessions are the norm. If an incoming message reads as
+  nonsense for the active player (wrong projects, stakeholders, register), raise that the
+  principal may be in the wrong terminal <em>before</em> answering. Don't fire on genuinely novel
+  asks within the player's domain.</p>
+</li>
+<li>
+<p><a id="guthix-routing"></a><strong>Guthix routing.</strong> If a message reads <strong>system-scope</strong> (about
+  the brain itself, cross-cutting state, ritual/architecture design, drift) rather than
+  player-domain, suggest flipping to Guthix consultation for a proper cross-read. Born
+  2026-05-22 (S038) because the architecture was correct but operator adoption of <code>Hey
+  Guthix</code> was near-zero — the heuristic surfaces the option without forcing the switch.</p>
+</li>
+</ul>
+<h2 id="offer-choices-as-multiple-choice-with-a-recommendation">Offer choices as multiple-choice with a recommendation</h2>
+<p>At a genuine branch point — more than one reasonable way forward — present the options as
+an explicit multiple-choice question (<code>AskUserQuestion</code>) rather than a paragraph of
+trade-offs, and <strong>always name the recommended option and why</strong> (recommended first, suffix
+"(Recommended)", reasoning in its description). A bare menu offloads a decision the agent
+should hold a view on. Still skip the question when there's an obvious default. Founding
+decision: [D-025].</p>
+<h2 id="the-visualizer-sidecars">The visualizer sidecars</h2>
+<p>The agent narrates itself to the cockpit/visualizer through small sidecar files. These are
+<em>hints, not contracts</em> — no file just means no bubble.</p>
+<h3 id="intent-file-claudeintentactor-sid8txt">Intent file — <code>.claude/intent/&lt;actor&gt;-&lt;sid8&gt;.txt</code></h3>
+<p>After the Plan, the agent writes a 1–3 sentence, ≤280-char <strong>in-voice</strong> intent line to its
+per-session intent file. The visualizer renders it as a speech bubble and pushes it into
+the COMMS feed as <code>&lt;Actor&gt;: &lt;text&gt;</code>. The per-session filename (<code>&lt;actor&gt;-&lt;sid8&gt;</code>) is the
+<strong>only</strong> sanctioned shape — it prevents two parallel sessions of the same actor from
+clobbering each other, and serves as the on-disk session anchor that lets the hooks recover
+actor attribution after a state reset ([D-018]).</p>
+<ul>
+<li>Voice, not verb-noun: the line reads as live work <em>in character</em> (Jebrim terse-and-dense;
+  Guthix measured cross-layer state; Braindead build-state; Zezima reflective prose; wisp
+  almost nothing). The ≤280 budget buys <em>more content</em>, never padding ([S058]).</li>
+<li>Update when intent <em>meaningfully changes</em>, not every micro-action.</li>
+<li><strong>Dwarves don't write intent files</strong> — the hook attaches the spawning <code>Task</code> call's
+  <code>description</code> as the dwarf's bubble.</li>
+</ul>
+<h3 id="mode-marker-claudeintentsid8mode">Mode marker — <code>.claude/intent/&lt;sid8&gt;.mode</code></h3>
+<p>A single token the event stream can't infer: <code>alching</code> (written on entry to a principal
+alching pass, cleared on exit → board shows <code>ALCHING</code>) or <code>wrapped_up</code> (written by
+close-session → board shows <code>WRAPPED UP</code> until the process ends). Read by
+<a href="#page-08-enforcement-and-hooks"><code>status-sidecar.py</code></a>.</p>
+<h3 id="narration-channel-claudenarrationtxt">Narration channel — <code>.claude/narration.txt</code></h3>
+<p>A single global <strong>system-voice</strong> sidecar (≤200 chars) — not actor voice. For
+broader-scope context above the per-actor flow: session boundaries, ritual phase
+transitions, mode switches. Most turns don't warrant one.</p>
+<h3 id="intent-vs-action-the-discipline-rule">Intent vs. action — the discipline rule</h3>
+<p>Two channels for "what's happening now," and they must not mirror each other:</p>
+<ul>
+<li><strong>Intent</strong> = <em>why</em> / <em>what scope</em> ("Drafting D-014", "Bankstanding — phase 0"). Authored.</li>
+<li><strong>Action</strong> = <em>which file / command</em> ("editing modes.md", "running git status"). Emitted
+  automatically by the <a href="#page-08-enforcement-and-hooks">observability hooks</a> on
+  Edit/Write/Bash/Glob/Grep.</li>
+</ul>
+<p>If the intent line restates what the actions already show, the feed doubles itself and
+intent loses its signal. Keep intent abstract enough that the action stream <em>complements</em>
+it rather than echoing it.</p>
+<h2 id="parallel-session-coordination-commsactivemd">Parallel-session coordination — <code>comms/active.md</code></h2>
+<p>Multiple Claude Code sessions (multiple players, multiple Braindeads) run at once. Each
+brain has an append-only coordination log — <a href="../gielinor/comms/active.md"><code>gielinor/comms/active.md</code></a>
+and <a href="../developer-braindead/comms/active.md"><code>developer-braindead/comms/active.md</code></a> — that
+is how live siblings learn about each other <em>before</em> touching files. Founding decision:
+[D-024]. Protocol: <a href="../gielinor/comms/_about.md"><code>comms/_about.md</code></a>.</p>
+<table>
+<thead>
+<tr>
+<th>Entry</th>
+<th>When</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OPEN</code></td>
+<td>At respawn / on entry</td>
+<td>Announce: targets, what you're steering clear of, work open to handoff. <strong>The seatbelt.</strong></td>
+</tr>
+<tr>
+<td><code>→ @&lt;sibling&gt;</code></td>
+<td>As needed</td>
+<td>Direct dialogue between live sessions.</td>
+</tr>
+<tr>
+<td><code>UPDATE</code></td>
+<td>On a mid-session pivot</td>
+<td>Revise targets when the plan changes.</td>
+</tr>
+<tr>
+<td><code>CLOSING</code></td>
+<td>At session-close</td>
+<td>Record what was completed and left open. <strong>The autopsy.</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sibling detection</strong> (at respawn): list intent files touched in the last 5 minutes
+(excluding your own), cross-reference <code>active.md</code> for any sibling lacking a <code>CLOSING</code>, and
+flag stale <code>OPEN</code>s as <code>ABANDONED</code> candidates. Detection produces <em>noise, not certainty</em> —
+surface it; the principal decides.</p>
+<blockquote>
+<p><strong>The discipline that leaks most.</strong> <code>CLOSING</code> gets posted faithfully; <code>OPEN</code> historically
+only ~30% of the time, because dev-brain is often entered mid-conversation and the entry
+ritual gets skipped. <code>OPEN</code> is the half that <em>prevents</em> collisions. Posting it on <strong>every</strong>
+entry — including mid-conversation pivots — is mandatory ([S082] fix). When a stronger
+ground-truth signal than intent-file mtime is available — the cockpit's
+<code>~/.claude/status/&lt;sid8&gt;.json</code> <code>state</code> field — prefer it: before touching a file another
+session is editing, check whether their state is <code>busy</code>.</p>
+</blockquote>
+<hr />
+<p>Next: <strong><a href="#page-08-enforcement-and-hooks">08 — Enforcement &amp; hooks</a></strong> — the gates beneath all
+of this.</p>
+</section>
+
+<section id="page-08-enforcement-and-hooks" class="doc-page">
+<h1 id="08-enforcement-hooks">08 — Enforcement &amp; hooks</h1>
+<p>The brain's rules are split into two kinds: lines the agent <em>cannot</em> cross (hard gates) and
+lines it is <em>disciplined</em> to hold (prompt rules). This page documents the gates and the
+observability machinery beneath them. The hook source is authoritative; this is the map.</p>
+<h2 id="two-hook-families">Two hook families</h2>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Location</th>
+<th>Behaviour</th>
+<th>Job</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Enforcement</strong></td>
+<td><a href="../gielinor/.claude/hooks/"><code>gielinor/.claude/hooks/</code></a></td>
+<td>Exit 2 to <strong>block</strong> the tool call</td>
+<td>The six architectural guarantees</td>
+</tr>
+<tr>
+<td><strong>Observability</strong></td>
+<td><a href="../developer-braindead/.claude/hooks/"><code>developer-braindead/.claude/hooks/</code></a></td>
+<td>Always exit 0, swallow errors — <strong>never</strong> block</td>
+<td>Emit events + state files for the cockpit</td>
+</tr>
+</tbody>
+</table>
+<p>All ten hooks are Python, read the hook payload as JSON from stdin, and derive their root
+from their own file location (<code>__file__</code> walked up), <strong>not</strong> from <code>CLAUDE_PROJECT_DIR</code>.</p>
+<h2 id="the-enforcement-hooks-the-six-guarantees">The enforcement hooks (the six guarantees)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Hook</th>
+<th>Blocks</th>
+<th>Event</th>
+<th>Gated on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="../gielinor/.claude/hooks/block-confirmed-writes.py"><code>block-confirmed-writes.py</code></a></td>
+<td>Any write whose path contains a <code>confirmed/</code> segment</td>
+<td><code>PreToolUse</code></td>
+<td>Edit/Write/NotebookEdit/MultiEdit, path inside brain</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="../gielinor/.claude/hooks/block-deletes.py"><code>block-deletes.py</code></a></td>
+<td>Shell delete commands (<code>rm</code>, <code>remove-item</code>, <code>del</code>, <code>unlink</code>, <code>rmtree</code>, …)</td>
+<td><code>PreToolUse</code></td>
+<td>Bash/PowerShell command-string regex (path-agnostic)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="../gielinor/.claude/hooks/dwarf-write-boundary.py"><code>dwarf-write-boundary.py</code></a></td>
+<td>Dwarf writes outside <code>bank/notes/</code>, <code>quest-log/</code>, <code>inventory/</code></td>
+<td><code>PreToolUse</code></td>
+<td><code>agent_type == "dwarf"</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="../gielinor/.claude/hooks/gnome-write-boundary.py"><code>gnome-write-boundary.py</code></a></td>
+<td>Gnome writes outside the housekeeping surface</td>
+<td><code>PreToolUse</code></td>
+<td><code>agent_type == "gnome"</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="../gielinor/.claude/hooks/penguin-write-boundary.py"><code>penguin-write-boundary.py</code></a></td>
+<td>Penguin writes outside <code>research/</code>, <code>quest-log/</code>, <code>inventory/</code></td>
+<td><code>PreToolUse</code></td>
+<td><code>agent_type == "penguin"</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="../gielinor/.claude/hooks/block-sub-spawn.py"><code>block-sub-spawn.py</code></a></td>
+<td>Any sub-agent spawning a sub-agent</td>
+<td><code>PreToolUse</code></td>
+<td><code>agent_type in (dwarf, gnome, penguin)</code>, tool Agent/Task</td>
+</tr>
+</tbody>
+</table>
+<p>The gnome and penguin hooks check a <strong>blocklist first</strong> (it wins even over an allow-list
+hit) — e.g. the penguin's <code>/bank/</code> block is what forces research output through <code>research/</code>
+rather than letting a penguin author bank notes directly.</p>
+<h3 id="two-facts-that-change-how-you-read-these">Two facts that change how you read these</h3>
+<ol>
+<li>
+<p><strong>Role hooks are inert for a principal.</strong> They gate on the <code>agent_type</code> payload field,
+   which is <em>absent</em> on a principal's tool calls — so hooks 3–6 exit 0 immediately in a
+   principal session. <strong>A principal is constrained only by #1 and #2.</strong> (Env-var gating
+   was the original S019 design but was confirmed inert — env vars don't propagate into
+   sub-agent payloads — and was switched to payload-field gating in S020.)</p>
+</li>
+<li>
+<p><strong>The guarantees became real gates only at [S085].</strong> The enforcement hooks were
+   originally wired <em>only</em> in <code>gielinor/.claude/settings.json</code> via <code>${CLAUDE_PROJECT_DIR}</code>.
+   But the default session — and the cockpit's PTY sessions — launch at the <strong>brain root</strong>,
+   where that path resolved empty and the hooks silently no-op'd. So the "guarantees" were
+   prompt discipline, not gates: an <code>rm</code> at brain root was proven <em>not</em> blocked. S085 wired
+   the enforcement hooks into the <strong>brain-root</strong> <code>.claude/settings.json</code> with absolute paths
+   so they fire repo-wide. The lesson — <em>a documented guarantee isn't real until you've
+   watched it fire from the actual entry point</em> — is recorded as feedback.</p>
+</li>
+</ol>
+<h2 id="the-observability-hooks">The observability hooks</h2>
+<p>All write under <a href="../switchboard/"><code>switchboard/</code></a> (the <code>VIZ_DIR</code>, promoted there from the
+old <code>experiments/visualizer/</code> location in S052). Atomic writes use <code>.tmp.&lt;pid&gt;</code> +
+<code>os.replace</code>; <code>state.ndjson</code> / <code>chat.ndjson</code> are append-only and interleave-tolerant.</p>
+<h3 id="emit-eventpy-the-event-emitter"><a href="../developer-braindead/.claude/hooks/emit-event.py"><code>emit-event.py</code></a> — the event emitter</h3>
+<p>Classifies each touched path into a map "building" + actor and appends move / action /
+intent / spawn / despawn / log events to the event stream. Every event is stamped with
+<code>sessionId</code> so parallel sessions sharing one stream can be disambiguated.</p>
+<ul>
+<li><strong>Fires:</strong> <code>PreToolUse</code>/<code>PostToolUse</code> on Task/Agent (spawn/despawn);
+  <code>PostToolUse</code> on Edit/Write/Read/Glob/Grep/Bash (move/action/chat); <code>SessionEnd</code> (despawn</li>
+<li>GC).</li>
+<li><strong>Writes</strong> (under <code>switchboard/</code>): <code>state.ndjson</code> (the event stream); <code>state-actors.json</code>
+  (actor→building map); <code>state-instances.json</code> (parallel-session instance numbering);
+  <code>state-{dwarves,gnomes,penguins}.json</code> (sub-agent spawn registries); <code>chat.ndjson</code> (the
+  human-language feed).</li>
+</ul>
+<h3 id="status-sidecarpy-fleet-status"><a href="../developer-braindead/.claude/hooks/status-sidecar.py"><code>status-sidecar.py</code></a> — fleet status</h3>
+<p>Writes the per-session status record the cockpit board reads, deriving state on a two-axis
+model ([D-029]): a base state plus flavour <code>tags</code>.</p>
+<ul>
+<li><strong>State mapping:</strong> <code>UserPromptSubmit</code>/<code>PreToolUse</code>/<code>PostToolUse</code> → <code>busy</code>; <code>Stop</code> →
+  <code>your_move</code>; <code>SessionEnd</code> → <code>ended</code>. A tight matcher (registered only for
+  <code>AskUserQuestion|ExitPlanMode|Task|Agent</code>) keeps fire-rate low: wait-tools Pre →
+  <code>needs_you</code>; foreground sub-agent spawn → stays <code>busy</code> + <code>crew</code> tag. Reads the <code>.mode</code>
+  marker (<code>alching</code> tag / <code>wrapped_up</code> → base <code>done</code>).</li>
+<li><strong>Canonical store:</strong> <code>~/.claude/status/&lt;sid8&gt;.json</code> — user-global (not per-repo) so one
+  board sees every session on the machine. Shape: <code>{sid8, session_id, actor, instance,
+  state, last_event_ts, started_at, first_prompt, intent, tags[], project_dir, cwd, host,
+  claude_pid, claude_pid_chain[], claude_hwnd, …}</code>.</li>
+<li><strong>Browser mirror:</strong> <code>switchboard/state-switchboard.json</code> — the live manifest the cockpit
+  polls; re-derives actor/instance/building/subtitle per row, excludes <code>ended</code>, applies
+  liveness gates (process-dead via PID chain + staleness).</li>
+<li>Also writes <code>state-names.json</code> (board renames), <code>chat.ndjson</code> (intent/say/lifecycle), and
+  <code>state-comms-{gielinor,braindead}.md</code> (comms mirrors for the COMMS panel); GCs dead actor
+  keys and stale intent/tmp files.</li>
+</ul>
+<h3 id="rename-interceptpy-rename"><a href="../developer-braindead/.claude/hooks/rename-intercept.py"><code>rename-intercept.py</code></a> — <code>/rename</code></h3>
+<p>Catches a <code>/rename &lt;name&gt;</code> prompt on <code>UserPromptSubmit</code>, writes the label to
+<code>state-names.json</code>, and <strong>blocks the prompt (exit 2)</strong> so no model turn runs. Any
+parse/IO failure exits 0 and lets the prompt through.</p>
+<h3 id="emit-commit-eventpy-commit-banner"><a href="../developer-braindead/.claude/hooks/emit-commit-event.py"><code>emit-commit-event.py</code></a> — commit banner</h3>
+<p>Appends one <code>commit</code> event on every git commit. <strong>Not wired in <code>settings.json</code></strong> — it is
+invoked by <code>.git/hooks/post-commit</code>.</p>
+<blockquote>
+<p>⚠ <strong>Known discrepancy.</strong> This is the one hook that still writes to the <em>legacy</em>
+<code>developer-braindead/experiments/visualizer/state.ndjson</code>, while every other hook writes
+to <code>switchboard/state.ndjson</code> (the S052-promoted location). Commit events therefore land
+in the stale stream and don't show in the current cockpit. A documented bug, not by
+design.</p>
+</blockquote>
+<h2 id="settingsjson-wiring">settings.json wiring</h2>
+<p>Two settings files register hooks. Authoritative:
+<a href="../.claude/settings.json"><code>.claude/settings.json</code></a> (brain root) and
+<a href="../gielinor/.claude/settings.json"><code>gielinor/.claude/settings.json</code></a>.</p>
+<ul>
+<li><strong><code>brain/.claude/settings.json</code></strong> (the load-bearing one — loaded for any session at brain
+  root or below, which is the default and the cockpit's behaviour). Uses <strong>absolute paths</strong>
+  to hook commands (the S052 fix for empty <code>${CLAUDE_PROJECT_DIR}</code>). Wires <strong>both</strong>
+  families: observability (<code>emit-event</code>, <code>status-sidecar</code>, <code>rename-intercept</code>) on the broad
+  tool/event matchers, <strong>and</strong> the enforcement hooks (the S085 fix) on
+  Edit/Write/MultiEdit/NotebookEdit (the four <code>confirmed</code>/boundary hooks), Bash/PowerShell
+  (deletes), and Agent/Task (sub-spawn).</li>
+<li><strong><code>gielinor/.claude/settings.json</code></strong> (loaded when a session opens inside <code>gielinor/</code>).
+  Uses <code>${CLAUDE_PROJECT_DIR}</code> (correct there) and registers <strong>only</strong> the enforcement hooks
+  — defence-in-depth. The redundancy is intentional and harmless: blocking hooks are
+  idempotent.</li>
+</ul>
+<p><code>defaultMode</code> is <code>bypassPermissions</code> with a small allow-list; the permission allow-lists
+also live in the corresponding <code>settings.local.json</code> files.</p>
+<h2 id="summary-whats-a-gate-vs-discipline">Summary — what's a gate vs. discipline</h2>
+<ul>
+<li><strong>Hard gates (cannot bypass):</strong> no <code>confirmed/</code> writes; no deletes; the three sub-agent
+  write boundaries; no sub-spawn.</li>
+<li><strong>Discipline (the agent must hold):</strong> the draft-then-approve flow, the <code>bank/</code> and
+  <code>skills/</code> draft gates, treating <code>meta/</code> and rituals as user-controlled, the routing rules.
+  See <a href="#page-04-write-discipline">04 — Write discipline</a>.</li>
+</ul>
+<hr />
+<p>Next: <strong><a href="#page-09-cockpit">09 — The cockpit</a></strong> — how you drive the fleet.</p>
+</section>
+
+<section id="page-09-cockpit" class="doc-page">
+<h1 id="09-the-cockpit-how-you-drive-the-brain">09 — The cockpit: how you drive the brain</h1>
+<p>Everything above describes the brain <em>at rest</em> — its layers, rules, and rituals. This page
+is about <strong>operating</strong> it: the cockpit is the console you run the fleet of sessions from.
+It is one section by design — a code-level cockpit manual lives in
+<a href="../cockpit/_about.md"><code>cockpit/_about.md</code></a>; this is how it <em>enables working with the
+brain</em>.</p>
+<h2 id="what-it-is">What it is</h2>
+<p>The cockpit (<a href="../cockpit/"><code>cockpit/</code></a>) is a standalone <strong>desktop window</strong> — a single
+Python process (<code>pywebview</code> + an <code>aiohttp</code> backend + the claude driver, all in
+<a href="../cockpit/app.py"><code>app.py</code></a>) that launches and dies as one unit. It is the from-scratch
+rebuild of the earlier <code>switchboard/</code> map+client ([D-028]); launch it from the
+Desktop/Start-menu icon (<a href="../cockpit/Switchboard.vbs"><code>Switchboard.vbs</code></a>).</p>
+<p>It is, deliberately, <strong>not</strong> a dashboard bolted next to VS Code and <strong>not</strong> a headless
+agent runner. It is the place you watch and steer multiple live Claude Code sessions —
+players, Guthix, Braindead, their sub-agents — at once.</p>
+<h2 id="the-three-surfaces-over-one-session-model">The three surfaces, over one session model</h2>
+<p>The anti-accretion discipline: all three views project from a <em>single</em> normalised session
+model (<a href="../cockpit/backend.py"><code>build_session_model()</code></a>), not three independent data paths.</p>
+<ul>
+<li><strong>Fleet board</strong> (left) — every live session plus nested sub-agents, state at a glance,
+  click to open. State colours track the [D-029] two-axis vocabulary: <code>needs_you</code> /
+  <code>your_move</code> (the two "ball in your court" states that drive the attention count and
+  pings), <code>busy</code>, <code>idle</code>, <code>done</code>, <code>ended</code> — with flavour (alching / crew / wrapped-up)
+  riding as tags. (<a href="../cockpit/web/board.js"><code>web/board.js</code></a>)</li>
+<li><strong>Session console</strong> (centre) — drive a cockpit-launched session live (prompt / stream /
+  Stop / release). VS Code-hosted sessions appear as a read-only peek.
+  (<a href="../cockpit/web/console.js"><code>web/console.js</code></a>, <a href="../cockpit/web/term.js"><code>web/term.js</code></a>,
+  <a href="../cockpit/web/fleet.js"><code>web/fleet.js</code></a>)</li>
+<li><strong>Activity feed</strong> (right) — lifecycle checkpoints and comms across the fleet; raw actions
+  off by default; click an item to jump to its session. (<a href="../cockpit/web/feed.js"><code>web/feed.js</code></a>)</li>
+</ul>
+<h2 id="how-it-connects-to-the-brain">How it connects to the brain</h2>
+<p>The cockpit is strictly a <strong>reader</strong> of the hook contracts — the
+<a href="#page-08-enforcement-and-hooks">observability hooks</a> are untouched by the rebuild and still
+write into <a href="../switchboard/"><code>switchboard/</code></a>. The backend reads:</p>
+<ul>
+<li><code>state-switchboard.json</code> — the session manifest (the model's backbone).</li>
+<li><code>state-{dwarves,gnomes,penguins}.json</code> — to nest pending sub-agents under their parent.</li>
+<li><code>state.ndjson</code> — tail-read for a fresh action heartbeat (the manifest's frozen action
+  timestamp goes stale during ordinary-tool turns).</li>
+<li><code>chat.ndjson</code> — lifecycle stream for the feed.</li>
+<li><code>state-comms-{gielinor,braindead}.md</code> — comms mirrors, parsed into feed items.</li>
+<li><code>state-names.json</code> — disk-backed board renames (shared with the <code>/rename</code> hook).</li>
+</ul>
+<p>So the loop closes: hooks emit state as sessions work → the cockpit renders it → you click a
+row → you're driving that session. The cockpit decays/greys stale rows itself but does not
+invent state; the <em>vocabulary</em> is hook-derived. (Two reader-side rules worth knowing: a
+quiet <code>your_move</code> past 5 min drops out of the attention tally; and there is a deliberate
+refusal to re-add a timeout-based busy→idle decay — it false-tripped genuine long
+analytical turns, so cancellation is detected from the actual Esc keystroke, never inferred
+from silence.)</p>
+<h2 id="how-it-drives-a-session-and-why-over-a-real-pty">How it drives a session — and why over a real PTY</h2>
+<p>The live drive path is <a href="../cockpit/ptybridge.py"><code>ptybridge.py</code></a> (the <code>/pty</code> WebSocket). It
+spawns a <strong>real PowerShell PTY</strong> (<code>winpty</code>) with <code>cwd</code> = brain root and runs <code>claude
+--session-id &lt;uuid&gt;</code> <em>interactively</em> inside it, piped to the xterm.js terminal in the
+window. One WebSocket ⇄ one PTY ⇄ one claude session. Because cwd is the brain root, the
+session picks up <a href="../.claude/settings.json"><code>.claude/settings.json</code></a> and lands on the fleet
+board like any other. The bridge strips leaked VS Code env vars and stamps
+<code>CLAUDE_COCKPIT=1</code> so the hook attributes the session to host "cockpit." The <code>/pty</code>
+endpoint is RCE-sensitive, so it's gated by a per-process token plus an Origin check
+(hardened in [S085]).</p>
+<p><strong>Why a real interactive terminal rather than headless?</strong> This is the load-bearing design
+reason and worth stating plainly:</p>
+<blockquote>
+<p>As of <strong>2026-06-15</strong>, Anthropic moved headless <code>claude -p</code>, the Agent SDK, and GitHub
+Actions onto a metered API-credit pool — those no longer count toward the Claude
+subscription. <em>Interactive</em> Claude Code in a terminal stays on the subscription. So the
+cockpit deliberately abandoned its original headless <code>/chat</code> driver and pivoted to driving
+a genuine interactive terminal session.</p>
+</blockquote>
+<p>The PTY route also gets two things headless never could: <strong>Esc cancels a turn</strong> natively,
+and <strong><code>AskUserQuestion</code> / <code>ExitPlanMode</code> / permission prompts work</strong> because there is a real
+TTY (headless auto-dismissed them with an unanswerable error).</p>
+<h2 id="stack-in-one-line">Stack, in one line</h2>
+<p>Backend: Python + <code>aiohttp</code>, assets served <code>Cache-Control: no-store</code>. Frontend: Preact +
+<code>htm</code> via an ESM import map — no build step; xterm and a fit-addon vendored under
+<code>web/vendor/</code>. Shell: <code>pywebview</code>. A relaunch is needed to pick up backend/JS changes (the
+running window holds stale code).</p>
+<hr />
+<p>Next: <strong><a href="#page-10-dev-brain">10 — The dev brain</a></strong> — where this very documentation was built.</p>
+</section>
+
+<section id="page-10-dev-brain" class="doc-page">
+<h1 id="10-the-dev-brain-developer-braindead">10 — The dev brain (<code>developer-braindead/</code>)</h1>
+<p>The second of the <a href="#the-two-brain-split">two brains</a>. Where the main brain
+(<code>gielinor/</code>) is the cognition, the dev brain is the <strong>construction log</strong> for building it —
+design conversations, decisions, experiments, false starts, build context. A working
+notebook, <strong>not</strong> a cognitive system: no agent runs cycles over it, there are no players,
+no alching, no bankstanding.</p>
+<p>Authoritative sources: <a href="../developer-braindead/CLAUDE.md"><code>developer-braindead/CLAUDE.md</code></a>,
+<a href="../developer-braindead/_about.md"><code>developer-braindead/_about.md</code></a>,
+<a href="../developer-braindead/respawn.md"><code>developer-braindead/respawn.md</code></a>.</p>
+<h2 id="the-actor-braindead">The actor: Braindead</h2>
+<p>In the dev brain the agent operates as <strong>Braindead</strong> — the construction crew that builds
+and maintains <code>gielinor/</code>. Light persona (gruff, plainspoken build-state; voice card in the
+dev <code>CLAUDE.md</code>); mostly the work is structural. The deliverable is well-considered changes
+to the main brain's structure plus supporting design notes.</p>
+<ul>
+<li><strong>Reads</strong> dev-brain content freely.</li>
+<li><strong>Writes</strong> dev-brain layers per their <code>_about.md</code>, and <strong>writes <code>gielinor/</code> freely</strong> —
+  that is the whole job. (The asymmetry: <code>gielinor/</code> does not write back to the dev brain
+  and reads it only on explicit principal cue. See the <a href="../CLAUDE.md">root router</a>.)</li>
+</ul>
+<h2 id="entering-and-leaving-dev-brain-mode">Entering and leaving dev-brain mode</h2>
+<ul>
+<li><strong>Enter:</strong> a message that <em>starts with</em> <code>Lets develop gielinor</code> (strict matching, same as
+  player address). On entry, run the dev-brain entry sequence — read <code>respawn.md</code> first,
+  then operate under dev conventions. This is a mini-respawn, symmetric to mid-session
+  player switching.</li>
+<li><strong>The entry sequence is not lighter-weight when reached mid-conversation.</strong> It includes
+  <strong>sibling-detection and posting an <code>OPEN</code></strong> to
+  <a href="../developer-braindead/comms/active.md"><code>comms/active.md</code></a>. Skipping the <code>OPEN</code> is the
+  system's most common discipline leak; the [S082] fix made it mandatory on every entry.</li>
+<li><strong>Leave:</strong> address a player at the start of a message (<code>Hey Jebrim, …</code>) to re-enter
+  <code>gielinor/</code>. Without an address, dev-brain mode is <strong>sticky</strong>.</li>
+<li><strong>Visualizer marker:</strong> on entry, write <code>dev-brain</code> to <code>.claude/active-mode.txt</code> so the
+  hooks spawn Braindead; on close, write <code>unscoped</code>.</li>
+</ul>
+<h2 id="the-layer-set-a-stripped-down-mirror">The layer set — a stripped-down mirror</h2>
+<p>The dev brain borrows the RuneScape layer names for coherence but cuts what a notebook
+doesn't need ([D-006]):</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bank/</code></td>
+<td>Semantic: decisions (<code>D-NNN</code>), assumptions, open questions, risks, research, the plan, drafts</td>
+</tr>
+<tr>
+<td><code>quest-log/</code></td>
+<td>Episodic: per-session entries <code>SNNN_&lt;slug&gt;.md</code>, titled at session close</td>
+</tr>
+<tr>
+<td><code>spellbook/</code></td>
+<td>Procedural: dev rituals — <code>respawn-ritual.md</code>, <code>session-close.md</code></td>
+</tr>
+<tr>
+<td><code>examine/</code></td>
+<td>Self-model: the dev-agent's evolving postures</td>
+</tr>
+<tr>
+<td><code>player/</code></td>
+<td>User-model: Niklavs's preferences and working agreements</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cut</strong> vs. the main brain: <code>inventory/</code> (no working memory), <code>keepsake/</code> (no runtime
+priority), and <code>lorebook/</code> — because <em>the whole dev brain is the main brain's lorebook</em>.</p>
+<p>Conventions worth noting: stable entry IDs (<code>D-NNN</code>, <code>A-NNN</code>, <code>Q-NNN</code>, <code>R-NNN</code>, <code>I-NNN</code>)
+that are never reused; wiki-links <code>[[ID]]</code> that are load-bearing across docs; a single-file
+living plan at <a href="../developer-braindead/bank/plan.md"><code>bank/plan.md</code></a>; and the same
+never-destroy discipline (superseded entries move to <code>archive/</code>).</p>
+<h2 id="how-the-dev-brain-relates-to-this-documentation">How the dev brain relates to this documentation</h2>
+<p>This <code>docs/</code> tree was written <em>from</em> the dev brain — it is a Braindead construction
+artifact describing the main brain. The dev brain's own <code>respawn.md</code>, <code>quest-log/</code>, and
+<code>bank/decisions/</code> remain the canonical narrative of <em>how the system came to be the way it
+is</em>; <code>docs/</code> is the synthesised reference for <em>what it is now</em>.</p>
+<h2 id="the-strategic-state-as-of-writing">The strategic state (as of writing)</h2>
+<p>A standing self-assessment in the dev brain ([D-027], the S060 self-audit) is worth
+surfacing because it frames where the project is: the brain has been built <strong>inward</strong> —
+observability, the cockpit, the visualizer — and has not yet built outward <strong>hands</strong>. The
+agent is still manual-invocation-only; the first outward action (a scheduled
+shipping-mart freshness pilot, <code>bank/plan.md</code> §C) is the identified highest-value next step.
+Check <a href="../developer-braindead/respawn.md"><code>developer-braindead/respawn.md</code></a> for the live
+"where we are / next concrete step."</p>
+<hr />
+<p>Next: <strong><a href="#page-11-appendix">Appendix</a></strong>.</p>
+</section>
+
+<section id="page-11-appendix" class="doc-page">
+<h1 id="11-appendix">11 — Appendix</h1>
+<p>Loose ends, a quick-reference, and the source cross-reference index.</p>
+<h2 id="ideas-capture">Ideas capture</h2>
+<p>A pre-everything capture path, shared across both brains and all actors. When the principal
+says <code>note this idea: &lt;text&gt;</code> anywhere in a message (case-insensitive, colon required), the
+active actor writes <strong>one</strong> file to <a href="../ideas/"><code>brain/ideas/</code></a> — <code>YYYY-MM-DD-&lt;actor&gt;-&lt;slug&gt;.md</code>,
+body = the idea text, no elaboration, no clarifying questions — and moves on. Listing is on
+cue ("what ideas have I had", "list my ideas", "ideas about X"), grouped by actor, newest
+first.</p>
+<p>It is <strong>principal-prompted only</strong> — dwarves/gnomes/penguins don't capture ideas, and the
+agent doesn't preemptively label observations as ideas. No drafts, no proposals, no
+auto-promotion (manual promotion only). Canonical spec:
+<a href="../ideas/_about.md"><code>brain/ideas/_about.md</code></a>.</p>
+<h2 id="body-files">Body files</h2>
+<p>The "body" is the substrate-specific configuration, as opposed to the "brain" (the layered
+memory). On a <a href="#death-and-spawn">reset</a> these are the principal's
+choice to keep; on a future <a href="#death-and-spawn">ascension</a> they are
+what changes while the brain travels intact.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../CLAUDE.md"><code>CLAUDE.md</code></a> (root)</td>
+<td>The brain-root router — resolves main-brain vs. dev-brain.</td>
+</tr>
+<tr>
+<td><a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a></td>
+<td>The main-brain master rulebook (imports <code>meta/</code>).</td>
+</tr>
+<tr>
+<td><a href="../developer-braindead/CLAUDE.md"><code>developer-braindead/CLAUDE.md</code></a></td>
+<td>Dev-brain conventions.</td>
+</tr>
+<tr>
+<td><code>CLAUDE.local.md</code></td>
+<td>Host-local overrides.</td>
+</tr>
+<tr>
+<td><code>.mcp.json</code></td>
+<td>MCP tool/server config.</td>
+</tr>
+<tr>
+<td><code>ticks.md</code></td>
+<td>Scheduling (the agent's "heartbeat").</td>
+</tr>
+<tr>
+<td><code>.claude/settings.json</code></td>
+<td>Hook wiring + permissions — see <a href="#page-08-enforcement-and-hooks">08</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quick-layer-routing-reference">Quick layer-routing reference</h2>
+<p>The full table is in <a href="#routing">04 — Write discipline</a> (authoritative:
+<a href="../gielinor/meta/layer-routing.md"><code>layer-routing.md</code></a>). The one-line rule:</p>
+<blockquote>
+<p><strong>Quest-log is for narrative; everything else has a home.</strong> Before writing, ask <em>what
+shape is this?</em> — knowledge → <code>bank/drafts/</code>; method → <code>spellbook/drafts/skills/</code>;
+self-observation → <code>examine/drafts/</code>; resume state → <code>inventory/</code>; decision →
+<code>lorebook/drafts/</code>. When genuinely ambiguous, ask.</p>
+</blockquote>
+<h2 id="source-cross-reference-index">Source cross-reference index</h2>
+<p>Each doc page maps to the canonical files it summarises. <strong>If a page and its source
+disagree, the source wins.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Doc page</th>
+<th>Canonical sources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#page-01-orientation">01 — Orientation</a></td>
+<td><a href="../CLAUDE.md"><code>CLAUDE.md</code></a>, <a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a></td>
+</tr>
+<tr>
+<td><a href="#page-02-glossary">02 — Glossary</a></td>
+<td>the layer <code>_about.md</code> files; this doc set</td>
+</tr>
+<tr>
+<td><a href="#page-03-layers-and-memory">03 — Layers &amp; memory</a></td>
+<td><a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a> → <em>Layer index</em>; per-layer <code>_about.md</code>; <a href="../gielinor/players/_about.md"><code>players/_about.md</code></a></td>
+</tr>
+<tr>
+<td><a href="#page-04-write-discipline">04 — Write discipline</a></td>
+<td><a href="../gielinor/meta/write-rules.md"><code>write-rules.md</code></a>, <a href="../gielinor/meta/drafts-mechanics.md"><code>drafts-mechanics.md</code></a>, <a href="../gielinor/meta/archive-discipline.md"><code>archive-discipline.md</code></a>, <a href="../gielinor/meta/layer-routing.md"><code>layer-routing.md</code></a></td>
+</tr>
+<tr>
+<td><a href="#page-05-actors-and-modes">05 — Actors &amp; modes</a></td>
+<td><a href="../gielinor/meta/modes.md"><code>modes.md</code></a>, <a href="../gielinor/meta/guthix.md"><code>guthix.md</code></a>, <a href="../gielinor/CLAUDE.md"><code>gielinor/CLAUDE.md</code></a>, persona files</td>
+</tr>
+<tr>
+<td><a href="#page-06-rituals">06 — Rituals</a></td>
+<td><a href="../gielinor/spellbook/rituals/"><code>spellbook/rituals/*.md</code></a>, <a href="../gielinor/meta/death-and-spawn.md"><code>death-and-spawn.md</code></a></td>
+</tr>
+<tr>
+<td><a href="#page-07-communication-and-coordination">07 — Communication</a></td>
+<td><a href="../gielinor/meta/communication-protocol.md"><code>communication-protocol.md</code></a>, <a href="../gielinor/comms/_about.md"><code>comms/_about.md</code></a></td>
+</tr>
+<tr>
+<td><a href="#page-08-enforcement-and-hooks">08 — Enforcement &amp; hooks</a></td>
+<td><a href="../gielinor/.claude/hooks/"><code>gielinor/.claude/hooks/</code></a>, <a href="../developer-braindead/.claude/hooks/"><code>developer-braindead/.claude/hooks/</code></a>, the <code>settings.json</code> files</td>
+</tr>
+<tr>
+<td><a href="#page-09-cockpit">09 — The cockpit</a></td>
+<td><a href="../cockpit/_about.md"><code>cockpit/_about.md</code></a>, <code>cockpit/backend.py</code>, <code>cockpit/ptybridge.py</code></td>
+</tr>
+<tr>
+<td><a href="#page-10-dev-brain">10 — The dev brain</a></td>
+<td><a href="../developer-braindead/_about.md"><code>developer-braindead/_about.md</code></a>, <a href="../developer-braindead/CLAUDE.md"><code>developer-braindead/CLAUDE.md</code></a>, <a href="../developer-braindead/respawn.md"><code>respawn.md</code></a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="decision-references-used-across-these-docs">Decision references used across these docs</h2>
+<p>These <code>D-NNN</code> / <code>S-NNN</code> markers appear throughout and resolve to the lorebook (main brain)
+or <code>bank/decisions/</code> and <code>quest-log/</code> (dev brain):</p>
+<ul>
+<li><strong>D-016</strong> gnomes · <strong>D-017</strong> explicit-permission writes · <strong>D-018</strong> per-session intent
+  files · <strong>D-021</strong> penguins · <strong>D-024</strong> parallel-session coordination · <strong>D-025</strong>
+  multiple-choice-with-recommendation · <strong>D-026</strong> switchboard promotion · <strong>D-027</strong>
+  inward/outward build gap · <strong>D-028</strong> the cockpit rebuild · <strong>D-029</strong> two-axis state vocab.</li>
+<li><strong>S038</strong> Guthix routing · <strong>S058</strong> in-voice intent · <strong>S082</strong> mandatory-OPEN · <strong>S085</strong>
+  enforcement-wiring + cockpit security hardening.</li>
+</ul>
+<hr />
+<p>← Back to the <strong><a href="#page-readme">index</a></strong>.</p>
+</section>
+  </main>
+</div>
+<script>
+  // Scroll-spy: highlight the nav entry for the section in view.
+  const links = [...document.querySelectorAll('nav a')];
+  const byId = Object.fromEntries(links.map(a => [a.dataset.target, a]));
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        (byId[e.target.id] || {}).classList?.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+  document.querySelectorAll('section.doc-page').forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

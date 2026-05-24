@@ -28,6 +28,16 @@ clusters not already in context; Braindead authored all 12 files for single-auth
 coherence and cross-linking. All ~45 individually-linked source files verified to exist
 (link-check clean). No `gielinor/` or `cockpit/` writes — docs only.
 
+**HTML version (principal asked "where is the HTML version?").** Added a regenerable
+build script `docs/build-html.py` (python-markdown 3.10, tables/fenced_code/attr_list/toc
+with a GitHub-compatible slugify) that renders all 12 pages into ONE portable
+self-contained file `docs/brain-docs.html` (~104 KB) with a sticky sidebar nav + scroll-spy,
+OSRS-gold theme. Inter-page `.md` links are rewritten to in-page anchors; source links
+(`../gielinor/...`) kept relative (resolve in-repo). Verified: 81 in-page anchors all
+resolve, 0 broken, 0 unrewritten docs links, 22 tables. Two small source edits to make
+anchors robust on both GitHub + HTML: explicit `<a id="death-and-spawn">` in 06-rituals,
+fixed the two appendix links to it.
+
 ## Notable facts the recon surfaced (folded into the docs)
 
 - **S085** wired the enforcement hooks at brain-root `.claude/settings.json` with absolute

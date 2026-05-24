@@ -19,8 +19,8 @@ auto-promotion (manual promotion only). Canonical spec:
 ## Body files
 
 The "body" is the substrate-specific configuration, as opposed to the "brain" (the layered
-memory). On a [reset](06-rituals.md#death--spawn-what-survives) these are the principal's
-choice to keep; on a future [ascension](06-rituals.md#death--spawn-what-survives) they are
+memory). On a [reset](06-rituals.md#death-and-spawn) these are the principal's
+choice to keep; on a future [ascension](06-rituals.md#death-and-spawn) they are
 what changes while the brain travels intact.
 
 | File | Role |

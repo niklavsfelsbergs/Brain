@@ -604,3 +604,6 @@
   • Shift+Enter still submits (6th attempt) — the byte (\n/Ctrl+J) was never the problem; xterm's return-false doesn't stop the textarea also emitting a \r. Fix: e.preventDefault() in the handler + opt-in keystroke diag (window.__TERMDIAG logs every ctrl byte to the PTY). Commit 04848db.
   • Cancelled turn sticks at BUSY — confirmed NO hook fires on Esc-interrupt (Stop only on natural completion; no UserPromptCancel). Fix: backend decays a heartbeat-silent busy → idle after BUSY_IDLE_AFTER_SEC=90s (no ping, no attention inflation). +6 tests, 32/32. Commit 317ac42.
   Board now reads b83.2 on fresh code. Updated relaunch checklist (incl. the diag instructions to end the Shift+Enter guessing) in the S083 quest log. active-mode.txt still dev-brain.
+
+[2026-05-24 18:xx] braindead-d71c4ab3 UPDATE (round 3)
+  Shift+Enter CONFIRMED WORKING by principal (preventDefault was the fix; the byte was never wrong — the textarea leaked a 2nd \r). Cancel-busy round 2: 90s decay too slow for the interactive feel. Added cockpit-terminal Esc detection — TermConn records _interruptedAt on the Esc keystroke (cleared on next submit), board clears that session's busy→idle instantly; 90s decay stays the backstop for VSCode/non-cockpit sessions. Commit 642db9c, board reads b83.3. View-layer only.

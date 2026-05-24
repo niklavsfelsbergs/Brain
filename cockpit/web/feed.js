@@ -12,6 +12,7 @@ const KIND_LABEL = {
   needs_you: "NEEDS YOU",
   done: "DONE",
   action: "",
+  say: "", // the agent's visible prose (transcript text blocks); reads clean, no chip
   comms: "COMMS",
 };
 
@@ -40,6 +41,12 @@ export function FeedPanel({ onJump, onCollapse }) {
   // sparse lifecycle checkpoints show). Choice persists. (S066)
   const [showActions, setShowActions] = useState(() => {
     const v = localStorage.getItem("cockpit-feed-actions");
+    return v === null ? true : v === "1";
+  });
+  // Prose ON by default — it's the agent's running commentary (kind:"say"), the
+  // thing the principal wanted in the feed (S073). Toggle persists. (S073)
+  const [showSay, setShowSay] = useState(() => {
+    const v = localStorage.getItem("cockpit-feed-say");
     return v === null ? true : v === "1";
   });
   const elRef = useRef(null);
@@ -77,7 +84,9 @@ export function FeedPanel({ onJump, onCollapse }) {
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 160) el.scrollTop = el.scrollHeight;
   });
 
-  const shown = items.filter((i) => showActions || i.kind !== "action");
+  const shown = items.filter(
+    (i) => (showActions || i.kind !== "action") && (showSay || i.kind !== "say")
+  );
   return html`
     <aside class="feed-col">
       <div class="feed-head">
@@ -91,6 +100,15 @@ export function FeedPanel({ onJump, onCollapse }) {
               } catch {}
             }} />
             actions
+          </label>
+          <label class="feed-toggle">
+            <input type="checkbox" checked=${showSay} onChange=${(e) => {
+              setShowSay(e.target.checked);
+              try {
+                localStorage.setItem("cockpit-feed-say", e.target.checked ? "1" : "0");
+              } catch {}
+            }} />
+            prose
           </label>
           ${onCollapse &&
           html`<button class="icon-btn" title="collapse feed (Ctrl+J)" onClick=${onCollapse}>›</button>`}

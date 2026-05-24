@@ -65,6 +65,14 @@ CHAT_TEXT_MAX = 320          # S058: was 200 — headroom above the 280 intent c
 CHAT_SIZE_MAX = 1_000_000
 CHAT_LINES_MAX = 5000
 CHAT_TAIL_KEEP = 2000
+# S073: the agent's visible prose — the running commentary it writes between
+# tool calls (the Understanding/Plan preamble + in-turn narration). Hooks never
+# receive this text directly, so we tail it off the on-disk transcript Claude
+# Code writes (the same .jsonl backend.py parses for /history) and emit each new
+# principal-authored text block to chat.ndjson as kind:"say". A per-session byte
+# offset (record["say_offset"]) marks how far we've already emitted.
+PROJECTS_DIR = Path.home() / ".claude" / "projects"
+SAY_TEXT_MAX = 600           # generous per-block cap — the prose is the point.
 # Subtitle freshness — intent_text wins as the subtitle when updated within
 # this window, else latest_action prevails.
 SUBTITLE_INTENT_FRESH_SEC = 300
@@ -635,6 +643,85 @@ def _emit_chat_checkpoint(actor: str, sid8: str, instance: Optional[int],
             f.write(json.dumps(event, separators=(",", ":")) + "\n")
     except Exception as e:
         print(f"status-sidecar: chat checkpoint emit failed: {e}", file=sys.stderr)
+
+
+def _emit_chat_say(actor: str, sid8: str, instance: Optional[int], text: str) -> None:
+    """S073: append one `kind:"say"` prose line to chat.ndjson — the agent's
+    visible text output. Own cap (SAY_TEXT_MAX) since prose wants more headroom
+    than the 320-char checkpoint cap. Same append/atomicity story as the others."""
+    text = text[:SAY_TEXT_MAX]
+    event = {
+        "ts": time.time(),
+        "actor": actor or "wisp",
+        "instance": instance,
+        "sid8": sid8 or "",
+        "kind": "say",
+        "text": text,
+    }
+    try:
+        CHAT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with CHAT_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(event, separators=(",", ":")) + "\n")
+    except Exception as e:
+        print(f"status-sidecar: chat say emit failed: {e}", file=sys.stderr)
+
+
+def _transcript_path(payload: dict, sid: str) -> Optional[Path]:
+    """The session's on-disk transcript .jsonl. The hook payload carries it on
+    most events; fall back to a glob by session id (mirrors backend.py)."""
+    tp = payload.get("transcript_path")
+    if isinstance(tp, str) and tp:
+        p = Path(tp)
+        if p.is_file():
+            return p
+    try:
+        return next(iter(PROJECTS_DIR.glob(f"*/{sid}*.jsonl")), None)
+    except OSError:
+        return None
+
+
+def _emit_says_from_transcript(actor: str, sid8: str, instance: Optional[int],
+                               transcript: Optional[Path], byte_offset: int) -> int:
+    """S073: tail the transcript from byte_offset and emit each NEW
+    principal-authored assistant text block to chat.ndjson as kind:"say". Skips
+    sub-agent (isSidechain) turns and thinking blocks — only the session actor's
+    visible prose. Returns the advanced byte offset; a trailing partial line (no
+    newline yet) is held for the next fire. Resilient: any read error leaves the
+    offset untouched so nothing is double-emitted or lost."""
+    if transcript is None:
+        return byte_offset
+    try:
+        with transcript.open("rb") as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            if byte_offset > size:          # transcript rotated/truncated → restart
+                byte_offset = 0
+            f.seek(byte_offset)
+            data = f.read()
+    except OSError:
+        return byte_offset
+    nl = data.rfind(b"\n")
+    if nl == -1:
+        return byte_offset                  # no complete line yet — wait
+    complete = data[: nl + 1]
+    for raw in complete.split(b"\n"):
+        if not raw.strip():
+            continue
+        try:
+            r = json.loads(raw.decode("utf-8", "replace"))
+        except ValueError:
+            continue
+        if r.get("isSidechain") is True or r.get("type") != "assistant":
+            continue
+        content = (r.get("message") or {}).get("content")
+        if not isinstance(content, list):
+            continue
+        for b in content:
+            if isinstance(b, dict) and b.get("type") == "text":
+                txt = (b.get("text") or "").strip()
+                if txt:
+                    _emit_chat_say(actor, sid8, instance, txt)
+    return byte_offset + len(complete)
 
 
 def _waiting_question(tool_name: str, tool_input: dict) -> str:
@@ -1391,6 +1478,28 @@ def main() -> None:
         "claude_pid_chain": claude_pid_chain,
         "claude_hwnd": claude_hwnd,
     }
+
+    # S073: emit the agent's visible prose (assistant text blocks) to the feed.
+    # The transcript is the only place the message text lives — no hook payload
+    # carries it. First fire baselines the offset at the current transcript end
+    # so a resumed session's backlog is never replayed; afterward we tail only
+    # the new tail. Offset persists in the record; failures here never block the
+    # status write below.
+    transcript = _transcript_path(payload, sid)
+    say_offset = prev.get("say_offset")
+    if say_offset is None:
+        try:
+            say_offset = transcript.stat().st_size if transcript else 0
+        except OSError:
+            say_offset = 0
+    else:
+        try:
+            say_offset = _emit_says_from_transcript(
+                actor, sid8, instance, transcript, int(say_offset))
+        except Exception as e:
+            print(f"status-sidecar: say dispatch failed: {e}", file=sys.stderr)
+            say_offset = int(say_offset)
+    record["say_offset"] = say_offset
 
     try:
         _atomic_write_json(out_path, record)

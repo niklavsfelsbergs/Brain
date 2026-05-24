@@ -63,4 +63,11 @@ fixed the two appendix links to it.
 
 OPEN + UPDATE posted (e668ec7e). No live Braindead siblings the whole session; one
 ABANDONED candidate (5f93bb32, read-only Codex triage = S085, no collision). active-mode.txt
-left `dev-brain`.
+cleared to `unscoped` at session close.
+
+**Cascade.** New repo-root `docs/` tree (12 MD pages + `brain-docs.html` + `build-html.py`);
+dev-brain `quest-log/in-progress/S086_*`, `respawn.md` (S086 prepend + S084 block trimmed to a
+Prior-sessions pointer + docs note in "Where we are"), `bank/build-lessons.md` (+1 lesson),
+`comms/active.md` (OPEN/UPDATE/CLOSING); cross-conversation memory `clarify-deliverable-form`.
+**Main-brain changes.** none — no writes into `gielinor/`. `docs/` is a repo-root artifact that
+*describes* the main brain; it is not part of it.

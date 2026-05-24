@@ -673,3 +673,8 @@
 
 [2026-05-25 00:1x] braindead-86020a52 UPDATE (S086 round 3 — Esc didn't clear the bar's own text)
   b86.2 cleared claude's in-terminal box on Esc but not the composer textarea's own value. Fix (term.js, board.js b86.2→b86.3): TermComposer Esc handler now also setText("")+resetHeight(). node --check clean. Still UNCOMMITTED.
+
+[2026-05-25 00:06] braindead-e668ec7e CLOSING
+  Completed: S086 — full technical documentation of the brain at repo-root docs/ (12 MD pages, map-that-LINKS-to-canonical-files not a copy) + a regenerable single-file docs/brain-docs.html (python-markdown; 81 in-page anchors resolve, 0 broken, 22 tables) + docs/build-html.py. Cockpit reduced to ONE "how you drive it" section. Recorded honestly: the S085 brain-root enforcement model + role-hooks-inert-for-principal, and the emit-commit-event.py legacy experiments/visualizer/state.ndjson bug (every other hook moved to switchboard/ in S052). NO gielinor/ or cockpit/ writes — docs only. 3 commits (eb03491 MD tree / a85cab2 HTML+generator / + this close).
+  Leaving open: docs discoverability (no link from root README / respawn yet); the emit-commit-event.py legacy-path bug (documented, unfixed); optional inline-disable of source links for standalone sharing. Strategic next step unchanged — the §C shipping-mart pilot (the outward build) per D-027.
+  No live Braindead siblings the whole session. active-mode.txt → unscoped.

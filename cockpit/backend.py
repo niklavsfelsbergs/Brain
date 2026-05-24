@@ -450,6 +450,56 @@ async def api_feed(request):
     return web.json_response({"items": items[-300:]}, headers=NO_STORE)
 
 
+# ─── clipboard bridge ────────────────────────────────────────────────────────
+# The terminal runs in WebView2 (pywebview), where the native Ctrl+V → paste-event
+# path through xterm's textarea is unreliable and navigator.clipboard.readText()
+# is permission-gated. The cockpit is bound to 127.0.0.1 and runs as a desktop
+# app, so the *server's* clipboard is the user's clipboard — read it here and hand
+# it to term.js, which feeds it through term.paste(). Windows-only via ctypes; any
+# failure returns "" so a non-Windows host degrades to "paste does nothing."
+
+def _read_clipboard_text() -> str:
+    try:
+        import ctypes
+        from ctypes import wintypes
+    except Exception:
+        return ""
+    CF_UNICODETEXT = 13
+    try:
+        u, k = ctypes.windll.user32, ctypes.windll.kernel32
+    except AttributeError:
+        return ""  # not Windows
+    u.OpenClipboard.argtypes = [wintypes.HWND]
+    u.OpenClipboard.restype = wintypes.BOOL
+    u.GetClipboardData.argtypes = [wintypes.UINT]
+    u.GetClipboardData.restype = wintypes.HANDLE
+    u.CloseClipboard.restype = wintypes.BOOL
+    k.GlobalLock.argtypes = [wintypes.HGLOBAL]
+    k.GlobalLock.restype = wintypes.LPVOID
+    k.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+    if not u.OpenClipboard(None):
+        return ""
+    try:
+        h = u.GetClipboardData(CF_UNICODETEXT)
+        if not h:
+            return ""
+        p = k.GlobalLock(h)
+        if not p:
+            return ""
+        try:
+            return ctypes.c_wchar_p(p).value or ""
+        finally:
+            k.GlobalUnlock(h)
+    finally:
+        u.CloseClipboard()
+
+
+async def api_clipboard(request):
+    loop = asyncio.get_running_loop()
+    text = await loop.run_in_executor(None, _read_clipboard_text)
+    return web.json_response({"text": text}, headers=NO_STORE)
+
+
 # ─── static files ───────────────────────────────────────────────────────────
 
 async def static_handler(request):
@@ -465,6 +515,7 @@ def make_app():
     app = web.Application()
     app.router.add_get("/api/sessions", api_sessions)
     app.router.add_get("/api/feed", api_feed)
+    app.router.add_get("/api/clipboard", api_clipboard)
     app.router.add_get("/chat", chat_handler)
     from ptybridge import pty_handler  # real interactive claude over a PTY (S066 B)
     app.router.add_get("/pty", pty_handler)

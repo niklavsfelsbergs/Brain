@@ -62,7 +62,10 @@ class TermConn {
     this.term = new XTerm({
       cursorBlink: true,
       fontFamily: 'ui-monospace, "Cascadia Code", Consolas, monospace',
-      fontSize: 13,
+      // sized via xterm because the terminal subtree is counter-scaled to net
+      // 1.0 (see .term-host in styles.css), not via the global --zoom (1.35).
+      // 13 × 1.35 ≈ the prior visual size.
+      fontSize: 18,
       scrollback: 8000,
       // warm interior to fit the OSRS wood/parchment frame (the S066 reskin
       // leaves the terminal interior to us): --bg ground, --ink text, gold cursor.
@@ -71,6 +74,38 @@ class TermConn {
     this.fit = FitAddonNS ? new FitAddonNS.FitAddon() : null;
     if (this.fit) this.term.loadAddon(this.fit);
     this.term.open(this.container);
+
+    // Paste in WebView2 (pywebview). Two things conspire against the normal path:
+    // the .term-host CSS transform makes xterm's textarea-paste handler unreliable
+    // (same class of breakage the counter-scale already works around for selection),
+    // and WebView2 doesn't reliably deliver Ctrl+V as a native paste event anyway.
+    // So we own paste explicitly: intercept Ctrl/Cmd+V and Shift+Insert at keydown,
+    // pull the text from the backend clipboard bridge (/api/clipboard — the server
+    // is on 127.0.0.1, so its clipboard IS the user's), and feed it through
+    // term.paste() (handles bracketed-paste wrapping + emits onData). The native
+    // paste listener stays as a fast path for environments where it does fire; both
+    // funnel through _doPaste, which dedups so a single Ctrl+V can't paste twice.
+    this.term.attachCustomKeyEventHandler((e) => {
+      if (e.type !== "keydown") return true;
+      const ctrlV = (e.key === "v" || e.key === "V") && (e.ctrlKey || e.metaKey) && !e.altKey;
+      const shiftIns = e.key === "Insert" && e.shiftKey;
+      if (ctrlV || shiftIns) {
+        this._pasteFromClipboard();
+        return false; // don't let xterm send a raw ^V to the PTY
+      }
+      return true;
+    });
+    this.container.addEventListener(
+      "paste",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const t = (e.clipboardData && e.clipboardData.getData("text")) || "";
+        if (t) this._doPaste(t);
+        else this._pasteFromClipboard();
+      },
+      true,
+    );
 
     this.term.onData((d) => this._handleData(d));
     this.term.onResize(({ cols, rows }) => this._send({ type: "resize", cols, rows }));
@@ -81,6 +116,36 @@ class TermConn {
 
   _send(obj) {
     if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(obj));
+  }
+
+  // Single funnel for all paste sources, with a short dedup window so the keydown
+  // handler and a native paste event firing for the same Ctrl+V don't double up.
+  _doPaste(text) {
+    if (!text) return;
+    const now = Date.now();
+    if (text === this._lastPasteText && now - (this._lastPasteAt || 0) < 250) return;
+    this._lastPasteText = text;
+    this._lastPasteAt = now;
+    this.term.paste(text);
+  }
+
+  // Pull clipboard text and paste it. Tries the backend bridge first (works in the
+  // webview without clipboard permissions); falls back to the async Clipboard API
+  // for the case where the cockpit is opened in a plain browser pointed at a remote
+  // server (where the server's clipboard wouldn't be the user's).
+  async _pasteFromClipboard() {
+    let text = "";
+    try {
+      const r = await fetch("/api/clipboard");
+      if (r.ok) text = (await r.json()).text || "";
+    } catch {}
+    if (!text) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText)
+          text = await navigator.clipboard.readText();
+      } catch {}
+    }
+    this._doPaste(text);
   }
 
   // Best-effort /rename interception. We mirror the current input line as the
@@ -203,9 +268,16 @@ export function Term({ conn }) {
   useEffect(() => {
     const host = ref.current;
     if (host && conn.container.parentNode !== host) host.appendChild(conn.container);
-    // size after the element is laid out, then once more after paint
+    // size after the element is laid out, then once more after paint; scroll to
+    // the newest output each time — re-parenting the xterm element on a row-jump
+    // resets its viewport to the top of the scrollback, so without this you land
+    // at the top of the session and have to scroll down to the live prompt.
     conn.fitNow();
-    const t = setTimeout(() => conn.fitNow(), 60);
+    conn.term.scrollToBottom();
+    const t = setTimeout(() => {
+      conn.fitNow();
+      conn.term.scrollToBottom();
+    }, 60);
     const onResize = () => conn.fitNow();
     window.addEventListener("resize", onResize);
     conn.term.focus();
@@ -216,7 +288,12 @@ export function Term({ conn }) {
       // you switch rows; release() tears it down.
     };
   }, [conn]);
-  // padding insets xterm from the gold frame; bg matches the xterm interior so
-  // the inset reads as one warm surface (box-sizing:border-box → fit stays right).
-  return html`<div style="width:100%;height:100%;padding:8px 12px;background:#17120b;" ref=${ref}></div>`;
+  // The cockpit scales the whole UI with CSS `zoom` (--zoom) on .app-grid, but
+  // xterm.js can't live under a scaled ancestor — mouse→cell mapping drifts so a
+  // selection lands rows below the pointer and the fit comes up short. .term-frame
+  // is a normal flex item (so the column layout is safe); the inner .term-host
+  // counter-scales with `transform` (visual-only — can't disturb layout footprint
+  // like zoom did) back to net 1.0, and .term-frame clips any spill. Terminal size
+  // comes from xterm fontSize, not the zoom. See styles.css .term-frame/.term-host.
+  return html`<div class="term-frame"><div class="term-host" ref=${ref}></div></div>`;
 }

@@ -115,26 +115,28 @@ class TermConn {
     // funnel through _doPaste, which dedups so a single Ctrl+V can't paste twice.
     this.term.attachCustomKeyEventHandler((e) => {
       if (e.type !== "keydown") return true;
+      this._diag("keydown"); // [term-diag] opt-in: window.__TERMDIAG (no-op otherwise)
       const ctrlV = (e.key === "v" || e.key === "V") && (e.ctrlKey || e.metaKey) && !e.altKey;
       const shiftIns = e.key === "Insert" && e.shiftKey;
       if (ctrlV || shiftIns) {
         this._pasteFromClipboard();
         return false; // don't let xterm send a raw ^V to the PTY
       }
-      // Shift+Enter → insert a newline instead of submitting. Plain xterm sends \r
-      // for both Enter and Shift+Enter (indistinguishable in legacy keyboard mode),
-      // so Shift+Enter just submits. Iteration history: S072 sent bare \n (LF) —
-      // claude's TUI ignores it; S078 sent the CSI-u ESC[13;2u — that only works
-      // once claude has negotiated the kitty keyboard protocol, which this PTY/
-      // WebView2 build evidently does NOT, so it still failed. ESC+CR (\x1b\r) is
-      // the Alt/Option+Enter byte, which claude's input binds to newline-insert
-      // with no terminal-protocol setup required — the protocol-independent path.
-      // Submit (plain Enter, \r) untouched. (S080 — UNVERIFIED; if it still fails,
-      // next fallback is literal backslash + CR "\\\r", the documented \<Enter>.)
+      // Shift+Enter → newline, not submit. The terminal can't encode Shift+Enter on
+      // the wire (legacy mode sends the same \r as Enter), but THIS handler sees
+      // e.shiftKey — so we just send claude the byte for its DOCUMENTED universal
+      // newline: Ctrl+J = LF = 0x0A. Per Claude Code docs (code.claude.com/docs/en/
+      // terminal-config): "press Ctrl+J … works in every terminal with no setup."
+      // History: S072 sent 0x0A and saw nothing, but that was an ancient claude build,
+      // never re-verified on fresh code; the four attempts since — kitty ESC[13;2u
+      // (unnegotiated), Alt+Enter \x1b\r, backslash+Enter \\\r, bracketed paste — ALL
+      // still submitted on current code. \\\r likely loses a burst race (the CR is
+      // handled before the \ commits to the line buffer); a lone 0x0A has no such
+      // race and needs no protocol. Back to the documented primitive. (S081c.)
       if (e.key === "Enter" && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
         this._linebuf = "";
-        this._send({ type: "input", data: "\x1b\r" });
-        return false; // swallow xterm's \r
+        this._send({ type: "input", data: "\n" });
+        return false; // swallow xterm's \r (submit stays plain Enter)
       }
       return true;
     });
@@ -182,11 +184,7 @@ class TermConn {
         this._fitRaf = requestAnimationFrame(() => {
           this._fitRaf = 0;
           this.fitNow();
-          if (this._follow) {
-            this.term.scrollToBottom();
-            const vp = this.container.querySelector(".xterm-viewport");
-            if (vp) vp.scrollTop = vp.scrollHeight;
-          }
+          if (this._follow) this._pinBottom();
         });
       });
       this._ro.observe(this.container);
@@ -230,13 +228,37 @@ class TermConn {
     this._doPaste(text);
   }
 
+  // Pin the viewport to the newest output. xterm's displayed line (scrollToBottom →
+  // ydisp) and the native .xterm-viewport scrollbar must be driven TOGETHER — moving
+  // one without the other desyncs them (thumb adrift, prompt below the fold). Every
+  // geometry change that can shift the row count re-pins through here while _follow.
+  _pinBottom() {
+    try {
+      this.term.scrollToBottom();
+      const vp = this.container.querySelector(".xterm-viewport");
+      if (vp) vp.scrollTop = vp.scrollHeight;
+    } catch {}
+  }
+
   _isAtBottom() {
+    // Buffer-index check (viewportY >= baseY) is the primary signal, but after the
+    // over-fit guard resizes mid-stream the native viewport can briefly disagree
+    // with the buffer indices. Treat "at bottom" as true if EITHER the buffer says
+    // so OR the native .xterm-viewport is scrolled within a row of its end — so a
+    // wheel-down that lands the thumb at the real bottom always re-engages _follow
+    // even if the buffer math is momentarily off (S081, covers H2).
     try {
       const b = this.term.buffer.active;
-      return b.viewportY >= b.baseY;
-    } catch {
-      return true;
-    }
+      if (b.viewportY >= b.baseY) return true;
+    } catch {}
+    try {
+      const vp = this.container.querySelector(".xterm-viewport");
+      if (vp) {
+        const slack = this._cellHeight() || 24;
+        return vp.scrollHeight - vp.clientHeight - vp.scrollTop <= slack;
+      }
+    } catch {}
+    return true;
   }
 
   // Batch PTY output into one write per animation frame, then re-pin to the bottom
@@ -255,15 +277,7 @@ class TermConn {
       if (!d) return;
       const follow = this._follow;
       this.term.write(d, () => {
-        if (!follow) return;
-        // Drive BOTH, same as the <Term> open pin loop: scrollToBottom() moves
-        // xterm's displayed line (ydisp → screen render), but the native
-        // .xterm-viewport's scrollTop must be synced too or it desyncs — thumb
-        // adrift, prompt below the fold while output streams. S077 fixed this on
-        // the open path only; the streaming path here was still scrollToBottom-only.
-        this.term.scrollToBottom();
-        const vp = this.container.querySelector(".xterm-viewport");
-        if (vp) vp.scrollTop = vp.scrollHeight;
+        if (follow) this._pinBottom();
       });
     });
   }
@@ -330,11 +344,82 @@ class TermConn {
     setTimeout(() => this._send({ type: "input", data: text + "\r" }), 3000);
   }
 
+  // ── [term-diag] S081/S083 — OPT-IN diagnostic, silent by default. Run
+  // `window.__TERMDIAG = 1` in DevTools to trace the fit/scroll math live (turn
+  // it off again with `delete window.__TERMDIAG`). Throttled to ~1 log/250ms.
+  // Prints the numbers needed to tell H1 (over-fit) from H2 (_follow desync)
+  // without guessing again — the relaunch-verification instrument for the
+  // prompt-below-fold bug. Two call sites: keydown + the <Term/> open pin loop.
+  _diag(why) {
+    if (!window.__TERMDIAG) return;
+    const now = Date.now();
+    if (now - (this._diagAt || 0) < 250) return;
+    this._diagAt = now;
+    try {
+      const frame = this.container.closest(".term-frame") || this.container.parentElement;
+      const cell = this._cellHeight();
+      const rows = this.term.rows, cols = this.term.cols;
+      const fh = frame ? frame.clientHeight : -1;
+      const used = rows * cell;
+      const overPx = used - (fh - 16); // 16 = .term-host vertical padding
+      const b = this.term.buffer.active;
+      const vp = this.container.querySelector(".xterm-viewport");
+      console.log(
+        `[term-diag] ${why} cid=${this.cid} frameH=${fh} rows=${rows} cols=${cols} ` +
+        `cellH=${cell.toFixed(2)} rows*cellH=${used.toFixed(1)} overfit=${overPx.toFixed(1)}px ` +
+        `follow=${this._follow} viewportY=${b.viewportY} baseY=${b.baseY} ` +
+        `vp.scrollTop=${vp ? vp.scrollTop : "?"} vp.scrollHeight=${vp ? vp.scrollHeight : "?"} ` +
+        `vp.clientHeight=${vp ? vp.clientHeight : "?"}`,
+      );
+    } catch (e) {
+      console.log("[term-diag] error", e);
+    }
+  }
+
   fitNow() {
     if (!this.fit) return;
     try {
       this.fit.fit();
+      // Over-fit guard (S081). The fit addon floors rows = frameContentHeight /
+      // cellHeight, but it reads `.term-host`'s getComputedStyle height — which in
+      // this WebView2 build can come back a hair taller than the box that actually
+      // PAINTS inside `.term-frame{overflow:hidden}` (the zoomed `.console-head`
+      // sibling consumes a non-integer 50×--zoom px of the flex column, and the
+      // flex:1 terminal div's reported vs painted height can disagree by up to ~a
+      // row). When rows×cellHeight exceeds the frame's real clientHeight, the
+      // bottom row — the live `>` prompt after a turn — renders below the clip and
+      // is invisible until a keystroke forces a cursor scroll. Floor can't catch
+      // this because the error is in the height it measured, not in the division.
+      // So: re-measure against the ACTUAL painted frame and shrink by a row while
+      // the terminal physically overflows it. Cheap, bounded, reversible.
+      const cell = this._cellHeight();
+      const frame = this.container.closest(".term-frame") || this.container.parentElement;
+      if (cell > 0 && frame) {
+        let guard = 0;
+        // 8px top + 8px bottom .term-host padding (styles.css .term-host).
+        const pad = 16;
+        while (this.term.rows > 1 && this.term.rows * cell > frame.clientHeight - pad && guard++ < 4) {
+          this.term.resize(this.term.cols, this.term.rows - 1);
+        }
+      }
     } catch {}
+  }
+
+  // Rendered cell (row) height in px. Prefer xterm's measured render dimensions.
+  // Fallback: visible viewport height / visible row count — NOT scrollHeight /
+  // buffer.active.length, which divides by the whole 8000-line scrollback (not the
+  // rendered rows) and yields a plausible-but-wrong number. Used by the over-fit
+  // guard and the [term-diag] block.
+  _cellHeight() {
+    try {
+      const h = this.term._core?._renderService?.dimensions?.css?.cell?.height;
+      if (h > 0) return h;
+    } catch {}
+    try {
+      const vp = this.container.querySelector(".xterm-viewport");
+      if (vp && this.term.rows > 0) return vp.clientHeight / this.term.rows;
+    } catch {}
+    return 0;
   }
 
   close() {
@@ -406,6 +491,9 @@ export function applyTermZoom() {
     for (const c of live.values()) {
       setTermFont(c.term, f);
       c.fitNow();
+      // A zoom-driven font change shifts the row count; fitNow alone repositions
+      // nothing, so the prompt can land below the fold. Re-pin while following. (S083)
+      if (c._follow) c._pinBottom();
     }
   });
 }
@@ -413,7 +501,10 @@ export function applyTermZoom() {
 // Refit every live terminal to its container (font unchanged). Called when the
 // console column changes width — panel collapse/expand or a divider drag.
 export function fitTerms() {
-  for (const c of live.values()) c.fitNow();
+  for (const c of live.values()) {
+    c.fitNow();
+    if (c._follow) c._pinBottom(); // a width change can shift rows — re-pin or the prompt clips (S083)
+  }
 }
 
 export function Term({ conn }) {
@@ -434,14 +525,13 @@ export function Term({ conn }) {
     // bail the instant the user wheels up (_follow flips false). Same pin-every-
     // frame philosophy as the console history view (console.js).
     conn._follow = true; // opening/switching to a row → follow the newest output
-    const vp = conn.container.querySelector(".xterm-viewport"); // the native scroll element
     let raf = 0, n = 0;
     const PIN_FRAMES = 48; // ~0.8s @60fps — outlasts WebView2's re-parent/fit relayout
     const pin = () => {
       if (!conn._follow) { raf = 0; return; } // user scrolled up → leave them there
       if (n < 6) conn.fitNow();               // re-fit through the early reflow frames
-      conn.term.scrollToBottom();             // ydisp → bottom (drives the screen render)
-      if (vp) vp.scrollTop = vp.scrollHeight; // and sync the native scrollbar thumb to match
+      conn._pinBottom();                      // ydisp → bottom AND native thumb, together
+      if (n === 1 || n === 8 || n === 40) conn._diag(`open f${n}`); // [term-diag] opt-in: window.__TERMDIAG
       raf = ++n < PIN_FRAMES ? requestAnimationFrame(pin) : 0;
     };
     conn.fitNow();

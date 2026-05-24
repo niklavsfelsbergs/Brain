@@ -598,3 +598,9 @@
   • dc6b0ca NEW cockpit/test_backend.py — 26/26 regression gate pinning the session-model contract; also ran an aiohttp route smoke (server boots, all routes correct).
   DELIBERATELY untouched (untestable blind / load-bearing): the S080 manifest+PID gate (root = never-refreshed claude_pid_chain @ sidecar:1595, documented as future fix); ptybridge UTF-8 boundary split; console.js dead composer branch; peek `.console` grainy-edge.
   Leaving open: the EYES-ONLY relaunch verification (terminal prompt-at-bottom, Shift+Enter→\n, peek grainy-edge) — checklist in the S083 quest log; board shows `SWITCHBOARD b83.1` on fresh code. No live siblings the whole session. active-mode.txt left dev-brain (principal may return to continue).
+
+[2026-05-24 18:xx] braindead-d71c4ab3 UPDATE (round 2 — principal relaunched, reported 2 bugs)
+  Continued S083 after the CLOSING (principal came back with live feedback). Both root-caused via claude-code-guide before touching code:
+  • Shift+Enter still submits (6th attempt) — the byte (\n/Ctrl+J) was never the problem; xterm's return-false doesn't stop the textarea also emitting a \r. Fix: e.preventDefault() in the handler + opt-in keystroke diag (window.__TERMDIAG logs every ctrl byte to the PTY). Commit 04848db.
+  • Cancelled turn sticks at BUSY — confirmed NO hook fires on Esc-interrupt (Stop only on natural completion; no UserPromptCancel). Fix: backend decays a heartbeat-silent busy → idle after BUSY_IDLE_AFTER_SEC=90s (no ping, no attention inflation). +6 tests, 32/32. Commit 317ac42.
+  Board now reads b83.2 on fresh code. Updated relaunch checklist (incl. the diag instructions to end the Shift+Enter guessing) in the S083 quest log. active-mode.txt still dev-brain.

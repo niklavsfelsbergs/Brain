@@ -41,16 +41,23 @@
 - **console.js dead drivable-composer branch (D2):** provably dead, but removal touches the peek view I can't eyeball; maintainability-only. Deferred.
 - **Double `/api/feed` poller, index-list-keys, non-atomic name writes (F3):** minor perf/cosmetic, multi-file churn for low value. Deferred.
 
+## Round 2 — principal feedback after relaunch (still autonomous)
+Principal reported two live bugs. Got authoritative answers from claude-code-guide before acting (no more guessing).
+- **Shift+Enter still submits (6th attempt).** The guide confirms `\n`/Ctrl+J IS the correct universal newline byte on a plain PTY — so the *byte* was never the problem. Verified main.js's global keydown bails on non-Ctrl/Cmd (doesn't intercept Shift+Enter). Likely cause: xterm's `return false` stops its keydown path but the hidden textarea can still emit a `\r` that submits ALONGSIDE our `\n`. Fix: `e.preventDefault()` in the Shift+Enter branch (kill both default paths, send only LF) + an opt-in keystroke diag (`window.__TERMDIAG`) that logs every control byte sent to the PTY — so if it STILL submits we SEE whether a stray `\r` (code 13) leaks vs only `\n` was sent. Commit **04848db**.
+- **Cancelled turn sticks at BUSY.** The guide confirms NO hook fires on Esc-interrupt (Stop only fires on natural completion; no UserPromptCancel event exists — open issues #45289/#9516). So the UserPromptSubmit→busy stamp never clears. Fix (the documented timeout-decay workaround): backend reader-derives a `busy` session whose heartbeat is silent past `BUSY_IDLE_AFTER_SEC` (90s) → `idle` (chip stops saying BUSY, no ping, no attention inflation). Active turns keep a fresh heartbeat via the action stream so they stay busy; tradeoff is a >90s single tool call / pure-thinking stretch briefly reads IDLE then snaps back. +6 regression assertions (32/32). Commit **317ac42**.
+
 ## RELAUNCH CHECKLIST (eyes-only — for the principal)
-Relaunch the cockpit (running window holds stale code). The board `<h1>` should read **SWITCHBOARD b83.1** — confirms my code loaded.
-1. **Terminal prompt (the big one):** open/resume a terminal, let a turn finish — the `>` prompt should be visible at the bottom with NO typing. Then zoom (Ctrl+scroll / Ctrl ±) and collapse/expand a panel — prompt should stay at the bottom after each (the S083 re-pin). If it STILL clips: open DevTools, run `window.__TERMDIAG = 1`, reproduce, read `[term-diag]` — `overfit > 0` ⇒ H1 (guard isn't catching it); `follow=false` or `viewportY < baseY` ⇒ H2.
-2. **Shift+Enter:** in a terminal, Shift+Enter should insert a newline, not submit. (5th attempt — `\n`/Ctrl+J. If it still submits, the byte path is a dead end; tell me.)
-3. **Board accuracy:** rows don't vanish; a quiet session greys with an age but keeps its real chip; "N need you" only counts live needs_you/your_move.
-4. **Header/peek (flagged):** the peek `.console` (click a non-cockpit row) — does its right edge under-fill at zoom≠1 (grainy strip)? If yes, it's the same fix as S079 (`width:100%`); I left it untouched, can patch on your word.
+Relaunch the cockpit (running window holds stale code). The board `<h1>` should read **SWITCHBOARD b83.2** — confirms my code loaded.
+1. **Terminal prompt (the big one):** open/resume a terminal, let a turn finish — the `>` prompt should be visible at the bottom with NO typing. Then zoom (Ctrl+scroll / Ctrl ±) and collapse/expand a panel — prompt should stay at the bottom after each (the S083 re-pin). If it STILL clips: DevTools → `window.__TERMDIAG = 1`, reproduce, read `[term-diag]` — `overfit > 0` ⇒ H1 (guard not catching); `follow=false`/`viewportY < baseY` ⇒ H2.
+2. **Shift+Enter (round 2):** should now insert a newline, not submit. If it STILL submits: `window.__TERMDIAG = 1`, press Shift+Enter, read the `[term-diag]` lines — if you see `onData->PTY ctrl: "\r" codes [13]` right after `shift+enter caught`, a stray CR is still leaking (preventDefault insufficient → next is backslash+Enter sent as two writes); if you see ONLY the `\n`, then claude's build genuinely submits on LF (byte dead-end → backslash+Enter). Either way the diag ends the guessing.
+3. **Cancelled turn (round 2):** submit a message then Esc-cancel — the row should drop from BUSY to **IDLE within ~90s** (not stick at BUSY). If 90s feels too slow/fast, it's the `BUSY_IDLE_AFTER_SEC` constant in backend.py.
+4. **Board accuracy:** rows don't vanish; a quiet session greys with an age but keeps its real chip; "N need you" only counts live needs_you/your_move.
+5. **Header/peek (flagged):** the peek `.console` (click a non-cockpit row) — does its right edge under-fill at zoom≠1 (grainy strip)? If yes, same fix as S079 (`width:100%`); left untouched, can patch on your word.
 
 ## Laps
 - L1: ground truth + 3 recon dwarves + own read of core files.
 - L2: status-pipeline reconciliation + backend E4 guard + STALL honesty comment (committed, verified).
 - L3: terminal usability (re-pin/cellHeight/diag) + board crash-guard/build-tag (committed).
 - L4: dead `--closing` var (committed) + backend regression test 26/26 (committed) + aiohttp integration smoke.
-- Stop point: reached the verifiable ceiling; remaining work is visual-only or blind-risky. Consolidated rather than churn unverifiable code.
+- Stop point (round 1): reached the verifiable ceiling; remaining work is visual-only or blind-risky. Consolidated rather than churn unverifiable code.
+- L5 (round 2, principal feedback): claude-code-guide for authoritative answers → Shift+Enter preventDefault + keystroke diag (04848db); cancelled-turn busy→idle decay + 6 tests (317ac42). Both root-caused, not guessed.

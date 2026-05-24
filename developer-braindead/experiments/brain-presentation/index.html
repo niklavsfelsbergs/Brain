@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Gielinor Brain — a structured-markdown cognitive system</title>
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   The Gielinor Brain — presentation deck.
+   OSRS skin lifted from cockpit/web/styles.css (S066 reskin): dark wood
+   vignette + paper grain + gold trim. Content panel is a parchment scroll
+   with dark ink; titles are OSRS gold-on-dark. Font vendored offline.
+   ════════════════════════════════════════════════════════════════════ */
+@font-face{
+  font-family:'RuneScape UF';
+  font-style:normal; font-weight:400;
+  src:local('RuneScape UF'), url('runescape-uf.woff') format('woff');
+}
+:root{
+  --bg:#17120b;
+  --wood:#2a2114;
+  --wood-2:#3a2e1a;
+  --wood-dk:#0c0905;
+  --line:#6e5a2c;
+  --gold:#f5c542;
+  --gold-soft:#e3b73c;
+  --gold-dk:#8f6d1e;
+
+  --parch:#e9dcb0;
+  --parch-2:#ddcb95;
+  --parch-edge:#c9b076;
+  --ink:#2c2110;
+  --ink-soft:#5a472a;
+
+  /* state palette, straight from the cockpit */
+  --zezima:#b07ad8;
+  --jebrim:#5fcb3f;
+  --guthix:#34c0ad;
+  --braindead:#f0a020;
+  --wisp:#9db8d8;
+  --danger:#c0492f;
+
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+
+  font-family:'RuneScape UF','Trebuchet MS',Verdana,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{
+  margin:0; height:100%; overflow:hidden;
+  background:radial-gradient(ellipse at top,#2a1f12 0%,#17120b 58%,#0c0905 100%);
+  color:var(--ink);
+}
+body::before{ /* grain over the whole wood backdrop */
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:var(--grain); opacity:.15; mix-blend-mode:overlay;
+}
+
+/* ───── stage ───── */
+#stage{
+  position:fixed; inset:0; z-index:1;
+  display:flex; align-items:center; justify-content:center;
+  padding:3.2vmin;
+}
+
+/* ───── the scroll (slide frame) ───── */
+.slide{
+  position:absolute;
+  width:min(1180px,94vw); height:min(700px,86vh);
+  background:
+    linear-gradient(180deg,var(--parch) 0%,var(--parch-2) 100%);
+  border-radius:14px;
+  border:3px solid var(--gold-dk);
+  box-shadow:
+    0 0 0 7px var(--wood),
+    0 0 0 9px var(--gold-dk),
+    0 28px 60px rgba(0,0,0,.6),
+    inset 0 0 60px rgba(120,90,40,.22);
+  padding:0; overflow:hidden;
+  opacity:0; transform:translateY(18px) scale(.985);
+  transition:opacity .42s ease, transform .42s ease;
+  pointer-events:none;
+  display:flex; flex-direction:column;
+}
+.slide::after{ /* parchment grain */
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:var(--grain); opacity:.10; mix-blend-mode:multiply;
+}
+.slide.active{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; z-index:2; }
+.slide.prev{ transform:translateY(-18px) scale(.985); }
+
+/* corner rivets */
+.slide i.rivet{ position:absolute; width:11px; height:11px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#ffe28a,#8f6d1e 70%,#5a430f);
+  box-shadow:0 1px 2px rgba(0,0,0,.6); z-index:5;}
+.rivet.tl{top:9px;left:9px;} .rivet.tr{top:9px;right:9px;}
+.rivet.bl{bottom:9px;left:9px;} .rivet.br{bottom:9px;right:9px;}
+
+/* ───── slide head (dark wood bar, gold title) ───── */
+.head{
+  flex:0 0 auto;
+  background:linear-gradient(180deg,var(--wood-2),var(--wood));
+  border-bottom:3px solid var(--gold-dk);
+  padding:18px 34px 16px;
+  position:relative;
+}
+.head::after{content:""; position:absolute; inset:0; background:var(--grain);
+  opacity:.18; mix-blend-mode:overlay; pointer-events:none;}
+.kicker{
+  font-size:15px; letter-spacing:.32em; text-transform:uppercase;
+  color:var(--gold-soft); opacity:.85; margin-bottom:5px;
+}
+.title{
+  font-size:35px; line-height:1.05; color:var(--gold);
+  text-shadow:0 2px 0 #6b4f10, 0 0 14px rgba(245,197,66,.25);
+  margin:0;
+}
+
+/* ───── slide body ───── */
+.body{
+  flex:1 1 auto; padding:26px 38px 30px; overflow:auto;
+  color:var(--ink); font-size:19px; line-height:1.5;
+  position:relative; z-index:1;
+}
+.body::-webkit-scrollbar{width:10px;}
+.body::-webkit-scrollbar-thumb{background:var(--parch-edge); border-radius:6px;}
+.lead{ font-size:21px; color:var(--ink); margin:.1em 0 .9em; }
+.muted{ color:var(--ink-soft); }
+b,strong{ color:#5a3b0e; }
+.body p{margin:.55em 0;}
+a{color:#7a4a12;}
+
+/* layout helpers */
+.grid{ display:grid; gap:14px; }
+.g2{ grid-template-columns:1fr 1fr; }
+.g3{ grid-template-columns:repeat(3,1fr); }
+.g4{ grid-template-columns:repeat(4,1fr); }
+.center{ text-align:center; }
+
+/* tiles / cards */
+.tile{
+  background:linear-gradient(180deg,#f3e8c0,#e2d199);
+  border:2px solid var(--parch-edge);
+  border-radius:9px; padding:13px 15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 2px 4px rgba(80,60,20,.18);
+}
+.tile h4{ margin:0 0 5px; font-size:18px; color:#5a3b0e; display:flex; align-items:center; gap:8px;}
+.tile p{ margin:0; font-size:16px; line-height:1.42; color:var(--ink-soft); }
+.tile .meta{ font-size:13.5px; letter-spacing:.04em; text-transform:uppercase; color:#937333; }
+
+/* a colored seal/dot for an actor */
+.seal{ width:14px; height:14px; border-radius:50%; flex:0 0 auto;
+  box-shadow:0 0 0 2px rgba(0,0,0,.18), inset 0 1px 1px rgba(255,255,255,.4); }
+
+/* pills */
+.pill{ display:inline-block; padding:2px 11px; border-radius:20px;
+  font-size:14.5px; border:2px solid var(--parch-edge);
+  background:#f1e6bf; color:#5a3b0e; margin:2px 3px; }
+.pill.gold{ background:#3a2e1a; color:var(--gold); border-color:var(--gold-dk); }
+
+/* flow arrow row */
+.flow{ display:flex; align-items:stretch; gap:0; flex-wrap:wrap; }
+.flow .step{ flex:1 1 0; min-width:120px; background:#f3e8c0; border:2px solid var(--parch-edge);
+  border-radius:9px; padding:12px; text-align:center; }
+.flow .arr{ display:flex; align-items:center; padding:0 8px; color:var(--gold-dk); font-size:26px;}
+
+/* address chips */
+.addr{ font-family:'RuneScape UF',monospace; background:#3a2e1a; color:var(--gold);
+  padding:3px 9px; border-radius:6px; border:1px solid var(--gold-dk); font-size:16px;}
+
+/* two-col definition list */
+.defs{ display:grid; grid-template-columns:auto 1fr; gap:8px 18px; align-items:baseline; }
+.defs dt{ color:#5a3b0e; font-weight:bold; white-space:nowrap; }
+.defs dd{ margin:0; color:var(--ink-soft); font-size:17px; }
+
+ul.tight{ margin:.3em 0; padding-left:1.15em; }
+ul.tight li{ margin:.28em 0; }
+
+.callout{ border-left:5px solid var(--gold-soft); background:#f1e6bf;
+  padding:10px 16px; border-radius:0 8px 8px 0; margin:.7em 0; font-size:17px; color:var(--ink-soft);}
+.callout b{color:#5a3b0e;}
+
+/* ───── title slide ───── */
+.slide.cover .body{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+.cover .big{ font-size:64px; color:var(--gold); line-height:1; margin:0 0 6px;
+  text-shadow:0 3px 0 #6b4f10, 0 0 24px rgba(245,197,66,.3);}
+.cover .sub{ font-size:24px; color:var(--ink-soft); }
+.cover .crest{ font-size:78px; margin-bottom:8px; filter:drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
+.cover .born{ margin-top:22px; font-size:16px; letter-spacing:.18em; text-transform:uppercase; color:#937333;}
+
+/* ───── chrome: counter, dots, nav ───── */
+#chrome{ position:fixed; z-index:6; left:0; right:0; bottom:14px;
+  display:flex; align-items:center; justify-content:center; gap:16px; pointer-events:none;}
+.nav-btn{ pointer-events:auto; cursor:pointer; user-select:none;
+  background:linear-gradient(180deg,var(--wood-2),var(--wood)); color:var(--gold);
+  border:2px solid var(--gold-dk); border-radius:8px; padding:6px 14px; font-size:20px;
+  font-family:'RuneScape UF',sans-serif; box-shadow:0 2px 6px rgba(0,0,0,.5);}
+.nav-btn:hover{ color:#fff; border-color:var(--gold); }
+.counter{ color:var(--gold-soft); font-size:18px; letter-spacing:.12em;
+  background:rgba(12,9,5,.6); padding:5px 14px; border-radius:8px; border:1px solid var(--gold-dk);}
+#dots{ position:fixed; z-index:6; left:50%; top:auto; bottom:54px; transform:translateX(-50%);
+  display:flex; gap:7px; pointer-events:auto;}
+#dots .d{ width:9px; height:9px; border-radius:50%; background:var(--gold-dk); cursor:pointer;
+  opacity:.5; transition:all .2s;}
+#dots .d.on{ opacity:1; background:var(--gold); transform:scale(1.25);}
+
+#hint{ position:fixed; z-index:6; right:16px; top:14px; color:var(--gold-soft); opacity:.6;
+  font-size:14px; letter-spacing:.06em;}
+
+/* ───── overview grid ───── */
+#overview{ position:fixed; inset:0; z-index:20; display:none; padding:4vmin;
+  background:radial-gradient(ellipse at top,#241a0f,#0c0905); overflow:auto;}
+#overview.show{ display:block; }
+#overview h2{ color:var(--gold); text-align:center; font-size:30px; margin:6px 0 22px;
+  text-shadow:0 2px 0 #6b4f10;}
+.ovgrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; max-width:1300px; margin:0 auto;}
+.ovcard{ background:linear-gradient(180deg,var(--parch),var(--parch-2)); border:2px solid var(--gold-dk);
+  border-radius:10px; padding:14px 16px; cursor:pointer; min-height:96px;
+  box-shadow:0 4px 10px rgba(0,0,0,.4); transition:transform .15s, box-shadow .15s;}
+.ovcard:hover{ transform:translateY(-3px); box-shadow:0 8px 18px rgba(0,0,0,.5);}
+.ovcard .n{ font-size:13px; color:#937333; letter-spacing:.18em;}
+.ovcard .t{ font-size:18px; color:#5a3b0e; margin-top:3px; line-height:1.15;}
+
+@media (max-width:760px){
+  .title{font-size:26px;} .cover .big{font-size:42px;}
+  .g3,.g4{grid-template-columns:1fr 1fr;} .body{font-size:16px;}
+}
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+
+<div id="dots"></div>
+<div id="chrome">
+  <span class="nav-btn" id="prev">◄</span>
+  <span class="counter"><span id="cur">1</span> / <span id="tot">15</span></span>
+  <span class="nav-btn" id="next">►</span>
+</div>
+<div id="hint">← → navigate · O overview · F fullscreen</div>
+
+<div id="overview"><h2>The Gielinor Brain — all slides</h2><div class="ovgrid" id="ovgrid"></div></div>
+
+<script>
+/* ════════════ slide content ════════════
+   Each slide: { kicker, title, html, cover? }  */
+const SLIDES = [
+
+/* 1 ── cover ────────────────────────────────────────────── */
+{ cover:true, kicker:"a structured-markdown cognitive system", title:"",
+  html:`
+  <div class="crest">🧠</div>
+  <div class="big">THE GIELINOR BRAIN</div>
+  <div class="sub">A personal AI agent with a body, a brain, gates, tools &mdash; and a personality.</div>
+  <div class="sub muted" style="margin-top:14px;font-size:19px;">Not a knowledge vault. A world the agent inhabits, themed on RuneScape, that grows every time it's used.</div>
+  <div class="born">Born 2026&middot;05&middot;20 &nbsp;·&nbsp; operated by Niklavs</div>
+  `},
+
+/* 2 ── what you are ─────────────────────────────────────── */
+{ kicker:"the premise", title:"An agent, not a filing cabinet",
+  html:`
+  <p class="lead">You are not a knowledge vault. You are an agent with a <b>body</b>, a <b>brain</b>, <b>gates</b>, <b>tools</b>, and a <b>personality</b>.</p>
+  <div class="grid g2" style="margin-top:10px;">
+    <div class="tile"><h4>🧍 A body</h4><p>The files on disk &mdash; <span class="muted">CLAUDE.md, hooks, config. Substrate-specific, swappable.</span></p></div>
+    <div class="tile"><h4>🧠 A brain</h4><p>RuneScape-themed cognitive layers. <span class="muted">Has lifetime; behaviour shapes it.</span></p></div>
+    <div class="tile"><h4>🚪 Gates</h4><p>Hooks that enforce what can be written, deleted, or spawned.</p></div>
+    <div class="tile"><h4>🎭 A personality</h4><p>Operates <i>through players</i> &mdash; coherent characters who act on Niklavs' behalf.</p></div>
+  </div>
+  <div class="callout"><b>The principle:</b> the brain you carry has lifetime; your behaviour shapes it; the principal shapes you. Players are not personas of Niklavs &mdash; they are characters in their own right.</div>
+  `},
+
+/* 3 ── two brains ──────────────────────────────────────── */
+{ kicker:"the topology", title:"Two brains under one roof",
+  html:`
+  <p class="lead">The repository houses two distinct systems. One is the world; the other is the workshop that builds it.</p>
+  <div class="grid g2">
+    <div class="tile" style="border-color:var(--guthix);">
+      <h4><span class="seal" style="background:var(--guthix)"></span> gielinor/ &mdash; the main brain</h4>
+      <p>The world the agent inhabits. The cognitive system Niklavs operates as. Players, deities, layers, rituals all live here.</p>
+      <p class="meta" style="margin-top:8px;">default at the repo root</p>
+    </div>
+    <div class="tile" style="border-color:var(--braindead);">
+      <h4><span class="seal" style="background:var(--braindead)"></span> developer-braindead/ &mdash; the dev brain</h4>
+      <p>The construction log for building the main brain. A working notebook, not a cognitive system. No players, no rituals over it.</p>
+      <p class="meta" style="margin-top:8px;">entered on cue only</p>
+    </div>
+  </div>
+  <div class="callout">Open a session at the repo root and you're in the <b>main brain</b> by default. Start a message with <span class="addr">Lets develop gielinor</span> and you cross into the <b>dev brain</b> as <b style="color:#b8731a;">Braindead</b>, the construction crew. <span class="muted">(That's the mode you're reading this from.)</span></div>
+  `},
+
+/* 4 ── routing by address ──────────────────────────────── */
+{ kicker:"how control is set", title:"Routing by address",
+  html:`
+  <p class="lead">The active actor isn't chosen by a prompt. It's set by the <b>first words of your message</b> &mdash; strict, case-insensitive, must be at the very start.</p>
+  <div class="grid g2">
+    <div class="tile"><h4><span class="addr">Hey Zezima, …</span></h4><p>Activate Zezima &mdash; reflection &amp; personal life.</p></div>
+    <div class="tile"><h4><span class="addr">Hey Jebrim, …</span></h4><p>Activate Jebrim &mdash; focused work execution.</p></div>
+    <div class="tile"><h4><span class="addr">Hey Guthix, …</span></h4><p>Summon the caretaker deity &mdash; system-scope questions.</p></div>
+    <div class="tile"><h4><span class="addr">Hey unscoped, …</span></h4><p>Drop to no-player mode &mdash; global layers only.</p></div>
+  </div>
+  <div class="callout"><b>Sticky &amp; literal.</b> No address &rarr; stay in whoever's active. A misspelling (<span class="muted">"Hey Zezma"</span>) is treated as no address &mdash; no fuzzy matching, no typo correction. Switching mid-session runs a <b>mini-respawn</b>: the outgoing player gets a hand-off note before the swap.</div>
+  `},
+
+/* 5 ── the players ─────────────────────────────────────── */
+{ kicker:"the cast", title:"The players",
+  html:`
+  <p class="lead">Coherent characters with their own knowledge, personality, and self-model. Each has a full set of brain layers of their own.</p>
+  <div class="grid g3">
+    <div class="tile" style="border-color:var(--zezima);">
+      <h4><span class="seal" style="background:var(--zezima)"></span> Zezima</h4>
+      <p><b>Reflection &amp; personal life.</b> Named for the legendary player. Unhurried, dwells, notices what wasn't asked. Reading, life-design, slow synthesis.</p>
+    </div>
+    <div class="tile" style="border-color:var(--jebrim);">
+      <h4><span class="seal" style="background:var(--jebrim)"></span> Jebrim</h4>
+      <p><b>Work &amp; execution.</b> Named for the Agility grinder. Terse, deliverable-first, finishes things. Analysis, BI, ETL, reports.</p>
+    </div>
+    <div class="tile" style="border-color:var(--wisp);">
+      <h4><span class="seal" style="background:var(--wisp)"></span> the Wisp</h4>
+      <p><b>Unscoped.</b> Present but uncommitted &mdash; the actor of a session that's had no prompt yet. Reads globals only.</p>
+    </div>
+  </div>
+  <div class="callout"><b>Players grow through use.</b> The seed is small on purpose; what a player becomes is whatever gets <i>confirmed</i> into their layers. The roster is open &mdash; more characters can be added.</div>
+  `},
+
+/* 6 ── Guthix ──────────────────────────────────────────── */
+{ kicker:"the deity", title:"Guthix, who tends the brain",
+  html:`
+  <p class="lead">Above the players sits <b style="color:#1f8f7e;">Guthix</b> &mdash; the brain's caretaker deity and the general "ask me anything overall" actor. He tends the system itself rather than working within it.</p>
+  <div class="grid g2">
+    <div class="tile"><h4>🔮 Consultation</h4><p>The default for any system-scope question. <b>Reads everything</b> &mdash; all globals, every player. Chat-only by default; most consultations leave no trace.</p></div>
+    <div class="tile"><h4>🏦 Bankstanding</h4><p>The cross-cutting tending ritual. Same actor, full write reach into the <b>global</b> layers. Proposes graduations, triages, audits.</p></div>
+  </div>
+  <div class="callout">Guthix has his own deity-scope layers under <span class="addr">deities/guthix/</span>. He can <b>propose</b> changes to anything &mdash; even the rules and his own role &mdash; via godly proposals the principal reviews. He reads anything; he won't <i>write</i> into a player's house.</div>
+  `},
+
+/* 7 ── the four roles ──────────────────────────────────── */
+{ kicker:"the second axis", title:"Four roles per invocation",
+  html:`
+  <p class="lead">Orthogonal to <i>who</i> is active is <i>which side of the invocation</i> the agent is on. Each role has a different write surface.</p>
+  <div class="grid g4">
+    <div class="tile"><h4>👤 Principal</h4><p>The interactive session. Full capability &mdash; introspects, proposes identity changes, runs rituals, spawns sub-agents.</p></div>
+    <div class="tile"><h4>⛏️ Dwarf</h4><p>Task sub-agent. Works within the repo, writes to the inherited player's bank/quest-log/inventory. Leaves a trace.</p></div>
+    <div class="tile"><h4>🧰 Gnome</h4><p>Structural housekeeper. Walks ritual checklists &mdash; drafts, proposals, quest-logs across players. No introspection.</p></div>
+    <div class="tile"><h4>🐧 Penguin</h4><p>Research operative (the KGP). Gathers external intel into <span class="addr">research/</span>; never canonicalises.</p></div>
+  </div>
+  <div class="callout"><b>Only the principal spawns.</b> Sub-agents can't spawn further sub-agents &mdash; hook-enforced. A dwarf/penguin inherits the principal's player by default; the principal can name a different one explicitly.</div>
+  `},
+
+/* 8 ── five modes ──────────────────────────────────────── */
+{ kicker:"what kind of session is this?", title:"Five session modes",
+  html:`
+  <p class="lead">Mutually exclusive at any moment. The active mode shapes what's read, what's written, and the voice adopted.</p>
+  <div class="defs" style="font-size:18px;">
+    <dt><span class="seal" style="background:var(--jebrim);display:inline-block;margin-right:6px;"></span>Player</dt>
+      <dd>A character is active. Reads globals + that player's layers; writes scoped to them.</dd>
+    <dt><span class="seal" style="background:var(--wisp);display:inline-block;margin-right:6px;"></span>Unscoped</dt>
+      <dd>No actor. Reads globals only. The narrow "no prompt yet" state.</dd>
+    <dt><span class="seal" style="background:var(--guthix);display:inline-block;margin-right:6px;"></span>Consultation</dt>
+      <dd>Guthix in residence. Reads everything; writes only his own deity layers.</dd>
+    <dt><span class="seal" style="background:var(--braindead);display:inline-block;margin-right:6px;"></span>Alching</dt>
+      <dd>A player tending its own house. Reads &amp; writes only the active player.</dd>
+    <dt><span class="seal" style="background:var(--zezima);display:inline-block;margin-right:6px;"></span>Bankstanding</dt>
+      <dd>Guthix tending the system. Reads everything; writes the global layers.</dd>
+  </div>
+  <div class="callout"><b>Voice is orthogonal to write-reach.</b> Consultation and bankstanding are both spoken in Guthix's voice; alching speaks in the active player's voice. The visualizer renders the matching sprite.</div>
+  `},
+
+/* 9 ── global layers ───────────────────────────────────── */
+{ kicker:"the brain, part 1", title:"Global layers",
+  html:`
+  <p class="lead">Shared across the whole system, regardless of which player is active.</p>
+  <div class="grid g3">
+    <div class="tile"><h4>examine/</h4><p>The agent's self-model at system level.</p></div>
+    <div class="tile"><h4>niksis8/</h4><p>What the agent knows about Niklavs, universally.</p></div>
+    <div class="tile"><h4>keepsake/</h4><p>Always-surface pins &mdash; load-bearing right now.</p></div>
+    <div class="tile"><h4>lorebook/</h4><p>Self-improvement log: decisions about how it operates.</p></div>
+    <div class="tile"><h4>spellbook/</h4><p>Rituals &amp; cross-player skills.</p></div>
+    <div class="tile"><h4>meta/</h4><p>The current rulebook &mdash; user-controlled.</p></div>
+    <div class="tile"><h4>players/</h4><p>The characters the agent embodies.</p></div>
+    <div class="tile"><h4>deities/</h4><p>System-scope actors &mdash; Guthix's house.</p></div>
+    <div class="tile" style="background:#e6d9ad;"><h4>+ ideas/</h4><p>Pre-everything idea capture, shared by both brains.</p></div>
+  </div>
+  <div class="callout">Every layer carries an <span class="addr">_about.md</span> you read on first access &mdash; the layer explains itself.</div>
+  `},
+
+/* 10 ── per-player layers ──────────────────────────────── */
+{ kicker:"the brain, part 2", title:"Per-player layers = memory types",
+  html:`
+  <p class="lead">Each player carries a full set of layers, mapped onto kinds of memory.</p>
+  <div class="grid g2">
+    <div class="tile"><h4>🏦 bank/ <span class="pill">semantic</span></h4><p>What this character knows &mdash; marts, queries, projects, stakeholders.</p></div>
+    <div class="tile"><h4>📜 quest-log/ <span class="pill">episodic</span></h4><p>What happened, session by session. Auto-written turn-by-turn.</p></div>
+    <div class="tile"><h4>📖 spellbook/ <span class="pill">procedural</span></h4><p>How this character does things &mdash; reusable methods.</p></div>
+    <div class="tile"><h4>🎒 inventory/ <span class="pill">working</span></h4><p>What's carried now. Volatile &mdash; lost on reset.</p></div>
+    <div class="tile"><h4>🔍 examine/ &amp; niksis8_character/</h4><p>The player's self-knowledge, and how it sees Niklavs through its own lens.</p></div>
+    <div class="tile"><h4>🔬 research/ &nbsp; ⭐ keepsake/</h4><p>Penguin-authored source material; and the player's always-surface pins.</p></div>
+  </div>
+  <div class="callout"><b>The quest log is for narrative; everything else has a home.</b> Resume-state &rarr; inventory. Knowledge &rarr; bank. Method &rarr; spellbook. The quest log captures the <i>story</i>, not the content that should persist elsewhere.</div>
+  `},
+
+/* 11 ── how knowledge enters ───────────────────────────── */
+{ kicker:"the flow", title:"How knowledge becomes canonical",
+  html:`
+  <p class="lead">Observations enter freely as <b>drafts</b>. Promotion to canonical knowledge &mdash; identity, character, decisions, per-player bank &mdash; is <b>gated by the principal</b>.</p>
+  <div class="flow" style="margin:18px 0;">
+    <div class="step"><b>Capture</b><br><span class="muted">agent writes a draft when it notices something</span></div>
+    <div class="arr">➜</div>
+    <div class="step"><b>Review</b><br><span class="muted">principal runs <span class="addr">/drafts</span></span></div>
+    <div class="arr">➜</div>
+    <div class="step"><b>Approve</b><br><span class="muted">&rarr; confirmed/</span></div>
+    <div class="arr">➜</div>
+    <div class="step"><b>or Reject</b><br><span class="muted">&rarr; rejected/ (kept!)</span></div>
+  </div>
+  <div class="callout"><b>The observation rule:</b> drafts must be observation-backed, not aspirational. Not <i>"I should be more careful"</i> &mdash; instead <i>"on 05-12 I matched a filename without checking the path; confirm full path before any move."</i> Specificity is what makes self-knowledge actionable.</div>
+  `},
+
+/* 12 ── the six guarantees ─────────────────────────────── */
+{ kicker:"the gates", title:"Six guarantees, enforced by hooks",
+  html:`
+  <p class="lead">These are <b>architectural</b> &mdash; enforced at the filesystem by hooks in <span class="addr">.claude/hooks/</span>. The agent cannot bypass them.</p>
+  <div class="grid g2" style="font-size:16px;">
+    <div class="tile"><h4>1 · No confirmed writes</h4><p>Identity is gated. You propose; the principal approves. No write to any <span class="addr">confirmed/</span> path.</p></div>
+    <div class="tile"><h4>2 · No deletes, ever</h4><p>Move into <span class="addr">archive/</span> instead. Nothing is destroyed &mdash; recoverable forever.</p></div>
+    <div class="tile"><h4>3 · Dwarf boundary</h4><p>Task-local writes only &mdash; bank/quest-log/inventory of the inherited player.</p></div>
+    <div class="tile"><h4>4 · Gnome boundary</h4><p>Housekeeping surface &mdash; drafts/proposals/quest-logs. Blocked from confirmed &amp; rules.</p></div>
+    <div class="tile"><h4>5 · Penguin boundary</h4><p>Research only &mdash; the active player's <span class="addr">research/</span>. Never the bank.</p></div>
+    <div class="tile"><h4>6 · No sub-spawning</h4><p>Only the principal spawns. A sub-agent cannot spawn another.</p></div>
+  </div>
+  <div class="callout"><b>Archive discipline</b> is the hardest rule: every "delete" is a move into a mirrored <span class="addr">archive/</span>. Wrong moves stay recoverable; rejected proposals are themselves data about where the model drifts.</div>
+  `},
+
+/* 13 ── rituals ────────────────────────────────────────── */
+{ kicker:"the procedures", title:"The rituals",
+  html:`
+  <p class="lead">Canonical procedures in <span class="addr">spellbook/rituals/</span>. They are load-bearing &mdash; the agent follows them exactly, doesn't improvise.</p>
+  <div class="grid g2">
+    <div class="tile"><h4>🌅 Respawn</h4><p>Session start. Reads layers in a fixed order &mdash; the only sanctioned load sequence.</p></div>
+    <div class="tile"><h4>🌙 Close-session</h4><p>Wrap-up so the next session lands clean &mdash; reconcile, persist drafts, tighten resume-state, commit.</p></div>
+    <div class="tile"><h4>⚗️ Alching</h4><p>Per-player tending &mdash; promote drafts, harvest bank notes, prune. The player tends its own house.</p></div>
+    <div class="tile"><h4>🏦 Bankstanding</h4><p>System-level cross-cutting pass &mdash; graduations to global, cross-player patterns. Guthix's ritual.</p></div>
+  </div>
+  <div class="callout"><b>Death &amp; spawn.</b> On a crash, an in-progress quest-log entry with an unresolved <i>pending</i> action is the recovery signal. On reset, confirmed knowledge &amp; history survive; working state &amp; unapproved drafts don't. <b>Identity is durable; mid-thought is not.</b></div>
+  `},
+
+/* 14 ── cockpit + visualizer ───────────────────────────── */
+{ kicker:"the operator's bridge", title:"The cockpit & the living world",
+  html:`
+  <p class="lead">Every session narrates itself. The agent writes an <b>intent line in the active actor's voice</b> to a sidecar file; a live surface renders it.</p>
+  <div class="grid g3">
+    <div class="tile"><h4>🗺️ Fleet board</h4><p>Every session at a glance &mdash; actor, state, what it's doing.</p></div>
+    <div class="tile"><h4>🖥️ Console</h4><p>A real embedded terminal (PTY) &mdash; drive or peek a session.</p></div>
+    <div class="tile"><h4>💬 Feed</h4><p>The COMMS ticker &mdash; PICKED UP · PLAN · NEEDS YOU · DONE.</p></div>
+  </div>
+  <div class="callout"><b>Understanding / Plan.</b> Every response opens with a two-line preamble &mdash; restating the ask and the intended action &mdash; so a misunderstanding is caught before the work commits. Then the intent sidecar carries the in-voice narrative; the action stream carries the file-level steps. They complement, never echo.</div>
+  <p class="muted" style="margin-top:6px;font-size:15px;">The cockpit runs interactive Claude on the subscription &mdash; the operator's bridge, not just a dashboard.</p>
+  `},
+
+/* 15 ── closing ────────────────────────────────────────── */
+{ kicker:"the whole map", title:"Life of a session",
+  html:`
+  <p class="lead">It all composes. One pass through the system:</p>
+  <div class="defs" style="font-size:17px;gap:10px 18px;">
+    <dt>1 · Respawn</dt><dd>Open at the root &rarr; main brain. Read the load order. The world boots.</dd>
+    <dt>2 · Address</dt><dd><span class="addr">Hey Jebrim</span> &rarr; a player wakes; reads globals + his layers.</dd>
+    <dt>3 · Preamble</dt><dd>Understanding / Plan. Intent line written in his voice; the board lights up.</dd>
+    <dt>4 · Work</dt><dd>Maybe spawn dwarves for fan-out; capture drafts as observations land.</dd>
+    <dt>5 · Tend</dt><dd>Alch the player; later, Guthix bankstands the whole brain.</dd>
+    <dt>6 · Close</dt><dd>Persist resume-state, commit. Identity durable; the next session lands clean.</dd>
+  </div>
+  <div class="callout center" style="font-size:19px;"><b>The brain has lifetime.</b> Behaviour shapes it; the principal shapes the agent. Nothing is destroyed &mdash; only moved, gated, and grown.</div>
+  <p class="center muted" style="margin-top:14px;">gielinor/ &nbsp;·&nbsp; built &amp; maintained from developer-braindead/ &nbsp;·&nbsp; born 2026&middot;05&middot;20</p>
+  `},
+
+];
+
+/* ════════════ render & navigate ════════════ */
+const stage = document.getElementById('stage');
+const dotsEl = document.getElementById('dots');
+const ovgrid = document.getElementById('ovgrid');
+const overview = document.getElementById('overview');
+let idx = 0;
+
+SLIDES.forEach((s,i)=>{
+  const el = document.createElement('section');
+  el.className = 'slide' + (s.cover ? ' cover':'');
+  el.dataset.i = i;
+  el.innerHTML =
+    '<i class="rivet tl"></i><i class="rivet tr"></i><i class="rivet bl"></i><i class="rivet br"></i>' +
+    (s.cover
+      ? `<div class="body">${s.html}</div>`
+      : `<div class="head"><div class="kicker">${s.kicker||''}</div><h1 class="title">${s.title||''}</h1></div><div class="body">${s.html}</div>`);
+  stage.appendChild(el);
+
+  const d = document.createElement('div'); d.className='d'; d.dataset.i=i;
+  d.onclick = ()=>go(i); dotsEl.appendChild(d);
+
+  const c = document.createElement('div'); c.className='ovcard'; c.dataset.i=i;
+  c.innerHTML = `<div class="n">${String(i+1).padStart(2,'0')}</div><div class="t">${s.cover?'The Gielinor Brain':(s.title||'')}</div>`;
+  c.onclick = ()=>{ toggleOverview(false); go(i); };
+  ovgrid.appendChild(c);
+});
+
+document.getElementById('tot').textContent = SLIDES.length;
+const slideEls = [...stage.querySelectorAll('.slide')];
+const dotEls = [...dotsEl.children];
+
+function go(n){
+  n = Math.max(0, Math.min(SLIDES.length-1, n));
+  slideEls.forEach((el,i)=>{
+    el.classList.toggle('active', i===n);
+    el.classList.toggle('prev', i<n);
+  });
+  dotEls.forEach((d,i)=>d.classList.toggle('on', i===n));
+  document.getElementById('cur').textContent = n+1;
+  idx = n;
+}
+const next = ()=>go(idx+1);
+const prev = ()=>go(idx-1);
+
+document.getElementById('next').onclick = next;
+document.getElementById('prev').onclick = prev;
+
+function toggleOverview(force){
+  const show = force!==undefined ? force : !overview.classList.contains('show');
+  overview.classList.toggle('show', show);
+}
+
+document.addEventListener('keydown', e=>{
+  if(overview.classList.contains('show')){
+    if(e.key==='Escape'||e.key==='o'||e.key==='O') toggleOverview(false);
+    return;
+  }
+  switch(e.key){
+    case 'ArrowRight': case ' ': case 'PageDown': next(); e.preventDefault(); break;
+    case 'ArrowLeft': case 'PageUp': prev(); e.preventDefault(); break;
+    case 'Home': go(0); break;
+    case 'End': go(SLIDES.length-1); break;
+    case 'o': case 'O': toggleOverview(); break;
+    case 'f': case 'F':
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+      break;
+    default:
+      if(/^[1-9]$/.test(e.key)) go(parseInt(e.key,10)-1);
+  }
+});
+
+/* click left/right thirds of the stage to navigate */
+stage.addEventListener('click', e=>{
+  if(e.target.closest('a, .nav-btn')) return;
+  const x = e.clientX / window.innerWidth;
+  if(x > 0.62) next(); else if(x < 0.38) prev();
+});
+
+/* basic swipe */
+let tx=null;
+addEventListener('touchstart', e=>tx=e.touches[0].clientX, {passive:true});
+addEventListener('touchend', e=>{
+  if(tx===null) return;
+  const dx = e.changedTouches[0].clientX - tx;
+  if(Math.abs(dx)>50){ dx<0 ? next() : prev(); }
+  tx=null;
+}, {passive:true});
+
+go(0);
+</script>
+</body>
+</html>

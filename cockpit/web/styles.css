@@ -225,6 +225,31 @@ html, body {
   height: calc(100vh / var(--zoom));
 }
 
+/* xterm.js can't render under the global `zoom` above — a scaled ancestor makes
+   text-selection land rows below the pointer and the fit come up short. .term-frame
+   is a normal flex item, so the column layout is always safe; the inner .term-host
+   counter-scales with `transform` (visual-only: no layout-footprint change, unlike
+   zoom) so the terminal renders at net 1.0, and .term-frame clips the spill. The
+   terminal is sized via xterm fontSize (term.js), not the zoom. */
+.term-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #17120b;
+}
+.term-host {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% * var(--zoom));
+  height: calc(100% * var(--zoom));
+  transform: scale(calc(1 / var(--zoom)));
+  transform-origin: top left;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+
 .board-col {
   width: 372px;
   flex: none;

@@ -106,6 +106,18 @@ COMMS_MIRRORS = (
 # the two judgments don't collide.
 LIVE_SESSION_SEC = 60 * 60
 
+# Grace before the process-dead (PID) signal is allowed to drop a session from
+# the manifest. The recorded claude_pid_chain is captured once and cached (see
+# the status write near the bottom of this file) and NEVER refreshed, so a
+# rotated claude.exe PID (--resume / clear / a wrapper relaunch, or a host where
+# the ancestor walk grabbed a transient pid) reads "dead" while the session is
+# very much alive. Observed live: every session's recorded PID had ZERO overlap
+# with the running claude.exe set, so the PID gate emptied the whole manifest and
+# the board went blank. Honoring PID-death only after this much silence keeps the
+# fast-crash GC for genuinely quiet sessions while never false-dropping an active
+# one on stale PID data. (S080)
+PID_DEATH_GRACE_SEC = 15 * 60
+
 # Same intent length cap as the visualizer hook so a sidebar can render
 # sidecar intent inline without re-truncating.
 # S058: was 100 — bumped to 280 so in-voice intent lines run 2–3× longer and the
@@ -939,13 +951,24 @@ def _write_manifest() -> None:
                 #       and it resurfaces on the next fire).
                 #
                 # Together these are the fix for the lingering "zombie" rows.
-                if _session_process_dead(j):
-                    continue
                 try:
                     last_ts = float(j.get("last_event_ts") or 0)
                 except (TypeError, ValueError):
                     last_ts = 0.0
-                if last_ts and (time.time() - last_ts) > LIVE_SESSION_SEC:
+                age = (time.time() - last_ts) if last_ts else float("inf")
+                # (b) Staleness backstop — no hook fire in the full window → drop.
+                if last_ts and age > LIVE_SESSION_SEC:
+                    continue
+                # (a) Process-dead — but the cached PID chain goes stale on PID
+                # rotation (see PID_DEATH_GRACE_SEC), and a stale chain reads dead
+                # for a LIVE session. So honor this signal only after the session
+                # has also gone quiet past the grace, and NEVER for a ball-in-
+                # user's-court state (needs_you / your_move) — those must stay on
+                # the board no matter what a stale PID says. A freshly-active
+                # session is thus never false-dropped on PID data.
+                if (j.get("state") not in ("needs_you", "your_move")
+                        and age > PID_DEATH_GRACE_SEC
+                        and _session_process_dead(j)):
                     continue
                 # Real-time actor refresh. The status file's `actor` was set
                 # by whichever sidecar fire wrote it last — typically

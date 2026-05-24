@@ -1,6 +1,6 @@
 # Shipping-costs dashboard ↔ shipping-agent — interrelation & convergence
 
-**As of:** 2026-05-22 (S026 — dashboard-side cutover in-progress; convergence directions open). Re-verify before relying on cost-basis alignment, coverage-hole-reporting status, or "long-term direction" framing.
+**As of:** 2026-05-24 (cost-basis alignment re-verified against ground truth — see Decision #3, now RECONCILED). Earlier body as-of 2026-05-22 (S026 — dashboard-side cutover in-progress; convergence directions open). Re-verify before relying on coverage-hole-reporting status or "long-term direction" framing.
 
 How the two surfaces over the shipping data mart relate today, where they diverge, and the convergence directions Niklavs has affirmed.
 
@@ -30,7 +30,10 @@ Both ride the same mart, but they don't talk to each other. Specifically:
 
 1. **Dashboard ↔ mart alignment is incomplete.** Mart is source of truth; dashboard needs alignment work. Implication: the dashboard's mart-cutover branch is not the final state — more cutover work pending.
 2. **Coverage-hole reporting in the dashboard is currently wrong.** Will be resolved. Until then, agent's `coverage-audit.md` is the authoritative source on structural holes.
-3. **Cost-basis alignment between dashboard and agent — deferred.** The dashboard's `cost_for_routing = COALESCE(shipping_cost_final, expected_shipping_cost)` and the shipping-agent's default cost basis in `how_to.md §5` haven't been reconciled. Re-read needed when this becomes load-bearing.
+3. **Cost-basis alignment between dashboard and agent — RECONCILED (verified 2026-05-24).** Both surfaces now default to the same real→expected coalesce:
+   - Dashboard `cost_for_routing` = `COALESCE(real_shipping_cost WHERE >0, expected_shipping_cost)` — `pipeline.py:677-681`, documented `CLAUDE.md:136` ("Real + Expected").
+   - Agent default = `fact_shipments.final_shipping_cost_eur` = `COALESCE(real, expected, avg)` — `shipping-agent/reference/mart-contract.md:85` ("the one number to use"), `how_to.md:240`.
+   - **Residual tail difference, not a mismatch:** agent carries a third `avg` fallback (~2% of rows); dashboard stops at expected and guards `>0`. Note if a stakeholder-facing comparison needs exact parity, otherwise immaterial.
 4. **Long-term convergence direction — open.** Not yet thought-through. Concrete near-term move: **agent could emit dashboard URLs** for questions the dashboard already answers (deep-link to `/?tab=...&filters=...`).
 
 ## Convergence directions
@@ -65,12 +68,12 @@ Listed by reversibility — cheap-to-try first.
 1. **Agent emits dashboard URLs.** Smallest move. Agent's response to "where do I see this" becomes `https://<dashboard>/?tab=alerts&type=creep&country=DE&provider=DHL`. No data sharing required.
 2. **Agent reads dashboard's pre-computed parquets** for common questions. `daily.parquet` / `issues.parquet` / `deviations_summary.parquet` are sitting on disk or S3. For dashboard-answerable questions, this would be cheaper than re-querying Redshift. But: different freshness, different reach, and adds a coupling the agent doesn't currently have. Probably not worth the complexity at current scale.
 3. **Shared reference docs.** Agent's `reference/dashboard-vocab.md` points at dashboard's CLAUDE.md; dashboard's docs link out to agent's `coverage-audit.md` for structural-hole context. Doc-level coupling, not code coupling.
-4. **Shared cost-basis recipe in the mart.** Mart adds a `default_cost_for_routing` column or view that both surfaces use. Highest-impact, requires ETL work. Deferred.
+4. **Shared cost-basis recipe in the mart.** ~Landed (verified 2026-05-24): the mart exposes canonical `fact_shipments.final_shipping_cost_eur = COALESCE(real, expected, avg)`; the agent reads it directly, the dashboard computes the equivalent recipe in `pipeline.py`. Not yet a *single* shared column the dashboard also reads (dashboard still rebuilds it in-pipeline from `shipping_cost`/`expected_shipping_cost`), so full single-source coupling is still open — but the recipe divergence this item worried about is closed.
 
 ## Open questions to resolve later
 
 - **What's the long-term direction?** Investigative agent stays separate, or it becomes the engine behind dashboard's ad-hoc layer? Pinned for re-visit.
-- **Cost-basis recipe alignment.** When does the agent's `how_to.md §5` get reviewed against the dashboard's `cost_for_routing` default? Should be before the next stakeholder-facing comparative report.
+- ~~**Cost-basis recipe alignment.**~~ RESOLVED 2026-05-24 — recipes verified equivalent (Decision #3). Remaining open piece: whether the dashboard should read the mart's `final_shipping_cost_eur` directly instead of rebuilding it in `pipeline.py` (single-source coupling, coupling opp #4).
 - **Coverage-hole resolution timeline.** When does the dashboard distinguish structural holes from invoice-pending? Until then, agent's audit is the canonical source — risk of silent disagreement.
 - **`audit.py` / `backtest.py` rewrite** (dashboard-side, pre-cutover). Tangentially related — both surfaces would benefit from a working dashboard audit.
 

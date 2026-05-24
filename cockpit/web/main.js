@@ -354,6 +354,21 @@ function App() {
     c.label = label || s.actor + (s.instance > 1 ? "·" + s.instance : "");
     setSel(c);
   };
+  // Rename from the board (double-click a row name). Writes the same disk store
+  // the /rename hook uses (POST /api/rename); optimistically patch the local
+  // model so the new label shows immediately rather than on the next 2s poll.
+  // Empty name clears the rename back to the bare actor label.
+  const renameSession = (sid8, name) => {
+    setData((d) => ({
+      ...d,
+      sessions: (d.sessions || []).map((s) => (s.sid8 === sid8 ? { ...s, name } : s)),
+    }));
+    fetch("/api/rename", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ sid8, name }),
+    }).catch(() => {});
+  };
   const doPlace = (actor, seed) => {
     const c = openTerm(seed); // S066 B: real interactive claude in a PTY (on-subscription)
     c.label = actor ? actor.label : "chat";
@@ -387,6 +402,7 @@ function App() {
               selectedId=${sel && sel.id}
               onSelect=${selectRow}
               onNew=${() => setShowPlace(true)}
+              onRename=${renameSession}
               soundOn=${soundOn}
               onToggleSound=${toggleSound}
               feedOn=${feedOpen}

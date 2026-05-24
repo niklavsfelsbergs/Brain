@@ -109,6 +109,31 @@ def _is_sid8(s: str) -> bool:
     return len(s) == 8 and all(c in "0123456789abcdefABCDEF" for c in s)
 
 
+NAME_MAX = 40  # keep in lockstep with rename-intercept.py's NAME_MAX
+
+
+def _sanitize_name(name: str) -> str:
+    # Same shape as the rename hook: single line, printable, collapsed, capped.
+    name = re.sub(r"\s+", " ", (name or "").replace("\r", " ").replace("\n", " ")).strip()
+    name = "".join(c for c in name if c.isprintable())
+    return name[:NAME_MAX].strip()
+
+
+def _write_name(sid8: str, name: str) -> None:
+    """Read-modify-write state-names.json — the SAME store + shape as the
+    rename-intercept hook, so the board UI, /rename, and the backend all share
+    one file. Empty name clears the entry (back to the bare actor label)."""
+    names = _read_json(NAMES, {})
+    if not isinstance(names, dict):
+        names = {}
+    if name:
+        names[sid8] = name
+    else:
+        names.pop(sid8, None)
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    NAMES.write_text(json.dumps(names, indent=2), encoding="utf-8")
+
+
 # ─── the one session model (Phase 1) ───────────────────────────────────────
 
 def _pending_subagents(session_id):
@@ -189,6 +214,31 @@ async def api_open_vscode(request):
         return web.json_response({"ok": False, "error": str(e)}, status=500,
                                  headers=NO_STORE)
     return web.json_response({"ok": True}, headers=NO_STORE)
+
+
+async def api_rename(request):
+    """Set/clear a session's board label from the board UI (double-click a row).
+
+    Renaming is a board operation, not a session prompt — so unlike the /rename
+    UserPromptSubmit hook (gated to turn boundaries; can't fire while a session
+    is mid-turn), this works regardless of what the session is doing. Writes the
+    same state-names.json the hook uses. Body: {sid8, name}; empty name clears.
+    """
+    try:
+        body = await request.json()
+    except (ValueError, TypeError):
+        body = {}
+    sid8 = (body.get("sid8") or "").strip().lower()
+    if not _is_sid8(sid8):
+        return web.json_response({"ok": False, "error": "bad sid8"}, status=400,
+                                 headers=NO_STORE)
+    name = _sanitize_name(body.get("name") or "")
+    try:
+        _write_name(sid8, name)
+    except OSError as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500,
+                                 headers=NO_STORE)
+    return web.json_response({"ok": True, "name": name}, headers=NO_STORE)
 
 
 # ─── transcript replay: .jsonl → visual turns (Phase 2) ─────────────────────
@@ -431,6 +481,7 @@ def make_app():
     app = web.Application()
     app.router.add_get("/api/sessions", api_sessions)
     app.router.add_get("/api/open-vscode", api_open_vscode)
+    app.router.add_post("/api/rename", api_rename)
     app.router.add_get("/api/feed", api_feed)
     app.router.add_get("/api/clipboard", api_clipboard)
     from ptybridge import pty_handler  # real interactive claude over a PTY (S066 B)

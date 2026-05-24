@@ -1,6 +1,7 @@
 // The fleet board (left column). One reactive view over the session model.
 
 import { html } from "htm/preact";
+import { useState, useRef } from "preact/hooks";
 import { nameFor } from "./names.js";
 
 const STATE_LABEL = {
@@ -21,21 +22,53 @@ function fmtAge(s) {
   return Math.floor(s / 3600) + "h";
 }
 
-function Row({ s, selected, onSelect }) {
+function Row({ s, selected, onSelect, onRename }) {
   const cls =
     `row state-${s.state}` + (s.attention ? " attention" : "") + (selected ? " selected" : "");
   // Custom label: cockpit-terminal renames live in localStorage (nameFor),
   // VSCode-session renames come off disk via the model (s.name). Either wins
   // over the bare actor name, and suppresses the ·N instance suffix. (S073)
   const label = nameFor(s.sid8) || s.name;
+  // Double-click the name to rename from the board itself — a board operation,
+  // so it works even while the session is mid-turn (the /rename hook can't, it's
+  // gated to prompt submission). Enter/blur commits, Esc cancels; commit fires
+  // exactly once via blur (Enter & Esc both just blur the input). (S077)
+  const [editing, setEditing] = useState(false);
+  const cancelRef = useRef(false);
+  const onCommit = (e) => {
+    const save = !cancelRef.current;
+    cancelRef.current = false;
+    setEditing(false);
+    if (save) {
+      const v = e.target.value.trim();
+      if (v !== (label || "")) onRename(s.sid8, v);
+    }
+  };
   return html`
-    <div class=${cls} onClick=${() => onSelect(s)}>
+    <div class=${cls} onClick=${() => !editing && onSelect(s)}>
       <div class="row-head">
         <span class="dot"></span>
-        <span class="actor">
-          ${label || s.actor}${!label && s.instance > 1
-            ? html`<span class="inst">·${s.instance}</span>`
-            : ""}
+        <span
+          class="actor"
+          title="double-click to rename"
+          onDblClick=${(e) => { e.stopPropagation(); setEditing(true); }}
+        >
+          ${editing
+            ? html`<input
+                class="rename-input"
+                type="text"
+                value=${label || ""}
+                autofocus
+                onClick=${(e) => e.stopPropagation()}
+                onKeyDown=${(e) => {
+                  if (e.key === "Enter") { e.preventDefault(); e.target.blur(); }
+                  else if (e.key === "Escape") { e.preventDefault(); cancelRef.current = true; e.target.blur(); }
+                }}
+                onBlur=${onCommit}
+              />`
+            : html`${label || s.actor}${!label && s.instance > 1
+                ? html`<span class="inst">·${s.instance}</span>`
+                : ""}`}
         </span>
         ${s.host === "vscode" ? html`<span class="tag">vscode</span>` : ""}
         <span class="chip">${STATE_LABEL[s.state] || s.state}</span>
@@ -55,7 +88,7 @@ function Row({ s, selected, onSelect }) {
 }
 
 export function Board({
-  sessions, err, selectedId, onSelect, onNew,
+  sessions, err, selectedId, onSelect, onNew, onRename,
   soundOn, onToggleSound, feedOn, onToggleFeed,
   zoom, onZoomIn, onZoomOut, onZoomReset, onCollapseBoard, onToggleFocus, focused,
 }) {
@@ -98,6 +131,7 @@ export function Board({
               s=${s}
               selected=${s.session_id === selectedId}
               onSelect=${onSelect}
+              onRename=${onRename}
             />`
         )}
       </div>

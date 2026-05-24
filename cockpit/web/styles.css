@@ -119,6 +119,19 @@ html, body {
   letter-spacing: 0.01em;
 }
 .inst { color: var(--ink-faint); font-weight: 400; }
+/* inline rename editor — double-click a row name (S077) */
+.rename-input {
+  font: inherit;
+  font-weight: 600;
+  width: 14ch;
+  max-width: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  padding: 0 4px;
+  outline: none;
+}
 .tag {
   font-size: 10px;
   text-transform: uppercase;

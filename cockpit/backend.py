@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import json
+import os
 import re
 import shutil
 import time
@@ -32,6 +33,15 @@ PROJECTS_DIR = Path.home() / ".claude" / "projects"
 CLAUDE_EXE = shutil.which("claude") or "claude"
 
 MANIFEST = STATE_DIR / "state-switchboard.json"
+# {sid8: label} — disk-backed session renames (S073). Written by the
+# rename-intercept UserPromptSubmit hook so a session in *any* host (notably
+# VSCode, which never touches the cockpit's own terminal) can relabel its
+# board row. The cockpit's own terminals still use the browser-localStorage
+# path in web/names.js; board.js prefers localStorage, then this, then actor.
+NAMES = STATE_DIR / "state-names.json"
+# The claude-focus VSCode extension's URI handler — focuses the terminal pane
+# whose process appears in the session's claude_pid_chain (S037/S038).
+VSCODE_FOCUS_URI = "vscode://niksis8.claude-focus/focus?sid8="
 ROLE_FILES = {
     "dwarf": STATE_DIR / "state-dwarves.json",
     "gnome": STATE_DIR / "state-gnomes.json",
@@ -119,6 +129,9 @@ def _pending_subagents(session_id):
 def build_session_model():
     """The single normalized model the three views project from (D-028)."""
     manifest = _read_json(MANIFEST, {"sessions": []})
+    names = _read_json(NAMES, {})            # {sid8: label} — disk-backed renames (S073)
+    if not isinstance(names, dict):
+        names = {}
     now = time.time()
     sessions = []
     for s in manifest.get("sessions", []):
@@ -136,6 +149,7 @@ def build_session_model():
             "sid8": s.get("sid8"),
             "session_id": s.get("session_id"),
             "actor": s.get("actor", "unknown"),
+            "name": names.get(s.get("sid8"), ""),   # /rename label (S073)
             "instance": s.get("instance", 1),
             "state": state,
             "host": s.get("host", "unknown"),
@@ -154,6 +168,27 @@ def build_session_model():
 
 async def api_sessions(request):
     return web.json_response(build_session_model(), headers=NO_STORE)
+
+
+async def api_open_vscode(request):
+    """Focus a session's terminal pane in VSCode (S073).
+
+    Fires the claude-focus extension's URI (vscode://niksis8.claude-focus/...).
+    Done server-side via os.startfile rather than in-page navigation: WebView2
+    won't reliably hand a vscode:// URI to the OS protocol handler, but
+    ShellExecute (os.startfile) does, with no prompt. The extension matches the
+    sid8 against the session's claude_pid_chain and show()s the right pane.
+    """
+    sid8 = (request.query.get("sid8") or "").strip().lower()
+    if not _is_sid8(sid8):
+        return web.json_response({"ok": False, "error": "bad sid8"}, status=400,
+                                 headers=NO_STORE)
+    try:
+        os.startfile(VSCODE_FOCUS_URI + sid8)  # Windows: ShellExecute the URI
+    except OSError as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500,
+                                 headers=NO_STORE)
+    return web.json_response({"ok": True}, headers=NO_STORE)
 
 
 # ─── transcript replay: .jsonl → visual turns (Phase 2) ─────────────────────
@@ -395,6 +430,7 @@ async def static_handler(request):
 def make_app():
     app = web.Application()
     app.router.add_get("/api/sessions", api_sessions)
+    app.router.add_get("/api/open-vscode", api_open_vscode)
     app.router.add_get("/api/feed", api_feed)
     app.router.add_get("/api/clipboard", api_clipboard)
     from ptybridge import pty_handler  # real interactive claude over a PTY (S066 B)

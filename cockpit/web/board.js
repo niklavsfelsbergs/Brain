@@ -24,12 +24,16 @@ function fmtAge(s) {
 function Row({ s, selected, onSelect }) {
   const cls =
     `row state-${s.state}` + (s.attention ? " attention" : "") + (selected ? " selected" : "");
+  // Custom label: cockpit-terminal renames live in localStorage (nameFor),
+  // VSCode-session renames come off disk via the model (s.name). Either wins
+  // over the bare actor name, and suppresses the ·N instance suffix. (S073)
+  const label = nameFor(s.sid8) || s.name;
   return html`
     <div class=${cls} onClick=${() => onSelect(s)}>
       <div class="row-head">
         <span class="dot"></span>
         <span class="actor">
-          ${nameFor(s.sid8) || s.actor}${!nameFor(s.sid8) && s.instance > 1
+          ${label || s.actor}${!label && s.instance > 1
             ? html`<span class="inst">·${s.instance}</span>`
             : ""}
         </span>

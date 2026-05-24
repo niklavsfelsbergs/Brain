@@ -340,10 +340,18 @@ function App() {
   const zoomReset = () => setZoom(ZDEF);
 
   const selectRow = (s) => {
+    // VSCode-hosted sessions: focus their terminal pane in VSCode (S073). The
+    // claude-focus extension matches sid8 → claude_pid_chain → the pane and
+    // show()s it. Still falls through to a read-only peek so the cockpit keeps
+    // a selection + transcript view.
+    if (s.host === "vscode") {
+      fetch("/api/open-vscode?sid8=" + encodeURIComponent(s.sid8)).catch(() => {});
+    }
     // a cockpit-launched terminal hosting this session wins; else a read-only peek
     const t = termForSid8(s.sid8);
     const c = t || openPeek(s.session_id);
-    c.label = s.actor + (s.instance > 1 ? "·" + s.instance : "");
+    const label = nameFor(s.sid8) || s.name; // match the board's rename (S073)
+    c.label = label || s.actor + (s.instance > 1 ? "·" + s.instance : "");
     setSel(c);
   };
   const doPlace = (actor, seed) => {

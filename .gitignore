@@ -22,6 +22,7 @@ switchboard/state-gnomes.json
 switchboard/state-penguins.json
 switchboard/state-instances.json
 switchboard/state-switchboard.json
+switchboard/state-names.json
 switchboard/state-*.json.tmp.*
 switchboard/state-comms-*.md
 switchboard/chat.ndjson

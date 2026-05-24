@@ -22,8 +22,13 @@
   --alching: #b07ad8;
   --closing: #e3a008;
   --wrapped: #34c0ad;
+  --stalled: #e0673a;
   --idle: #8a7a55;
   --ended: #4a3f2a;
+  /* rgb triplets for pulse-ring rgba() — keep in sync with the hex above */
+  --answers-rgb: 255, 93, 143;
+  --stalled-rgb: 224, 103, 58;
+  --waiting-rgb: 240, 160, 32;
 
   /* paper-grain texture (feTurbulence data-URI), layered under panels via
      background-blend-mode. Salvaged from the archived OSRS theme. */
@@ -61,19 +66,22 @@ html, body {
 .topbar {
   display: flex;
   align-items: baseline;
-  gap: 14px;
-  padding: 14px 20px;
+  gap: 9px;
+  padding: 14px 14px;
   border-bottom: 1px solid var(--line);
   background: var(--panel);
 }
 .topbar h1 {
   margin: 0;
   font-size: 15px;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.13em;
   font-weight: 600;
   color: var(--ink-dim);
+  white-space: nowrap;
 }
-.count { font-size: 13px; color: var(--ink-faint); }
+/* never wrap "N live · N need you" onto a second line — the topbar is tight at
+   the default 372px board width; the de-crowding above buys the room (S078). */
+.count { font-size: 13px; color: var(--ink-faint); white-space: nowrap; }
 .count .warn { color: var(--waiting); }
 
 /* ---- board ---- */
@@ -145,6 +153,7 @@ html, body {
   margin-left: auto;
   font-size: 11px;
   font-weight: 600;
+  text-transform: uppercase;   /* state chips always SHOUT, even a raw token */
   letter-spacing: 0.09em;
   padding: 3px 9px;
   border-radius: 5px;
@@ -196,50 +205,71 @@ html, body {
   font-size: 11px;
 }
 
-/* ---- per-state color (border + dot + chip) ---- */
-.state-working { border-left-color: var(--working); }
-.state-working .dot { background: var(--working); }
-.state-working .chip { color: var(--working); }
+/* ---- per-state color (border + dot + chip) ---- D-029 two-axis vocabulary.
+   Base states only; flavor (alching/crew/wrapped) is .flavor below. ---- */
+.state-busy { border-left-color: var(--working); }
+.state-busy .dot { background: var(--working); }
+.state-busy .chip { color: var(--working); }
 
-.state-waiting_for_user { border-left-color: var(--waiting); }
-.state-waiting_for_user .dot { background: var(--waiting); }
-.state-waiting_for_user .chip { color: var(--bg); background: var(--waiting); }
+/* YOUR MOVE — your turn, but no rush. Amber edge + a soft STATIC glow, no
+   pulse: motion is reserved for the "act now" tier (needs_you / stalled). */
+.state-your_move {
+  border-left-color: var(--waiting);
+  box-shadow: 0 0 10px -5px var(--waiting);
+}
+.state-your_move .dot { background: var(--waiting); }
+.state-your_move .chip { color: var(--bg); background: var(--waiting); }
 
-/* an open question (AskUserQuestion/ExitPlanMode) — the agent is blocked on
-   your answer. Distinct hot-pink chip so it reads apart from a finished,
-   idle-waiting turn; backend marks it attention=true so the dot pulses. */
-.state-waiting_for_answers { border-left-color: var(--answers); }
-.state-waiting_for_answers .dot { background: var(--answers); }
-.state-waiting_for_answers .chip { color: var(--bg); background: var(--answers); }
+/* NEEDS YOU — agent blocked on your answer right now (top of the act-now tier).
+   Pink edge + pink glow + pulsing pink dot, so it out-shouts a parked turn at a
+   glance, not just in the chip hue. */
+.state-needs_you {
+  border-color: var(--answers);
+  box-shadow: 0 0 0 1px var(--answers), 0 0 14px -4px var(--answers);
+  --pulse-rgb: var(--answers-rgb);
+}
+.state-needs_you .dot { background: var(--answers); animation: pulse 1.4s ease-in-out infinite; }
+.state-needs_you .chip { color: var(--bg); background: var(--answers); }
 
-.state-waiting_for_subagents { border-left-color: var(--crew); }
-.state-waiting_for_subagents .dot { background: var(--crew); }
-.state-waiting_for_subagents .chip { color: var(--crew); }
+/* STALLED — a busy turn gone heartbeat-silent, probably crashed/wedged. Red
+   edge + red glow + pulsing red dot: promoted into the act-now tier so the
+   "go check this" signal has motion, not just a high sort rank. */
+.state-stalled {
+  border-color: var(--stalled);
+  box-shadow: 0 0 0 1px var(--stalled), 0 0 14px -4px var(--stalled);
+  --pulse-rgb: var(--stalled-rgb);
+}
+.state-stalled .dot { background: var(--stalled); animation: pulse 1.4s ease-in-out infinite; }
+.state-stalled .chip { color: var(--bg); background: var(--stalled); }
 
-.state-alching { border-left-color: var(--alching); }
-.state-alching .dot { background: var(--alching); }
-.state-alching .chip { color: var(--alching); }
-
-.state-closing { border-left-color: var(--closing); }
-.state-closing .dot { background: var(--closing); }
-.state-closing .chip { color: var(--closing); }
-
-.state-wrapped_up { border-left-color: var(--wrapped); }
-.state-wrapped_up .dot { background: var(--wrapped); }
-.state-wrapped_up .chip { color: var(--wrapped); }
+.state-done { border-left-color: var(--wrapped); }
+.state-done .dot { background: var(--wrapped); }
+.state-done .chip { color: var(--wrapped); }
 
 .state-idle, .state-ended { opacity: 0.62; }
 .state-ended .dot { background: var(--ended); }
 
-/* ---- attention: the one that needs you ---- */
-.attention {
-  border-color: var(--waiting);
-  box-shadow: 0 0 0 1px var(--waiting), 0 0 14px -4px var(--waiting);
+/* ---- flavor tags (ride on the chip; never their own state) ---- */
+.flavor {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
 }
-.attention .dot { animation: pulse 1.4s ease-in-out infinite; }
+.flavor-alching { color: var(--alching); border-color: var(--alching); }
+.flavor-crew { color: var(--crew); border-color: var(--crew); }
+.flavor-wrapped { color: var(--wrapped); border-color: var(--wrapped); }
+
+/* ---- attention ---- D-029: the row glow + pulse now live per-state above
+   (tiered: needs_you & stalled pulse, your_move is a soft static glow). The
+   `.attention` class is still applied by board.js as the count flag (the topbar
+   "N need you" tally) but carries no visual of its own. The pulse keyframe is
+   shared; its ring color comes from each state's --pulse-rgb. */
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(240, 160, 32, 0.6); }
-  50% { box-shadow: 0 0 0 6px rgba(240, 160, 32, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--pulse-rgb, 240, 160, 32), 0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(var(--pulse-rgb, 240, 160, 32), 0); }
 }
 
 /* ====== Phase 2: two-column layout + session console ====== */
@@ -267,7 +297,14 @@ html, body {
    and the three header bars stay equal height. The peek .console (read-only VS Code
    transcript — normal DOM scroll, no xterm) scales whole. */
 .board-col, .feed-col, .rail, .modal { zoom: var(--zoom); }
-.term-col > .console-head { zoom: var(--zoom); width: calc(100% / var(--zoom)); }
+/* The terminal-view header: zoom it to match the board/feed bars (which scale via
+   their zoomed columns), but width:100% — NOT calc(100%/--zoom). S073 used the
+   inverse-width to "prevent overflow," but in this WebView2/Chromium build `zoom`
+   here scales the header's content + height without expanding its explicit box
+   width, so the inverse left it rendering ~74% wide → the right ~quarter of the
+   strip exposed .term-col's grain-over-dark backing (the "grainy box"). At 100%
+   it fills; .term-col { overflow:hidden } below clips the over-fill case. (S078) */
+.term-col > .console-head { zoom: var(--zoom); width: 100%; }
 .console { zoom: var(--zoom); width: calc(100% / var(--zoom)); height: calc(100% / var(--zoom)); }
 
 /* The embedded terminal: no zoom, no transform — a clean coordinate system for
@@ -326,6 +363,12 @@ html, body {
 }
 .console-title { font-weight: 600; font-size: 14px; }
 .console-status { font-size: 12px; color: var(--ink-faint); }
+
+/* Solid panel backing + clip for the terminal column. The header fills via
+   width:100% above; this is belt-and-suspenders so even a sub-pixel seam shows
+   panel (grain blends over it, matching the bars) rather than a transparent
+   grain-over-dark gap, and any over-fill in other builds gets clipped. (S078) */
+.term-col { background-color: var(--panel); overflow: hidden; }
 
 .turns {
   flex: 1;

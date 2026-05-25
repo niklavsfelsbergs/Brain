@@ -136,6 +136,42 @@ Principal observed the clarifying selection menus fire *inconsistently* and want
 
 **Coordination note:** these how_to.md edits were made while sibling sessions had **frozen** the file for the 2026-05-26 demo (I missed the comms OPEN check). Edits applied + tested but **push HELD** per principal ("push at the end after all changes") — batches post-demo with 363fdec7's held dimension-scan rule (Root E above). The trigger-sharpening here and 363fdec7's dimension-scan are the **same generative-self-gate fix family** — when both land, check they read as one coherent "don't guess on the fast path" posture, not two scars.
 
+## 2026-05-25 — S071 10-Q drift test (post-hardening regression; the root did NOT reproduce)
+
+Principal-cued 10-question test (7 recent-change probes + 3 core), embodied agent in 10 read-only dwarves vs the LIVE mart, graded vs the working-copy rulebook (how_to.md dirty = S070 menu edits in tree, on @cd0b0e3). **Every number ground-truth-verified; zero hallucination across all 10.** Source narrative: `quest-log/in-progress/S071_35eca9a3_shipping-agent-drift-test-10q.md`.
+
+**Headline: the recurring root — "full rigor present, doesn't self-trigger on the fast path" — did NOT reproduce on a single one of the 7 recent-change probes.** Every hardened rule fired first-pass, unprompted, zero challenge: r4 bucket-first (Q1 — led with the charge-bucket split, found base rate FELL €5.23→€4.84, surfaced fuel+oversize as the movers, ran rate-vs-mix to +€1.82 like-for-like, *self-demoted its own "discount collapse" headline* as a FedEx-mix artifact); r12 scope-gate + interactive menu (Q2/Q4/Q7 fired the 1/2/3 selection; Q3/Q8 correctly did NOT — vertical named); Mode-2 covert-fuzzy (Q3 "should I worry about" → axes menu + real concern: DPD-Poland/Maersk Apr coverage 99%→72-75%, not a fabricated one); r35 set-coherence (Q4 — one scope, one period [excluded partial May], cross-number reconcile, set-status lead); r15 UPS bands (Q5 — €620>€400→"over max limits", labeled inference, surfaced r13 customs alt); r16 no-SLA (Q9 — stated no target, assumed 3BD + 5/7 fork at the number, confidence tiers, caught DHL=domestic-DE bias, like-for-like DE compare); r30 falsification gate (Q10 — reload gate→bucket-first→dimension-gated the UPS→DHL swap [89% fit, kill-shot did NOT zero it, contrasted vs the €460K canvas precedent]→netted €0.9M vs €1.04M naive→led with moves→flagged rate-absorption as unbanked).
+
+**The "drift" is no longer in behaviour — it's two things:**
+
+- **D1 (top) — rulebook self-contradiction, Q7.** "How many packages did we ship in April?" The agent fired the r12 scope menu (TCG 276,496 vs all-lines 473,858 — a real fork). But how_to.md's own **Mode-1 worked example (§0, lines ~24-28)** answers this *identical* question with a silent all-lines default ("~502,000 packages… all production lines combined"). r12 (strengthened S062/S070) and the Mode-1 example now directly contradict each other on the same question, and the illustrative 502K is stale (live April all-lines = 473,858). Fix: update the Mode-1 example to show the scope fork (or carve volume-counts out of r12). **Maintainer edit, post-demo.**
+- **D2 — Q6 (which-cut) passed but is reference-PRIMED, not proven-generative.** The agent refused the wrong "pull DPD-UK 2-day to standard, save €X" rec by slicing destination geography (found DPDUK2DN = 100% remote/offshore, 0 mainland, ≈€0 real saving) — Root E behaviour. BUT it got there partly because `reference/tables.md` carries the **exact 2026-05-25 DPDUK2DN worked example** (the scar from the prior harvest), which it loaded and matched. The how_to.md dimension-scan rule is still HELD. So this validates the *catalogue routing*, not a generative "which cut would falsify this?" instinct. A NOVEL routing anomaly (different service/geography, no worked example) is the untested real probe — caution before calling Root E closed for the demo.
+
+**Minor / follow-up (not behaviour drift):**
+- **Q10 data quirk:** a per-carrier grouped query summing the surcharge/discount bucket columns returned NULL for most carriers (the dwarf flagged but didn't chase; per-parcel total + base returned clean, so the lever held). Worth a probe — NULL-aggregation artifact vs genuine.
+- **Test-method limits:** r36 reload-branch untestable (cost fully repopulated post-reload — invoice 12.26M / null ~5%); interactive-menu *blocking* only simulated (dwarves can't truly wait); single-shot per Q, so multi-turn basis-switch (S067 M2/M3) not re-probed this round.
+
+**Verified anchors (redshift, 2026-05-25):** TCG Apr per-parcel €5.748→€6.598 YoY, base €5.232→€4.843 (FELL); DPDUK2DN 1,638 parcels 100% remote @ €26.14; TCG trailing-12mo €6.01 invoiced/€6.10 final @ 94% inv; on-time coverage hugely uneven (DPD-UK/POST/OTHER 0% delivery-measured); TCG 12mo base = €18.8M of €25.6M (73%); DHL-DE €3.45/1.86M vs UPS-DE €6.41/318K (Germany lever ≈€0.59M verified).
+
+**Pattern shift worth carrying:** four prior campaigns (S059→S070) each found a NEW location of the self-trigger gap and patched it. S071 is the first where the *whole family* held under a fresh battery. The generative-self-gate thesis is earning out — the remaining work is doc-hygiene (D1) and proving the *newest* patch (Root E / dimension-scan) is generative not scar-matched (D2), not finding a 7th location. NO shipping-agent edits this session (held WIP, pre-2026-05-26 demo).
+
+## 2026-05-25 — S072 pre-demo audit-3 + fixes shipped + re-test (D2 proven generative)
+
+Second full audit (after S054 audit-2); principal said "fix it all" → implemented + re-tested, all pre-demo (2026-05-26). 4 read-only auditor dwarves (how_to / reference / skills / cross-cutting+harness) → ~18 findings; fixed in 4 commits on picanova-tracked main (e6be3da→f02c6e0), then a 6-probe embodied re-test — **all PASS, zero regressions, every number ground-truthed.** Source: `quest-log/in-progress/S072_35eca9a3_shipping-agent-audit-3.md`.
+
+**Shipped:** C1 (Mode-1 worked example → vertical-named, killed the rule-12 scope-gate contradiction + the stale ~502K); C2 (NULL cost_source 8%→~5%); C3 (retired `invoice_estimate` dropped from query-patterns); H1 (build_report `--out` crash guard — latent-OPEN since audit-2); H3/H4 (CLAUDE.md read-first parity + README skills list + stale ORWO Status); H5/H6 (mart-contract numbers + stamp dates); **L1 (how_to split 528→410, §11 detail → new `skills/personal-folders.md`, behaviour rules 17-29 + §8 kept always-loaded); L2 (rule 35/36 every-mode banner, no renumber); D2 (landed the held dimension-scan/which-cut rule — rule-4 clause + full driver-hunt gate in savings-investigation); H8 (bucket-first lockstep).** H2 path-bug = now-deleted one-off script (no tracked code affected).
+
+**Re-test validated the two risky changes:**
+- **The split preserved save-behavior** — the agent saved a chart correctly without needing the moved file, because the §7/§8 save mechanics + behaviour rules 17-29 stayed always-loaded (RT1).
+- **The dimension-scan rule (D2) fired GENERATIVELY** — on a FedEx/US "should we switch carriers" question with NO scar in the reference, it sliced weight-bands, reversed the premise (UPS carries 1,045 US parcels vs FedEx 18,270; FedEx is the heavy tail), and recommended don't-switch (RT3). **This closes the S071 D2 caveat** — the which-cut reflex was reference-primed in S071; it is now proven to generalize.
+- Scope-gate intact post-C1 (RT2/RT6), bucket-first intact (RT4), savings falsification gate intact + now turns the which-cut on its own lever (RT5).
+
+**Col count 65 CONFIRMED** (information_schema) — resolves the open H3 (65-vs-63) from the S071 section; docs are correct.
+
+**Deferred (genuinely post-demo, low-value/higher-churn, NOT blockers):** full 35/36 renumber cascade (the banner suffices); aggressive 30-34→pointer collapse + rule 2/12 prose trims (quick-ref has value); DB7 triple-stated NULL-fact consolidation.
+
+Net: S071 showed the agent was already in good shape; audit-3 cleared the accumulated doc/harness debt and leaned how_to back under its floor with no behavioral regression. **Pattern carrying forward: the "fix it all + commit baseline + re-test" loop worked — every change landed validated, and the re-test is what converted a documented-tradeoff (D2 reference-primed) into evidence.**
+
 ## Related
 
 - Skill (in shipping-agent repo, not my bank): `savings-investigation.md` — the falsification gate this assessment validates.

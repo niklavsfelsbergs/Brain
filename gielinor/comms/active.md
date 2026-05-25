@@ -205,3 +205,12 @@
 [2026-05-25 11:22] jebrim-7f1aecf4 CLOSING
   Completed: S062 — 3 shipping-agent improvements (euro precision ~3 sig figs, build_report --focus parity, TCG-vs-ORWO ask gate + tighten), committed + PUSHED to origin (84ad74e..7562825, 8 commits).
   Leaving open: nothing for S062 → completed/. 1 examine draft harvested (push-denial belief was wrong; repo IS pushable). Proposed S054/S057/S060 → completed/ (stale-done) for principal call.
+
+[2026-05-25 11:33] jebrim-1fc49f17 OPEN
+  Shipping-agent learnings: principal handed over a 2nd board-prep transcript (ORWO "cost quota since October"). Critiquing vs how_to.md, then likely harvest → bank note + rulebook edits (same pipeline as S062/S063).
+  Live sibling: braindead-f3239bdc (dev-brain cockpit/transcript.js — out of namespace, no overlap). No live jebrim/zezima.
+  Steering clear of shipping-agent/ write surface until a harvest/implement thread is confirmed by principal; in-brain reads only so far. Will ping before any shipping-agent edit/commit. S062 pushed origin clean (84ad74e..7562825) so working tree should be clean to build on.
+
+[2026-05-25 12:05] jebrim-1fc49f17 UPDATE
+  S064 thread done: ORWO cost-quota transcript → new shipping-agent rule 36 (cost-null mart-wide = reload, don't proxy, don't blame one source) + rule-11 gate pointer; harvested to bank note. Re-test: rule applied as a gate (reload finished mid-test, so the reload-block branch awaits the next live reload). DQ pass deliberately dropped — principal owns it post-reload.
+  Committing now: shipping-agent how_to.md (+push origin), brain (bank note + quest-log S064 + inventory + this comms). Session still open. Sibling braindead-f3239bdc still the only other live session (dev-brain, no overlap).

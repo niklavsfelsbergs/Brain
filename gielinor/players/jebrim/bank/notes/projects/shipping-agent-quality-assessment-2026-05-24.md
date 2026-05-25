@@ -66,6 +66,24 @@ The judgment held (blocked the flattering "costs down" narrative via mix-shift d
 
 **Implementation mapping (maintainer edits to `Documents/GitHub/shipping-agent/`):** L1 → rule 12 (3-option selector). L8 → new clause (state-no-SLA + assumed-threshold-as-fork), sibling to rule 12. L2 → rule 4 extension. L3/L4/L5 → new "delivering a set of figures" pre-flight rule (§0). L6 → strengthen rules 20/27 promotion trigger + consider a scratchpad-accretion note. L7 → rule 2 / translation-table reinforcement. Status: **implementing this session** (2026-05-25, post-S062).
 
+## 2026-05-25 — ORWO cost-quota transcript (the reload-in-progress catch)
+
+Second board-prep transcript handed over the same day. Prompt: *"how has the cost quota developed since October for ORWO."* The agent computed a rising quota (9.8% Oct → 18.2% Dec → 13–16% Jan–Apr, 8.8% May MTD), charted it titled "ORWO shipping cost quota," and buried the basis in a trailing caveat: *normal ORWO cost is blank, so this is carrier bill lines matched to ORWO parcels.* Principal caught it ("where did you get cost? I see all is missing") and the agent conceded cleanly.
+
+**Ground truth (instrumented this session, redshift MCP — did NOT trust the transcript's framing):** the cost columns (`real`/`expected`/`avg`/`final_shipping_cost_eur` + `cost_source`) are **100% NULL across ALL five source systems** right now — 18.4M rows, revenue 99%+ populated, 56M invoice lines (€66.6M) present, but the cost rollup onto `fact_shipments` is empty. **Principal: this is a DATA RELOAD IN PROGRESS, transient — not a DQ gap, not an ORWO-specific hole.** *"That's exactly what the agent should catch."* The principal's null-check had the `source_system='ORWO'` filter commented out precisely because *all* sources are missing, not just ORWO.
+
+**Root D — transient-state awareness (NEW; nothing in the rulebook detects a reload).** This is a better lesson than the proxy-labeling one it started as:
+
+- **R1 — catch the reload.** Cost NULL across *all* sources while revenue + invoice lines are present is the signature of a load in flight, not a quality gap. The right answer is *"shipping costs are being reloaded right now — I can't give cost figures yet, check back shortly,"* **not** a proxy quota dressed up with a caveat. The agent had the signal in hand (the null was right there) — it just didn't read it as a systemic/transient state.
+- **R2 — don't pin a systemic null on one entity.** The agent queried only ORWO, saw a local null, and attributed it to ORWO. A null-cost finding needs the same cross-source check rule 9 already mandates for coverage: *one source or all of them?* before attribution. Mart-wide → systemic (reload / pipeline); one source → genuine per-source gap.
+- **R3 — requested-metric-unavailable handling (carries from the first-pass analysis; secondary now).** Lead with *"can't compute X"* before any number; **if** a proxy is genuinely the right fallback, label it as a proxy in the headline AND the chart title/axis — never a trailing caveat (drop-onto-slide mislabel trap, cf. board-numbers L4). Here a proxy wasn't warranted at all — the reload was the whole answer. The coverage-swing (56–81%) and May-MTD points the proxy surfaced fold into this: artifacts of an exercise that shouldn't have run.
+
+**Same known root, fourth location.** "Full rigor present, doesn't self-trigger on the fast path" — cause-attribution (S059, fixed) → scope/denominator (S060) → metric-set coherence (board-numbers) → **systemic-vs-local null / transient state** (here). The generative fix family holds: a fast-path self-gate, not another scar.
+
+**Also a clean validation of verify-before-write ([[2026-05-24-my-own-bank-note-went-stale]]).** Harvesting this nearly wrote "ORWO `final_shipping_cost_eur` null by design" into the LIVE-stamped `known-dq.md` / `mart-contract.md §4`. Instrumenting the live mart first revealed the mart-wide reload instead. The DQ entry would have been the I3 scar, repeated. **DQ pass deliberately dropped — principal will run it when the reload completes and cost is back.**
+
+**Implementation mapping:** R1/R2 → new `how_to.md` behavior clause — reload-in-progress detection (cost null mart-wide + revenue/lines present → say "reloading," don't proxy, don't attribute to one source), sibling to rule 9 (coverage cross-source) and rule 11 (cost basis). R3 → reinforces rule 11 + chart-hygiene (rule 2). **NOT a dated DQ entry** (that's the principal's pass post-reload). Status: **implementing this session** (2026-05-25).
+
 ## Related
 
 - Skill (in shipping-agent repo, not my bank): `savings-investigation.md` — the falsification gate this assessment validates.

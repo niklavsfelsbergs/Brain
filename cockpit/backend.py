@@ -574,6 +574,72 @@ async def api_clipboard(request):
     return web.json_response({"text": text}, headers=NO_STORE)
 
 
+def _write_clipboard_text(text: str) -> bool:
+    """Set the Windows clipboard to UTF-16 text. The mirror of _read_clipboard_text:
+    the terminal's Ctrl+C copy goes through here because WebView2 gates the native
+    navigator.clipboard write path. Returns False (never raises) on any non-Windows
+    or API failure so the caller degrades to "copy does nothing"."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+    except Exception:
+        return False
+    CF_UNICODETEXT = 13
+    GMEM_MOVEABLE = 0x0002
+    try:
+        u, k = ctypes.windll.user32, ctypes.windll.kernel32
+    except AttributeError:
+        return False  # not Windows
+    u.OpenClipboard.argtypes = [wintypes.HWND]
+    u.OpenClipboard.restype = wintypes.BOOL
+    u.EmptyClipboard.restype = wintypes.BOOL
+    u.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
+    u.SetClipboardData.restype = wintypes.HANDLE
+    u.CloseClipboard.restype = wintypes.BOOL
+    k.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+    k.GlobalAlloc.restype = wintypes.HGLOBAL
+    k.GlobalLock.argtypes = [wintypes.HGLOBAL]
+    k.GlobalLock.restype = wintypes.LPVOID
+    k.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+    k.GlobalFree.argtypes = [wintypes.HGLOBAL]
+    if not u.OpenClipboard(None):
+        return False
+    try:
+        u.EmptyClipboard()
+        buf = ctypes.create_unicode_buffer(text)  # UTF-16LE incl. trailing NUL
+        size = ctypes.sizeof(buf)
+        h = k.GlobalAlloc(GMEM_MOVEABLE, size)
+        if not h:
+            return False
+        p = k.GlobalLock(h)
+        if not p:
+            k.GlobalFree(h)
+            return False
+        try:
+            ctypes.memmove(p, buf, size)
+        finally:
+            k.GlobalUnlock(h)
+        if not u.SetClipboardData(CF_UNICODETEXT, h):
+            k.GlobalFree(h)  # ownership not transferred on failure
+            return False
+        return True  # system now owns h — must NOT free it
+    finally:
+        u.CloseClipboard()
+
+
+async def api_clipboard_write(request):
+    try:
+        body = await request.json()
+        text = (body or {}).get("text", "")
+    except Exception:
+        text = ""
+    if not text:
+        return web.json_response({"ok": False}, headers=NO_STORE)
+    loop = asyncio.get_running_loop()
+    ok = await loop.run_in_executor(None, _write_clipboard_text, text)
+    return web.json_response({"ok": bool(ok)}, headers=NO_STORE)
+
+
 # ─── static files ───────────────────────────────────────────────────────────
 
 async def static_handler(request):
@@ -604,6 +670,7 @@ def make_app():
     app.router.add_post("/api/rename", api_rename)
     app.router.add_get("/api/feed", api_feed)
     app.router.add_get("/api/clipboard", api_clipboard)
+    app.router.add_post("/api/clipboard", api_clipboard_write)
     from ptybridge import pty_handler  # real interactive claude over a PTY (S066 B)
     app.router.add_get("/pty", pty_handler)
     app.router.add_get("/history", history_handler)

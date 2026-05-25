@@ -139,6 +139,17 @@ class TermConn {
         this._pasteFromClipboard();
         return false; // don't let xterm send a raw ^V to the PTY
       }
+      // Ctrl/Cmd+C copies the selection — the reflexive expectation — but ONLY when
+      // something is selected. With no selection it falls through so xterm still sends
+      // \x03 and interrupts the PTY (and Esc already interrupts here too, so claiming
+      // Ctrl+C for copy costs nothing). The clipboard WRITE goes through the backend
+      // bridge for the same reason paste reads from it: WebView2 gates the native
+      // navigator.clipboard path; the server's clipboard IS the user's. (S087)
+      const ctrlC = (e.key === "c" || e.key === "C") && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey;
+      if (ctrlC && this.term.hasSelection()) {
+        this._copyToClipboard(this.term.getSelection());
+        return false; // copied the selection — swallow, don't fire SIGINT at the PTY
+      }
       // Shift+Enter → newline, not submit. The terminal can't encode Shift+Enter on
       // the wire (legacy mode sends the same \r as Enter), but THIS handler sees
       // e.shiftKey — so we just send claude the byte for its DOCUMENTED universal
@@ -298,6 +309,26 @@ class TermConn {
       } catch {}
     }
     this._doPaste(text);
+  }
+
+  // Write the current selection to the clipboard. Backend bridge first (the reliable
+  // path inside WebView2, mirroring _pasteFromClipboard); navigator.clipboard.writeText
+  // as the fallback for the plain-browser case. Best-effort — a failure just means the
+  // copy silently didn't take, never throws into the key handler. (S087)
+  async _copyToClipboard(text) {
+    if (!text) return;
+    try {
+      const r = await fetch("/api/clipboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (r.ok && (await r.json()).ok) return;
+    } catch {}
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText)
+        await navigator.clipboard.writeText(text);
+    } catch {}
   }
 
   // Pin the viewport to the newest output. xterm's displayed line (scrollToBottom →

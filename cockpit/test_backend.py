@@ -263,6 +263,13 @@ async def _pty_auth_checks():
         r = await client.get("/pty?launch=claude&token=wrong")
         check("/pty with a wrong token -> 403", r.status == 403)
 
+        # Ctrl+C copy bridge (S087). Empty text hits the no-clobber guard before
+        # _write_clipboard_text, so this asserts the route is wired without ever
+        # touching the real clipboard during the test run.
+        r = await client.post("/api/clipboard", json={"text": ""})
+        check("POST /api/clipboard registered; empty text -> ok:False (no clobber)",
+              r.status == 200 and (await r.json()).get("ok") is False)
+
 
 def test_pty_auth():
     asyncio.run(_pty_auth_checks())

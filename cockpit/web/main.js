@@ -11,6 +11,7 @@ import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { openPeek, release } from "./fleet.js";
 import { openTerm, Term, TermComposer, termForSid8, termInterrupted, resumeTerm, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
+import { TranscriptView } from "./transcript.js";
 import { nameFor, subscribeNames } from "./names.js";
 
 // Actor → the address the cockpit writes as the first message. The actor
@@ -184,6 +185,11 @@ function App() {
   const [feedOpen, setFeedOpen] = useState(() => lsBool("cockpit-feed", true));
   const [boardOpen, setBoardOpen] = useState(() => lsBool("cockpit-board", true));
   const [zoom, setZoom] = useState(loadZoom);
+  // Driven-session view: the raw PTY terminal, or the clean-text transcript
+  // (read/copy skin over the same session — S091). One global default, persisted.
+  const [termView, setTermView] = useState(() =>
+    localStorage.getItem("cockpit-term-view") === "transcript" ? "transcript" : "terminal",
+  );
   const prevWaiting = useRef(new Map());   // sid8 -> last state, for ping transitions
   const [, bumpNames] = useState(0);
   useEffect(() => subscribeNames(() => bumpNames((n) => n + 1)), []);
@@ -216,6 +222,13 @@ function App() {
   useEffect(() => { setLsBool("cockpit-board", boardOpen); }, [boardOpen]);
   useEffect(() => { setLsBool("cockpit-feed", feedOpen); }, [feedOpen]);
   useEffect(() => { const id = requestAnimationFrame(fitTerms); return () => cancelAnimationFrame(id); }, [boardOpen, feedOpen]);
+  // persist the terminal/transcript choice; refit on return to the terminal — it
+  // was display:none under the transcript, so its row count drifted while hidden.
+  useEffect(() => {
+    try { localStorage.setItem("cockpit-term-view", termView); } catch {}
+    if (termView === "terminal") { const id = requestAnimationFrame(fitTerms); return () => cancelAnimationFrame(id); }
+    return undefined;
+  }, [termView]);
 
   const toggleFocus = () => {
     const anyOpen = boardRef.current || feedRef.current;
@@ -502,13 +515,34 @@ function App() {
           ? html`<div class="term-col" style="display:flex;flex-direction:column;height:100%;">
               <div class="console-head">
                 <span class="console-title">${title}</span>
-                <span class="console-status">terminal · on subscription</span>
+                <span class="console-status">${
+                  termView === "transcript" ? "transcript · clean copy" : "terminal · on subscription"
+                }</span>
+                <div class="tv-toggle">
+                  <button
+                    class=${"tv-tab" + (termView === "terminal" ? " on" : "")}
+                    onClick=${() => setTermView("terminal")}
+                    title="drive the live PTY (interactive)"
+                  >terminal</button>
+                  <button
+                    class=${"tv-tab" + (termView === "transcript" ? " on" : "")}
+                    onClick=${() => setTermView("transcript")}
+                    title="clean, copyable text of this same session"
+                  >transcript</button>
+                </div>
                 <button class="release" title="end this session" onClick=${() => {
                   sel.close();
                   setSel(null);
                 }}>release</button>
               </div>
-              <div style="flex:1;min-height:0;"><${Term} key=${sel.cid} conn=${sel} /></div>
+              ${/* Term stays mounted across the toggle (hidden, not unmounted) so
+                    the PTY/WebSocket never drops; the transcript view mounts over
+                    it and reads the same session via /history. (S091) */ ""}
+              <div style=${"flex:1;min-height:0;" + (termView === "transcript" ? "display:none;" : "")}>
+                <${Term} key=${sel.cid} conn=${sel} />
+              </div>
+              ${termView === "transcript" &&
+              html`<${TranscriptView} key=${sel.cid + "-tv"} conn=${sel} live=${true} />`}
               <${TermComposer} key=${sel.cid + "-c"} conn=${sel} />
             </div>`
           : html`<${Console} key=${sel.cid} conn=${sel} title=${title} onRelease=${doRelease} />`}

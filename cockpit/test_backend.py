@@ -275,7 +275,53 @@ def test_pty_auth():
     asyncio.run(_pty_auth_checks())
 
 
+def test_result_cap():
+    """The clean-text transcript panel passes &full=1 for untruncated tool output
+    (a truncated copy is a broken copy). _result_text honours an explicit cap; the
+    default stays the tight bound; FULL is generous enough to carry a real result
+    whole. Guards the S091 copy-fidelity path."""
+    big = "x" * 50_000
+    default = backend._result_text(big)
+    check("default cap truncates (<= HISTORY_RESULT_CAP + marker)",
+          default.endswith("…(truncated)") and len(default) < backend.HISTORY_RESULT_CAP + 40)
+    full = backend._result_text(big, backend.HISTORY_RESULT_CAP_FULL)
+    check("full cap returns the result whole (no truncation)",
+          full == big and "…(truncated)" not in full)
+    check("FULL cap is materially larger than the default",
+          backend.HISTORY_RESULT_CAP_FULL > backend.HISTORY_RESULT_CAP)
+    # parse_transcript threads the cap down to the tool_result fill.
+    small = backend._result_text(big, 100)
+    check("explicit small cap shears at the requested length",
+          small.startswith("x" * 100) and small.endswith("…(truncated)"))
+
+
+def test_name_carry():
+    """ptybridge._carry_disk_name moves a board label old sid8 → new sid8 across a
+    session-id rotation (the "lost rename on reopen" fix): carries when the old has
+    a label and the new doesn't; never clobbers an existing new label; no-ops on a
+    missing source. Guards the disk half of the carry."""
+    import ptybridge
+    tmp = Path(tempfile.mkdtemp(prefix="cockpit-names-"))
+    ptybridge.NAMES_PATH = tmp / "state-names.json"
+    ptybridge.NAMES_PATH.write_text(json.dumps({"aaaaaaaa": "My Session"}), encoding="utf-8")
+    ptybridge._carry_disk_name("aaaaaaaa", "bbbbbbbb")
+    after = json.loads(ptybridge.NAMES_PATH.read_text(encoding="utf-8"))
+    check("rename carried old sid8 -> new sid8 across rotation", after.get("bbbbbbbb") == "My Session")
+    check("original label left intact (never destroy)", after.get("aaaaaaaa") == "My Session")
+    # Never clobber a label already on the new sid8.
+    ptybridge.NAMES_PATH.write_text(json.dumps({"aaaaaaaa": "Old", "cccccccc": "Fresh"}), encoding="utf-8")
+    ptybridge._carry_disk_name("aaaaaaaa", "cccccccc")
+    after2 = json.loads(ptybridge.NAMES_PATH.read_text(encoding="utf-8"))
+    check("existing new-sid8 label not clobbered by carry", after2.get("cccccccc") == "Fresh")
+    # No source label → no-op, no crash.
+    ptybridge.NAMES_PATH.write_text(json.dumps({}), encoding="utf-8")
+    ptybridge._carry_disk_name("dddddddd", "eeeeeeee")
+    after3 = json.loads(ptybridge.NAMES_PATH.read_text(encoding="utf-8"))
+    check("no source label -> no carry, no crash", "eeeeeeee" not in after3)
+
+
 def main():
+    test_name_carry()
     test_pending_subagents_crashguard()
     test_stale_greying_and_attention()
     test_legacy_token_aliasing()
@@ -283,6 +329,7 @@ def main():
     test_busy_stays_busy_when_quiet()
     test_robust_to_missing_and_malformed()
     test_pty_auth()
+    test_result_cap()
     print(f"\n{_PASS} passed, {_FAIL} failed")
     sys.exit(1 if _FAIL else 0)
 

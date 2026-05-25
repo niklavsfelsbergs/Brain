@@ -17,7 +17,13 @@ Three surfaces over **one session model** (the anti-accretion discipline):
   glance, click to open. State colors: working / waiting-on-you (amber pulse) /
   awaiting-crew / alching / wrapped-up / ended.
 - **Session console** (center) — drive a cockpit-launched session in-app
-  (prompt / stream / Stop / release); VS Code sessions are read-only peek.
+  (prompt / stream / Stop / release); VS Code sessions are read-only peek. A
+  driven PTY session toggles **terminal ⇄ transcript** (S091): the terminal is
+  the live xterm (drive); the transcript is a clean-text DOM render of the same
+  session via `/history?...&full=1` — selectable, copy-button-equipped (per-turn,
+  per-tool-output, copy-all), no xterm grid-wrapping. The PTY stays the engine
+  underneath; the transcript is a read/copy skin (`web/transcript.js`). Copy goes
+  through the same `POST /api/clipboard` bridge the terminal's Ctrl+C uses.
 - **Activity feed** (right) — lifecycle checkpoints + comms across the fleet;
   raw actions off by default; click an item to jump to its session.
 

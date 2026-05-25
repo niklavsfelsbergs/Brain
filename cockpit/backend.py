@@ -125,6 +125,11 @@ CTYPES = {
 }
 NO_STORE = {"Cache-Control": "no-store"}
 HISTORY_RESULT_CAP = 4000   # per tool result, to bound the /history payload
+# The clean-text transcript panel (term.js toggle) requests &full=1 so copied
+# tool output isn't sheared at the cap above — a truncated copy is a broken copy.
+# A generous ceiling still applies so one pathological result can't bloat the
+# payload without bound. The read-only peek view keeps the tight default cap.
+HISTORY_RESULT_CAP_FULL = 200_000
 
 
 def _read_json(path: Path, default):
@@ -358,7 +363,7 @@ def _find_session_file(key: str):
         return None
 
 
-def _result_text(content) -> str:
+def _result_text(content, cap: int = HISTORY_RESULT_CAP) -> str:
     if isinstance(content, str):
         text = content
     elif isinstance(content, list):
@@ -372,12 +377,12 @@ def _result_text(content) -> str:
         text = ""
     else:
         text = str(content)
-    if len(text) > HISTORY_RESULT_CAP:
-        text = text[:HISTORY_RESULT_CAP] + " …(truncated)"
+    if len(text) > cap:
+        text = text[:cap] + " …(truncated)"
     return text
 
 
-def parse_transcript(key: str):
+def parse_transcript(key: str, result_cap: int = HISTORY_RESULT_CAP):
     """Read a session's .jsonl into {sessionId, title, turns}. Visual turns:
     consecutive assistant records merge until a real user message; tool_result
     user records fill their tool card in place; sub-agent (isSidechain) records
@@ -414,7 +419,7 @@ def parse_transcript(key: str):
                         if b.get("type") == "tool_result":
                             tb = tool_index.get(b.get("tool_use_id"))
                             if tb is not None:
-                                tb["result"] = _result_text(b.get("content"))
+                                tb["result"] = _result_text(b.get("content"), result_cap)
                                 tb["isError"] = bool(b.get("is_error"))
                         elif b.get("type") == "text":
                             user_text.append(b.get("text", ""))
@@ -449,8 +454,11 @@ async def history_handler(request):
     sid = request.query.get("session", "").strip()
     if not (_is_uuid(sid) or _is_sid8(sid)):
         return web.json_response({"error": "invalid session id"}, status=400, headers=NO_STORE)
+    # The clean-text transcript panel passes full=1 for untruncated tool output
+    # (clean copy); the read-only peek omits it and keeps the bounded default cap.
+    cap = HISTORY_RESULT_CAP_FULL if request.query.get("full") else HISTORY_RESULT_CAP
     loop = asyncio.get_running_loop()
-    data = await loop.run_in_executor(None, parse_transcript, sid)
+    data = await loop.run_in_executor(None, parse_transcript, sid, cap)
     if data is None:
         return web.json_response({"error": "not found", "sessionId": sid, "title": None,
                                   "turns": []}, status=404, headers=NO_STORE)

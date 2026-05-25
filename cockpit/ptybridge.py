@@ -48,7 +48,36 @@ ROWS_MIN, ROWS_MAX = 5, 200
 # re-announce when claude rotates its id mid-terminal (see _session_for_shell_pid
 # / the watch task in pty_handler). Same file the board reads — guaranteed in sync.
 MANIFEST_PATH = BRAIN_ROOT / "switchboard" / "state-switchboard.json"
+# {sid8: label} — disk-backed board renames (same store as backend.api_rename,
+# rename-intercept.py, status-sidecar.py). Carried across an id rotation below.
+NAMES_PATH = BRAIN_ROOT / "switchboard" / "state-names.json"
 SESSION_WATCH_SEC = 2.0  # how often to re-check the live session id (board cadence)
+
+
+def _carry_disk_name(old_sid8: str, new_sid8: str) -> None:
+    """Carry a board label across a session-id rotation. `claude --resume` (what a
+    cockpit reopen runs) and `/clear` both mint a NEW session id; the rename in
+    state-names.json is keyed on the OLD sid8, so without this it's orphaned and
+    the resumed row comes back on its bare actor label — the "lost rename on
+    reopen" bug. Copy old→new only when the old has a label and the new doesn't
+    (never clobber a fresh rename). Best-effort: any IO/parse failure leaves the
+    row unnamed, exactly as before, and never raises into the PTY pump."""
+    if not old_sid8 or not new_sid8 or old_sid8 == new_sid8:
+        return
+    try:
+        names = json.loads(NAMES_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return
+    if not isinstance(names, dict):
+        return
+    label = names.get(old_sid8)
+    if not label or names.get(new_sid8):
+        return
+    names[new_sid8] = label
+    try:
+        NAMES_PATH.write_text(json.dumps(names, indent=2), encoding="utf-8")
+    except OSError:
+        pass
 
 
 def _session_for_shell_pid(shell_pid: int):
@@ -240,7 +269,11 @@ async def pty_handler(request):
                 await asyncio.sleep(SESSION_WATCH_SEC)
                 cur = await loop.run_in_executor(None, _session_for_shell_pid, shell_pid)
                 if cur and cur != announced["sid"]:
+                    prev = announced["sid"]
                     announced["sid"] = cur
+                    # Carry the disk-backed board label old sid8 → new sid8 before
+                    # the client swaps, so a rotated/resumed row keeps its name.
+                    await loop.run_in_executor(None, _carry_disk_name, prev[:8], cur[:8])
                     await _ws_send(ws, {"t": "session", "sessionId": cur,
                                         "sid8": cur[:8], "resumed": False, "rotated": True})
         except asyncio.CancelledError:

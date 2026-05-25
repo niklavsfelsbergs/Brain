@@ -10,7 +10,7 @@
 
 import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
-import { setName } from "./names.js";
+import { setName, nameFor } from "./names.js";
 
 // xterm + fit addon are UMD globals from web/vendor/*, loaded in index.html.
 const XTerm = window.Terminal;
@@ -444,7 +444,16 @@ class TermConn {
         // so the row collapses and a reopened cockpit resumes the current convo.
         const prevId = this.id;
         const prevSessionId = this.sessionId;
-        if (prevId && prevId !== f.sid8) bySid8.delete(prevId);
+        if (prevId && prevId !== f.sid8) {
+          // Carry the /rename label (localStorage, keyed by sid8) across the id
+          // rotation. A /clear or a `claude --resume` (cockpit reopen) mints a new
+          // id; without this the label is orphaned under the old sid8 and the row
+          // comes back unnamed. Disk-backed labels are carried server-side in
+          // ptybridge._carry_disk_name; this is the localStorage half.
+          const carried = nameFor(prevId);
+          if (carried && !nameFor(f.sid8)) setName(f.sid8, carried);
+          bySid8.delete(prevId);
+        }
         if (prevSessionId && prevSessionId !== f.sessionId) removeOwned(prevSessionId);
         this.sessionId = f.sessionId;
         this.id = f.sid8;

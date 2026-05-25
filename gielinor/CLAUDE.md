@@ -103,6 +103,7 @@ The conventions you operate by:
 @meta/drafts-mechanics.md
 @meta/death-and-spawn.md
 @meta/layer-routing.md
+@meta/task-lists.md
 
 These are in-force every session.
 

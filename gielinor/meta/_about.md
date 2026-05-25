@@ -13,5 +13,6 @@
 - `archive-discipline.md` — nothing is destroyed; archive mirrors active structure.
 - `drafts-mechanics.md` — the drafts → confirmed flow, the observation rule, the `/drafts` command.
 - `death-and-spawn.md` — crash recovery, reset behavior, migration (deferred).
+- `task-lists.md` — when to decompose multi-step work into a tracked list, and the harness-list + `inventory/`-mirror homes.
 
 **Edits.** Treat `meta/` as a user-controlled layer. The agent proposes changes via drafts in `lorebook/drafts/` (since rule changes are decisions); the principal applies them here.

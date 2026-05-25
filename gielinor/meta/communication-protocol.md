@@ -42,6 +42,18 @@ D3 Redshift coverage. Returning control to you; synthesis when all return.
 
 This makes the dwarf decision visible and correctable before the spawn commits. If the principal goes serial when the heuristic would have fired, that's a missed call worth flagging.
 
+## Task-list surfacing
+
+When the task-list threshold fires (see `task-lists.md`), the **decomposition** surfaces in or just after the Plan line, so the principal can correct the *steps* before the agent commits to them — the same "wrong restatement is cheap" logic as the preamble, one level finer:
+
+```
+**Plan:** Multi-step — building it as a tracked list: 1) audit the shipping_mart schema,
+2) write the recency + volume checks, 3) the cost-invariant check, 4) thresholds + a dry run.
+Step 1 starting.
+```
+
+The list itself lives in the harness task list (and, for cross-turn or irreversible work, an `inventory/` mirror) — **don't recite the full list back in prose every turn.** The Plan line names it once at the branch; thereafter the intent line narrates the active step in-voice and the harness list carries status. Re-narrate only what *changed* (a step split, a new dependency, a step done that unblocks the next). Sibling to the dwarf-spawn annotation above: that one makes a *parallel* decomposition visible, this one a *sequential* one.
+
 ## Applies regardless of mode
 
 Every mode follows this protocol. Voice adapts; structure does not.

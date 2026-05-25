@@ -84,6 +84,26 @@ Second board-prep transcript handed over the same day. Prompt: *"how has the cos
 
 **Implementation mapping:** R1/R2 → new `how_to.md` behavior clause — reload-in-progress detection (cost null mart-wide + revenue/lines present → say "reloading," don't proxy, don't attribute to one source), sibling to rule 9 (coverage cross-source) and rule 11 (cost basis). R3 → reinforces rule 11 + chart-hygiene (rule 2). **NOT a dated DQ entry** (that's the principal's pass post-reload). Status: **implementing this session** (2026-05-25).
 
+## 2026-05-25 — FedEx / counterfactual transcript (bucket-first decomposition)
+
+Third board-prep transcript, full convo this time. Prompt chain: April-2026 YoY per-parcel (+17%) → push to decompose → counterfactual ("hold 2025 oversize + fuel") → "final consensus" → "investigate FedEx." Harvested in S067.
+
+**Headline (principal's framing): the agent didn't reach for the charge-bucket breakdown.** Asked why per-parcel rose, it characterized the move as ~base-rate repricing and offered lane/country/weight cohort modeling — never "split the delta by charge bucket," the most direct tool, sitting in `fact_shipment_cost_summary`. Used buckets only piecemeal, after the push. Bucketing first would have shown base up ~5% (normal GRI) and the real movers as oversize-handling (€1.73) + fuel (€0.74) — no "repricing" mischaracterization, no push needed. A **tool-sequencing reflex gap**, not a reasoning gap: full rigor present, just not reaching for the most direct decomposition first. Sibling of the recurring "doesn't self-trigger on the fast path" root, relocated to *which tool it reaches for first*.
+
+**Implemented S067 (committed pending principal go):** how_to.md **rule 4** extended — for a cost movement, the charge-bucket split is the *first* decomposition (which component: base vs surcharge vs fuel vs discount), before lane/cohort modeling and before naming a cause; rate-vs-mix runs second and only on the base bucket; invoiced-only basis stated. Worked precedent (+17% → ~5% base) embedded, mirroring rule 30's style. **Rule 11** gets a one-line pointer to rule 4 for cost-movement questions.
+
+**Wins — S059/S060 fixes generalizing (no rule change; preserve):**
+- Rate-vs-mix cohort decomposition ran clean and tied to actual within rounding (once it got there).
+- **Mid-task representativeness self-correction, unprompted** — caught USPS's 4-parcel 2025 baseline, set a ≥100-parcel "stable carrier" threshold, re-anchored basis. Rule-12 representativeness on the fast path.
+- **Confidence tiers + solid/soft split** in the consensus, unprompted (rule 16 / I2 risk-disclosure self-gate).
+- **FedEx portfolio-check-in-reverse (standout)** — didn't stop at "FedEx +64% disaster"; widened to the US-lane portfolio and found per-parcel *fell* €11.16→€9.75 (rerouted to ONTRAC/USPS). Named it "rule-4 in reverse" itself. The S060 scope/denominator self-gate generalizing to a hard new shape — strong evidence the asymmetric-skepticism gap is closing.
+
+**Secondary candidates — NOT implemented this pass (flagged for principal):**
+- **M2 — basis-switch across turns.** The *total-bill* metric silently switched final-basis (€1.69M→€1.81M, +7.4%, bill UP) in the opening to invoiced-basis (€1.64M→€1.57M, bill DOWN) in the counterfactual — YoY sign flipped, never reconciled. Per-figure basis disclosure (rule 11) held per-turn; nothing pins a metric's basis across a multi-turn investigation. Board-numbers L3/L4 extended from a single deck to a running investigation. Candidate: pin each headline metric's basis at investigation open; flag + restate on any switch.
+- **M3 — YoY across mismatched invoice maturity.** €1.64M (97% invoiced) vs €1.57M (87% invoiced) "decline" is mostly the 2026 number still maturing toward €1.81M. Agent surfaced the 97-vs-87 gap in the consensus but not at the counterfactual table where it changes the reading. Per-parcel YoY is safe (invoiced-only both sides); the *total* is contaminated. Candidate: normalize maturity for YoY totals + carry the caveat to the point of the number.
+
+Running thesis holds: **generative fast-path self-gate, not another scar.** Bucket-first is itself a scar — but a cheap, high-frequency one (every cost-movement question); the deeper fix is the reflex to reach for the most direct tool first.
+
 ## Related
 
 - Skill (in shipping-agent repo, not my bank): `savings-investigation.md` — the falsification gate this assessment validates.

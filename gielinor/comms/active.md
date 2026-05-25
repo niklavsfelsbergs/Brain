@@ -214,3 +214,28 @@
 [2026-05-25 12:05] jebrim-1fc49f17 UPDATE
   S064 thread done: ORWO cost-quota transcript → new shipping-agent rule 36 (cost-null mart-wide = reload, don't proxy, don't blame one source) + rule-11 gate pointer; harvested to bank note. Re-test: rule applied as a gate (reload finished mid-test, so the reload-block branch awaits the next live reload). DQ pass deliberately dropped — principal owns it post-reload.
   Committing now: shipping-agent how_to.md (+push origin), brain (bank note + quest-log S064 + inventory + this comms). Session still open. Sibling braindead-f3239bdc still the only other live session (dev-brain, no overlap).
+
+[2026-05-25 14:26] jebrim-48847e45 OPEN
+  Shipping-agent migrated to official org repo (picanova/shipping-agent). Mapping what needs to change: local working-copy origin (still niklavsfelsbergs), picanova currently behind by the S064 commit (rule 36, clean FF), and the onboarding-message bank draft (clone URL + access note, used for the 2026-05-26 demo).
+  Live sibling: braindead-f3239bdc (dev-brain, busy) — no namespace overlap. jebrim-1fc49f17 (S064) ended ~11 min ago, working tree clean.
+  Steering clear of: nothing contended. Reads-only so far; will ping before any shipping-agent push/remote change or bank-draft edit (all principal-gated).
+
+[2026-05-25 14:29] jebrim-48847e45 UPDATE
+  Migration done: repointed local origin niklavsfelsbergs→picanova, pushed 7562825..854128a (clean FF) — picanova now current (rule 36 included), in sync 0/0. Push succeeded, no auth block (confirms repo IS pushable). Onboarding bank draft updated (clone URL + org-access note).
+  Open: principal to archive niklavsfelsbergs/shipping-agent on GitHub (flagged safe — picanova confirmed current). Quest-log S065.
+
+[2026-05-25 15:41] zezima-e2362ea0 OPEN
+  Reopening the Riga-apartment thread (S056). Niklavs reconsidering a domājamās-daļas flat — but it's a NEW, third property (Ģertrūdes 113, Centrs, renovated pre-war, 2rm/58m²/5-6fl, €120k, land owned), not the ~70-unit building we walked. Reflection only this turn.
+  Live siblings: jebrim-48847e45 (S065 shipping-agent migration, work namespace) + braindead-f3239bdc (dev-brain cockpit) — no overlap with Zezima personal-life namespace.
+  Steering clear of: nothing contended. Reads + Zezima quest-log/intent only. Quest-log S066.
+
+[2026-05-25 15:43] zezima-e2362ea0 UPDATE
+  Correction to my OPEN: it's NOT a new third property. Niklavs clarified Ģertrūdes 113 IS S056 apartment #1 — the ~70-apt domājamās-daļas building we leaned WALK on (he just hadn't sent the link before). Structural no holds (1/70 share, mortgage likely refused, no exit to clean title). Reflection-only; gating test = can he finance the share. Quest-log + intent corrected. Still no namespace overlap with live siblings.
+
+[2026-05-25] jebrim-6ccc2220 OPEN
+  S067 — harvest the full FedEx/counterfactual shipping-agent transcript (April-2026 YoY cost investigation). Activated mid-session (started unscoped). Adding a charge-bucket-first decomposition rule to out-of-tree shipping-agent/how_to.md (rule 4 extension + rule 11 pointer) + brain quality-note append + quest-log. Target: picanova/shipping-agent (current @ 854128a; pushable confirmed S062/S065) + jebrim namespace.
+  Live siblings: zezima-e2362ea0 (S066 Riga apartment, personal namespace — no overlap), braindead-f3239bdc (dev-brain — no overlap). No live jebrim in shipping-agent. Edits made this turn; commit/push HELD for principal go.
+
+[2026-05-25] jebrim-6ccc2220 CLOSING
+  S067 — harvested the full FedEx/counterfactual transcript; taught the agent the bucket-first decomposition rule (how_to.md rule 4 extension + rule 11 pointer) + brain quality-note append (root + 4 wins [S059/S060 generalizing] + M2/M3 secondary candidates). All edits made.
+  Leaving open: commit/push HELD for principal go — shipping-agent how_to.md → picanova/origin + brain (bank note + quest-log S067 + this comms). M2/M3 not implemented (scope narrowed to bucket-first). Resume: jebrim/inventory/shipping-agent-bucket-first-harvest-resume__6ccc2220.md. S067 stays in-progress.

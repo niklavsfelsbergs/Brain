@@ -8,7 +8,9 @@
 
 **Why it matters.** A 15-deep in-progress folder defeats the crash-recovery signal (`death-and-spawn.md`): if everything looks in-progress, a genuinely-interrupted quest can't be distinguished from 11 done ones. It also makes every respawn's "what's open" survey noisy and forces a periodic manual sweep.
 
-**Proposed change (behavioral).** A quest whose deliverable has shipped + been verified + committed should be moved to `completed/` **in the session that finishes it**, not deferred — close-session is the natural home for the move. Deferral should be the exception (genuine ambiguity about whether it's done), not the default. Candidate ritual touch: `spellbook/rituals/close-session.md` graduates complete-ready quests as a step; bankstanding Phase 0 remains the backstop, not the primary mechanism.
+**Decision.** A quest whose deliverable has shipped + been verified + committed is moved to `completed/` **in the session that finishes it**, not deferred. Deferral is the exception (genuine ambiguity about whether it's done), not the default. Bankstanding Phase 0 remains the backstop, not the primary mechanism.
+
+**Ritual follow-up (user-only, pending).** `spellbook/rituals/close-session.md` should gain an explicit step: graduate complete-ready quests before wrap. That edit touches a user-only ritual file and is left for the principal's hand — this decision authorizes it; the edit itself is separate.
 
 **Caveat — don't over-correct.** Some quests legitimately stay open with a shipped deliverable (e.g. S068 pending the A5 ruling, S065 carrying un-acted harvest, S040 parked on a principal-side action). The rule is "graduate when nothing is genuinely open," not "graduate everything with a commit."
 

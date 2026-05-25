@@ -1,3 +1,5 @@
+> [B-005 alching, 2026-05-25] Absorbed (with the "cue" draft) into confirmed examine entry `2026-05-25-probe-design-must-not-contaminate-tested-behavior.md` as the *suppress* half of one lesson. Preserved here for provenance — not a quality rejection.
+
 # Probe design — don't instruct away the behavior you're testing
 
 **2026-05-25 (S063).** To verify the shipping-agent rule changes fired, I spawned a naive agent to embody the agent on the exact board prompt — good instinct (avoid marking my own homework on rules I'd just written). But my brief told it: *"if your rules require a clarifying choice, present it, then proceed with a default since you can't get a live reply."* That instruction **suppressed the very behavior I was testing** — rule 12's "present the numbered scope selection AND wait." The probe came back inconclusive on L1: the agent surfaced the fork in prose and proceeded, so I couldn't tell whether the crisp numbered-selection-and-wait actually fires.

@@ -1,3 +1,5 @@
+> [B-005 alching, 2026-05-25] Folded into skill `stress-testing-an-agent-by-embodying-it.md` step 7 (probe hygiene). Preserved here for provenance — not a quality rejection.
+
 # Refinement → [[stress-testing-an-agent-by-embodying-it]]: validate the working-narration stream separately
 
 **Source:** S062 (2026-05-25), shipping-agent citation-leak fix. Draft — fold into the skill at alching.

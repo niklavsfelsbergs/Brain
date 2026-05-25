@@ -166,3 +166,42 @@
 [2026-05-24] jebrim-7cd31d19 CLOSING
   Completed: S060 — shipping-agent training campaign (10 Qs / 3 tiers, all numbers ground-truth-verified, zero hallucination) + implemented all 4 resulting teachings in the out-of-tree shipping-agent (scope/denominator self-gate; "we/our"=all-lines default + state-scope + scope-flip fork; carrier UPPERCASE casing) + live-validated the scope self-gate fires spontaneously on a neutral prompt. Harvested 3 drafts (1 examine, 1 skill, 1 memory).
   Leaving open: NO COMMITS this session — shipping-agent edits applied but uncommitted (awaiting explicit principal go; repo denies push); brain uncommitted (parallel-session tangle). Resume: jebrim/inventory/shipping-agent-training-campaign-resume__7cd31d19.md. S060 stays in-progress (commit follow-up parked). 3 drafts await triage. S054/S057 still complete-ready from prior comms.
+
+[2026-05-24 23:16] jebrim-64d03d53 OPEN
+  Greeting / reflection — no task committed. Live sibling: braindead-5f93bb32 (dev-brain, out of namespace). No live jebrim/zezima. Steering clear of out-of-tree repos (shipping-agent/, bi-analytics/) until a thread is picked. In-progress/ holds S040 (Outlook MCP, parked@Azure sign-in) + S054/S057/S060 (all complete-ready, propose →completed/). Uncommitted S060 shipping-agent edits await principal go. Awaiting direction.
+
+[2026-05-24 23:25] jebrim-64d03d53 UPDATE
+  Thread picked: S061 — documenting an external 5-finding security review of out-of-tree shipping-agent + my assessment/reprioritization. DOCUMENTATION ONLY: no code read, no edits, nothing committed. In-brain writes only (jebrim quest-log + inventory + this comms). Parked for a later verify-then-fix pass. Keeping clear of the uncommitted S060 edits already in that repo. No live jebrim/zezima siblings (braindead dev-brain only).
+
+[2026-05-25 10:18] jebrim-7f1aecf4 OPEN
+  Shipping-agent work, thread TBD pending principal pick. Live sibling jebrim-249eb38a is mid-test in the same repo (posted no OPEN).
+  Steering clear of shipping-agent/ write surface until we deconflict; repo has how_to.md uncommitted-modified @ afada90 (S060).
+  Will ping @249eb38a before any edit/commit there. In-brain writes only for now (quest-log + this comms).
+
+[2026-05-25 10:24] jebrim-7f1aecf4 UPDATE
+  Scope: S062 — tighten euro precision to ~3 sig figs (<10→2dec, 10-99→1dec, ≥100→0dec) in _report_style.format_value + how_to.md §274; + a build_report topic TBD.
+  Code edit ready but HELD: sibling 249eb38a is testing charts and how_to.md §274 is its dirty file. No shipping-agent writes till its run lands + how_to.md clears.
+
+[2026-05-25 10:24] jebrim-7f1aecf4 → @249eb38a
+  About to edit _report_style.py (format_value precision) + how_to.md §274 — euro-precision tighten.
+  You've got how_to.md dirty + look mid chart-test. Ping back when your run's done / how_to.md committed so I don't pollute your test or clobber it. Holding till then.
+
+[2026-05-25 10:42] jebrim-7f1aecf4 UPDATE
+  S062 committed: shipping-agent 87378ff (local, unpushed) — euro precision ~3 sig figs (format_value + how_to.md §274 + new Mode 1 chat rule) + build_report --focus parity.
+  Topic-2 parked item ("build_report lacks legend-isolation+labels") was already shipped in S054 — only --focus gap remained. Sibling 249eb38a done; my how_to.md edits sit on top of its 1eaccd3 — no conflict.
+
+[2026-05-25 10:54] jebrim-7f1aecf4 UPDATE
+  S062 topic 3: how_to.md rule 12 now ASKS "TCG shops only, or also the ORWO photo lab?" when vertical is unspecified — replaces the silent all-lines default. Rule 7 given an unstated-vertical exception. PCS/Rewallution unchanged.
+  Uncommitted (awaiting principal go). Sibling 249eb38a idle; edits sit on top of 87378ff — no conflict.
+
+[2026-05-25 11:06] jebrim-7f1aecf4 UPDATE
+  S062 topic 3 committed: shipping-agent 7562825 (local) — TCG-vs-ORWO ask gate + tightening (named scope pulls without a confirm step).
+  Re-validated via 2 agent-embodying dwarves: unscoped probe asks the vertical Q, scoped probe restates-and-pulls clean. Sibling 249eb38a idle; on top of 87378ff — no conflict.
+
+[2026-05-25 11:12] jebrim-7f1aecf4 UPDATE
+  Pushed shipping-agent to origin/main (84ad74e..7562825) — 8 commits, now in sync. Principal-authorized.
+  CORRECTION: the "repo denies push" belief (S054 comms, echoed in my OPENs today) is FALSE — push succeeded cleanly, no block. Inherited-confidence error; future sessions: the repo IS pushable.
+
+[2026-05-25 11:22] jebrim-7f1aecf4 CLOSING
+  Completed: S062 — 3 shipping-agent improvements (euro precision ~3 sig figs, build_report --focus parity, TCG-vs-ORWO ask gate + tighten), committed + PUSHED to origin (84ad74e..7562825, 8 commits).
+  Leaving open: nothing for S062 → completed/. 1 examine draft harvested (push-denial belief was wrong; repo IS pushable). Proposed S054/S057/S060 → completed/ (stale-done) for principal call.

@@ -1,0 +1,1 @@
+S063 wrapped (d1174a6). Handed the rebuild the load-bearing piece: the no-store cache fix that killed the stale-JS tax, plus the feed-liveness design question. Flagged my status-sidecar.py hook change to the cockpit crew. Left active-mode = dev-brain — a live sibling needs it. Tools down.

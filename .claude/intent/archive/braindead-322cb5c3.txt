@@ -1,0 +1,1 @@
+Both VSCode-parity features built on @2dd85cde's clean 802de1d base — /rename hook (write-half already fired live on the sibling sessions) + click-vscode-row route. Validated (py_compile, node --check, hook block/passthrough tested). Awaiting a cockpit relaunch to eyeball the display half + the VSCode jump.

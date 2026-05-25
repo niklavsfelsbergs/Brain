@@ -1,0 +1,1 @@
+Board-prep transcript #2: ORWO cost-quota-since-Oct. Critiquing vs how_to.md — found a sharper instance of the known fast-path self-gate root: requested metric (final cost) is 100% NULL for ORWO, agent led with a billed-freight proxy as if it were the real quota, unavailability buried in a trailing caveat. Extracting teachings.

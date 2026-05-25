@@ -1,0 +1,1 @@
+Top header strip is broken — principal sent the screenshot. "N live" wraps (topbar crowded at 372px); the grainy box in the chat header is S073 under-filling its width, exposing term-col grain. Both in styles.css. Fixing the fill + de-crowding the bar.

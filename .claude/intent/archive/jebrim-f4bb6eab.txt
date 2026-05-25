@@ -1,0 +1,1 @@
+S057 — closed the loop. Caught that T1 only fed my brain, not the agent; re-harvested and found 5 teachable rules (2 I'd missed). Taught the agent: how_to.md §0 now carries rules 30–34 (dim-gate swaps, lead-with-moves, net-out-overlap, period-on-money, no-inherited-confidence). Brain: 5 drafts. Nothing committed yet.

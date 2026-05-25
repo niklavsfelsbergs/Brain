@@ -1,0 +1,1 @@
+Respawned, no task on the table yet. In-progress: S040 Outlook MCP parked at Azure sign-in, S054 audit-2 shipped + complete-ready. Holding off any write until the principal points me at a thread.

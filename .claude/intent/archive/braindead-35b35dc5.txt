@@ -1,0 +1,1 @@
+Fix built: ptybridge now watches the manifest by PTY shell-pid and re-announces when claude rotates its session id; term.js swaps the bySid8 key so the dupe collapses to one drivable row. Tested everything headless — proc.pid==powershell pid (the load-bearing unknown), matching, 39/39 backend, node checks. board b87.1→b88.1. End-to-end collapse needs an eyeball post-relaunch.

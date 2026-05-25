@@ -1,0 +1,1 @@
+Pushed shipping-agent main to origin — succeeded (84ad74e..7562825), in sync, all 8 commits up. The "settings deny push" belief was wrong (tested it, pushed clean). Flagged the stale inherited-confidence claim for correction. Standing by.

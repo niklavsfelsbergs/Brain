@@ -1,0 +1,1 @@
+All three fixes landed + verified: idle now decays a stale waiting_for_user (attention off) — proved with a synthetic manifest; CLOSING ripped from rank+label; the metered headless /chat driver gone (route+handler+fleet.js WS path). 4 files mine, −336/+46. styles.css ceded to d82c4fbc. Holding at the commit gate.

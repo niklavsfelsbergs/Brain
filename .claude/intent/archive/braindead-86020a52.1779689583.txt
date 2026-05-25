@@ -1,0 +1,1 @@
+Round 2 on the compose-bar: the merge bug was half-typed in-terminal text surviving Esc and prepending to the next composed send. Fix — backspace away the _linebuf mirror (the /rename trick) on Esc + in sendEsc + atop submitComposed. Plus: placeholder removed, bar 3x taller (min-height 116px). node --check clean. board b86.2.

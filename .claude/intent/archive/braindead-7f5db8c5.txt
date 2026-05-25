@@ -1,0 +1,1 @@
+Cockpit restarted on new code — the real embedded terminal (B) is live and serving. Placing a session now opens interactive claude in a PTY, on the subscription, with Esc + questions working. Awaiting the principal's live test in the window.

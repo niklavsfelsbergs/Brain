@@ -1,0 +1,1 @@
+Respawn, no task yet. In-progress: S040 (Outlook MCP, parked@Azure sign-in), S054 (audit-2, done), S057 (harvest, committed eac16dd), S058 (contract corpus ingest). 4 live siblings, tree dirty with S057/S058 bits. Awaiting thread pick.

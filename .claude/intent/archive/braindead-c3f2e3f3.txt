@@ -1,0 +1,1 @@
+New report: jumping to a chat sometimes lands scrolled to the top. Two candidate causes in two different files (xterm re-parent reset in term.js — contested; vs the Console jump-to-bottom race in console.js — clean). Disambiguating with the principal before editing so I don't touch the wrong one.

@@ -1,0 +1,1 @@
+Walking the principal through how parallel dev sessions stay off each other's toes — the comms channel, sid8 namespacing, and the one wall that doesn't move: two sessions editing the same open file. No code torn open, just talk.

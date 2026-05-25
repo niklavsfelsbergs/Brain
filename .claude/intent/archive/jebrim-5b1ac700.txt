@@ -1,0 +1,1 @@
+Re-testing the rulebook: spawning a naive agent to embody the shipping-agent on the exact board prompt. Grading whether rules 12/16/35 self-fire before I commit.

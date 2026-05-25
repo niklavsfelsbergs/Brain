@@ -201,7 +201,13 @@ class TermConn {
     );
 
     this.term.onData((d) => this._handleData(d));
-    this.term.onResize(({ cols, rows }) => this._send({ type: "resize", cols, rows }));
+    // Route every xterm resize through the coalescer, not a direct _send. fit.fit()
+    // + the over-fit guard's row-shrink loop + a zoom/RO burst each fire several
+    // onResize events in quick succession; one setwinsize per event STORMS ConPTY
+    // (pywinpty), which corrupts its screen buffer mid-redraw and leaves claude's
+    // TUI repainting its input box on the wrong rows. Coalescing collapses a burst
+    // into one trailing send of the final size. (S094)
+    this.term.onResize(({ cols, rows }) => this._queueResize(cols, rows));
 
     // Keep xterm sized to its container through EVERY layout change — the flex
     // settle right after open, panel collapse/divider drag, zoom reflow, re-parent
@@ -237,6 +243,26 @@ class TermConn {
 
   _send(obj) {
     if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(obj));
+  }
+
+  // Coalesce outgoing PTY resizes (trailing-debounced). A single fitNow fires up to
+  // ~5 onResize events (fit.fit() + the over-fit guard's row-shrink loop), and
+  // fitNow itself runs on every RO tick / zoom notch / transcript re-show — so the
+  // naive "setwinsize per onResize" sent a STORM that corrupts ConPTY's buffer and
+  // garbles claude's redraw. Hold only the latest size; send once 60ms after the
+  // burst settles. The ws.onopen resync covers the very first frame (this timer can
+  // fire while the WS is still CONNECTING, where _send no-ops). (S094)
+  _queueResize(cols, rows) {
+    this._pendingSize = { cols, rows };
+    if (this._resizeTimer) clearTimeout(this._resizeTimer);
+    this._resizeTimer = setTimeout(() => {
+      this._resizeTimer = 0;
+      const s = this._pendingSize;
+      this._pendingSize = null;
+      if (!s) return;
+      if (window.__TERMDIAG) console.log("[term-diag] resize -> PTY", s.cols, s.rows);
+      this._send({ type: "resize", cols: s.cols, rows: s.rows });
+    }, 60);
   }
 
   // Send a message composed in the fixed compose-bar (TermComposer) straight to
@@ -433,6 +459,20 @@ class TermConn {
     const tok = window.__CT ? `&token=${encodeURIComponent(window.__CT)}` : "";
     const ws = new WebSocket(`${proto}://${location.host}/pty?${mode}&cols=${cols}&rows=${rows}${tok}`);
     this.ws = ws;
+    // Authoritative size resync the instant the pipe is live. The launch cols/rows
+    // in the URL above were read off this.term.cols at CONSTRUCTION — before <Term/>
+    // attached the container — so they can be xterm's default 80×24, not the real
+    // fitted size. Any fitNow that fired while the WS was still CONNECTING had its
+    // resize frame silently dropped (_send no-ops unless readyState===1). Without
+    // this, the PTY can sit at the wrong width forever: claude wraps its input box
+    // at one width while xterm paints at another, stacking box borders on the wrong
+    // rows (the Image-1 garble). Re-fit now and send the true size directly (skip
+    // the coalescer's delay) so they agree from the first paint. (S094)
+    ws.onopen = () => {
+      this.fitNow();
+      if (window.__TERMDIAG) console.log("[term-diag] ws open -> resync", this.term.cols, this.term.rows);
+      this._send({ type: "resize", cols: this.term.cols, rows: this.term.rows });
+    };
     ws.onmessage = (e) => {
       let f;
       try {
@@ -582,6 +622,10 @@ class TermConn {
     if (this._fitRaf) {
       cancelAnimationFrame(this._fitRaf);
       this._fitRaf = 0;
+    }
+    if (this._resizeTimer) {
+      clearTimeout(this._resizeTimer);
+      this._resizeTimer = 0;
     }
     try {
       this._ro && this._ro.disconnect();

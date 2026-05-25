@@ -1,0 +1,1 @@
+S060 teachings IMPLEMENTED + live-validated. All 4 applied to shipping-agent (uncommitted): scope/denominator self-gate, "we/our"=all-lines default + state-scope + fork-when-sign-flips, carrier UPPERCASE casing. Re-ran the sign-flip prompt neutral → agent now surfaces the scope fork spontaneously and cites rule 12. Awaiting go on a local commit.

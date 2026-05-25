@@ -1,0 +1,100 @@
+{
+  "generated_at": 1779494013.4294648,
+  "sessions": [
+    {
+      "sid8": "ba467555",
+      "session_id": "ba467555-57cd-474e-ac02-2179abd648a9",
+      "actor": "guthix",
+      "instance": 1,
+      "state": "waiting_for_user",
+      "last_event_kind": "Stop",
+      "last_event_ts": 1779494013.3580258,
+      "started_at": 1779493244.7121801,
+      "intent": "Bankstanding \u2014 full weeding pass",
+      "project_dir": "C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain",
+      "cwd": "C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain",
+      "host": "vscode",
+      "claude_pid": 44416,
+      "claude_pid_chain": [
+        {
+          "pid": 44416,
+          "name": "bash.exe"
+        },
+        {
+          "pid": 49432,
+          "name": "bash.exe"
+        },
+        {
+          "pid": 33756,
+          "name": "claude.exe"
+        },
+        {
+          "pid": 38092,
+          "name": "powershell.exe"
+        },
+        {
+          "pid": 21032,
+          "name": "Code.exe"
+        },
+        {
+          "pid": 18664,
+          "name": "Code.exe"
+        },
+        {
+          "pid": 12428,
+          "name": ""
+        }
+      ],
+      "claude_hwnd": 66726,
+      "building": "quest-hall",
+      "latest_action": "writing gielinor/deities/guthix/quest-log/in-progress/B\u2026",
+      "latest_action_ts": 1779493845.559
+    },
+    {
+      "sid8": "5d13ebdc",
+      "session_id": "5d13ebdc-76d5-4fa5-a5f7-04e01cf6a38f",
+      "actor": "unknown",
+      "instance": 1,
+      "state": "waiting_for_user",
+      "last_event_kind": "Stop",
+      "last_event_ts": 1779493129.3150303,
+      "started_at": 1779493031.2311096,
+      "intent": "",
+      "project_dir": "C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain",
+      "cwd": "C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain",
+      "host": "vscode",
+      "claude_pid": 3564,
+      "claude_pid_chain": [
+        {
+          "pid": 3564,
+          "name": "bash.exe"
+        },
+        {
+          "pid": 56580,
+          "name": "bash.exe"
+        },
+        {
+          "pid": 19604,
+          "name": "claude.exe"
+        },
+        {
+          "pid": 16596,
+          "name": "powershell.exe"
+        },
+        {
+          "pid": 21032,
+          "name": "Code.exe"
+        },
+        {
+          "pid": 18664,
+          "name": "Code.exe"
+        },
+        {
+          "pid": 12428,
+          "name": ""
+        }
+      ],
+      "claude_hwnd": 66726
+    }
+  ]
+}

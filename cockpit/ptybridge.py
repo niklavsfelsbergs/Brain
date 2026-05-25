@@ -52,6 +52,22 @@ MANIFEST_PATH = BRAIN_ROOT / "switchboard" / "state-switchboard.json"
 # rename-intercept.py, status-sidecar.py). Carried across an id rotation below.
 NAMES_PATH = BRAIN_ROOT / "switchboard" / "state-names.json"
 SESSION_WATCH_SEC = 2.0  # how often to re-check the live session id (board cadence)
+# Transient debug trace for the S094 terminal-garble fix: every winsize the PTY
+# actually applies, so a relaunch confirms xterm↔PTY size agreement and that the
+# coalescer fires ONE setwinsize per event (not a storm). Always-on while
+# debugging; STRIP this + its call site once verified (S093 rename-diag precedent).
+SIZE_DIAG_PATH = BRAIN_ROOT / "switchboard" / "term-size-diag.log"
+
+
+def _log_size(sid8: str, cols: int, rows: int) -> None:
+    """Append the applied PTY winsize to term-size-diag.log. Best-effort; any IO
+    failure is swallowed so the diag can never stall or break the PTY pump."""
+    try:
+        import time
+        with SIZE_DIAG_PATH.open("a", encoding="utf-8") as f:
+            f.write(f"{time.strftime('%H:%M:%S')} {sid8} setwinsize cols={cols} rows={rows}\n")
+    except Exception:
+        pass
 
 
 def _carry_disk_name(old_sid8: str, new_sid8: str) -> None:
@@ -311,8 +327,10 @@ async def pty_handler(request):
                     break
             elif kind == "resize":
                 try:
-                    proc.setwinsize(_clamp(int(obj["rows"]), ROWS_MIN, ROWS_MAX),
-                                    _clamp(int(obj["cols"]), COLS_MIN, COLS_MAX))
+                    r = _clamp(int(obj["rows"]), ROWS_MIN, ROWS_MAX)
+                    c = _clamp(int(obj["cols"]), COLS_MIN, COLS_MAX)
+                    proc.setwinsize(r, c)
+                    _log_size(announced["sid"][:8], c, r)  # S094 transient diag — strip after verify
                 except Exception:
                     pass
     finally:

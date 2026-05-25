@@ -1,0 +1,1 @@
+Docs-only audit done: 12 findings across how_to + reference*5 + skills + README. 3 real contradictions (POST tracking value, invoice_estimate 5th cost_source, fact_shipments 65-vs-63 col count), 4 reconcile/clarify, 5 cosmetic. Repo structurally sound — no dead file/ref. My savings-skill integration is clean.

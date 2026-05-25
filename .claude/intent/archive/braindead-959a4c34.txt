@@ -1,0 +1,1 @@
+Reworked the attention layer — it was flat: needs_you and your_move shared one amber glow+pulse, stalled had none. Now tiered per-state: needs_you (pink) + stalled (red) pulse, your_move a soft static amber glow. Pulse-ring color parameterized via --pulse-rgb. All in CSS; needs the relaunch eyeball.

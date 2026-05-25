@@ -1,0 +1,1 @@
+Reopened — the S092 rename-persistence fix (shipped unverified) is still dropping names on restart. Paths/stores all check out in code, so the bug's a runtime fact, not a typo. Getting authoritative claude session-id behavior (--session-id pin? --resume rotate?) before guessing patch #2.

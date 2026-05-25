@@ -1,0 +1,1 @@
+Harvesting a shipping-agent transcript (UPS YoY +17% → bucket decomp). Catch: its oversize tier counts ("404 LPS / 45 OML") used the OLD rule-15 bands — we changed them this session, so the finding's already stale. Quantifying the reclassification under new bands now.

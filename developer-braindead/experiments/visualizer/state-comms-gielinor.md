@@ -33,3 +33,22 @@
 [2026-05-23] jebrim-1cf1eb75 CLOSING
   Completed: Slack MCP live (S047 — korotovsky cookie-auth, authed as niklavs.felsbergs @ The Customization Group; read tools surfaced; posting disabled by config; voice rule pinned to memory). Voice cues + install gotchas captured in bank/drafts/notes/workflow/slack-mcp-install.md. Outlook MCP (S040) re-engaged briefly for recall.
   Leaving open: S040 still in-progress at portal.azure.com self-serve check Step 1 (sign-in pending). S047 proposed to move to completed; follow-ups parked (rotate leaked tokens, enable posting, graduate install pattern to skill).
+
+[2026-05-23] guthix-0cfe8854 OPEN
+  Bankstanding B-003. Globals only — drafts/proposals/inbox triage + cross-player synthesis read. Not touching per-player houses. Live sibling: braindead-17e701eb (dev-brain). Phase 0 will flag Jebrim (7 drafts + 5 new in-progress quests since 2026-05-22 alching) for principal call — default ritual is skip mid-quest. Zezima still pre-operational.
+
+[2026-05-23] jebrim-91ee1383 OPEN
+  S045 follow-up — two new chart bugs from principal use. EUR label collapse at low magnitudes (0 vs 0.4 EUR), and legend isolation not triggering value labels. Touching shipping-agent/harness/_report_style.py + build_inline_chart.py + how_to.md (out-of-tree repo). No conflict with live siblings.
+
+[2026-05-23] guthix-0cfe8854 UPDATE
+  B-003 Phase 0 flipped to alching mode for Jebrim (principal call). Touching jebrim/{examine,niksis8_character,bank/notes,spellbook/skills,last-alched.md} — in-brain only. No collision with jebrim-91ee1383 (out-of-tree). Promoting 6 of 7 drafts; deferring #2 per its own self-gate.
+
+[2026-05-23] guthix-0cfe8854 CLOSING
+  B-003 done. Phase 0 Jebrim alching landed 6 promotions (examine + niksis8_character + 2 bank/notes/workflow + 2 spellbook/skills), 1 self-gated hold. Phases 1–7 clean: empty inbox, empty global drafts, N=1-populated still no-op on cross-player synthesis (third consecutive — flagged as candidate godly proposal next round), all current.md under budget, all global rejected/ empty. No lorebook draft this round. Trace in deities/guthix/quest-log/completed/B-003_*.
+
+[2026-05-23] jebrim-91ee1383 CLOSING
+  Completed: S049 chart polish landed and pushed (shipping-agent 84ad74e, brain f553abf). Magnitude-aware EUR precision (<100 → 2 dec, 100–999 → 1 dec, ≥1000 → 0 dec). Legend isolation now reveals value labels via plotly_legendclick post-render JS. how_to.md §7 Mode 2 documents both. Hand-over written for a second general audit of shipping-agent (focus: bloat / contradictions / overkill / too-technical) at inventory/shipping-agent-audit-2-resume__91ee1383.md.
+  Leaving open: S045 chart-system-fixes quest reads stale-done (deliverable shipped + verified by use + follow-up bugs squashed) — propose moving to completed/ on next active Jebrim session unless objection. S049 audit-2 queued for a future session. Follow-up to apply legend-isolation + pre-computed text to build_report.py multi-series lines (parallel pattern currently lacks both).
+
+[2026-05-23] guthix-ba467555 OPEN
+  Bankstanding B-004 — opened on principal cue "full weeding out" after consultation survey. Live sibling: braindead-98d4ec5e (dev-brain, no overlap). Target: per-player quest-log debris (S045/S047/S034_g2 known-closeable per comms; ~5 others need verification). Standard Phases 1–7 will be quick — B-003 cleared globals 2 hours ago. Phase 0 will flip to alching mode for Jebrim to execute per-player moves; Zezima silent-skip (pre-operational).

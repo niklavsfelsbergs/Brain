@@ -1,0 +1,1 @@
+Ctrl+C copy landed (S087): term.js intercepts Ctrl+C when there's a selection, copies via a new backend POST /api/clipboard write bridge, falls through to SIGINT when nothing's selected. backend.py + board.js b87.1. 39/39 tests green. UNCOMMITTED, eyes-only until relaunch. The feed report was a filter, not a bug — no code.

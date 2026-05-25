@@ -1,0 +1,1 @@
+Cockpit fluid-UI shipped (scroll-zoom, draggable pillars, focus/collapse). Now ran down the Shift+Enter report — not the zoom handler (it only fires on Ctrl/Cmd); xterm sends bare \r for Shift+Enter. Added an explicit Shift+Enter→\n intercept in term.js so it inserts a newline instead of submitting.

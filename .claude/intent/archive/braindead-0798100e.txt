@@ -1,0 +1,1 @@
+Cut the terminal size-desync: ws.onopen authoritative resync + trailing-debounced resize coalescer (kills the ConPTY storm) in term.js, plus a setwinsize diag log in ptybridge. Gates green (9/9). Now it's eyes-only — needs a relaunch to confirm the garble's gone.

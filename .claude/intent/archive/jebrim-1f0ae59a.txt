@@ -1,0 +1,1 @@
+Parked the contract feature on principal's call. shipping-agent main reset --hard to c515140 (clean, pre-S058); both commits preserved on branch parked/contract-corpus; curated corpus moved to ~/Documents/Shipping/_PARKED_shipping-agent_contracts/. Agent back to no-contracts. Revive = merge branch + move folder back. Nothing lost.

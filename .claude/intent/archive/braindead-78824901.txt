@@ -1,0 +1,1 @@
+Swap done — the cockpit is the board now. Archived the old client (14 files) to switchboard/archive via git mv, kept the state files + path-map the hooks write. Pulled the old server's Startup shortcut and stopped :8765. Hooks untouched; they feed the cockpit. Old board fully recoverable from archive if needed. Committing the swap.

@@ -1,0 +1,1 @@
+Docs stabilized. D-027 written — the inward/outward imbalance is now a tracked decision. plan.md un-frozen: foundation marked done, §C reframed as the load-bearing gap, emergent pillars §I–§M added so the plan finally maps the structure that actually exists. Pilot deferred to next session. Holding for commit go-ahead.

@@ -1,0 +1,1 @@
+Principal's asking what the "neurons" would be if this brain were rendered as a firing neural net. Mapping it four ways — files-as-nodes (pretty but low-signal), layers-as-regions, the live hook stream (already firing), and drafts→confirmed as synaptic consolidation.

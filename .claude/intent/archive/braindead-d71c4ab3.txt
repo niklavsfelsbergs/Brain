@@ -1,0 +1,1 @@
+Reading the cockpit's open ledger end to end — comms tail + S078/S081 quests. No torn-open beams this session; just cataloguing what's committed-but-uneyeballed and what's still in the tree uncommitted.

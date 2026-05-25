@@ -1,0 +1,1 @@
+Task-list discipline landed — new gielinor/meta/task-lists.md (threshold + harness-list/inventory-mirror), wired into CLAUDE.md imports + communication-protocol surfacing + layer-routing row, founding rationale in dev D-031. Doc-only, no hooks. Holding for principal review before commit + session-close bookkeeping.

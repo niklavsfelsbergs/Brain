@@ -1,0 +1,1 @@
+Both Codex batches fixed (uncommitted). Cockpit: /pty token-gated, arbitrary-launch RCE branch gone, md.js XSS closed. Brain: the six guarantees were unenforced at brain root (proven) — now wired in root settings, fire repo-wide; penguin .parent fixed. 38/38 + 13-case sim, block-deletes live. Awaiting commit nod.

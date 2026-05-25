@@ -1,0 +1,1 @@
+Token audit shipped: respawn.md 49.5k->2k tok/session (committed 6fecbe1), lessons preserved in bank/build-lessons.md, two propose-only trims in bank/token-audit-2026-05-24.md. Cleaned up an amend race that briefly clobbered sibling d82c4fbc's S073 commit message — restored exact via -C, posted comms apology. Nothing lost.

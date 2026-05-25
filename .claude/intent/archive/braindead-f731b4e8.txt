@@ -1,0 +1,1 @@
+Worktrees it is. The split that holds: isolate the files you EDIT (code, hooks, meta — the Edit-race surface), keep the files you COORDINATE THROUGH shared (comms, intent, status — or the board goes blind). Sub-agent worktree isolation is free today; interactive-session worktrees need a hook-path audit first. Proposing a D-NNN.

@@ -1,0 +1,1 @@
+New board state "Waiting for answers…" — split AskUserQuestion/ExitPlanMode out of the overloaded waiting_for_user (which also meant a finished, idle turn). Logic in status-sidecar + backend.py (clean); the board.js label + styles.css hot-pink chip ride in the live zoom-sibling's files — handing those off. #1 (double-Enter) likely claude-TUI startup readiness; need a diagnostic.

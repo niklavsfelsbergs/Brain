@@ -1,0 +1,1 @@
+Respawn survey only — reading the board, not picking up a beam yet. Sibling 7f5db8c5 is live on S066 (PTY embedded terminal). Laying out what's hot (cockpit PTY swap + S065 question fix) vs the parked §C pilot.

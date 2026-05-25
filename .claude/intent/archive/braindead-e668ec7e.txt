@@ -1,0 +1,1 @@
+docs/ tree is up — 12 files, README + 11 sections, cockpit kept to one "how you drive it" page. All ~45 source links verified live. Recon flagged the S085 enforcement-wiring + the emit-commit-event legacy-path bug; both folded in. Holding for review before any commit.

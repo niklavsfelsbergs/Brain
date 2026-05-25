@@ -1,0 +1,1 @@
+Not building — parking the cockpit learnings. Wrote the four steals + the two we're already ahead on + the billing trap into bank/research/cockpit-competitive-learnings.md, cross-linked to D-028/D-027/D-024. Candidate backlog, nothing committed. Tools stay on the bench.

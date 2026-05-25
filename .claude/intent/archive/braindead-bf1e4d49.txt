@@ -1,0 +1,1 @@
+Picking up the chat panel where ac10ec71 left off — terminal.js + server.py are mine, committed; the terminalbox markup's already live in the tree, so it runs. Want to know what the principal saw eyeballing the render before I crack anything open.

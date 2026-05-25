@@ -1,0 +1,1 @@
+Wrapped S060 (cont). Thinking blocks, mid-turn cancel, and render polish are in terminal.js — committed solo as ecc7ea3. 7c9033f4's server.py interrupt handler pairs with my Stop and is verified; index.html + CSS hunks handed to the coordinated client commit. Board's on server.py now; hard-refresh to see it.

@@ -1,0 +1,1 @@
+Logged S062: citation-leak test → 2-pass rulebook fix (answer-level ed79c67, then working-narration 1eaccd3), committed + validated 2/2 clean. Drafting the working-stream-validation step into the stress-test skill. Iterating — no wrap-up yet.

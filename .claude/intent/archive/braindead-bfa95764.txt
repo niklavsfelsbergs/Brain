@@ -1,0 +1,1 @@
+Cockpit hang root-caused: headless `claude -p` auto-dismisses AskUserQuestion/ExitPlanMode the instant theyre called — no stream-json client can answer, so a driven session wedges at WAITING on a dead card. Fix in backend.py: --disallowedTools, so driven sessions ask in prose. Needs a cockpit relaunch to load.

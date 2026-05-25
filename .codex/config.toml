@@ -1,0 +1,34 @@
+[mcp_servers.orps]
+args = [
+    "postgresql://orpsadmin:6437984hofcebrcUGrecwegf@orps-rds-postgres-01-replica.cmqlv37p6mnt.eu-central-1.rds.amazonaws.com:5432/orpsdb?sslmode=require",
+    "--access-mode=restricted",
+]
+command = "postgres-mcp"
+
+[mcp_servers.orps.env]
+PGCLIENTENCODING = "utf-8"
+
+[mcp_servers.redshift]
+args = [
+    "postgresql://tcg_nfe:TcgNfe2024Pass!@bi.c5lrs7vtwcpl.eu-central-1.redshift.amazonaws.com:5439/bi_stage_dev?sslmode=require",
+    "--access-mode=restricted",
+]
+command = "postgres-mcp"
+
+[mcp_servers.redshift.env]
+PGCLIENTENCODING = "utf-8"
+
+[mcp_servers.slack]
+args = [
+    "-y",
+    "slack-mcp-server@latest",
+    "--transport",
+    "stdio",
+]
+command = "npx"
+
+[mcp_servers.slack.env]
+SLACK_MCP_ADD_MESSAGE_TOOL = ""
+SLACK_MCP_LOG_LEVEL = "info"
+SLACK_MCP_XOXC_TOKEN = "xoxc-2739530887-7917166826135-9775139610641-d8c4bebff1ecca4b8170a7565cac96e94f91e4e0382b6c214064c72ff5b5439c"
+SLACK_MCP_XOXD_TOKEN = "xoxd-L8DO4c/j4OKiUWHVAgap/StX4kfuPJtO8wsFixvYoAFS1wiFAnG5IkMT09ZaFPueHL5o2fDKkbgKM6F8jaMRknvkL+0L7Zb1nusW1Hz2Uu+qP4T/Cg1udaQcohbYcuoh/Ur0oAV0gSc/bHLns5eK3l/YUwnzMzkzrHmBKsnz1O+ov2fuSgUaM5X2997QFMZkLWLU9UrI1QnzlRPzQpetjeM3"

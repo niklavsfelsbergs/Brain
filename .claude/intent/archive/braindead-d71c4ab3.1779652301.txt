@@ -1,0 +1,1 @@
+S083 audit done — 5 commits. Terminal prompt-fold fix is logic-complete (over-fit guard verified + re-pin on every geometry change); backend crash-guarded; new 26/26 regression gate. Server boots clean. What's left is the one thing I can't do from here — the eyeball. Tools down, checklist laid out.

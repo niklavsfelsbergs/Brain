@@ -1,0 +1,1 @@
+Toast notifier pulled — Notification hook stripped from global ~/.claude/settings.json (JSON re-validated, no hooks key left), notify.ps1 moved to hooks/archive/. The ping's dead; cockpit owns notifications now. Reversible if needed.

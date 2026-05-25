@@ -1,0 +1,117 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\emit-event.py'"
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode|Task|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\status-sidecar.py'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\block-confirmed-writes.py'"
+          },
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\dwarf-write-boundary.py'"
+          },
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\gnome-write-boundary.py'"
+          },
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\penguin-write-boundary.py'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\block-deletes.py'"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\block-sub-spawn.py'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Read|Glob|Grep|Bash|Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\emit-event.py'"
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode|Task|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\status-sidecar.py'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\status-sidecar.py'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\rename-intercept.py'"
+          },
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\status-sidecar.py'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'C:\\Users\\niklavs.felsbergs\\Documents\\GitHub\\brain\\.codex\\hooks\\status-sidecar.py'"
+          }
+        ]
+      }
+    ]
+  }
+}

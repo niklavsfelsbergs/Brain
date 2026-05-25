@@ -1,0 +1,1 @@
+Stress-testing the shipping agent on a hard renegotiation investigation. First pass was strong (gate fired, overlap netted). Now round 2: challenging it to reconcile its soft net range to a bankable floor, red-team each lever, and handle a curveball (DHL locked + find any in-book carrier cheaper on wide parcels). Rating how it holds under pushback.

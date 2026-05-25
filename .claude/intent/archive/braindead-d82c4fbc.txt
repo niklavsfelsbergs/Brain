@@ -1,0 +1,1 @@
+Scroll fix landed (styles.css). Pulled the terminal out from under the zoom+transform stack entirely — app-grid no longer scaled; zoom moved onto the pillars/rails/modal/headers; term-frame/host now plain 100%, zero scaling ancestors. xterm finally gets clean 1:1 coords. Waiting on principal relaunch to confirm scroll + check column alignment.

@@ -1,0 +1,1 @@
+Batch staged in term.js (uncommitted): #1 Shift+Enter→backslash+CR; #2/#4 over-fit guard (shrink rows to the painted frame) + hardened _isAtBottom + [term-diag] log — dwarf's fix, reviewed, node --check clean. #3 pipeline proven correct, pending principal's eyeball. One cockpit relaunch verifies all; strip diag + commit survivors.

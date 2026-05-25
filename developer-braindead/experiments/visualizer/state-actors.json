@@ -1,0 +1,14 @@
+{
+  "_mode": "unscoped",
+  "wisp": "examine-hall",
+  "_guthix_session_id": "ba467555-57cd-474e-ac02-2179abd648a9",
+  "guthix": "quest-hall",
+  "jebrim": {
+    "byId": {
+      "ba467555-57cd-474e-ac02-2179abd648a9": "quest-hall"
+    }
+  },
+  "braindead": {
+    "byId": {}
+  }
+}

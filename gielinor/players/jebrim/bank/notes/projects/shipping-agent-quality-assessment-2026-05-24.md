@@ -104,6 +104,38 @@ Third board-prep transcript, full convo this time. Prompt chain: April-2026 YoY 
 
 Running thesis holds: **generative fast-path self-gate, not another scar.** Bucket-first is itself a scar — but a cheap, high-frequency one (every cost-movement question); the deeper fix is the reflex to reach for the most direct tool first.
 
+## 2026-05-25 — DPD UK 2-day routing transcript (the destination-cut miss; "which cut" reflex)
+
+Board-prep transcript: outlier charges Apr-May (TCG) → UPS over-max + DPD UK "+52%" → decomposed DPD UK to a my-picture.co.uk service-mix shift → DPDUK2DN "2-day premium" flagged (principal: *"looks like a mistake in routing"*) → agent quantified it as **~€28K/month of waste, ~€1.3K/day of delay, "flag same-day,"** and kept drilling (still-active check, then product/dims). It never sliced **destination zip**.
+
+**That cut reverses the conclusion.** Instrumented live (redshift MCP, my-picture.co.uk, Apr-May 2026):
+- DPDUK2DN parcels by destination zip2 are **100% remote/offshore**: BT (NI) 742, PA 272, IV 259, PH 179, KW (Orkney) 61, HS (Hebrides) 43, IM (IoM) 37, ZE (Shetland) 24.
+- Mainland: **0 of 44,400** parcels on the premium service. Remote (HI/NI/IoM): **1,617 of 1,865** (86.7%).
+- → DPDUK2DN is the **Highlands-&-Islands / NI / offshore routing**, where standard ground doesn't deliver. **Not a mis-routing.** The "pull €28K/month" rec was wrong — redirecting would break delivery, not save money.
+
+**Root E (NEW) — dimension-selection on driver-hunts.** The agent localizes anomalies well along the dimensions it *happens* to reach for (shop, carrier, service, charge bucket) but doesn't enumerate candidate **cuts** or ask *"which cut would explain or falsify this driver?"* before asserting a cause or recommending an action. Here it accepted the "mistake" framing and quantified a same-day-actionable loss without testing it against the obvious cut. **Destination geography is the first suspect for any routing / service-mix / carrier-allocation anomaly** (remote-area / zone / country rules drive service selection). The miss wasn't incompleteness — it produced a *wrong, costly* recommendation.
+
+**Same root family, fifth location.** "Full rigor present, doesn't self-trigger on the fast path": cause-attribution (S059, fixed) → scope/denominator (S060) → metric-set coherence (board-numbers) → systemic-vs-local null (S064) → tool-sequencing/bucket-first (S067) → **dimension-selection / which-cut (here)**. Sibling of S067 (which *tool* to reach for first) and the `savings-investigation` falsification gate (turn the gate on your own answer): here the gate is *"what cut would make this NOT a mistake?"*
+
+**Design agreed with principal (2026-05-25) — keep the rule GENERAL, don't hardcode dimensions.** A parenthetical list of dimensions becomes a checklist the agent ticks then stops — the next anomaly's driver is always some cut not on the list. So two parts:
+1. **`how_to.md` rule = mechanism only** (no dimension list): *before attributing a cause / naming a driver / recommending an action, scan the dimensions in `reference/tables.md` and slice the cut most likely to **falsify** your current explanation — don't stop at the dimension already in front of you.* Sibling of rule 4 (decompose-first) + the savings falsification gate; here the gate is "which cut would overturn this?"
+2. **The candidate menu lives in `tables.md`** as a new "Dimensions you can slice by" index — families (who/source, geography, carrier-service, product-package, cost-component, flags, time), grounded in a live cardinality pull (2026-05-25), flagging unusable cuts. The agent derives candidates from the catalogue each time; the list stays maintainable in the reference, not baked into behaviour.
+
+**Removed from the menu per principal:** `current_shipping_status` (quality too low to cut on), `is_returned` (NOT approved — stays do-not-use; **this resolves the S068 A5 ruling**). Also flagged unusable: `shipping_region` (64,177 dirty free-text → use `destination_country` + zip-prefix), `packagetype_group` (empty, no source in V1).
+
+**Status (2026-05-25):** `tables.md` "Dimensions you can slice by" catalogue **DRAFTED in-file** (low-risk, lands sooner). `how_to.md` rule **HELD** for post-demo (2026-05-26) — demo-stability + how_to.md is actively dirty under a parallel session (S070 Mode-2 work). Land the rule after the demo, on top of whatever S070 commits.
+
+## 2026-05-25 — Mode 2 trigger sharpening + interactive-menu rendering (S070)
+
+Principal observed the clarifying selection menus fire *inconsistently* and wanted the good behavior reliable. Two separate inconsistencies, fixed in `how_to.md` §0:
+
+- **Trigger layer (whether Mode 2 fires).** Mode 2's examples were all *obviously* fuzzy; a *covertly* fuzzy ask — **undefined metric** ("outliers", "stand out", "notable", "red flags") + **discovery framing** ("which I should be aware of", "what should I worry about") — looked answerable and coin-flipped into Mode 1, where it silently picked a definition. Added both as named Mode-2 triggers **with a guardrail** (named metric + confident default stays Mode 1; fires only when picking the *definition/axis* silently would be a guess — not because an answer *could* be sliced, that's rule 3's offer). **Same root, sixth location** of "full rigor present, doesn't self-trigger on the fast path" — here at *mode selection*.
+- **Rendering layer (menu vs prose).** The interactive picker is the harness question tool (`AskUserQuestion` in Claude Code). The rule said "numbered selection" — content, not mechanism — so the model rendered prose sometimes. Pinned Mode 2 (and rule 12 scope picks) to the interactive menu, **harness-guarded** (fall back to prose if no interactive capability — keeps Gemini/Codex working).
+
+**Live-verified** (principal-driven): `for TCG, which shipping charges in april/may stand out?` → fired Mode 2 on "stand out", 3 correct axes, scope menu suppressed (TCG named), no "outlier" echo; after the rendering edit → rendered as the clickable menu. Principal: "works". **Guardrail not adversarially tested** (control "cost per parcel for TCG in April" must NOT menu — not run; watch for over-firing).
+
+**Coordination note:** these how_to.md edits were made while sibling sessions had **frozen** the file for the 2026-05-26 demo (I missed the comms OPEN check). Edits applied + tested but **push HELD** per principal ("push at the end after all changes") — batches post-demo with 363fdec7's held dimension-scan rule (Root E above). The trigger-sharpening here and 363fdec7's dimension-scan are the **same generative-self-gate fix family** — when both land, check they read as one coherent "don't guess on the fast path" posture, not two scars.
+
 ## Related
 
 - Skill (in shipping-agent repo, not my bank): `savings-investigation.md` — the falsification gate this assessment validates.

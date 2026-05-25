@@ -5,3 +5,5 @@
 **Rule:** before asserting a path is empty/absent, confirm with a non-gitignore-aware listing (`Bash` `find`/`ls`/`Get-ChildItem`) — `Glob` (and Grep) silently skip gitignored paths. Absence reported by a gitignore-aware tool means "nothing tracked/visible," never "nothing on disk." This is the mirror of the confirmed note `verify-git-tracked-with-ls-files-not-disk-presence` (that one: don't assume disk-presence == tracked; this one: don't assume tool-absence == disk-absence).
 
 Anchor: S054 T4 OK1 retraction.
+
+Recurrence: S055 alching — `Glob spellbook/skills/**/*.md` returned "No files found" on a 9-file dir (brace-expansion non-match — same failure class: a search tool reporting absence that wasn't real); `find` + `git check-ignore` confirmed the files present and untracked-status irrelevant. Second occurrence → promoted.

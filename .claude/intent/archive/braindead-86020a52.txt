@@ -1,0 +1,1 @@
+Compose-bar built + wired: fixed textarea below the xterm pipes text+Enter (multi-line via bracketed paste) to the PTY so the terminal scrolls free above while you write. submitComposed + sendEsc on TermConn; .term-composer zoomed like the header. node --check + branch-logic green. Eyes-only relaunch left. board b86.1.

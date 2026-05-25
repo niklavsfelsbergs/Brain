@@ -1,0 +1,1 @@
+Opened the COMMS filter toolbar (chat.js bar in index.html). Two groups: channel mutes + settings/clear. Need the principal to point at what's broken before I pry it open.

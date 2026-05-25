@@ -1,0 +1,1 @@
+S067 wrapped — bucket-first rule applied to how_to.md (rule 4 + rule 11), brain quality-note + quest-log + comms written. One action parked: commit/push both repos, held for your go.

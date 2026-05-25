@@ -1,0 +1,1 @@
+Three term.js terminal fixes in, node --check clean: (1) Shift+Enter now sends CSI-u ESC[13;2u not bare \n; (2) _write re-pins the native .xterm-viewport scrollbar during streaming, not just ydisp (the S077 desync the streaming path missed); (3) ResizeObserver on the host refits xterm to the visible box through every layout change. Needs a cockpit relaunch to eyeball.

@@ -1,0 +1,1 @@
+Principal wants the terminal interior reworked — padding off the gold frame + a warm bg that fits the OSRS wood theme (it's cold #0d1117 now). The fix is two lines in term.js, BUT sibling 7f5db8c5 is live-editing term.js this second (just added /rename interception) and owns the reskin. Collision territory — coordinating before I touch it.

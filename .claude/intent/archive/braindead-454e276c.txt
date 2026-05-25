@@ -1,0 +1,1 @@
+S084 landed (client-side, b84.1): fixed the sid8-vs-full-id mismatch so the open row actually gets .selected; gold ring+glow+gold-name pop; Ctrl+Up/Down nav (wraps) + Ctrl+1-9 jump + Ctrl+Shift+backquote new session. Syntax-clean. Awaiting relaunch to eyeball.

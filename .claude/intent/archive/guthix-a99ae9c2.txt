@@ -1,0 +1,1 @@
+B-006 done and committed (65e2b83) — scoped to 9 files, foreign working-tree changes left alone. D-025 wired into the comms protocol, synthesis-dormancy gate landed after 5 N=1 rounds. The brain is tidy. Guthix recedes.

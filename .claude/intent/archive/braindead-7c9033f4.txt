@@ -1,0 +1,1 @@
+Server half of session-persistence is done + smoke-tested: /chat takes ?resume=<uuid>, spawns `claude --resume` (verified it recalls context + keeps the same id, no fork), announces a new `resumed` flag. Backward-compatible — no param behaves as before. Split agreed with 3b367751: I own server.py, they own terminal.js; contract handed off in comms.

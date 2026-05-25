@@ -43,6 +43,52 @@ DEFAULT_SHELL = ["powershell.exe", "-NoLogo"]
 COLS_MIN, COLS_MAX = 20, 500
 ROWS_MIN, ROWS_MAX = 5, 200
 
+# The live switchboard manifest (status-sidecar.py writes it). We read it to map
+# this PTY's shell pid → the session id currently live in the terminal, so we can
+# re-announce when claude rotates its id mid-terminal (see _session_for_shell_pid
+# / the watch task in pty_handler). Same file the board reads — guaranteed in sync.
+MANIFEST_PATH = BRAIN_ROOT / "switchboard" / "state-switchboard.json"
+SESSION_WATCH_SEC = 2.0  # how often to re-check the live session id (board cadence)
+
+
+def _session_for_shell_pid(shell_pid: int):
+    """The session id currently live in the PTY whose shell process is `shell_pid`.
+
+    The cockpit pins the FIRST conversation via `claude --session-id <uuid>` and
+    announces that id once. But a `/clear` (or one task ending and a new one
+    starting in the same shell) rotates claude's session id out from under us —
+    the hooks then track the new id while the cockpit still drives/labels the old
+    one, splitting the terminal into a stale drivable row + a read-only manifest
+    row (the duplicate-row bug). Every session's status record carries its
+    `claude_pid_chain`, and this PTY's shell pid is always an ancestor of the
+    claude.exe it launched — so the freshest manifest session whose chain contains
+    our shell pid IS the conversation live in this terminal right now. The
+    manifest already excludes `ended` sessions, so a match is always live.
+    Returns the full session_id, or None when nothing matches (claude not up yet,
+    or sitting at a bare shell prompt)."""
+    try:
+        data = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    best = None  # (last_event_ts, session_id)
+    for j in (data.get("sessions") or []):
+        if not isinstance(j, dict):
+            continue
+        chain = j.get("claude_pid_chain") or []
+        pids = {e.get("pid") for e in chain if isinstance(e, dict)}
+        if shell_pid not in pids:
+            continue
+        sid = j.get("session_id")
+        if not sid:
+            continue
+        try:
+            ts = float(j.get("last_event_ts") or 0)
+        except (TypeError, ValueError):
+            ts = 0.0
+        if best is None or ts > best[0]:
+            best = (ts, sid)
+    return best[1] if best else None
+
 
 def _clamp(v, lo, hi):
     return max(lo, min(hi, v))
@@ -125,7 +171,10 @@ async def pty_handler(request):
         await ws.close()
         return ws
 
-    # Announce the session before any output flows (frame #1).
+    # Announce the session before any output flows (frame #1). `announced` tracks
+    # the id the client currently believes it's driving; the watch task below
+    # re-announces (and updates this) when claude rotates its id mid-terminal.
+    announced = {"sid": session_id}
     await _ws_send(ws, {"t": "session", "sessionId": session_id,
                         "sid8": session_id[:8], "resumed": resuming})
 
@@ -174,6 +223,31 @@ async def pty_handler(request):
 
     out_task = asyncio.create_task(pump_out())
 
+    async def watch_session():
+        """Re-announce when claude rotates its session id inside this PTY.
+
+        Polls the manifest for the live session id bound to this PTY's shell pid
+        (see _session_for_shell_pid). When it differs from what the client last
+        heard, we send a fresh `session` frame — the client swaps its sid8 so
+        liveTerms reports the current id, the manifest row becomes drivable, and
+        the stale duplicate row collapses without a cockpit relaunch. File reads
+        run in the executor so a slow disk never stalls the PTY pump."""
+        shell_pid = getattr(proc, "pid", None)
+        if not shell_pid:
+            return
+        try:
+            while not stop.is_set():
+                await asyncio.sleep(SESSION_WATCH_SEC)
+                cur = await loop.run_in_executor(None, _session_for_shell_pid, shell_pid)
+                if cur and cur != announced["sid"]:
+                    announced["sid"] = cur
+                    await _ws_send(ws, {"t": "session", "sessionId": cur,
+                                        "sid8": cur[:8], "resumed": False, "rotated": True})
+        except asyncio.CancelledError:
+            pass
+
+    watch_task = asyncio.create_task(watch_session())
+
     try:
         async for msg in ws:
             if msg.type != WSMsgType.TEXT:
@@ -203,4 +277,5 @@ async def pty_handler(request):
         except Exception:
             pass
         out_task.cancel()
+        watch_task.cancel()
     return ws

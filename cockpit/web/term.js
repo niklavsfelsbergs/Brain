@@ -436,6 +436,16 @@ class TermConn {
       }
       if (f.t === "out") this._write(f.d);
       else if (f.t === "session") {
+        // Re-announce (f.rotated): claude rotated its session id inside this PTY
+        // (a /clear, or a new task in the same shell). The server detected the
+        // new live id; swap ours so liveTerms reports the CURRENT sid8 — the
+        // board then dedups against the manifest row instead of showing a stale
+        // drivable ghost beside a read-only real row. Drop the old key/owned-uuid
+        // so the row collapses and a reopened cockpit resumes the current convo.
+        const prevId = this.id;
+        const prevSessionId = this.sessionId;
+        if (prevId && prevId !== f.sid8) bySid8.delete(prevId);
+        if (prevSessionId && prevSessionId !== f.sessionId) removeOwned(prevSessionId);
         this.sessionId = f.sessionId;
         this.id = f.sid8;
         bySid8.set(f.sid8, this);

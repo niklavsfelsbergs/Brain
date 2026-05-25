@@ -182,6 +182,11 @@ async def pty_handler(request):
     resume = request.query.get("resume", "").strip()
     resuming = bool(resume) and _is_uuid(resume)
     session_id = resume if resuming else str(uuid.uuid4())
+    # The resume UUID's sid8 is the STABLE anchor across a restart — the name was
+    # last keyed under it. claude may rotate to a fresh id after --resume; the
+    # watch task below carries the disk label from this anchor → the live id so
+    # the resumed row keeps its name regardless of how the prev→cur chain moved.
+    anchor_sid8 = session_id[:8]
 
     # The cockpit is often launched from a VSCode-hosted shell, which leaks
     # VSCODE_PID/TERM_PROGRAM into every child — so a claude spawned here would
@@ -271,9 +276,16 @@ async def pty_handler(request):
                 if cur and cur != announced["sid"]:
                     prev = announced["sid"]
                     announced["sid"] = cur
-                    # Carry the disk-backed board label old sid8 → new sid8 before
-                    # the client swaps, so a rotated/resumed row keeps its name.
+                    # Carry the disk-backed board label → the new sid8 before the
+                    # client swaps, so a rotated/resumed row keeps its name. Carry
+                    # from BOTH the immediate predecessor AND the stable resume
+                    # anchor: the prev→cur step handles an in-session /clear chain,
+                    # the anchor→cur step handles a restart where claude minted a
+                    # fresh id straight off --resume (the name is still under the
+                    # resume uuid's sid8, which prev may no longer equal). (S093b)
                     await loop.run_in_executor(None, _carry_disk_name, prev[:8], cur[:8])
+                    if anchor_sid8 != prev[:8]:
+                        await loop.run_in_executor(None, _carry_disk_name, anchor_sid8, cur[:8])
                     await _ws_send(ws, {"t": "session", "sessionId": cur,
                                         "sid8": cur[:8], "resumed": False, "rotated": True})
         except asyncio.CancelledError:

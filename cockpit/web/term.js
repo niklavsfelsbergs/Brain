@@ -450,14 +450,24 @@ class TermConn {
         // so the row collapses and a reopened cockpit resumes the current convo.
         const prevId = this.id;
         const prevSessionId = this.sessionId;
+        // [rename-diag] opt-in: `window.__RENAMEDIAG = 1` traces the carry path in
+        // the console; the authoritative server-side trace is switchboard/rename-diag.log.
+        if (window.__RENAMEDIAG)
+          console.log("[rename-diag] session frame", { prevId, sid8: f.sid8, rotated: !!f.rotated, resumeId: this.resumeId, nameForNew: nameFor(f.sid8) });
         if (prevId && prevId !== f.sid8) {
           // Carry the /rename label (localStorage, keyed by sid8) across the id
           // rotation. A /clear or a `claude --resume` (cockpit reopen) mints a new
           // id; without this the label is orphaned under the old sid8 and the row
           // comes back unnamed. Disk-backed labels are carried server-side in
-          // ptybridge._carry_disk_name; this is the localStorage half.
-          const carried = nameFor(prevId);
+          // ptybridge._carry_disk_name; this is the localStorage half. Try the
+          // immediate predecessor, then fall back to the resume anchor's sid8 —
+          // on a restart the name was last keyed under the resume uuid, which
+          // prevId may no longer equal once claude rotates off it. (S093b)
+          const anchor = this.resumeId ? this.resumeId.slice(0, 8) : "";
+          const carried = nameFor(prevId) || (anchor ? nameFor(anchor) : "");
           if (carried && !nameFor(f.sid8)) setName(f.sid8, carried);
+          if (window.__RENAMEDIAG)
+            console.log("[rename-diag] carry", { prevId, anchor, carried, applied: nameFor(f.sid8) });
           bySid8.delete(prevId);
         }
         if (prevSessionId && prevSessionId !== f.sessionId) removeOwned(prevSessionId);

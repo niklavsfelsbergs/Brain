@@ -8,6 +8,13 @@
 // stays the engine underneath (subscription, interactive); this is purely a
 // read/copy skin over it. The toggle lives in main.js, which keeps <Term/>
 // mounted (hidden) so flipping views never drops the live session.
+//
+// S093 readability pass (principal: "not very well designed"): it was a flat
+// document — no turn boundaries, raw tool dumps crowding out the conversation,
+// hierarchy inverted. Now: tool calls collapse by default (#1), turns carry a
+// speaker header + divider (#2), prose caps at a readable measure (#3, CSS),
+// the redundant hint is gone (#5), code/tool styling is unified + an optional
+// line-number strip (#6), and an A−/A+ font control (#7).
 
 import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
@@ -49,6 +56,26 @@ function _selectionInside(el) {
   return !!(n && el.contains(n));
 }
 
+// Read renders file content as `cat -n` — a right-aligned line number + a tab
+// per line. Handy on screen, noise in a paste. When the strip toggle is on, drop
+// that prefix (both the on-screen <pre> and what the copy buttons grab).
+// Conservative: only the `<spaces><digits><tab>` shape Read uses, so bash output
+// and grep's `n:line` form pass through untouched.
+function stripNums(text, on) {
+  if (text == null) return "";
+  const s = String(text);
+  return on ? s.replace(/^[ \t]*\d+\t/gm, "") : s;
+}
+
+// Font-size control (#7): one persisted scale multiplied into the scoped CSS
+// font sizes via the --tv-scale custom property on the panel root.
+const SMIN = 0.8, SMAX = 1.7, SSTEP = 0.1;
+const clampScale = (s) => Math.min(SMAX, Math.max(SMIN, Math.round(s * 100) / 100));
+function loadScale() {
+  const v = parseFloat(localStorage.getItem("cockpit-tv-font"));
+  return v >= SMIN && v <= SMAX ? v : 1;
+}
+
 function CopyBtn({ get, label = "copy" }) {
   const [done, setDone] = useState("");
   const onClick = async (e) => {
@@ -75,8 +102,9 @@ function tail(p) {
 }
 
 // Flatten a turn to plain, copyable text — raw source, no markup. This is what
-// the copy buttons grab; the DOM render is only for reading.
-function turnText(turn) {
+// the copy buttons grab; the DOM render is only for reading. `strip` honours the
+// line-number toggle so a copied turn matches what's on screen.
+function turnText(turn, strip) {
   if (turn.role === "user") return (turn.blocks || []).map((b) => b.text || "").join("\n");
   const parts = [];
   for (const b of turn.blocks || []) {
@@ -84,19 +112,42 @@ function turnText(turn) {
     else if (b.t === "thinking") parts.push("[thinking]\n" + (b.text || ""));
     else if (b.t === "tool") {
       parts.push(`[${b.name} ${toolSummary(b.input)}]`.trim());
-      if (b.result != null) parts.push(b.result);
+      if (b.result != null) parts.push(stripNums(b.result, strip));
     }
   }
   return parts.filter(Boolean).join("\n");
 }
-function allText(turns) {
+function allText(turns, strip) {
   return (turns || [])
-    .map((t) => (t.role === "user" ? "You:\n" : "") + turnText(t))
+    .map((t) => (t.role === "user" ? "You:\n" : "") + turnText(t, strip))
     .filter((s) => s.trim())
     .join("\n\n———\n\n");
 }
 
-function Block({ b }) {
+// A tool call. Collapsed by default (#1) — the head row alone (name + arg + line
+// count + copy) so file reads and git dumps don't bury the conversation. Click
+// the head to expand the output; errors open themselves so failures aren't
+// hidden. Copy works without expanding.
+function ToolBlock({ b, strip }) {
+  const hasResult = b.result != null;
+  const [open, setOpen] = useState(!!b.isError);
+  const lineN = hasResult ? String(b.result).split("\n").length : 0;
+  return html`<div class=${"b-tool" + (b.isError ? " err" : "") + (open ? " open" : "")}>
+    <div
+      class=${"tool-head" + (hasResult ? " clickable" : "")}
+      onClick=${hasResult ? () => setOpen((o) => !o) : undefined}
+    >
+      ${hasResult && html`<span class="tool-chev">${open ? "▾" : "▸"}</span>`}
+      <span class="tool-name">${b.name}</span>
+      <span class="tool-arg">${toolSummary(b.input)}</span>
+      ${hasResult && !open && html`<span class="tool-meta">${lineN} line${lineN === 1 ? "" : "s"}</span>`}
+      ${hasResult && html`<${CopyBtn} get=${() => stripNums(b.result, strip)} label="copy output" />`}
+    </div>
+    ${open && hasResult && html`<pre class="tv-result">${stripNums(b.result, strip)}</pre>`}
+  </div>`;
+}
+
+function Block({ b, strip }) {
   if (b.t === "text")
     return html`<div class="b-text" dangerouslySetInnerHTML=${{ __html: mdToHtml(b.text) }}></div>`;
   if (b.t === "thinking")
@@ -104,29 +155,28 @@ function Block({ b }) {
       <summary>thinking</summary>
       <div dangerouslySetInnerHTML=${{ __html: mdToHtml(b.text) }}></div>
     </details>`;
-  if (b.t === "tool")
-    return html`<div class=${"b-tool" + (b.isError ? " err" : "")}>
-      <div class="tool-head">
-        <span class="tool-name">${b.name}</span>
-        <span class="tool-arg">${toolSummary(b.input)}</span>
-        ${b.result != null && html`<${CopyBtn} get=${() => b.result || ""} label="copy output" />`}
-      </div>
-      ${b.result != null && html`<pre class="tv-result">${b.result}</pre>`}
-    </div>`;
+  if (b.t === "tool") return html`<${ToolBlock} b=${b} strip=${strip} />`;
   return null;
 }
 
-function Turn({ turn }) {
+// One turn, with a speaker header so the back-and-forth is legible (#2). User
+// turns are a right-aligned column (label over bubble); assistant turns carry
+// the actor name and the copy-turn button on one header row.
+function Turn({ turn, strip, who }) {
   if (turn.role === "user")
-    return html`<div class="t-user">
+    return html`<div class="t-user tv-turn-u">
+      <div class="tv-speaker u">You</div>
       <div
         class="bubble"
         dangerouslySetInnerHTML=${{ __html: mdToHtml((turn.blocks || []).map((b) => b.text).join("\n")) }}
       ></div>
     </div>`;
   return html`<div class="t-asst tv-turn">
-    <div class="tv-turn-bar"><${CopyBtn} get=${() => turnText(turn)} label="copy turn" /></div>
-    ${(turn.blocks || []).map((b, i) => html`<${Block} key=${i} b=${b} />`)}
+    <div class="tv-turn-head">
+      <span class="tv-speaker">${who}</span>
+      <${CopyBtn} get=${() => turnText(turn, strip)} label="copy turn" />
+    </div>
+    ${(turn.blocks || []).map((b, i) => html`<${Block} key=${i} b=${b} strip=${strip} />`)}
   </div>`;
 }
 
@@ -135,9 +185,17 @@ function Turn({ turn }) {
 export function TranscriptView({ conn, live }) {
   const [turns, setTurns] = useState([]);
   const [status, setStatus] = useState("");
+  const [scale, setScale] = useState(loadScale);
+  const [strip, setStrip] = useState(() => localStorage.getItem("cockpit-tv-strip") === "1");
   const scroller = useRef(null);
   const pinned = useRef(true);
   const sigRef = useRef("");
+  const who = conn.label || "Claude";
+
+  // persist the two view knobs
+  useEffect(() => { try { localStorage.setItem("cockpit-tv-font", String(scale)); } catch {} }, [scale]);
+  useEffect(() => { try { localStorage.setItem("cockpit-tv-strip", strip ? "1" : "0"); } catch {} }, [strip]);
+  const bumpScale = (d) => setScale((s) => clampScale(s + d * SSTEP));
 
   useEffect(() => {
     if (!live) return undefined;
@@ -204,14 +262,21 @@ export function TranscriptView({ conn, live }) {
   }, [turns]);
 
   return html`
-    <div class="transcript-view">
+    <div class="transcript-view" style=${"--tv-scale:" + scale}>
       <div class="tv-bar">
-        <span class="tv-hint">clean text — select &amp; copy freely, no terminal wrapping</span>
-        <${CopyBtn} get=${() => allText(turns)} label="copy all" />
+        <div class="tv-font" title="text size">
+          <button class="tv-fbtn" onClick=${() => bumpScale(-1)} title="smaller">A−</button>
+          <button class="tv-fbtn" onClick=${() => bumpScale(1)} title="larger">A+</button>
+        </div>
+        <label class="tv-strip" title="drop Read's line numbers from the view and from copies">
+          <input type="checkbox" checked=${strip} onChange=${(e) => setStrip(e.target.checked)} />
+          strip line #s
+        </label>
+        <${CopyBtn} get=${() => allText(turns, strip)} label="copy all" />
       </div>
       <div class="turns tv-turns" ref=${scroller}>
         ${status && html`<div class="t-sys">${status}</div>`}
-        ${turns.map((t, i) => html`<${Turn} key=${i} turn=${t} />`)}
+        ${turns.map((t, i) => html`<${Turn} key=${i} turn=${t} strip=${strip} who=${who} />`)}
       </div>
     </div>
   `;

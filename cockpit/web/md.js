@@ -38,10 +38,11 @@ export function mdToHtml(text) {
   const out = [];
   let inCode = false;
   let codeBuf = [];
-  let listBuf = null;
+  let listBuf = null; // { type: "ul" | "ol", items: [] }
   const flushList = () => {
     if (listBuf) {
-      out.push("<ul>" + listBuf.map((li) => `<li>${inline(li)}</li>`).join("") + "</ul>");
+      const { type, items } = listBuf;
+      out.push(`<${type}>` + items.map((li) => `<li>${inline(li)}</li>`).join("") + `</${type}>`);
       listBuf = null;
     }
   };
@@ -67,9 +68,15 @@ export function mdToHtml(text) {
       out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`);
       continue;
     }
-    const li = ln.match(/^\s*[-*]\s+(.*)$/);
-    if (li) {
-      (listBuf = listBuf || []).push(li[1]);
+    const ul = ln.match(/^\s*[-*]\s+(.*)$/);
+    const ol = ln.match(/^\s*\d+[.)]\s+(.*)$/);
+    if (ul || ol) {
+      const type = ul ? "ul" : "ol";
+      if (!listBuf || listBuf.type !== type) {
+        flushList();
+        listBuf = { type, items: [] };
+      }
+      listBuf.items.push((ul || ol)[1]);
       continue;
     }
     if (/^\s*---+\s*$/.test(ln)) {

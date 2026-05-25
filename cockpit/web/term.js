@@ -216,6 +216,12 @@ class TermConn {
     if (window.ResizeObserver) {
       this._ro = new ResizeObserver(() => {
         if (this._fitRaf) return;
+        // Skip while hidden/zero-size. When <Term> is display:none under the
+        // transcript view the container collapses to 0×0 and RO fires; fitting a
+        // 0-box drives FitAddon to its 2-col minimum (and resizes the PTY to 2
+        // cols) — the "terminal renders ~3 chars wide after a toggle" bug. RO
+        // fires again with a real box when the view comes back. (S093)
+        if (!this.container.clientWidth || !this.container.clientHeight) return;
         this._fitRaf = requestAnimationFrame(() => {
           this._fitRaf = 0;
           this.fitNow();
@@ -509,6 +515,11 @@ class TermConn {
 
   fitNow() {
     if (!this.fit) return;
+    // Never fit a hidden/zero-size box (display:none under the transcript view) —
+    // FitAddon would collapse cols to its 2-col minimum and resize the PTY with
+    // it, leaving the terminal a few chars wide when you switch back. Bail until
+    // it has a real box; the ResizeObserver re-fires when it reappears. (S093)
+    if (this.container.clientWidth < 2 || this.container.clientHeight < 2) return;
     try {
       this.fit.fit();
       // Over-fit guard (S081). The fit addon floors rows = frameContentHeight /

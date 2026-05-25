@@ -239,3 +239,7 @@
 [2026-05-25] jebrim-6ccc2220 CLOSING
   S067 — harvested the full FedEx/counterfactual transcript; taught the agent the bucket-first decomposition rule (how_to.md rule 4 extension + rule 11 pointer) + brain quality-note append (root + 4 wins [S059/S060 generalizing] + M2/M3 secondary candidates). All edits made.
   Leaving open: commit/push HELD for principal go — shipping-agent how_to.md → picanova/origin + brain (bank note + quest-log S067 + this comms). M2/M3 not implemented (scope narrowed to bucket-first). Resume: jebrim/inventory/shipping-agent-bucket-first-harvest-resume__6ccc2220.md. S067 stays in-progress.
+
+[2026-05-25 15:51] zezima-e2362ea0 CLOSING
+  Completed: S066 — reopened the Riga-apartment decision (Ģertrūdes 113 = S056 apt #1). Deep-dived via 3 researchers (building/ownership, location, price/resale) → SYNTHESIS verdict + LV seller-questions sheet, all in zezima/research/. Verdict moved walk → plausible eyes-open buy; **principal PASSED** (no space for a working station — same gut-fit axis as Duntes). Quest → completed/.
+  Leaving open: nothing — quest closed. 3 harvest drafts (bank latvia-property risk-model/discount, niksis8_character space-is-binding-constraint, examine anchor-referent slip) + 1 memory; promote on a later Zezima alching. Committing zezima namespace + this comms.

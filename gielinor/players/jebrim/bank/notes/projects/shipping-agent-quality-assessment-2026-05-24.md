@@ -41,6 +41,31 @@ Re-ran the limit-test campaign against the post-S059 rulebook (10 Qs / 3 tiers; 
 
 Pattern worth carrying: the agent's gaps cluster as **"full rigor present, doesn't self-trigger on the fast path."** The durable fix is a generative self-gate, not another scar-rule. Methodology now a skill: [[stress-testing-an-agent-by-embodying-it]].
 
+## 2026-05-25 — board-numbers test (8 learnings; first multi-number-deck shape)
+
+Single prompt: a time-pressed principal asks for **five slide-ready headline numbers** for a Thursday board review (cost/parcel + "coming down" trend, shipping % of revenue, return rate, on-time delivery, typical order shipping cost) + "which to lead with." First test of the **multi-number deck** shape — and it moved the failure surface in two new directions beyond the known root: up from single-number → *a set of numbers delivered together*, and out to a *dormant layer* (`memory/`).
+
+The judgment held (blocked the flattering "costs down" narrative via mix-shift decomposition; refused to fabricate a return rate + handed off to the real owner; named the on-time coverage gap "so the board hears it from you, not finds out"; surfaced the SLA fork). **Preserve those — rules 4/5/6/16 earning their keep.** The 8 learnings are everything around the edges.
+
+**Root A — fast-path self-gating (the known root, recurring):**
+- **L1 — scope is a fork, surface it as an explicit selection.** Opening silently picked "all production lines," then the body led with core — opening contradicted its own conclusion. Fix: when the vertical is unspecified, present a **3-option selection** — *1. TCG only / 2. Both / 3. ORWO only* — not a silent default and not a free-text ask. (rule 12, strengthen to a selector.)
+- **L8 — same shape, the on-time threshold.** It assumed "5 business days = on time" and led the headline with ~82%@5BD, disclosing only later that 5 BD is a benchmark not the SLA. Fix: state plainly that **no target delivery time is set**, that it's *assuming X days*, and surface the threshold as a choice at the point of the number (3/5/7 BD → 74/82/83%) — not buried after. Sibling to L1: a load-bearing assumption presented as a given.
+- **L2 — uniform integrity stance.** Blocked the principal's flattering trend (right), then nudged toward the median for #5 *because "the average invites tail questions"* — optimizing for least-challengeable, the opposite stance. Present the most representative figure; don't route around scrutiny in either direction. (rule 4 extension.)
+
+**Root B — set coherence (NEW; rules 4/12/33 fire per-figure, nothing governs the set):**
+- **L3 — cross-number reconciliation pass before publishing a set.** Three numbers didn't tie: volumes ~2× apart ("427K = half of Q2" vs "~860K/month"); cost/parcel €6.77 ≈ order all-in €6.78 (identical to the cent, unexplained); 20% shipping-to-revenue stated flat (and 20% isn't "lean," which guts the principal's framing — unsaid). The §C mart-invariant idea (SUM-of-buckets == total) applied to narrative output.
+- **L4 — one period across a set, or flag the divergence loudly.** Header said "Q2 (Apr–25 May)" but #1 was April-only, #2/#5 Q2-to-date, #4 full-Q2 — three windows under one heading, a mislabel trap for "drop straight onto charts." Rule 33 labels each figure; nothing enforces set-level consistency.
+- **L5 — lead with a set-status for multi-problem asks.** "No deep dive, five clean numbers" → the punchline (*only 2 of 5 deck-ready, lead story backwards*) was distributed through a long memo. Open with a 5-row status board (ready / caveated / can't-source), then detail.
+- **L3+L4+L5 → one candidate rule:** a *"delivering a set of figures" pre-flight* (resolve scope once, align periods, reconcile cross-number, lead with set-status).
+
+**Root C — layer dormancy (NEW; surfaced from the principal's `memory/` question):**
+- **L6 — `memory/` never fills.** Bare except its spec, while `scratchpad/` holds ~40 flat files over 4 days and `workbench/` has live items. The "note this in memory?" handshake (rules 20/27) has never completed across heavy use; durable cited findings sit in scratchpad as transient one-offs. Same root — capability present, trigger too weak. Sub-finding: scratchpad is silently doing memory's job (no `As of:`, no citation) and rule 29 ("user-managed, no sweep") lets it grow unbounded.
+
+**Minor:**
+- **L7 — raw status token `NOT_DELIVERED` leaked into user text** (rule 2; should read "stuck as failed/undelivered").
+
+**Implementation mapping (maintainer edits to `Documents/GitHub/shipping-agent/`):** L1 → rule 12 (3-option selector). L8 → new clause (state-no-SLA + assumed-threshold-as-fork), sibling to rule 12. L2 → rule 4 extension. L3/L4/L5 → new "delivering a set of figures" pre-flight rule (§0). L6 → strengthen rules 20/27 promotion trigger + consider a scratchpad-accretion note. L7 → rule 2 / translation-table reinforcement. Status: **implementing this session** (2026-05-25, post-S062).
+
 ## Related
 
 - Skill (in shipping-agent repo, not my bank): `savings-investigation.md` — the falsification gate this assessment validates.

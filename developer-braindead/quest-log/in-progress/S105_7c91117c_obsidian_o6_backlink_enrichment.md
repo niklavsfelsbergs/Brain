@@ -5,7 +5,7 @@
 
 ## What this was
 
-S104 handed off §O.6: the gielinor Obsidian graph is verified-but-sparse (350 files, 76% isolated) because notes carry their source-quest anchor as **plain text**, never wrapped. The narrow hand-off was "wrap anchors in gielinor `examine/confirmed` + `bank/notes`." The principal **widened it twice**: first to "a full pass on the whole brain to connect the dots," then explicitly to the **maximal** scope — wrap *every* inline resolvable S/D-ref across **both brains**, quest-log prose included.
+[[S104_78e596a8_obsidian_gielinor_link_migration|S104]] handed off §O.6: the gielinor Obsidian graph is verified-but-sparse (350 files, 76% isolated) because notes carry their source-quest anchor as **plain text**, never wrapped. The narrow hand-off was "wrap anchors in gielinor `examine/confirmed` + `bank/notes`." The principal **widened it twice**: first to "a full pass on the whole brain to connect the dots," then explicitly to the **maximal** scope — wrap *every* inline resolvable S/D-ref across **both brains**, quest-log prose included.
 
 ## What shipped
 
@@ -25,9 +25,9 @@ Safety design:
 
 ### Dupe disambiguation (the judgment work — encoded in `PROSE_DUPE_RESOLUTION`, vault-local-guarded)
 
-- Same-session copies / clear canonical → one target: **S014** → ttyd-howto; **S049** → visualizer_state_aware (completed, over the in-progress stub); **S060** → brain_self_audit (the D-027 source; cockpit in-progress S060s too obscure to be bare-referenced); **S076** → scm-alert-engine-audit (all in-scope refs are SCM context); **D-012** → close_session_harvest_pump.
-- Namespace collision (`bank/decisions/` vs `bank/main-brain-construction/`): **D-001/D-002** → subtree rule (construction subtree → its own scheme; else the canonical decision). Verified: `main-brain-construction/_about.md` → phase-1-scaffold, `S099` quest → two_brain_split.
-- Genuinely-different sessions, topic-disambiguated: **S038** → brain_underutilization by default (all in-scope refs are the "underutilizing the brain"/Guthix-consultation context), cockpit-vscode files → vscode_claude_focus. **S086** → brain-technical-docs by default, D-030/build-lessons (edit-race context) → compose-bar. **S062** → citation-leak by default, push/euro-context (push-denial examine, S065/S075) → euro-precision-and-build-report. Spot-checks all confirmed correct post-apply.
+- Same-session copies / clear canonical → one target: **[[S014_visualizer_polish_and_aesthetics_pass|S014]]** → ttyd-howto; **[[S049_17e701eb_visualizer_state_aware_motion_and_action_line|S049]]** → visualizer_state_aware (completed, over the in-progress stub); **[[S060_brain_self_audit_and_plan_reconciliation|S060]]** → brain_self_audit (the [[D-027_inward_outward_build_imbalance|D-027]] source; cockpit in-progress S060s too obscure to be bare-referenced); **[[S076_322cb5c3_cockpit-vscode-rename-and-focus|S076]]** → scm-alert-engine-audit (all in-scope refs are SCM context); **[[D-012_close_session_harvest_pump|D-012]]** → close_session_harvest_pump.
+- Namespace collision (`bank/decisions/` vs `bank/main-brain-construction/`): **[[D-001_two_brain_split|D-001]]/[[D-002_folder_name|D-002]]** → subtree rule (construction subtree → its own scheme; else the canonical decision). Verified: `main-brain-construction/_about.md` → phase-1-scaffold, `S099` quest → two_brain_split.
+- Genuinely-different sessions, topic-disambiguated: **[[S038_brain_underutilization_diagnosis|S038]]** → brain_underutilization by default (all in-scope refs are the "underutilizing the brain"/Guthix-consultation context), cockpit-vscode files → vscode_claude_focus. **[[S086_e668ec7e_brain-technical-docs|S086]]** → brain-technical-docs by default, [[D-030_worktree_isolation_for_parallel_sessions|D-030]]/build-lessons (edit-race context) → compose-bar. **[[S062_switchboard_lifecycle_feed_persistent_server_peek|S062]]** → citation-leak by default, push/euro-context (push-denial examine, [[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]]/[[S075_d27b2fe0_agent-prose-into-feed|S075]]) → euro-precision-and-build-report. Spot-checks all confirmed correct post-apply.
 
 ## Verification
 
@@ -39,10 +39,10 @@ Safety design:
 ## Findings / open (NOT in S105 scope)
 
 - **dev links-mode drift: ~103 bare `[[ID]]` bracketed links** still unmigrated — §O.2/O.3 only covered `D-`/`S-` prefixes, never `Q-`/`A-`/`I-`/`R-` (`[[Q-001]]` etc. are broken in Obsidian). Pre-existing in HEAD, confirmed not caused by this pass (prose mode only writes full-stem aliased links + skips already-bracketed). → a future **§O.7 links-mode top-up** (extend the prefix coverage + the same dupe treatment for the 7 flagged). Quick + safe (0 dangling), but re-opens dupe disambiguation, so deferred.
-- cf03bfe1's S106 left two doc fixes for a gielinor-cwd session: `spawning-gnomes.md:11` (+ penguin/dwarf) name an unreachable `gielinor/.claude/agents/` location; `CLAUDE.md` overclaims guarantees #3–#6. Not §O.6.
+- cf03bfe1's [[S106_cf03bfe1_self-eating-audit-and-d8-enforcement-fix|S106]] left two doc fixes for a gielinor-cwd session: `spawning-gnomes.md:11` (+ penguin/dwarf) name an unreachable `gielinor/.claude/agents/` location; `CLAUDE.md` overclaims guarantees #3–#6. Not §O.6.
 
 ## Parallel notes
 
-- Entered mid-conversation; OPEN posted (steps 6–8 fired). One live sibling at entry — **cf03bfe1** (read-only self-eating audit) — CLOSED mid-session (shipped S106, committed `5cd2f97`, D8 enforcement-gap fix). It left `comms/active.md` + `respawn.md` unstaged **for me as holder**; I carry them.
-- Excluded from my commit (pre-existing WIP / runtime): zezima `S095_f60153e0` quest WIP, `bank/build-lessons.md`, `state.ndjson`, cockpit/switchboard diag. My wraps in those 2 WIP files stay uncommitted for their owner (S098/S104 precedent).
+- Entered mid-conversation; OPEN posted (steps 6–8 fired). One live sibling at entry — **cf03bfe1** (read-only self-eating audit) — CLOSED mid-session (shipped [[S106_cf03bfe1_self-eating-audit-and-d8-enforcement-fix|S106]], committed `5cd2f97`, D8 enforcement-gap fix). It left `comms/active.md` + `respawn.md` unstaged **for me as holder**; I carry them.
+- Excluded from my commit (pre-existing WIP / runtime): zezima `S095_f60153e0` quest WIP, `bank/build-lessons.md`, `state.ndjson`, cockpit/switchboard diag. My wraps in those 2 WIP files stay uncommitted for their owner ([[S098_b53fca39_obsidian_fit_and_dlink_migration|S098]]/[[S104_78e596a8_obsidian_gielinor_link_migration|S104]] precedent).
 - Strategic next step UNCHANGED — **§C shipping-mart pilot** ([[D-027_inward_outward_build_imbalance]]), the load-bearing OUTWARD build. §O.6 is inward (serves §N GraphRAG).

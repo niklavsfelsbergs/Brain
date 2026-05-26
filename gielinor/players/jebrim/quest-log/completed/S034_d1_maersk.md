@@ -1,4 +1,4 @@
-# S034 D1 — Maersk engine logic audit
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] D1 — Maersk engine logic audit
 
 **Spawned by:** Jebrim, 2026-05-22
 **Scope:** `carriers/maersk` + shared `_base` + offer files / rate-table parquets

@@ -1,4 +1,4 @@
-# S076 d3 — SCM alert engine: drift monitor + severity calibration review
+# [[S076_949a59cf_scm-alert-engine-audit|S076]] d3 — SCM alert engine: drift monitor + severity calibration review
 
 **Role:** read-only review dwarf (Jebrim). **Date:** 2026-05-26.
 **System:** `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py` (branch `shipping-mart-cutover`).

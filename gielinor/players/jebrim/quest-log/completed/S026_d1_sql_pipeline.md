@@ -1,4 +1,4 @@
-# S026 D1 — SQL & pipeline read
+# [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] D1 — SQL & pipeline read
 
 Slice: `sql/` + `pipeline.py` + `audit.py` + `backtest.py` + tests, on branch `shipping-mart-cutover`.
 App root: `NFE/dashboards/shipping_costs_monitoring_nextjs/`.

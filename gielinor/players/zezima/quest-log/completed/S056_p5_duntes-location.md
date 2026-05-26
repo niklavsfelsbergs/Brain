@@ -1,4 +1,4 @@
-# S056 p5 — Duntes 28 location & daily life (penguin research)
+# [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] p5 — Duntes 28 location & daily life (penguin research)
 
 Player: Zezima | Role: penguin (P5) | Date: 2026-05-23
 Brief: Location & livability research for a 2-room apartment at Duntes iela 28, Riga ("Duntes Ozoli", built 2007). Owner-occupier lens. Out of scope: price/comparables, build quality, mortgage/tax (other penguins).

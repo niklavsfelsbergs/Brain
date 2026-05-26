@@ -1,4 +1,4 @@
-# S076 D1 — deviation_blowout end-to-end review
+# [[S076_949a59cf_scm-alert-engine-audit|S076]] D1 — deviation_blowout end-to-end review
 
 **Role:** read-only review dwarf for Jebrim. Scope: `deviation_blowout` alert path in SCM pipeline (branch `shipping-mart-cutover`).
 **Repo:** `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py` (read-only; verified against `data/*.parquet`, run 2026-05-25 22:20).

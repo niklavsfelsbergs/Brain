@@ -1,4 +1,4 @@
-# S056 p3 — domājamās daļas: resale, liquidity & conversion to dzīvokļa īpašums
+# [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] p3 — domājamās daļas: resale, liquidity & conversion to dzīvokļa īpašums
 
 Penguin research run. Player in scope: Zezima. Date: 2026-05-23.
 

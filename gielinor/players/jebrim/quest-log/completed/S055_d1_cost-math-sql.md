@@ -1,4 +1,4 @@
-# S055 D1 — Cost Math + SQL Contract Review (Shipping Costs Monitoring)
+# [[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]] D1 — Cost Math + SQL Contract Review (Shipping Costs Monitoring)
 
 **Scope.** Read-only technical + mathematical review of the cost basis, SQL mart contract, and
 the data-shaping/aggregation math for the `shipping_costs_monitoring_nextjs` dashboard

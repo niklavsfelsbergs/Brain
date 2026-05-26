@@ -1,4 +1,4 @@
-# S034 F7 — Doc-drift rollback (DECISIONS / ASSUMPTIONS / PLAN)
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] F7 — Doc-drift rollback (DECISIONS / ASSUMPTIONS / PLAN)
 
 **Spawned by:** Jebrim, 2026-05-22
 **Scope:** `2_analysis/docs/` in `bi-analytics-main/NFE/projects/2_EU_tender_2026/`

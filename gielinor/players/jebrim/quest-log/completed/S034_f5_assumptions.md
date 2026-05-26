@@ -1,11 +1,11 @@
-# S034 F5 -- ASSUMPTIONS.md cross-carrier additions
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] F5 -- ASSUMPTIONS.md cross-carrier additions
 
 **Spawned by:** Jebrim, 2026-05-22
-**Scope:** Append 6 implicit-assumption entries surfaced by the S034 D7 audit to `2_analysis/docs/ASSUMPTIONS.md` Cross-carrier / framework section; audit population SQL grain for entry #4.
+**Scope:** Append 6 implicit-assumption entries surfaced by the [[S034_2026-05-22_eu-tender-logic-review|S034]] D7 audit to `2_analysis/docs/ASSUMPTIONS.md` Cross-carrier / framework section; audit population SQL grain for entry #4.
 
 ## Output landed
 
-Six entries inserted into `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics-main\NFE\projects\2_EU_tender_2026\2_analysis\docs\ASSUMPTIONS.md` immediately after the 2026-05-13 AT fuel / Maut entry, before the `## Maersk` (post-reply) section. All six dated **2026-05-22** and tagged **(S034 F5)** for traceability.
+Six entries inserted into `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics-main\NFE\projects\2_EU_tender_2026\2_analysis\docs\ASSUMPTIONS.md` immediately after the 2026-05-13 AT fuel / Maut entry, before the `## Maersk` (post-reply) section. All six dated **2026-05-22** and tagged **([[S034_2026-05-22_eu-tender-logic-review|S034]] F5)** for traceability.
 
 Each entry follows the existing prose-entry shape (one-line claim + **Why we're assuming** + **Impact if wrong** + **Replace when** + **Related**). Two of the existing cross-carrier entries use the table-shape; the six new entries use the prose-shape since each carries a single load-bearing claim rather than a row-by-row matrix.
 

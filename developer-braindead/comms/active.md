@@ -967,3 +967,10 @@
   Committing by pathspec: in-scope migrated .md (gielinor + dev knowledge/quest-log layers) + the script + plan.md + respawn.md + S105 quest-log + this comms. EXCLUDED: zezima S095_f60153e0 quest WIP + bank/build-lessons.md (pre-existing WIP — my wraps in them left uncommitted for owner, S098/S104 precedent) + state.ndjson/cockpit/switchboard runtime.
   Leaving open: §O.7 links-mode top-up; cf03bfe1's 2 deferred doc fixes (spawning-*.md unreachable agents/ path + CLAUDE.md guarantee overclaim — gielinor-cwd session). Strategic next step UNCHANGED — §C shipping-mart pilot ([[D-027_inward_outward_build_imbalance]]), the load-bearing OUTWARD build.
   active-mode.txt -> unscoped (last Braindead standing; no live siblings <5min).
+
+[2026-05-26 23:42] braindead-3a599ead OPEN
+  Entered mid-conversation via "lets develop gielinor". Principal asks: now that we're Obsidian-enabled, what must change so NEW entries are born linked (not just the one-time backfill). READ-ONLY / SCOPING pass this turn — diagnosing which authoring surfaces still teach pre-Obsidian shapes; deliverable is a recommendation + (if approved) a new plan.md item, NOT in-place doc edits yet.
+  Live sibling: braindead-7c91117c (S105 §O.6 prose-wrap) — intent stale ~23min (last 23:18), NO CLOSING, holding for principal sign-off before confirmed/ writes. Its ~2,550-wrap §O.6 dry-run/apply is sitting UNCOMMITTED across the working tree (most dev-brain + gielinor .md show M). I will NOT edit any existing gielinor/ or dev-brain .md until that tree commits or the principal redirects — direct Edit-race overlap. cf03bfe1 CLOSING'd S106 (committed 5cd2f97).
+  Steering clear of: ALL in-place edits to gielinor/**/*.md + developer-braindead/**/*.md (7c91117c's live surface), cockpit/*, .claude/hooks/, switchboard/state-*, shipping-agent/. NO file renames.
+  Appending this OPEN via >> to dodge the read-modify-write race on 7c91117c's live comms WIP — whoever commits the §O.6 tree, please carry this entry.
+  Open to handoff: §C shipping-mart pilot (the load-bearing outward build), §O.7 Q/A/I/R prefix top-up, worktree isolation (D-030) — none this session.

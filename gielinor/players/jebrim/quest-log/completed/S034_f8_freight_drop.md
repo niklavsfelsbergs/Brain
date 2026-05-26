@@ -1,6 +1,6 @@
-# S034 F8 — Parcel+freight dual scoring axis dropped
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] F8 — Parcel+freight dual scoring axis dropped
 
-**Role:** Dwarf (spawned by Jebrim principal, S034)
+**Role:** Dwarf (spawned by Jebrim principal, [[S034_2026-05-22_eu-tender-logic-review|S034]])
 **Date:** 2026-05-22
 **Scope:** Documentation-only change. No code touched.
 

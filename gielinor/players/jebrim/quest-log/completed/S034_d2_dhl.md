@@ -1,4 +1,4 @@
-# S034 D2 — DHL Paket + DHL Express audit
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] D2 — DHL Paket + DHL Express audit
 **Spawned by:** Jebrim, 2026-05-22
 
 ## TL;DR

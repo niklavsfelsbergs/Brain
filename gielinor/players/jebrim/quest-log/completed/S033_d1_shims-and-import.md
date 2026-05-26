@@ -1,8 +1,8 @@
-# S033 D1 — shims-and-import
+# [[S033_2026-05-22_shipping-agent-audit|S033]] D1 — shims-and-import
 
-**Role:** Jebrim dwarf, spawned by Jebrim-principal in S033 shipping-agent audit (apply-fixes phase).
+**Role:** Jebrim dwarf, spawned by Jebrim-principal in [[S033_2026-05-22_shipping-agent-audit|S033]] shipping-agent audit (apply-fixes phase).
 **Task:** Replace the 4 entry-shim files in `shipping-agent/` with short shims that `@`-import `how_to.md`.
-**Status:** completed at S033 close. No pending external actions.
+**Status:** completed at [[S033_2026-05-22_shipping-agent-audit|S033]] close. No pending external actions.
 
 ## Pre-edit state (all 4 files read)
 
@@ -42,5 +42,5 @@ None. All four pre-edit files were exactly the structure the audit predicted (11
 
 ## Hand-off
 
-Other dwarves working in parallel on different shipping-agent files (per principal's S033 brief). I did not touch anything outside the 4 named files. Principal commits after synthesis.
+Other dwarves working in parallel on different shipping-agent files (per principal's [[S033_2026-05-22_shipping-agent-audit|S033]] brief). I did not touch anything outside the 4 named files. Principal commits after synthesis.
 

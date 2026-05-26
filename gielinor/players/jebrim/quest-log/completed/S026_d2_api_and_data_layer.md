@@ -1,4 +1,4 @@
-# S026 D2 — API routes & DuckDB data layer
+# [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] D2 — API routes & DuckDB data layer
 
 Read-only deep-read of the Next.js backend for `shipping_costs_monitoring_nextjs` on branch `shipping-mart-cutover`. Scope was: `src/lib/db.ts`, `src/lib/types.ts`, `src/lib/format.ts`, `src/lib/colors.ts`, and every `src/app/api/*/route.ts` (35 routes, all read). Diff vs `main` covers 18 files (+1297, -72) — see `Mart cutover delta` below.
 

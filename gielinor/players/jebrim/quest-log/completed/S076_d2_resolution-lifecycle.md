@@ -1,4 +1,4 @@
-# S076 D2 — SCM issue resolution / settle / frozen-baseline lifecycle review
+# [[S076_949a59cf_scm-alert-engine-audit|S076]] D2 — SCM issue resolution / settle / frozen-baseline lifecycle review
 
 **Role:** read-only review dwarf (Jebrim), SCM alert engine, branch `shipping-mart-cutover`.
 **Scope:** issue resolution / settle / frozen-baseline machinery — "why does nothing clear?" — for rate_spike / creep / shift. `deviation_blowout` + `drift` never-resolving owned by siblings D1/D3.

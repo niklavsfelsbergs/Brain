@@ -1,9 +1,9 @@
-# S033 D2 — harness-and-scatter
+# [[S033_2026-05-22_shipping-agent-audit|S033]] D2 — harness-and-scatter
 
-**Role:** Jebrim dwarf, spawned by principal Niklavs in gielinor S033.
+**Role:** Jebrim dwarf, spawned by principal Niklavs in gielinor [[S033_2026-05-22_shipping-agent-audit|S033]].
 **Scope:** shipping-agent audit fixes — D2 lane (root scatter moves, §8 guardrail in `query_to_csv.py` / `query_to_xlsx.py`, removal of phantom Mode 4 script).
 **Working dir:** `C:\Users\niklavs.felsbergs\Documents\GitHub\shipping-agent\`
-**Status:** completed at S033 close. No pending external actions.
+**Status:** completed at [[S033_2026-05-22_shipping-agent-audit|S033]] close. No pending external actions.
 
 ## Actions
 

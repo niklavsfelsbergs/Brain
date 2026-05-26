@@ -1,4 +1,4 @@
-# S056 p6 — Duntes 28 price & resale market (penguin)
+# [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] p6 — Duntes 28 price & resale market (penguin)
 
 **Player in scope:** Zezima
 **Role:** penguin (P6)

@@ -1,4 +1,4 @@
-# S021 — gnome 1 — Alching (Jebrim)
+# [[S021_2026-05-21_alching-and-rule-fix|S021]] — gnome 1 — Alching (Jebrim)
 
 **Ritual:** alching
 **Player in scope:** Jebrim

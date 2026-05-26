@@ -1,4 +1,4 @@
-# S081 p1 — terminal prompt sits below the fold after a turn
+# [[S081_p1_terminal-prompt-below-fold|S081]] p1 — terminal prompt sits below the fold after a turn
 
 **Role:** dwarf (penguin-style sub-agent slot p1), dev-brain, spawned by principal.
 **Status:** fix landed in working tree, NOT committed. Awaiting live relaunch verification.

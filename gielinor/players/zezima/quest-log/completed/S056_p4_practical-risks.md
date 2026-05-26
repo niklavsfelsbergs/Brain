@@ -1,4 +1,4 @@
-# S056 p4 — Penguin research: domājamās daļas practical risks & due diligence
+# [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] p4 — Penguin research: domājamās daļas practical risks & due diligence
 
 **Role:** penguin (research operative), player scope: Zezima
 **Date:** 2026-05-23

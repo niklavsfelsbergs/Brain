@@ -1,4 +1,4 @@
-# S030 — session-close (gnome run-log)
+# [[S030_2026-05-22_dashboard-gold-cutover|S030]] — session-close (gnome run-log)
 
 **Spawned by:** Jebrim (principal).
 **Ritual:** `session-close`.
@@ -8,7 +8,7 @@
 
 ## Pre-flight
 
-SNNN determination: globbed `players/*/quest-log/**/*.md` for `^S\d{3}_` — max found = 29 ([[S029_2026-05-22_shipping-agent-vocab-harvest|S029]]). Next SNNN = **S030**.
+SNNN determination: globbed `players/*/quest-log/**/*.md` for `^S\d{3}_` — max found = 29 ([[S029_2026-05-22_shipping-agent-vocab-harvest|S029]]). Next SNNN = **[[S030_2026-05-22_dashboard-gold-cutover|S030]]**.
 
 Session files in scope (this session only, all dated 2026-05-22, unprefixed):
 
@@ -104,7 +104,7 @@ Final report to principal in the structured-report format.
 
 (Appended turn-by-turn during the walk.)
 
-- T1: pre-flight + SNNN = S030. File listing verified. Sibling file written.
+- T1: pre-flight + SNNN = [[S030_2026-05-22_dashboard-gold-cutover|S030]]. File listing verified. Sibling file written.
 - T2: Step 1 — parent quest Pending-actions section updated to explicit "No pending external actions." No dangling pending in dwarf siblings.
 - T3: Step 2 — nothing chat-only to persist. Skipped.
 - T4: Step 3 — `dashboard-gold-cutover-resume.md` status flipped to DONE. `main-merge-aws-cutover-resume.md` verified populated.

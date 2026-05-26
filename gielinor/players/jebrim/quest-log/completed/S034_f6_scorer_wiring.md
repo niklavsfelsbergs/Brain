@@ -1,4 +1,4 @@
-# S034 F6 — Scorer wired to 9 engines
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] F6 — Scorer wired to 9 engines
 
 **Spawned by:** Jebrim, 2026-05-22. Dwarf invocation.
 
@@ -30,7 +30,7 @@
   - State-strip carrier-order line in §02 lede now generated from `CARRIER_ORDER` rather than baked "DHL Paket / Maersk / ... / DB Schenker".
 
 - `bi-analytics-main/NFE/projects/2_EU_tender_2026/2_analysis/docs/DECISIONS.md`
-  - Prepended a 2026-05-22 entry: "Scorer wired to 9 engines (S034 fix F6)" with the full diff summary, the top-leaderboard movements, the caveats, and the flagged follow-up items (CARRIER_NARRATIVE missing FedEx entry, `bias_table.md` doc still 7-engine vintage, growth of decision-set cartesian).
+  - Prepended a 2026-05-22 entry: "Scorer wired to 9 engines ([[S034_2026-05-22_eu-tender-logic-review|S034]] fix F6)" with the full diff summary, the top-leaderboard movements, the caveats, and the flagged follow-up items (CARRIER_NARRATIVE missing FedEx entry, `bias_table.md` doc still 7-engine vintage, growth of decision-set cartesian).
 
 - `bi-analytics-main/NFE/projects/2_EU_tender_2026/2_analysis/data/scenarios.parquet` — regenerated (90 rows, was 35).
 - `bi-analytics-main/NFE/projects/2_EU_tender_2026/2_analysis/decision_report.html` — regenerated (204.7 KB).

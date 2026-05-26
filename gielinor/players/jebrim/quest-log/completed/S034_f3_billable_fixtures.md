@@ -1,4 +1,4 @@
-# S034 F3 — billable-weight rate-lookup regression fixtures
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] F3 — billable-weight rate-lookup regression fixtures
 
 **Role:** dwarf (spawned by Jebrim principal)
 **Scope:** Austrian Post + Hermes engines

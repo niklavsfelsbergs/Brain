@@ -1,4 +1,4 @@
-# S049 D2 — switchboard action line
+# [[S049_17e701eb_visualizer_state_aware_motion_and_action_line|S049]] D2 — switchboard action line
 
 **Scope.** Add a second line under each switchboard row's intent showing the latest tool action plus age in seconds. Decouples row freshness from intent narration, which by discipline updates infrequently.
 

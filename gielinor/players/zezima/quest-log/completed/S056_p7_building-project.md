@@ -1,4 +1,4 @@
-# S056 p7 — Duntes 28 building & project quality (penguin research)
+# [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] p7 — Duntes 28 building & project quality (penguin research)
 
 **Player:** Zezima | **Role:** penguin (P7) | **Date:** 2026-05-23
 **Topic:** How sound is the "Duntes Ozoli" building + management at Duntes iela 28, Riga (built 2007, brick, 16 floors). What should a buyer check?

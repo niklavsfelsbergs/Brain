@@ -1,4 +1,4 @@
-# S002 — D3 — Redshift coverage probe of `enterprise_silver` Shipping Data Mart V1
+# [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] — D3 — Redshift coverage probe of `enterprise_silver` Shipping Data Mart V1
 
 **Spawn:** 2026-05-21
 **Role:** Jebrim-inherited dwarf

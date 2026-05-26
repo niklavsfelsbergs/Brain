@@ -1,6 +1,6 @@
-# S034 F4 — Refresh bias_table.md for 9-engine cost matrix
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] F4 — Refresh bias_table.md for 9-engine cost matrix
 
-**Spawned:** 2026-05-22 by Jebrim (principal) for S034 EU tender remediation, fix F4.
+**Spawned:** 2026-05-22 by Jebrim (principal) for [[S034_2026-05-22_eu-tender-logic-review|S034]] EU tender remediation, fix F4.
 **Dwarf scope:** refresh bias ratios + doc for the 9 engines now in `cost_matrix.parquet` (maersk, dhl_paket, dhl_express, gls, guell, austrian_post, hermes, dpd_pl, fedex).
 
 ## Output

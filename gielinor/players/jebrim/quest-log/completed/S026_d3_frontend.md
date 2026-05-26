@@ -1,4 +1,4 @@
-# S026 D3 — Frontend tabs & components
+# [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] D3 — Frontend tabs & components
 
 Read of `shipping_costs_monitoring_nextjs/src/` on branch `shipping-mart-cutover`. Paths in this note are relative to that root unless prefixed otherwise.
 

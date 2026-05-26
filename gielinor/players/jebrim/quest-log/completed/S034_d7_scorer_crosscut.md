@@ -1,4 +1,4 @@
-# S034 D7 — Decision scorer + cross-cutting assumption audit
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] D7 — Decision scorer + cross-cutting assumption audit
 **Spawned by:** Jebrim, 2026-05-22
 
 ## TL;DR

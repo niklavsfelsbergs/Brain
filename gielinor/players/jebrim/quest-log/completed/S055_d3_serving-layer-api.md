@@ -1,4 +1,4 @@
-# S055 D3 — DuckDB Serving Layer + API Routes Review
+# [[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]] D3 — DuckDB Serving Layer + API Routes Review
 
 **Scope.** Read-only technical review of the DuckDB serving layer for the shipping-costs dashboard (branch `shipping-mart-cutover`). Read in full: `src/lib/db.ts` (459 lines, the query engine), `src/lib/shifts.ts` (the `computeShifts` engine behind 4 routes), all 35 `src/app/api/**/route.ts` files, and `docs/reference.md`. High confidence on the SQL-injection surface (every route traced), the cache mechanics, and `processedPruned` enumeration. Medium confidence on tier-selection edge cases that depend on the actual parquet schemas (which I inferred from the SQL, not from the parquet files themselves — flagged where load-bearing).
 

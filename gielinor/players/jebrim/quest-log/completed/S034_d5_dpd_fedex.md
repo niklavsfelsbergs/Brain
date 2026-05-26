@@ -1,4 +1,4 @@
-# S034 D5 — DPD PL + FedEx audit (newest engines, high priority)
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] D5 — DPD PL + FedEx audit (newest engines, high priority)
 **Spawned by:** Jebrim, 2026-05-22
 
 ## TL;DR

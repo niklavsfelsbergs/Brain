@@ -1,4 +1,4 @@
-# S034 D6 — Shared infra audit
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] D6 — Shared infra audit
 **Spawned by:** Jebrim, 2026-05-22
 
 Audit scope: `2_analysis/` shared infra — `pipeline.py` (population pull), `capability.py`, `cost_matrix.py`, `invoice_adjustments.py`, `carriers/_base/*`, `carriers/__init__.py`, `sql/population.sql`. Spot-checked engines: maersk, dhl_paket, gls, dhl_express.

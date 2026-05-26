@@ -1,4 +1,4 @@
-# S002 D2 — bi-etl repo state for Shipping Data Mart V1
+# [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] D2 — bi-etl repo state for Shipping Data Mart V1
 
 **Dwarf:** Jebrim-inherited. **Date:** 2026-05-21. **Scope:** `dags/enterprise_silver/Shipping_Data_Mart/` only (with cross-flag sweeps).
 

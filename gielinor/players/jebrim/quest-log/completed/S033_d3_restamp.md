@@ -1,10 +1,10 @@
-# S033 — D3 restamp dwarf
+# [[S033_2026-05-22_shipping-agent-audit|S033]] — D3 restamp dwarf
 
 > **Role:** dwarf (Jebrim namespace)
-> **Spawned by:** Niklavs (principal) via S033 audit apply-fixes pass
+> **Spawned by:** Niklavs (principal) via [[S033_2026-05-22_shipping-agent-audit|S033]] audit apply-fixes pass
 > **Scope:** Re-run coverage-audit probes against gold (`shipping_mart.*`), refresh numbers + stamps in `reference/coverage-audit.md` and the Source-maturity section of `reference/sources.md` in the shipping-agent repo.
 > **Started:** 2026-05-22
-> **Status:** completed at S033 close. No pending external actions.
+> **Status:** completed at [[S033_2026-05-22_shipping-agent-audit|S033]] close. No pending external actions.
 
 ## Brief
 

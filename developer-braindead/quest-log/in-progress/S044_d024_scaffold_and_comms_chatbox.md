@@ -1,6 +1,6 @@
-# S044 — [[D-024_parallel_player_coordination|D-024]] scaffold + comms-driven chatbox
+# [[S044_d024_scaffold_and_comms_chatbox|S044]] — [[D-024_parallel_player_coordination|D-024]] scaffold + comms-driven chatbox
 
-> SNNN bumped from [[S043_switchboard_state_visibility|S043]] → S044 at close-time. Two parallel sessions (cbbf8de8 and 66b43d6e) had already committed under [[S042_visualizer_character_audit|S042]] and [[S043_switchboard_state_visibility|S043]] by the time this session closed. Mine took the next number. Live-validates [[D-024_parallel_player_coordination|D-024]]'s "SNNN drifts from unique-key to approximate-temporal-ordering" tolerance.
+> SNNN bumped from [[S043_switchboard_state_visibility|S043]] → [[S044_d024_scaffold_and_comms_chatbox|S044]] at close-time. Two parallel sessions (cbbf8de8 and 66b43d6e) had already committed under [[S042_visualizer_character_audit|S042]] and [[S043_switchboard_state_visibility|S043]] by the time this session closed. Mine took the next number. Live-validates [[D-024_parallel_player_coordination|D-024]]'s "SNNN drifts from unique-key to approximate-temporal-ordering" tolerance.
 
 ## What this session is
 
@@ -31,7 +31,7 @@ Mini-respawn (mid-session player switch) step 3 picked up a **comms hand-off** c
 
 ### 3. `gielinor/spellbook/rituals/close-session.md` updated per [[D-024_parallel_player_coordination|D-024]]
 
-- **SNNN filename pattern** changed from `S{NNN}_{YYYY-MM-DD}_{slug}.md` to `S{NNN}_{sid8}_{slug}.md`. Legacy filenames left in place — no rename pass. Two sessions racing to S044 now both succeed (different sid8 suffixes); SNNN drifts from unique-key to approximate-temporal-ordering, which [[D-024_parallel_player_coordination|D-024]] explicitly tolerates.
+- **SNNN filename pattern** changed from `S{NNN}_{YYYY-MM-DD}_{slug}.md` to `S{NNN}_{sid8}_{slug}.md`. Legacy filenames left in place — no rename pass. Two sessions racing to [[S044_d024_scaffold_and_comms_chatbox|S044]] now both succeed (different sid8 suffixes); SNNN drifts from unique-key to approximate-temporal-ordering, which [[D-024_parallel_player_coordination|D-024]] explicitly tolerates.
 - **Step 3 (resume state)** writes `<quest-slug>-resume__<sid8>.md` going forward. Migration note added for pre-D-024 unsuffixed files.
 - **New step 8 — Post `CLOSING` to `gielinor/comms/active.md`.** Per actor identity that opened earlier in the session (mini-respawn case can produce multiple). Skips wisp + consultation-only sessions that never opened.
 - Commit step renumbered 8→9, state-close 9→10, unscoped special-case 10→11.

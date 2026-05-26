@@ -1,8 +1,8 @@
-# S034 / fix F1 -- Maersk EU oversize surcharge encoding
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] / fix F1 -- Maersk EU oversize surcharge encoding
 
 **Date:** 2026-05-22
 **Role:** dwarf (Jebrim-spawned)
-**Quest:** S034 -- EU tender remediation, fix F1
+**Quest:** [[S034_2026-05-22_eu-tender-logic-review|S034]] -- EU tender remediation, fix F1
 **Status:** completed
 
 ## Summary

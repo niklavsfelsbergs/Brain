@@ -1,4 +1,4 @@
-# S056 p2 — Penguin research: mortgage / bank financing for *domājamā daļa*
+# [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] p2 — Penguin research: mortgage / bank financing for *domājamā daļa*
 
 **Player in scope:** Zezima
 **Research question:** Will Latvian banks issue a residential mortgage (hipotekārais kredīts) against a *domājamā daļa* (ideal share of a co-owned property) vs. a registered *dzīvokļa īpašums*?

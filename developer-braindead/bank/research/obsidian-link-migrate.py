@@ -337,7 +337,11 @@ def scan_prose(vault: Path, rindex, prefix):
         if SKIP_SRC_RE.search("/" + rel) or BODY_RULEBOOK_RE.search(rel):
             continue
         in_conv = rel in PROSE_CONVENTION_DOCS
-        own_id = id_of(p.stem)  # skip a file's self-reference
+        own_id = id_of(p.stem)  # skip a file's self-reference...
+        # ...but ONLY when the file is the MAIN entry. A sub-log (S014_d1, S021_g1)
+        # shares its parent's ID; its reference to that ID is a child->parent link,
+        # not a self-link, so let it resolve (to the main) and connect the sub-log.
+        own_is_main = bool(own_id) and is_main(p.stem, own_id)
         fenced = False
         for lineno, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
             if FENCE_RE.match(line):
@@ -356,7 +360,7 @@ def scan_prose(vault: Path, rindex, prefix):
                     continue
                 if prefix and not tok.startswith(prefix):
                     continue
-                if own_id and tok == own_id:
+                if own_id and tok == own_id and own_is_main:
                     self_skips += 1
                     continue
                 stem, status = resolve_prose(tok, rel, rindex)

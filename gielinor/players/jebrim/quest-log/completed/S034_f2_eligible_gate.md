@@ -1,6 +1,6 @@
-# S034 F2 -- surcharge eligibility gate (dwarf hand-off)
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] F2 -- surcharge eligibility gate (dwarf hand-off)
 
-**Spawned by:** Jebrim (principal), S034 -- EU tender remediation
+**Spawned by:** Jebrim (principal), [[S034_2026-05-22_eu-tender-logic-review|S034]] -- EU tender remediation
 **Role:** dwarf
 **Date:** 2026-05-22
 **Status:** complete; ready for principal review

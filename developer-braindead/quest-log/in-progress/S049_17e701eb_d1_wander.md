@@ -1,4 +1,4 @@
-# S049 · D1 — wander animation fix
+# [[S049_17e701eb_visualizer_state_aware_motion_and_action_line|S049]] · D1 — wander animation fix
 
 **Scope:** fix sprite ambient-wander so sprites visibly drift smoothly within ±18px instead of standing still / teleporting. Hypothesis from principal: CSS `.wander { transition: transform 1200ms }` transitions only the CSS `transform` property, but JS sets the SVG `transform` attribute — mismatch = instant change, no animation.
 

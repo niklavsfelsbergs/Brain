@@ -1,6 +1,6 @@
-# S002 D1 — NGE-6120 subtree map
+# [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] D1 — NGE-6120 subtree map
 
-**Dwarf:** Jebrim (inherited), D1 of S002
+**Dwarf:** Jebrim (inherited), D1 of [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]]
 **Date:** 2026-05-21
 **Scope:** ClickUp epic NGE-6120 + every subtask + every nested subtask + comments + attachments
 **Out of scope:** repo reads, redshift queries, NFE docs

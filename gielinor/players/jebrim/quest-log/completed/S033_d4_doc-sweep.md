@@ -1,9 +1,9 @@
-# S033 — D4 doc-sweep dwarf
+# [[S033_2026-05-22_shipping-agent-audit|S033]] — D4 doc-sweep dwarf
 
 **As of:** 2026-05-22
 **Role:** Jebrim dwarf
-**Status:** completed at S033 close. No pending external actions.
-**Parent session:** S033 (gielinor)
+**Status:** completed at [[S033_2026-05-22_shipping-agent-audit|S033]] close. No pending external actions.
+**Parent session:** [[S033_2026-05-22_shipping-agent-audit|S033]] (gielinor)
 **Spawn brief:** apply audit fixes B1, C1, C2, F1, F2, I1, J1, H1, and .gitignore cleanup across shipping-agent docs.
 
 ## Findings
@@ -37,7 +37,7 @@
 - [completed] `how_to.md` §10 — two multi-paragraph bullets collapsed into one tight bullet keeping the canonical-helper rule and the "fix the invocation, not the perimeter" recovery norm. Dropped `shared/` / `lib/` / `bi_etl/` / "above the folder" elaboration.
 
 ### H1 — Untrack grandfathered workbench item
-- [noop] `git rm --cached -r workbench/investigations/ups-de-zv-130cm-diversion/` → `fatal: pathspec ... did not match any files`. `git ls-files workbench/` confirms only the four whitelisted entries are tracked (`_about.md`, three `.gitkeep`s). The grandfathered item is **already untracked** on this clone — either D2 handled it earlier in S033, or it never actually got committed despite the audit observation. No action needed; nothing to remove.
+- [noop] `git rm --cached -r workbench/investigations/ups-de-zv-130cm-diversion/` → `fatal: pathspec ... did not match any files`. `git ls-files workbench/` confirms only the four whitelisted entries are tracked (`_about.md`, three `.gitkeep`s). The grandfathered item is **already untracked** on this clone — either D2 handled it earlier in [[S033_2026-05-22_shipping-agent-audit|S033]], or it never actually got committed despite the audit observation. No action needed; nothing to remove.
 
 ### .gitignore cleanup
 - [completed] Removed the "Scatter from pre-workbench era" block (3 entries + 2 comment lines). `scratchpad/**` covers the relocated files at their new home.

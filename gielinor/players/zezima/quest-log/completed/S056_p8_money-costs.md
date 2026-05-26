@@ -1,4 +1,4 @@
-# S056 p8 — Duntes 28: mortgage, taxes & cost of ownership
+# [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] p8 — Duntes 28: mortgage, taxes & cost of ownership
 
 **Penguin:** p8 (research operative, Zezima-scoped)
 **Date:** 2026-05-23

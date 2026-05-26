@@ -1,19 +1,19 @@
-# S034 g2 — alching gnome run-log
+# [[S034_2026-05-22_eu-tender-logic-review|S034]] g2 — alching gnome run-log
 
-**Spawned:** 2026-05-22 by principal as gnome g2 (sibling to g1 in earlier S034 alching pass).
+**Spawned:** 2026-05-22 by principal as gnome g2 (sibling to g1 in earlier [[S034_2026-05-22_eu-tender-logic-review|S034]] alching pass).
 **Ritual:** alching.
 **Player in scope:** Jebrim.
-**Spawn trigger:** 14 pending drafts (> 10 threshold). Prior alching (S034 g1, same day) parked all 8 drafts without decisions; 6 new drafts have since accumulated.
+**Spawn trigger:** 14 pending drafts (> 10 threshold). Prior alching ([[S034_2026-05-22_eu-tender-logic-review|S034]] g1, same day) parked all 8 drafts without decisions; 6 new drafts have since accumulated.
 
 ## T1 — Inputs ingested
 
-Read ritual `alching.md`, gnome operating spec `spawning-gnomes.md`, and Jebrim's `last-alched.md`. Confirmed scope: principal-self in S034 g1 made no promotions/rejections. Current pile is the 8 parked + 6 net new.
+Read ritual `alching.md`, gnome operating spec `spawning-gnomes.md`, and Jebrim's `last-alched.md`. Confirmed scope: principal-self in [[S034_2026-05-22_eu-tender-logic-review|S034]] g1 made no promotions/rejections. Current pile is the 8 parked + 6 net new.
 
 ## T2 — Step 1: examine/drafts walk
 
 6 entries surveyed:
 
-- `2026-05-22-audit-finding-vs-ground-truth.md` — observation-anchored (S034 D1 vs F1), full citation, actionable rule. **PROMOTE.**
+- `2026-05-22-audit-finding-vs-ground-truth.md` — observation-anchored ([[S034_2026-05-22_eu-tender-logic-review|S034]] D1 vs F1), full citation, actionable rule. **PROMOTE.**
 - `2026-05-22-check-artifact-mtimes-doc-not-source-of-truth.md` — anchored ([[S030_2026-05-22_dashboard-gold-cutover|S030]] T10 + concrete mtimes), 4-day-gap example, generalizable procedure. Author flagged "Single occurrence" caveat in body. **HOLD** (one occurrence; per author's own caveat, pattern firms with next instance).
 - `2026-05-22-git-add-scoping-with-parallel-sessions.md` — near-miss, not actual incident. Procedure already documented in close-session step 8 per the draft's own note. Marginal new content; the anchor is a "could-have-been," not a "did." **HOLD** (anchor strength low; promote on real incident).
 - `2026-05-22-rule-text-becomes-agent-vocabulary.md` — anchored to shipping-agent §0r2 fix (commit `ce58e1d`); concrete observation about external/internal vocabulary leakage; rule for future rule-writing. **PROMOTE.**
@@ -41,8 +41,8 @@ No keepsake proposals pending. No niksis8_character/drafts pending.
 
 - `2026-05-22-audit-then-apply-via-parallel-dwarves.md` — anchored to [[S033_2026-05-22_shipping-agent-audit|S033]] (4 dwarves) with explicit file-ownership-map invariant. Author notes "Worth promoting from skill-draft to skill once a third invocation lands." Currently 2 invocations: [[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] (recon variant) + [[S033_2026-05-22_shipping-agent-audit|S033]] (apply variant) — author counts these as the same parallelization mechanic with different terminal step. **PROMOTE** (per ≥2-repetitions rule in alching step 6; the author's "wait for third" is conservative — 2 distinct uses with named pattern clears the bar).
 - `2026-05-22-elicitation-with-default-surfaced.md` — anchored to shipping-agent §0r7 (commit `ce75031`); names a discrete pattern (detect → discrete options → surface default → accept generic affirm); cross-links to scope-creep skill. Single application but the pattern is structurally reusable. **HOLD** (one occurrence; promote on second invocation per skill-graduation rule).
-- `2026-05-22-read-routing-manifest-before-proposing.md` — anchored to [[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] D1 (data-caveats.md near-miss). Author marked HOLD at S034 g1 for single-occurrence. Still single occurrence. **HOLD** (continued; no new instance since g1).
-- `scope-creep-during-plan-execution.md` — anchored to [[S030_2026-05-22_dashboard-gold-cutover|S030]] T7. Author flagged HOLD at S034 g1. Still single occurrence. **HOLD** (continued).
+- `2026-05-22-read-routing-manifest-before-proposing.md` — anchored to [[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] D1 (data-caveats.md near-miss). Author marked HOLD at [[S034_2026-05-22_eu-tender-logic-review|S034]] g1 for single-occurrence. Still single occurrence. **HOLD** (continued; no new instance since g1).
+- `scope-creep-during-plan-execution.md` — anchored to [[S030_2026-05-22_dashboard-gold-cutover|S030]] T7. Author flagged HOLD at [[S034_2026-05-22_eu-tender-logic-review|S034]] g1. Still single occurrence. **HOLD** (continued).
 
 ## T6 — Step 3: quest-log/completed graduation scan
 
@@ -50,7 +50,7 @@ Walked 38 entries in `quest-log/completed/`. Most are dwarf siblings (already-ex
 
 - **[[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] ttyd-howto cluster (5 files, 2026-05-21).** "How TTYD agent invocation works" insight has matured into shipping-agent + keepsake routing. Already largely harvested. No new draft recommended.
 - **[[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] shipping-agent-vocab-harvest (2026-05-22).** Already produced `bank/notes/projects/shipping_agent_vocab_harvest_2026-05-22.md`. No new draft.
-- **S034 audit/fix cluster (15 files).** Already produced the `eu_tender_2026_S034_update.md` delta in `bank/drafts/notes/projects/` covered above.
+- **[[S034_2026-05-22_eu-tender-logic-review|S034]] audit/fix cluster (15 files).** Already produced the `eu_tender_2026_S034_update.md` delta in `bank/drafts/notes/projects/` covered above.
 - **[[S033_2026-05-22_shipping-agent-audit|S033]] shipping-agent-audit.** The audit-then-apply-via-parallel-dwarves skill draft already captures this. No new bank draft.
 - **[[S036_2026-05-22_reprompting-iteration-and-shipping-port|S036]] reprompting-iteration.** Produced the `shipping-agent-skills-loading.md` bank draft already covered above.
 
@@ -58,7 +58,7 @@ Walked 38 entries in `quest-log/completed/`. Most are dwarf siblings (already-ex
 
 ## T7 — Step 3a: self-observation sweep on in-progress turns since last-alched
 
-`last-alched.md` says S034 was earlier today (2026-05-22). In-progress entries with edits since then include `S031_2026-05-22_temp-tracking-missing-orderitems.md` (new file, untracked). The 6 examine/drafts already captured today are the harvest of recent self-observations — pile is fresh, no additional candidates surface.
+`last-alched.md` says [[S034_2026-05-22_eu-tender-logic-review|S034]] was earlier today (2026-05-22). In-progress entries with edits since then include `S031_2026-05-22_temp-tracking-missing-orderitems.md` (new file, untracked). The 6 examine/drafts already captured today are the harvest of recent self-observations — pile is fresh, no additional candidates surface.
 
 **0 new self-observation drafts recommended.** Cap respected.
 

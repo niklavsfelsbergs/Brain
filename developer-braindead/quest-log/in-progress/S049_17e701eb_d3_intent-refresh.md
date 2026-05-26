@@ -1,4 +1,4 @@
-# S049 D3 — Intent refresh verification
+# [[S049_17e701eb_visualizer_state_aware_motion_and_action_line|S049]] D3 — Intent refresh verification
 
 **Dwarf:** Braindead (sid8 `17e701eb`)
 **Date:** 2026-05-23

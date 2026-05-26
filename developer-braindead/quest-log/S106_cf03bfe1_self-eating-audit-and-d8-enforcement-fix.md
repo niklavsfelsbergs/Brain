@@ -1,6 +1,6 @@
 # S106 — "Is the system eating itself?" audit + D8 enforcement-gap fix
 
-**Session:** braindead-cf03bfe1, 2026-05-26. Dev-brain via "Lets develop gielinor" (mid-conversation; OPEN posted at 22:42). SNNN bumped to S106 — 7c91117c claimed S105 (§O.6).
+**Session:** braindead-cf03bfe1, 2026-05-26. Dev-brain via "Lets develop gielinor" (mid-conversation; OPEN posted at 22:42). SNNN bumped to S106 — 7c91117c claimed [[S105_7c91117c_obsidian_o6_backlink_enrichment|S105]] (§O.6).
 
 ## What was asked
 
@@ -32,7 +32,7 @@ Registered 3 agent configs at **brain-root `.claude/agents/`**: `gnome.md` + `pe
 
 ## Coordination
 
-- Live sibling at entry: braindead-78e596a8 (§O.4 Obsidian) — ENDED mid-session (wrapped [[S104_78e596a8_obsidian_gielinor_link_migration|S104]], applied §O.4). Then braindead-7c91117c spawned (S105 §O.6 link-rewrite across gielinor+dev-brain `.md`). Posted a `→ @7c91117c` heads-up: my fix surface (brain-root `.claude/agents/`) is outside their scope; staying read-only on gielinor/; appended via `>>` to dodge the link-rewrite race.
+- Live sibling at entry: braindead-78e596a8 (§O.4 Obsidian) — ENDED mid-session (wrapped [[S104_78e596a8_obsidian_gielinor_link_migration|S104]], applied §O.4). Then braindead-7c91117c spawned ([[S105_7c91117c_obsidian_o6_backlink_enrichment|S105]] §O.6 link-rewrite across gielinor+dev-brain `.md`). Posted a `→ @7c91117c` heads-up: my fix surface (brain-root `.claude/agents/`) is outside their scope; staying read-only on gielinor/; appended via `>>` to dodge the link-rewrite race.
 - Steered fully clear of cockpit/*, hooks (read-only), gielinor/ writes, switchboard/state-*.
 
 ## Open / hand-off

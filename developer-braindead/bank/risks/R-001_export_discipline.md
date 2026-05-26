@@ -1,6 +1,6 @@
 # R-001 — Dev↔main export discipline failure → main brain pollution
 
-**Severity.** high. Opened in [[S001]].
+**Severity.** high. Opened in [[S001_dev_brain_architecture]].
 
 The whole point of two-brain separation ([[D-001_two_brain_split]]) is to keep dev narrative out of the main brain. If the export step is sloppy — copying session notes wholesale, importing dev rationale into main artifacts — the separation collapses.
 

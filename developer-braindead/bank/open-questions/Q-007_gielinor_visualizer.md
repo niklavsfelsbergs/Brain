@@ -1,6 +1,6 @@
 # Q-007 — Gielinor real-time visualizer
 
-**Status.** `working` — replay v0 shipped in [[S008]] as iso 2D SVG (see [[D-008_iso_replay_v0_over_three_js]]); live-mode decision landed in [[D-009_visualizer_live_mode_v0]] (hooks + NDJSON + polling, scoped to v0). Remaining open thread is execution of D-009 steps 4–6 (read-side hook coverage, dwarves, bootstrap-from-tail) and whether the watchdog fallback for non-Claude writes is worth building.
+**Status.** `working` — replay v0 shipped in [[S008_iso_visualizer_v0]] as iso 2D SVG (see [[D-008_iso_replay_v0_over_three_js]]); live-mode decision landed in [[D-009_visualizer_live_mode_v0]] (hooks + NDJSON + polling, scoped to v0). Remaining open thread is execution of D-009 steps 4–6 (read-side hook coverage, dwarves, bootstrap-from-tail) and whether the watchdog fallback for non-Claude writes is worth building.
 
 **The question.** Should we build a real-time visualization of the brain operating — a top-down Gielinor map with buildings for each brain layer, players as character sprites, dwarves as smaller sprites — animated live as the agent reads, writes, spawns, and synthesizes?
 
@@ -59,4 +59,4 @@ This is **deferred design exploration**, not committed work. Trigger condition f
 
 If the next session decides to build, start with the **replay-from-git-log v0**. It's cheaper (no hooks, no watcher) and validates the visual design before committing to live infrastructure. Real-time is a follow-up once the replay version proves the aesthetic.
 
-Related: [[S006]] (dwarf-spawning skill — provides the dwarves to render), [[S007]] (bankstanding Phase 0 — provides the alching motion to render).
+Related: [[S006_handoff_precondition_and_dwarf_spawning]] (dwarf-spawning skill — provides the dwarves to render), [[S007_bankstanding_phase_0_alching]] (bankstanding Phase 0 — provides the alching motion to render).

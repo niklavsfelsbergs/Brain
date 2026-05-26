@@ -65,7 +65,7 @@ Players are characters, not personas of Niklavs. Zezima and Jebrim are named del
 - `spellbook/rituals/respawn.md` — the session-start ritual.
 - `spellbook/rituals/bankstanding.md` — the reorganization ritual.
 - `players/_about.md` — players system + roster.
-- The dev brain's session [[S003]] for the build narrative.
+- The dev brain's session [[S003_main_brain_phase_1_scaffold]] for the build narrative.
 
 ## Open at landing
 

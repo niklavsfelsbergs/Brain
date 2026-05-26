@@ -18,4 +18,4 @@
 - The natural next step (live mode — see [[Q-007]]) is a substrate change (watcher + hooks emitting events to `state.json` instead of a hardcoded array), *not* a redesign. Iso v0 was chosen with that path in mind.
 - If we later go to actual 3D, this v0 still validates the aesthetic vocabulary (palette, building silhouettes, sprite vibe) without committing to the modelling work.
 
-**Session ref.** [[S008]].
+**Session ref.** [[S008_iso_visualizer_v0]].

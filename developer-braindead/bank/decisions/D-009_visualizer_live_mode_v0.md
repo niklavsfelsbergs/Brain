@@ -1,6 +1,6 @@
 # D-009 — 2026-05-21 — Visualizer live-mode v0 ships as hooks + NDJSON + polling
 
-**Context.** [[Q-007]] proposed live mode as the substrate-change follow-up to the replay-from-git-log v0 shipped in [[S008]] / [[D-008_iso_replay_v0_over_three_js]]. After [[S009]]'s aesthetic pass, the v0 was deemed "good enough to show people," which is the trigger Q-007 named for committing to real-time. Decision needed on transport, write sources, and engine-touch surface.
+**Context.** [[Q-007]] proposed live mode as the substrate-change follow-up to the replay-from-git-log v0 shipped in [[S008_iso_visualizer_v0]] / [[D-008_iso_replay_v0_over_three_js]]. After [[S009_visualizer_six_deltas_and_frame]]'s aesthetic pass, the v0 was deemed "good enough to show people," which is the trigger Q-007 named for committing to real-time. Decision needed on transport, write sources, and engine-touch surface.
 
 **Decision.** Ship live-mode v0 as: **Claude Code hooks appending events to an NDJSON file, renderer polling that file via a `?live=1` URL flag, engine untouched**. No server, no watchdog (deferred), no actor inference beyond path-based mapping.
 
@@ -21,7 +21,7 @@ The five knobs (settled in chat with Niklavs):
 
 **Consequences.**
 
-- The engine surface (timeline + `applyEvent` dispatch + RAF tick + CSS transitions) is **preserved**. Only the event-loading code branches on `?live=1`. This honours the asset-agnostic-engine principle established in [[D-008_iso_replay_v0_over_three_js]] and reinforced in [[S009]]'s respawn.
+- The engine surface (timeline + `applyEvent` dispatch + RAF tick + CSS transitions) is **preserved**. Only the event-loading code branches on `?live=1`. This honours the asset-agnostic-engine principle established in [[D-008_iso_replay_v0_over_three_js]] and reinforced in [[S009_visualizer_six_deltas_and_frame]]'s respawn.
 - Event vocabulary stays identical to the baked `EVENTS` array — `move`, `log`, `spawn-dwarf`, `despawn-dwarf`, `spawn-wisp`, `despawn-wisp`, `session-start`, `commit`. Schema adds `wallTime` (ISO timestamp) and `source` (`hook` | `watchdog` | `manual`). The `t` field becomes "ms since stream start," computed by the renderer.
 - The path → building / path → actor lookup that's currently *implicit* in the baked EVENTS gets **extracted** to a shared module/JSON, reused by both the hook script and the renderer (for sanity-checks and future watchdog).
 - New Claude Code hooks under `developer-braindead/.claude/hooks/` (separate from the architectural hooks in `gielinor/.claude/hooks/`). `PreToolUse` + `PostToolUse` on `Read | Edit | Write | Glob | Grep | Task`, scoped to paths under `brain/`. Hook writes append-only to `experiments/visualizer/state.ndjson`.
@@ -39,4 +39,4 @@ The five knobs (settled in chat with Niklavs):
 
 Optional follow-ups deferred: idle indicator, `watchdog` for non-Claude writes, smarter active-player inference, SSE upgrade.
 
-**Session ref.** [[S010]] (in progress).
+**Session ref.** [[S010_visualizer_live_mode_v0]] (in progress).

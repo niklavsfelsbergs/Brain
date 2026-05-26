@@ -11,7 +11,7 @@
 | `Q-NNN` | `bank/open-questions/` | [[Q-001]] |
 | `R-NNN` | `bank/risks/` | [[R-001]] |
 | `I-NNN` | `examine/` (identity) | [[I-001]] |
-| `SNNN` | `quest-log/` | [[S001]], [[S002]] |
+| `SNNN` | `quest-log/` | [[S001_dev_brain_architecture]], [[S002_dev_brain_runescape_restructure]] |
 
 Numbers never reused. References use the **full filename stem** (`[[D-001_two_brain_split]]`) with the ID prefix as the stable anchor — per the [[D-004_stable_ids]] amendment (2026-05-26). *Decisions migrated 2026-05-26; A/Q/R/I/S links still use the bare ID pending their own pass.*
 

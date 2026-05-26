@@ -4,7 +4,7 @@
 
 ## What happened
 
-- **Diagnosis of [[S037]]'s click-to-focus blocker.** Principal reported switchboard clicks weren't navigating. Read `~/.claude/status/focus.log` — every click logged `SetForegroundWindow returned True` against **the same HWND** (`66726`, PID `18664`) regardless of which `sid8` was clicked. `Get-Process Code` confirmed: exactly one VS Code top-level window on the machine, multiple Claude sessions running as terminal panes inside it. The chain walk works correctly; it just lands on the shared workspace ancestor because the principal works in a one-window-many-panes setup, not the multiple-windows setup S037 assumed.
+- **Diagnosis of [[S037_terminal_switchboard_phase_3_click_to_focus]]'s click-to-focus blocker.** Principal reported switchboard clicks weren't navigating. Read `~/.claude/status/focus.log` — every click logged `SetForegroundWindow returned True` against **the same HWND** (`66726`, PID `18664`) regardless of which `sid8` was clicked. `Get-Process Code` confirmed: exactly one VS Code top-level window on the machine, multiple Claude sessions running as terminal panes inside it. The chain walk works correctly; it just lands on the shared workspace ancestor because the principal works in a one-window-many-panes setup, not the multiple-windows setup S037 assumed.
 
 - **Decision: ship a VS Code extension** (option 2 of three offered). The OS-level `claude-focus://` handler is fundamentally window-scoped — VS Code terminal panes have no OS-level HWND. Only an extension running inside the VS Code process can reach the terminal list and `show()` a specific pane. Option 1 (open each session in its own window) and option 3 (set distinct terminal tab names + manual navigation) declined.
 

@@ -2,7 +2,7 @@
 
 **Context.** [[D-009_visualizer_live_mode_v0]] launched the visualizer as a live-mode self-observation surface — an isometric map showing Braindead at his workshop, Jebrim at the desk, Guthix wherever he descended, sprites walking between buildings as the hook stream ticked. The map carried character; the switchboard ([[D-020_terminal_switchboard]] Phase 2) and the COMMS chat panel ([[D-014_visualizer_chat_panel]] / S044 wiring) layered on top as auxiliary views.
 
-By [[S047]]–[[S051]] the load balance had inverted. The switchboard rows were where the operator actually looked: *which terminal is waiting for me, what is it doing, click to focus.* The chat panel surfaced the action stream. The map was a charming aesthetic floating above two views that were doing the real work — with every session also paying the cost of map bugs (sprite anchor drift [[D-025_visualizer_character_audit_findings]] #2, parallel-Braindead spawn races S047/S048, despawn timeout closures S050, tree/bubble scale knobs S051). Six recent sessions in a row touched the map; four of them were debugging it.
+By [[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance]]–[[S051_8bf3fdb7_visualizer_tree_and_bubble_scale]] the load balance had inverted. The switchboard rows were where the operator actually looked: *which terminal is waiting for me, what is it doing, click to focus.* The chat panel surfaced the action stream. The map was a charming aesthetic floating above two views that were doing the real work — with every session also paying the cost of map bugs (sprite anchor drift [[D-025_visualizer_character_audit_findings]] #2, parallel-Braindead spawn races S047/S048, despawn timeout closures S050, tree/bubble scale knobs S051). Six recent sessions in a row touched the map; four of them were debugging it.
 
 Principal called it: *"fighting with the animation but it doesn't matter — switchboard most useful, chat secondary, kill the map, give it a dedicated space, split into files."*
 
@@ -47,4 +47,4 @@ The "experiments/" prefix also stopped reading honestly the moment the switchboa
 - [[D-020_terminal_switchboard]] — terminal switchboard origin; the pane that earned the name.
 - [[D-024_parallel_player_coordination]] — parallel coordination; comms mirror destinations follow the new path.
 - [[D-025_visualizer_character_audit_findings]] — visualizer character audit; map-targeted carry-forwards now obsolete.
-- [[S052]] — quest-log entry capturing the construction.
+- [[S052_98d4ec5e_switchboard-rebuild]] — quest-log entry capturing the construction.

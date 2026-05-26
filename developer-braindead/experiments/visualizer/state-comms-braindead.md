@@ -13,7 +13,7 @@
 ---
 
 [2026-05-22 — channel opened] braindead-5de1e12a SCAFFOLD
-  Channel created in [[S029]]. First live OPEN entry will land at the next dev-brain respawn under the new ritual.
+  Channel created in [[S029_parallel_braindead_and_comms_channel]]. First live OPEN entry will land at the next dev-brain respawn under the new ritual.
 
 [2026-05-22 20:08] braindead-5de1e12a CLOSING
   Completed: S029 — parallel Braindead instances + dev-to-dev comms channel landed end-to-end (D-019, comms/ layer, respawn + close-session ritual updates, hook INSTANCED_ACTORS extension, visualizer ensureActorExists braindead routing).

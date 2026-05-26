@@ -6,7 +6,7 @@
 
 ## Open structural question
 
-**Brain-zone taxonomy.** End-of-[[S001]] flagged that different parts of the brain warrant different levels of care. The taxonomy hasn't been drafted yet — it would naturally land here. See [[plan]] §H.3.
+**Brain-zone taxonomy.** End-of-[[S001_dev_brain_architecture]] flagged that different parts of the brain warrant different levels of care. The taxonomy hasn't been drafted yet — it would naturally land here. See [[plan]] §H.3.
 
 ## Format guidance for when content lands
 

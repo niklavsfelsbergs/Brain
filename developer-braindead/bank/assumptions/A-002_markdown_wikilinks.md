@@ -1,6 +1,6 @@
 # A-002 — Main brain is Obsidian-style markdown with wiki-links
 
-**Status.** `working`. Opened in [[S001]].
+**Status.** `working`. Opened in [[S001_dev_brain_architecture]].
 
 Markdown files with `[[wiki-link]]` syntax form the main brain. Wiki-links are *load-bearing* for the agent's associative retrieval, not decorative for humans. Implies small files, dense linking, stable filenames.
 

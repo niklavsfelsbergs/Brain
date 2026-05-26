@@ -4,35 +4,35 @@
 >
 > **Item status.** `[ ]` open, `[~]` in progress, `[x]` done, `[-]` declined / out of scope (reason inline).
 
-> **Reconciliation (2026-05-23, [[S060]]).** This plan had not tracked reality since [[S003]] — it described a foundation-and-pilot Phase 1 while ~55 sessions built a large, unplanned cognitive architecture instead. Reconciled this session per the [[S060]] self-audit ([[D-027_inward_outward_build_imbalance]]). Headline: **the foundation (§A, §B) over-delivered; the operational half — §C pilot, §E gates, §F triggers, §G substrate — was never built. The agent is still manual-invocation-only.** The emergent pillars are now captured as §I–§M. The load-bearing next build is §C. See [[D-027_inward_outward_build_imbalance]] for the inward/outward imbalance this surfaced.
+> **Reconciliation (2026-05-23, [[S060_brain_self_audit_and_plan_reconciliation]]).** This plan had not tracked reality since [[S003_main_brain_phase_1_scaffold]] — it described a foundation-and-pilot Phase 1 while ~55 sessions built a large, unplanned cognitive architecture instead. Reconciled this session per the [[S060_brain_self_audit_and_plan_reconciliation]] self-audit ([[D-027_inward_outward_build_imbalance]]). Headline: **the foundation (§A, §B) over-delivered; the operational half — §C pilot, §E gates, §F triggers, §G substrate — was never built. The agent is still manual-invocation-only.** The emergent pillars are now captured as §I–§M. The load-bearing next build is §C. See [[D-027_inward_outward_build_imbalance]] for the inward/outward imbalance this surfaced.
 
 ---
 
 ## §A — Foundation: developer-braindead bootstrapped
 
-**Status.** `[x]` done. All four items landed ([[S001]]–[[S002]]).
+**Status.** `[x]` done. All four items landed ([[S001_dev_brain_architecture]]–[[S002_dev_brain_runescape_restructure]]).
 
-- §A.1 `[x]` Folder created, initial eight canonical files seeded ([[S001]], [[D-002_folder_name]], [[D-003_initial_file_set]]).
+- §A.1 `[x]` Folder created, initial eight canonical files seeded ([[S001_dev_brain_architecture]], [[D-002_folder_name]], [[D-003_initial_file_set]]).
 - §A.2 `[x]` Session-start brain-selection protocol set ([[D-005_session_start_protocol]]).
-- §A.3 `[x]` Claude's `~/.claude` memory reconciled to hold pointers into this folder rather than duplicate content ([[S002]], [[R-002]]).
-- §A.4 `[x]` Dev brain restructured around RuneScape-themed layers for coherence with the main brain ([[D-006_dev_brain_restructure]], [[S002]]).
+- §A.3 `[x]` Claude's `~/.claude` memory reconciled to hold pointers into this folder rather than duplicate content ([[S002_dev_brain_runescape_restructure]], [[R-002]]).
+- §A.4 `[x]` Dev brain restructured around RuneScape-themed layers for coherence with the main brain ([[D-006_dev_brain_restructure]], [[S002_dev_brain_runescape_restructure]]).
 
 ## §H — Identity layer + working agreements
 
-**Status.** `[~]` in progress. Co-designed with user during [[S002]].
+**Status.** `[~]` in progress. Co-designed with user during [[S002_dev_brain_runescape_restructure]].
 
-Section started life as "development rules layer" (the collaboration-contract framing). User redirected during [[S002]] to two parallel surfaces: **identity** (`examine/`, postures — how I decide) and **working agreements** (`player/working-agreements.md`, constraints — what we agree to). Both stay; they answer different questions.
+Section started life as "development rules layer" (the collaboration-contract framing). User redirected during [[S002_dev_brain_runescape_restructure]] to two parallel surfaces: **identity** (`examine/`, postures — how I decide) and **working agreements** (`player/working-agreements.md`, constraints — what we agree to). Both stay; they answer different questions.
 
-- §H.1 `[x]` `examine/` created with [[I-001]] (migrated from [[S001]]'s P-001). Further entries accumulate naturally as moments arise — not designed upfront.
-- §H.2 `[x]` Working agreements stays as a separate file from identity ([[S002]] resolution).
-- §H.3 `[ ]` Brain-zone taxonomy (different parts of the brain warranting different levels of care). Original framing from end-of-[[S001]]. Lands in `player/working-agreements.md`.
+- §H.1 `[x]` `examine/` created with [[I-001]] (migrated from [[S001_dev_brain_architecture]]'s P-001). Further entries accumulate naturally as moments arise — not designed upfront.
+- §H.2 `[x]` Working agreements stays as a separate file from identity ([[S002_dev_brain_runescape_restructure]] resolution).
+- §H.3 `[ ]` Brain-zone taxonomy (different parts of the brain warranting different levels of care). Original framing from end-of-[[S001_dev_brain_architecture]]. Lands in `player/working-agreements.md`.
 - §H.4 `[ ]` Decide how identity entries interact with main brain ([[D-001_phase-1-scaffold]]). Some [[I-NNN]] may export to main brain's personality file; some are dev-only.
 
 §B is no longer gated on §H — both can progress in parallel.
 
 ## §B — Main-brain architecture decisions
 
-**Status.** `[x]` done in [[S003]] via [[D-007_main_brain_phase_1_scaffold_landed]] (main brain [[D-001_phase-1-scaffold]]). Main brain Phase 1 scaffold landed at `Documents/GitHub/brain/gielinor/`.
+**Status.** `[x]` done in [[S003_main_brain_phase_1_scaffold]] via [[D-007_main_brain_phase_1_scaffold_landed]] (main brain [[D-001_phase-1-scaffold]]). Main brain Phase 1 scaffold landed at `Documents/GitHub/brain/gielinor/`.
 
 - §B.1 `[x]` Retrieval mechanism: eager-at-respawn (bounded identity loads) + lazy-cued during session via `_about.md` per layer ([[Q-001]] resolution).
 - §B.2 `[x]` Vault top-level structure landed as: `meta/`, `examine/`, `niksis8/`, `keepsake/`, `lorebook/`, `spellbook/`, `players/` (plus body files at root and `.claude/`). Renamed from "vault/" to `gielinor/` ([[D-007_main_brain_phase_1_scaffold_landed]]).
@@ -42,9 +42,9 @@ Section started life as "development rules layer" (the collaboration-contract fr
 
 ## §C — Pilot: morning shipping-data routing check
 
-**Status.** `[ ]` open — **and the load-bearing gap ([[S060]], [[D-027_inward_outward_build_imbalance]]).** This was the original mission core: the agent doing real work on a trigger. It has never been built; §B "had direction" by [[S003]] yet the pilot kept deferring while the cognitive architecture grew. Reframed as the next build — pick one recurring job a player already does by hand, wire the thinnest scheduled run on the harness scheduler (sidestepping §G), produce one artifact without the operator in the loop, dry-run/worktree-safe. Input needed: *which* job (Jebrim's / principal's call).
+**Status.** `[ ]` open — **and the load-bearing gap ([[S060_brain_self_audit_and_plan_reconciliation]], [[D-027_inward_outward_build_imbalance]]).** This was the original mission core: the agent doing real work on a trigger. It has never been built; §B "had direction" by [[S003_main_brain_phase_1_scaffold]] yet the pilot kept deferring while the cognitive architecture grew. Reframed as the next build — pick one recurring job a player already does by hand, wire the thinnest scheduled run on the harness scheduler (sidestepping §G), produce one artifact without the operator in the loop, dry-run/worktree-safe. Input needed: *which* job (Jebrim's / principal's call).
 
-**Scoped pilot ([[S060]]) — daily shipping-mart freshness audit.** Read-only health check on the gold `shipping_mart`, run every morning after the ~08:00 load. Output: a dated GREEN / flags-with-numbers report. **Build splits in two:** Braindead wires the scheduled-trigger mechanism (the reusable "hands"); Jebrim writes the SQL checks in `shipping-agent/` (the content). Parked at [[S060]] close — built next session.
+**Scoped pilot ([[S060_brain_self_audit_and_plan_reconciliation]]) — daily shipping-mart freshness audit.** Read-only health check on the gold `shipping_mart`, run every morning after the ~08:00 load. Output: a dated GREEN / flags-with-numbers report. **Build splits in two:** Braindead wires the scheduled-trigger mechanism (the reusable "hands"); Jebrim writes the SQL checks in `shipping-agent/` (the content). Parked at [[S060_brain_self_audit_and_plan_reconciliation]] close — built next session.
 
 - §C.1 `[~]` **Data source** — gold `shipping_mart` via the `shipping-agent/` harness (`ship_mart_ro`, read-only, gold-only). Resolved.
 - §C.2 `[~]` **What's "concerning"** — six checks: (1) recency vs the ~08:00 load, (2) volume vs trailing avg, (3) cost invariant `SUM(buckets)==total_eur==real_shipping_cost_eur`, (4) `cost_source` coverage vs baseline (invoice 65 / expected 24 / NULL 8 / avg 2), (5) order-item completeness, (6) cross-fact agreement. Thresholds: self-calibrate off a trailing window where possible; Jebrim sets the floors.
@@ -87,14 +87,14 @@ Section started life as "development rules layer" (the collaboration-contract fr
 
 ---
 
-> **Emergent pillars (§I–§M).** Built across S004–S059, none in the original plan. Captured here at the [[S060]] reconciliation so the plan reflects what exists. Details live in the referenced [[D-NNN]] decisions; these are the index.
+> **Emergent pillars (§I–§M).** Built across S004–S059, none in the original plan. Captured here at the [[S060_brain_self_audit_and_plan_reconciliation]] reconciliation so the plan reflects what exists. Details live in the referenced [[D-NNN]] decisions; these are the index.
 
 ## §I — Player roster (emergent)
 
 **Status.** `[x]` live. The characters the agent embodies.
 
 - §I.1 `[x]` **Jebrim** — analytical/data player. Heavily used; bank, examine, skills, research all populated. Layer audit in [[D-015_jebrim_layer_audit_outcomes]].
-- §I.2 `[x]` **Zezima** — reflective player. Went live 2026-05-23 ([[S056]]); first real session + first alching.
+- §I.2 `[x]` **Zezima** — reflective player. Went live 2026-05-23 ([[S056_e433ac17_switchboard-osrs-chatbox]]); first real session + first alching.
 - §I.3 `[~]` Roster grows as need arises; no fixed cap.
 
 ## §J — Ritual system (emergent)
@@ -140,14 +140,14 @@ Section started life as "development rules layer" (the collaboration-contract fr
 
 ## §O — Obsidian integration (in progress 2026-05-26, principal-led)
 
-**Status.** `[~]` started — research + dev-brain `D-` link migration pilot landed ([[S098]]); the rest parked behind the §C outward pilot.
+**Status.** `[~]` started — research + dev-brain `D-` and `S-` link migration landed ([[S098_b53fca39_obsidian_fit_and_dlink_migration]], [[S099_acf8fc80_obsidian_quest_link_migration]]); the rest (gielinor/, cross-brain) parked behind the §C outward pilot.
 
 The brain is already an Obsidian-shaped vault (`.md` + `[[wikilinks]]`); Obsidian adds a read/navigate/tend lens (graph, backlinks, Dataview). Stock Obsidian resolves links by *exact filename*, so the `[[ID]]` convention needed migrating to full-stem ([[D-004_stable_ids]] amended). Topology = **per-brain vaults**. Spec + rationale: `bank/research/obsidian-fit-and-migration-spec.md`.
 
 - §O.1 `[x]` Research + fit assessment; mechanism decided (Option A — full-stem, no plugin); [[D-004_stable_ids]] amended.
-- §O.2 `[x]` **dev-brain `D-` decision links migrated** — 341 rewrites / 97 files ([[S098]]). Verify-pending: open `developer-braindead/` as a vault, confirm graph + backlinks light up.
-- §O.3 `[ ]` Extend to **dev-brain quest (`S-`) links** — handle the `SNNN_dN/_pN` convention groups (→ main entry) + the 3 real dupes (S038/S060/S086 — human renumber-or-leave).
-- §O.4 `[ ]` Extend to **gielinor/** (its own vault; the larger surface).
+- §O.2 `[x]` **dev-brain `D-` decision links migrated** — 341 rewrites / 97 files ([[S098_b53fca39_obsidian_fit_and_dlink_migration]]). Verify-pending: open `developer-braindead/` as a vault, confirm graph + backlinks light up.
+- §O.3 `[x]` **dev-brain quest (`S-`) links migrated** — 357 rewrites / 87 files ([[S099_acf8fc80_obsidian_quest_link_migration]]): 327 clean `[[SNNN]]`→main-entry + 30 per-occurrence dupe disambiguations (S038/S060/S086 resolved by the authors' own context tags, principal-signed-off; S049 moot — 0 inbound links). `_dN/_pN/_gN` run-logs fold to the main; link-TEXT only, no renames. Verify-pending: same Obsidian eyeball as §O.2.
+- §O.4 `[ ]` Extend to **gielinor/** (its own vault; the larger surface) — reuse `bank/research/obsidian-link-migrate.py` (generic over ID prefix; point `--vault` at `gielinor/`).
 - §O.5 `[ ]` Resolve the 2 fuzzy D-001 judgment calls; decide on cross-brain (~4%) refs (root `docs/` describing both brains).
 
 - §N.0 `[ ]` **Gate — the Obsidian link migration applies** (NOT merely "Obsidian installed"). Speced live in `bank/research/obsidian-fit-and-migration-spec.md` (braindead-b53fca39): stock Obsidian resolves links by exact filename, so `[[D-027_inward_outward_build_imbalance]]`/`[[SNNN]]` links are ~91% phantom until a **one-time full-stem link-TEXT rewrite** (Option A, DECIDED 2026-05-26) runs. **Depends on b53fca39's forthcoming `D-NNN`.** Until then Obsidian's graph is unusable for retrieval.

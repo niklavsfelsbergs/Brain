@@ -12,7 +12,7 @@ After the [[D-006_dev_brain_restructure]] restructure, IDs live in filenames as 
 
 **Consequences.** Minor overhead at write time. Major payoff in traceability.
 
-**Session ref.** [[S001]].
+**Session ref.** [[S001_dev_brain_architecture]].
 
 ---
 

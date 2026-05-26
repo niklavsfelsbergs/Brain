@@ -39,6 +39,6 @@ The brain was born today. Phase 1 scaffolding landed:
 - `niksis8/confirmed/current.md` seeded: "My name is Niklavs." All other `current.md` files are empty placeholders with one-line headers.
 - Founding decision [[D-001_phase-1-scaffold]] recorded.
 
-Build session: see the dev brain's [[S003]] for the narrative.
+Build session: see the dev brain's [[S003_main_brain_phase_1_scaffold]] for the narrative.
 
 The brain is **0 days old** at landing. Counting starts here.

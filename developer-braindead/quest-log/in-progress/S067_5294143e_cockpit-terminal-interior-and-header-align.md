@@ -2,9 +2,9 @@
 
 - Principal opened at brain root with *"Lets develop gielinor. lets check the
   cockpit"*, then drove two visual fixes on the **live** cockpit. This session
-  ([[S067]], sid 5294143e) ran *inside* the cockpit's own PTY terminal — process
+  ([[S067_5294143e_cockpit-terminal-interior-and-header-align]], sid 5294143e) ran *inside* the cockpit's own PTY terminal — process
   tree rooted in the cockpit backend (`python 40116`) + `pythonw 18496` shell —
-  which itself confirmed [[S066]]'s Option-B embedded terminal works (real
+  which itself confirmed [[S066_7f5db8c5_cockpit-sweep]]'s Option-B embedded terminal works (real
   interactive claude on the subscription). Logged in comms as the live B-test
   the S066 sibling was awaiting.
 - **Terminal interior** ([[term.js]]): the xterm interior was cold GitHub
@@ -19,7 +19,7 @@
   underlines off one line. Appended ONE rule normalizing all three to
   `min-height:50px` + zero vertical padding + `align-items:center` so the headers
   and their underlines line up. Brace-balanced 171/171.
-- **D-024 coordination**: live sibling 7f5db8c5 ([[S066]]) was actively editing
+- **D-024 coordination**: live sibling 7f5db8c5 ([[S066_7f5db8c5_cockpit-sweep]]) was actively editing
   the same cockpit files (reskin + `/rename` + session persistence). Per the
   S057/S059/S061 pattern, did NOT commit the shared cockpit files solo — both
   hunks ride uncommitted in `term.js` + `styles.css` alongside the sibling's WIP,

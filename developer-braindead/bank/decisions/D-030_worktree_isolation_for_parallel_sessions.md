@@ -33,7 +33,7 @@ Use git worktrees so parallel agents never share a working file. They reconcile 
 
 ## Precondition — the hook-path audit (the real cost)
 
-The intent-file point above is the [[S052]] `CLAUDE_PROJECT_DIR` lesson resurfacing: *hooks that write repo-relative paths silently no-op when cwd isn't the main tree* (that bug is exactly why a subdir-launched session never showed on the board). **Worktree adoption is blocked on auditing every hook for repo-relative writes and pinning them to one absolute shared location** (the main tree, or `~/.claude/`). Until that audit lands, a worktree session would be invisible to the board and would fork the comms channel.
+The intent-file point above is the [[S052_98d4ec5e_switchboard-rebuild]] `CLAUDE_PROJECT_DIR` lesson resurfacing: *hooks that write repo-relative paths silently no-op when cwd isn't the main tree* (that bug is exactly why a subdir-launched session never showed on the board). **Worktree adoption is blocked on auditing every hook for repo-relative writes and pinning them to one absolute shared location** (the main tree, or `~/.claude/`). Until that audit lands, a worktree session would be invisible to the board and would fork the comms channel.
 
 Audit targets (the writers): `status-sidecar.py`, `emit-event.py`, `emit-commit-event.py`, `rename-intercept.py`, and the `switchboard/state-*` mirror destinations. The `~/.claude/status/` writes are already safe; the repo-relative ones (`switchboard/state-*`, `.claude/intent/`) are the suspects.
 

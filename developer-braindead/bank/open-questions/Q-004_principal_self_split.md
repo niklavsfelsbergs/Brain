@@ -1,6 +1,6 @@
 # Q-004 — `principal/` (you-model) and `self/` — same vault or separate?
 
-**Status.** `resolved` in [[S003]] via [[D-007_main_brain_phase_1_scaffold_landed]] (main brain's [[D-001_phase-1-scaffold]]). Opened in [[S001]].
+**Status.** `resolved` in [[S003_main_brain_phase_1_scaffold]] via [[D-007_main_brain_phase_1_scaffold_landed]] (main brain's [[D-001_phase-1-scaffold]]). Opened in [[S001_dev_brain_architecture]].
 
 **Resolution.** **Separate**, as Claude's instinct guessed. The split landed as:
 

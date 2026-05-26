@@ -90,7 +90,7 @@ In priority order, with exact code refs:
 - **"Proceed in parallel" works for non-overlapping commits, not interactive concurrent editing.** Three Edit-tool attempts back-to-back failed because f9da453a was rewriting sprite definitions between my Read and Edit. Line numbers shifted +13 then more. Edit tool requires file stability between read-anchor and write — that doesn't hold under live concurrent writes. Worth folding into [[D-024_parallel_player_coordination]] as a constraint: "logically separable" doesn't help if the toolchain can't apply changes against a moving file.
 - **Audit-then-fix shape generalizes.** Three dwarves on non-overlapping scopes → principal synthesis → tier-ranked triage → fix loop with sign-off. Same shape used for S027 visualizer audit, S033 visualizer audit, this S042 audit. Worth promoting the *shape* to a [[gielinor/spellbook]] skill — "cross-cutting subsystem audit." Penguins do the same for outward-facing research; this is the inward-facing equivalent.
 - **The respawn carry-forward list ages fast.** D3's verification pass found at least 3 carry-forwards already-fixed but still listed (S031 dead day-night code, S033's `despawnPlayerInstance` bubble-fade, S033's `ensureActorExists` strip — partially fixed). Carry-forward debt accumulates on its own clock; a respawn-section "verify still-pending" pass every N sessions would help.
-- **Frame ≠ root cause** (echoing [[S038]]'s lesson). "Stuck sprites" sounds like a visual bug; the load-bearing cause is event-key-pollution in pure JS state-mapping (#1). The symptom is visual; the bug is invisible.
+- **Frame ≠ root cause** (echoing [[S038_brain_underutilization_diagnosis]]'s lesson). "Stuck sprites" sounds like a visual bug; the load-bearing cause is event-key-pollution in pure JS state-mapping (#1). The symptom is visual; the bug is invisible.
 
 ## Related
 
@@ -98,10 +98,10 @@ In priority order, with exact code refs:
 - [[D-019_parallel_braindead_and_comms_channel]] — parallel Braindead instances + comms channel (the substrate that lets parallel sessions coordinate at all).
 - [[D-020_terminal_switchboard]] — terminal switchboard (the system whose `instance:1` collapse #3 fixes).
 - [[D-017_parallel_player_instances]] — parallel player instances (parent of D-019/D-020).
-- [[S033]] — prior visualizer audit (12 fixes shipped, same shape).
-- [[S027]] — earlier visualizer audit (11 fixes shipped).
+- [[S033_visualizer_audit_live_mode_and_hooks]] — prior visualizer audit (12 fixes shipped, same shape).
+- [[S027_visualizer_audit]] — earlier visualizer audit (11 fixes shipped).
 - `gielinor/spellbook/rituals/` — candidate home for the audit-then-fix skill if promoted.
 
 ## S052 amendment — 2026-05-23
 
-The map was killed in [[S052]] / [[D-026_switchboard_promotion]] — the visualizer collapsed to switchboard + chat and moved to `switchboard/`. The Tier-3/Tier-4 carry-forwards above that targeted map code (sprite anchor recalibration #2, idle GC for sub-agent sprites #5, lane-layout viewBox-edge clamp #13, animal scatter housekeeping, dead procedural-building helpers) are **obsolete** — the surface they referenced no longer exists. State-file paths in §D3 above now live at `switchboard/state-*.json`. The event-routing and resolver concerns (#1 suffix-strip, #3 manifest instance refresh, #4 actor-unknown, #6 byId crash cleanup, #11 setIntent silent-return) live on through `status-sidecar.py` / `emit-event.py` and remain relevant for the chat panel + switchboard rows.
+The map was killed in [[S052_98d4ec5e_switchboard-rebuild]] / [[D-026_switchboard_promotion]] — the visualizer collapsed to switchboard + chat and moved to `switchboard/`. The Tier-3/Tier-4 carry-forwards above that targeted map code (sprite anchor recalibration #2, idle GC for sub-agent sprites #5, lane-layout viewBox-edge clamp #13, animal scatter housekeeping, dead procedural-building helpers) are **obsolete** — the surface they referenced no longer exists. State-file paths in §D3 above now live at `switchboard/state-*.json`. The event-routing and resolver concerns (#1 suffix-strip, #3 manifest instance refresh, #4 actor-unknown, #6 byId crash cleanup, #11 setIntent silent-return) live on through `status-sidecar.py` / `emit-event.py` and remain relevant for the chat panel + switchboard rows.

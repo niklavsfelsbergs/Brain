@@ -1,10 +1,10 @@
 # I-002 — When generating UI in one shot, render it in your head before shipping
 
-**Date.** 2026-05-21. **Session ref.** [[S008]].
+**Date.** 2026-05-21. **Session ref.** [[S008_iso_visualizer_v0]].
 
 **Ruling.** For visual artifacts — SVG, CSS, layout, anything the user *sees* — don't ship until I've mentally rendered what will appear on screen. Code compiling isn't enough. "The transform is set correctly" isn't enough. The discipline is to predict the actual visual outcome before the user has to look at it for me.
 
-**Context.** Six iteration cycles in [[S008]] on the iso visualizer, each one a visible bug Niklavs caught from a single screenshot:
+**Context.** Six iteration cycles in [[S008_iso_visualizer_v0]] on the iso visualizer, each one a visible bug Niklavs caught from a single screenshot:
 
 - SVG `<symbol>` without explicit `width`/`height` defaults to 100% of viewport — trees and players rendered enormous. I knew the symbol→use pattern but never thought about what size the result would be.
 - Grass `ISO.offY=80` put the diamond at the top of the screen instead of centered on buildings. The number 80 came from "small offset from top" without checking *what* it offset.

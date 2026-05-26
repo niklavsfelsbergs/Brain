@@ -6,7 +6,7 @@
 
 ## What was asked
 
-Principal flagged a recurring friction: running two sessions of the same player in parallel (typically two Jebrim sessions) caused the visualizer to merge them onto one sprite — intent bubbles overwrite each other, COMMS lines interleave without disambiguation, move events fight for the sprite's position. The fix proposed earlier in [[S024]]'s thread was "papering over" each symptom at the attribution layer; what was needed was a structural change to render the parallel sessions as separate entities.
+Principal flagged a recurring friction: running two sessions of the same player in parallel (typically two Jebrim sessions) caused the visualizer to merge them onto one sprite — intent bubbles overwrite each other, COMMS lines interleave without disambiguation, move events fight for the sprite's position. The fix proposed earlier in [[S024_visualizer_aliveness_pass_1_3]]'s thread was "papering over" each symptom at the attribution layer; what was needed was a structural change to render the parallel sessions as separate entities.
 
 Principal chose three design knobs during the conversation: 5-minute idle OR session-end despawn, tint-based differentiation, both instances active.
 

@@ -76,4 +76,4 @@ The sticky behavior matches how the principal actually works: most sessions are 
 
 ## Session ref
 
-[[S003]] (addendum; same session that built the Phase 1 scaffold).
+[[S003_main_brain_phase_1_scaffold]] (addendum; same session that built the Phase 1 scaffold).

@@ -14,4 +14,4 @@ Each dev session ends by stating in the quest-log entry what, if anything, in th
 
 **Consequences.** Some artifacts exist in both forms (e.g., dev [[I-001]]-style ledger entries ↔ main personality file once the latter is designed). The export step is its own discipline ([[R-001]]).
 
-**Session ref.** [[S001]].
+**Session ref.** [[S001_dev_brain_architecture]].

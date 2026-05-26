@@ -36,8 +36,8 @@
 - Per-entry files everywhere including `plan.md` — rejected; one mission, one living plan, reads best as a single scroll.
 
 **Consequences.**
-- All existing wiki-link references ([[D-001]], [[S001]], etc.) preserve via stable IDs. Filename suffixes are descriptive, not load-bearing.
-- The flat root files (`HANDOFF.md`, `SESSION_LOG.md`, `DECISIONS.md`, `ASSUMPTIONS.md`, `OPEN_QUESTIONS.md`, `PLAN.md`, `RISKS.md`, `PERSONALITY_LEDGER.md`) are removed in [[S002]].
-- Claude memory (`~/.claude/.../memory/`) already updated in [[S002]] §A.3 to point at `developer-braindead/HANDOFF.md`; needs a follow-up to retarget at `respawn.md`.
+- All existing wiki-link references ([[D-001]], [[S001_dev_brain_architecture]], etc.) preserve via stable IDs. Filename suffixes are descriptive, not load-bearing.
+- The flat root files (`HANDOFF.md`, `SESSION_LOG.md`, `DECISIONS.md`, `ASSUMPTIONS.md`, `OPEN_QUESTIONS.md`, `PLAN.md`, `RISKS.md`, `PERSONALITY_LEDGER.md`) are removed in [[S002_dev_brain_runescape_restructure]].
+- Claude memory (`~/.claude/.../memory/`) already updated in [[S002_dev_brain_runescape_restructure]] §A.3 to point at `developer-braindead/HANDOFF.md`; needs a follow-up to retarget at `respawn.md`.
 
-**Session ref.** [[S002]].
+**Session ref.** [[S002_dev_brain_runescape_restructure]].

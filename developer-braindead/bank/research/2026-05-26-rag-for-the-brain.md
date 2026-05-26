@@ -1,6 +1,6 @@
 # RAG for the brain — field survey + fit
 
-> Read 2026-05-26 ([[S097]]?, dev-brain mid-conversation via "lets develop gielinor"). Principal asked: *what is a RAG system and how could it be utilized in my brain?* This is the survey + an honest fit assessment. **Conclusion up front: the brain is already an agentic-search retrieval system, which is the architecture the frontier coding agents converged on after trying and dropping RAG. If RAG comes in, it comes in narrow and additive — not as a grep replacement.**
+> Read 2026-05-26 ([[S097_b3c2b8dd_rag_research_and_obsidian_interlink]]?, dev-brain mid-conversation via "lets develop gielinor"). Principal asked: *what is a RAG system and how could it be utilized in my brain?* This is the survey + an honest fit assessment. **Conclusion up front: the brain is already an agentic-search retrieval system, which is the architecture the frontier coding agents converged on after trying and dropping RAG. If RAG comes in, it comes in narrow and additive — not as a grep replacement.**
 
 ## What RAG is
 

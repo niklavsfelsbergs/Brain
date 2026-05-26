@@ -1,6 +1,6 @@
 # D-013 — 2026-05-21 — Braindead the construction crew + the Workshop building
 
-**Context.** [[S011]] gave gielinor actors speech bubbles for intent. The remaining honesty gap: dev-brain sessions writing to `gielinor/` paths showed up as the wisp — same sprite as gielinor's own unscoped self-tending sessions. Two structurally distinct situations rendered identical. Niklavs asked for the dev brain to have its own sprite in the visualizer, walking around gielinor when it modifies the main brain.
+**Context.** [[S011_visualizer_intent_narration]] gave gielinor actors speech bubbles for intent. The remaining honesty gap: dev-brain sessions writing to `gielinor/` paths showed up as the wisp — same sprite as gielinor's own unscoped self-tending sessions. Two structurally distinct situations rendered identical. Niklavs asked for the dev brain to have its own sprite in the visualizer, walking around gielinor when it modifies the main brain.
 
 **Decision.** Give the dev brain a named character — **Braindead** — with his own sprite, his own building (**the Workshop** in the top-left of the map), and his own session-mode marker that tells the hook when to spawn him.
 
@@ -38,4 +38,4 @@ Three knobs (settled in chat with Niklavs):
 - **Bootstrap stale-mode handling.** If `active-mode.txt` is stale from a crashed session (still says `dev-brain` but the new session is gielinor), bootstrap-from-tail will show Braindead in the workshop until the new session writes the marker. Tolerable for v0; revisit if it confuses.
 - **Gielinor side writing the marker.** Currently only dev-brain writes the marker (and only on entry / close). Gielinor sessions don't touch it. If we later want gielinor sessions to update it (e.g., to `jebrim` / `zezima` / `unscoped` for richer hook context), that's a small addition to `gielinor/spellbook/rituals/respawn.md`. Defer until there's a use case.
 
-**Session ref.** [[S012]] (in progress).
+**Session ref.** [[S012_braindead_character_and_workshop]] (in progress).

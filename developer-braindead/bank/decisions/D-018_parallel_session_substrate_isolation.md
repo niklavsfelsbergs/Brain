@@ -2,11 +2,11 @@
 
 **Context.** Five sessions in a row have surfaced parallel-session interference at the filesystem layer:
 
-- [[S014]] — `state-actors.json` race during a mid-session player swap.
-- [[S022]] — Bash attribution leak on the shared `state.ndjson` recency walk.
-- [[S023]] — dev-brain override flag (`active-mode.txt`) racy across sessions.
-- [[S024]] — intent bubble silence after move (different bug; same shared-state family).
-- [[S025]] — git index race; Jebrim's broad `git add` swept up D-017's staged changes into his commit.
+- [[S014_visualizer_polish_and_aesthetics_pass]] — `state-actors.json` race during a mid-session player swap.
+- [[S022_visualizer_audit_fixes]] — Bash attribution leak on the shared `state.ndjson` recency walk.
+- [[S023_visualizer_ticker_and_cross_session_attribution]] — dev-brain override flag (`active-mode.txt`) racy across sessions.
+- [[S024_visualizer_aliveness_pass_1_3]] — intent bubble silence after move (different bug; same shared-state family).
+- [[S025_parallel_player_instances]] — git index race; Jebrim's broad `git add` swept up D-017's staged changes into his commit.
 
 Each got a local band-aid. The band-aids stack but don't address the underlying structural issue.
 
@@ -92,7 +92,7 @@ This decision is "failing" when:
 ## Related
 
 - [[D-017_parallel_player_instances]] — parallel player instances at the visualizer layer (attribution).
-- [[S014]], [[S022]], [[S023]], [[S024]], [[S025]] — the five-incident pattern that motivated this.
+- [[S014_visualizer_polish_and_aesthetics_pass]], [[S022_visualizer_audit_fixes]], [[S023_visualizer_ticker_and_cross_session_attribution]], [[S024_visualizer_aliveness_pass_1_3]], [[S025_parallel_player_instances]] — the five-incident pattern that motivated this.
 - Global `CLAUDE.md` user-rules — existing "no `git add -A`" warning; D-018 broadens its rationale.
 - `gielinor/meta/write-rules.md` — the per-layer write discipline; D-018 layers concurrency considerations atop it.
 

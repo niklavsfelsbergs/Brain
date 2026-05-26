@@ -54,7 +54,7 @@ The discipline guard against drift: drafts must be **observation-backed** (per `
 - **Multiple active in-progress quests.** Jebrim currently has S001 (paused) + S002 (active) + S012 (this session, design). Harvest skims which? Likely "the ones touched this session" by `mtime`. Defer until it bites.
 - **Stale-intent eviction at close.** Adjacent concern from D-010 — close-session could clear `.claude/intent/*.txt`. Decide alongside the close-session edits if convenient.
 
-**Session ref.** [[S013]] (in progress, dev-brain side; named at close per `_about.md` convention). The gielinor-side activity this session (Jebrim alching + the design discussion that produced D-012) lives under gielinor's own counter, which is at S012 this session. The two brains keep independent SNNN counters per the brain-root rule.
+**Session ref.** [[S013_close_session_harvest_pump]] (in progress, dev-brain side; named at close per `_about.md` convention). The gielinor-side activity this session (Jebrim alching + the design discussion that produced D-012) lives under gielinor's own counter, which is at S012 this session. The two brains keep independent SNNN counters per the brain-root rule.
 
 **Related.**
 

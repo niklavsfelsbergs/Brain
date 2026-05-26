@@ -167,7 +167,7 @@ This is mechanism, not malice. The fix has to make the other layers as cheap to 
   **Pending principal ratification of Phase D before Phase E.** Phase E is lorebook draft + dev-brain D-NNN decision record.
 - **T6 (2026-05-21). Phase E landed.**
   - **E1** `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` written — covers the structural changes, the why, the trigger, full affected-files list, and supersedes/extends [[2026-05-21-harvest-pump-installation]] on the skill-drafts path. Principal approves to canonicalize.
-  - **E2** `developer-braindead/bank/decisions/D-015_jebrim_layer_audit_outcomes.md` written — context, decision (phased), alternatives considered per Q1–Q5, consequences, things explicitly deferred. Anchored to [[S018]] and [[D-012_close_session_harvest_pump]].
+  - **E2** `developer-braindead/bank/decisions/D-015_jebrim_layer_audit_outcomes.md` written — context, decision (phased), alternatives considered per Q1–Q5, consequences, things explicitly deferred. Anchored to [[S018_jebrim_layer_utilization_audit]] and [[D-012_close_session_harvest_pump]].
   
   **Audit complete.** All five phases shipped. Pending: principal close-session cue → respawn.md update, S018 file finalization, commit.
 

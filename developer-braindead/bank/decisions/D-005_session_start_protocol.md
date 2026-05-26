@@ -10,4 +10,4 @@
 
 **Consequences.** One short exchange at session start. Eliminates a category of accidental cross-pollution.
 
-**Session ref.** [[S001]].
+**Session ref.** [[S001_dev_brain_architecture]].

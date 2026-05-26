@@ -1,6 +1,6 @@
 # S007 — 2026-05-21 — Bankstanding Phase 0: alch changed players before bankstanding-proper
 
-Same calendar day as [[S006]]. Niklavs asked whether bankstanding should run today; my read was *no, alch first* because bankstanding consumes drafted/tidied per-player material and we don't have that yet. Niklavs converted that observation into a ritual-level change: enhance bankstanding so it begins by alching every player with changes since their last alch, in one user cue.
+Same calendar day as [[S006_handoff_precondition_and_dwarf_spawning]]. Niklavs asked whether bankstanding should run today; my read was *no, alch first* because bankstanding consumes drafted/tidied per-player material and we don't have that yet. Niklavs converted that observation into a ritual-level change: enhance bankstanding so it begins by alching every player with changes since their last alch, in one user cue.
 
 - **The design choice.** Two options were on the table: a precondition gate (bankstanding refuses to start until the principal has alched each changed player separately) vs. a Phase 0 (bankstanding *invokes* alching internally for each changed player, then proceeds to its own work). Phase 0 wins on UX — single cue, agent handles sequencing — at the cost of a sanctioned mid-ritual mode transition. Architectural purity was preserved by being explicit: during Phase 0 the agent is in alching mode per the player being alched; once Phase 0 completes the agent transitions back to bankstanding mode. This is now documented as the *only* sanctioned mid-ritual mode transition.
 

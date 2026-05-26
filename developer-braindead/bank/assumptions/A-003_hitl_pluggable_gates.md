@@ -1,6 +1,6 @@
 # A-003 — HITL during Phase 1; gates must be pluggable per tool / action-class
 
-**Status.** `working`. Opened in [[S001]].
+**Status.** `working`. Opened in [[S001_dev_brain_architecture]].
 
 Phase 1 keeps human-in-the-loop on irreversible actions. Architecture must allow per-tool or per-action-class autonomy to be enabled later without rewriting the gate layer. Don't hard-code "always ask." Related: [[Q-002]].
 

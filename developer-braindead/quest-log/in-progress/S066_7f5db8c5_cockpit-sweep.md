@@ -1,7 +1,7 @@
 # S066 — cockpit sweep (first review since the S064 rebuild)
 
 **Session:** braindead-7f5db8c5. **Mode:** dev-brain. **Surface:** read-only
-sweep — no cockpit files touched (two siblings live-editing: [[S065]]
+sweep — no cockpit files touched (two siblings live-editing: [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]
 bfa95764 + f1df4fa5).
 
 ## The ask
@@ -12,7 +12,7 @@ investigation on whats put together, there hasnt been a sweep done."*
 
 The "terminal" is the **cockpit session console** (`cockpit/web/console.js`
 driven by the `/chat` handler in `cockpit/backend.py`) — not the archived
-`switchboard/archive/terminal.js` the principal had open in the IDE. [[S064]]
+`switchboard/archive/terminal.js` the principal had open in the IDE. [[S064_78824901_switchboard-cockpit-rebuild]]
 built the whole cockpit in one pass; most surfaces were browser-verified on the
 dev server and never exercised in the icon-launched window. This is that sweep.
 
@@ -21,13 +21,13 @@ dev server and never exercised in the icon-launched window. This is that sweep.
 | # | Severity | Finding | Where | Status |
 |---|---|---|---|---|
 | 1 | **P0** | **Esc doesn't cancel.** The composer `onKeyDown` binds only `Enter`. No `Escape` handler exists. Interrupt *does* work via the **Stop** button (`conn.interrupt()` → backend `control_request`), but Esc is unwired. | `cockpit/web/console.js` (composer `<textarea onKeyDown>`, ~L130) | **OPEN** — not covered by S065. One-liner: `if (e.key==="Escape" && model.busy) conn.interrupt()`. |
-| 2 | **P0** | **Can't answer in-session questions.** Headless `claude -p` **auto-dismisses** `AskUserQuestion`/`ExitPlanMode` (injects its own `tool_result {is_error:true}` "Answer questions?") the instant they're called — no stream-json client can intercept or supply the answer. Console rendered the inert tool card; session then wedges at `busy`. | `cockpit/backend.py` `chat_handler`; `console.js` tool-card render | **FIXED in [[S065]]** (bfa95764): `--disallowedTools "AskUserQuestion ExitPlanMode"` → agent falls back to **prose** questions, answerable in the composer. (Corrects my initial theory — a tool_result round-trip UI would NOT have worked; the CLI dismisses first.) |
+| 2 | **P0** | **Can't answer in-session questions.** Headless `claude -p` **auto-dismisses** `AskUserQuestion`/`ExitPlanMode` (injects its own `tool_result {is_error:true}` "Answer questions?") the instant they're called — no stream-json client can intercept or supply the answer. Console rendered the inert tool card; session then wedges at `busy`. | `cockpit/backend.py` `chat_handler`; `console.js` tool-card render | **FIXED in [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]** (bfa95764): `--disallowedTools "AskUserQuestion ExitPlanMode"` → agent falls back to **prose** questions, answerable in the composer. (Corrects my initial theory — a tool_result round-trip UI would NOT have worked; the CLI dismisses first.) |
 | 3 | P1 | **A wedged turn has no recovery but Stop.** When a session sits at `busy` with no `result` frame (the #2 signature, and any future hang), the composer shows only **Stop** — can't type a follow-up. S065's prose fix removes the main trigger, but the wedge state itself has no UI affordance. | `console.js` (`model.busy` gates Send↔Stop) | OPEN (mostly mitigated by S065). |
 | 4 | P1 | **`--permission-mode bypassPermissions` is un-gated and has no toggle.** Every cockpit-driven session auto-approves all permission prompts. The brain's *architectural* hooks (no-confirmed-writes, no-deletes, dwarf/gnome boundaries) still fire — they're PreToolUse `exit(2)`, independent of permission mode — so the six guarantees hold. But there's zero human gate on Bash/Edit in a cockpit session, and no `bypassPermissions`↔`acceptEdits` UI toggle (deferred since old S060). | `cockpit/backend.py` `chat_handler` args (~L179) | OPEN — **decision needed**, not obviously a bug. |
 | 5 | P2 | **No reconnect on WebSocket drop.** `ws.onclose` sets status "disconnected" and stops; backend `finally` calls `proc.terminate()`. A backend restart or network blip ends the session with no recovery UI. (Switching *rows* is fine — the conn stays alive in `fleet.js`, by design.) | `cockpit/web/fleet.js` (`SessionConn.connect` onclose) | OPEN. |
 | 6 | P2 | **No "working" indicator during silent tool runs.** The streaming preview only shows on text/thinking delta. During a long Bash with no output, nothing moves but the Stop button — hard to tell "thinking" from "wedged". | `cockpit/web/console.js` (`Preview` gated on `preview.text`/`thinking`) | OPEN — polish. |
 | 7 | P2 | **Feed drops/clusters comms.** `api_feed` filters any item whose `ts` won't parse; comms timestamps are coarse (date-only → all collapse to 00:00 ordering). Lifecycle kinds (`picked_up`/`intent`/`needs_you`/`done`) ARE wired correctly to the hook contract — feed isn't broken, just comms ordering. | `cockpit/backend.py` `api_feed` / `_comms_ts` | OPEN — minor. |
-| 8 | P2 | **Offline blank-window risk (known/deferred).** `web/index.html` loads Preact/htm from esm.sh — no internet at launch = silent blank render, no error. | `cockpit/web/index.html` import map | OPEN — already logged as [[S064]] Step 0 item 2 (vendor locally). |
+| 8 | P2 | **Offline blank-window risk (known/deferred).** `web/index.html` loads Preact/htm from esm.sh — no internet at launch = silent blank render, no error. | `cockpit/web/index.html` import map | OPEN — already logged as [[S064_78824901_switchboard-cockpit-rebuild]] Step 0 item 2 (vendor locally). |
 
 ## What's solid (the floor)
 
@@ -50,7 +50,7 @@ layer**, exactly the half headless-driving forces you to own.
 ## Coordination note (D-024)
 
 Three parallel cockpit sessions at sweep time: this one (read-only sweep),
-bfa95764 ([[S065]] — question fix, landed on disk), f1df4fa5 (hit the same #2
+bfa95764 ([[S065_bfa95764_cockpit-askuserquestion-hang-fix]] — question fix, landed on disk), f1df4fa5 (hit the same #2
 wall). Clean split: siblings build, I review. SNNN bumped 64→66 (S065 = the
 question-fix session). No cockpit files touched by this session.
 
@@ -65,7 +65,7 @@ replace the headless driver with a real embedded interactive terminal.**
 
 Why B is the right call beyond cost: a real TTY fixes **both** reported bugs for
 free — Esc cancels natively, and AskUserQuestion/ExitPlanMode/permission prompts
-work natively (no headless auto-dismiss, so [[S065]]'s `--disallowedTools`
+work natively (no headless auto-dismiss, so [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]'s `--disallowedTools`
 workaround becomes unnecessary). And it sidesteps sweep finding #4 (the headless
 path hardcoded `bypassPermissions`; the PTY runs plain interactive claude, same
 as a normal terminal).

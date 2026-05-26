@@ -38,7 +38,7 @@ The chain shape that landed for both new-format sessions: `bash.exe → bash.exe
 
 - **D-020 doc update.** The decision doc still describes the original 5-event registration design and the original single-PID Phase 3 plan. Both have moved. Update the §"Hook wiring" and §"Phase build order" sections, plus add a §"Process tree walk" subsection capturing the chain rationale.
 
-- **Lorebook draft on hook-fire-rate-as-budget.** Carried from [[S032]]; the option-1 decision provides the lesson but the draft hasn't been written.
+- **Lorebook draft on hook-fire-rate-as-budget.** Carried from [[S032_terminal_switchboard_phases_1_and_2]]; the option-1 decision provides the lesson but the draft hasn't been written.
 
 ## Files touched
 

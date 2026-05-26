@@ -129,5 +129,5 @@ If garbling becomes routine, revisit with a file lock — but defer.
 
 - [[D-017_parallel_player_instances]] — parent decision; this extends its scaffolding to Braindead and adds the comms layer it didn't include.
 - [[D-018_parallel_session_substrate_isolation]] — parallel-session substrate isolation; the disk-fallback work that made per-session intent files load-bearing for Braindead.
-- [[S028]] — shipped the suffix-strip fix that made `braindead-<sid8>.txt` route correctly; that fix is the substrate D-019 builds on.
+- [[S028_subtask_channel_and_guthix]] — shipped the suffix-strip fix that made `braindead-<sid8>.txt` route correctly; that fix is the substrate D-019 builds on.
 - `gielinor/meta/modes.md` — no change. Instance is a hook/visualizer concern, not a cognitive-mode concern. Braindead is still one actor with one voice; instances are a parallelism mechanic.

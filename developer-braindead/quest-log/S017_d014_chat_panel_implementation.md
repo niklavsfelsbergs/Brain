@@ -11,5 +11,5 @@
 
 **Browser-side verify still pending.** Smoke tests pass; live mode not yet eyeballed. The chatbox restyle was iterated against screenshots, so it's been seen, but the dwarf-attribution + new action/narrate streams haven't been exercised against a real Jebrim Task spawn yet — that was Step 1 from S016's close (`agent_id` attribution in the wild) and remains the first thing the next session should verify before declaring D-014 fully landed.
 
-**Cascade.** [[S017]] (this entry), `respawn.md` updated, `developer-braindead/.claude/hooks/emit-event.py`, `developer-braindead/experiments/visualizer/index.html`, brain-root `.claude/settings.json`, brain-root `.gitignore`.
+**Cascade.** [[S017_d014_chat_panel_implementation]] (this entry), `respawn.md` updated, `developer-braindead/.claude/hooks/emit-event.py`, `developer-braindead/experiments/visualizer/index.html`, brain-root `.claude/settings.json`, brain-root `.gitignore`.
 **Main-brain changes.** `gielinor/meta/communication-protocol.md` (cap, narration channel, intent-vs-action discipline, wisp→braindead drift fix).

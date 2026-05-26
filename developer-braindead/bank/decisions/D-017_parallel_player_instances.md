@@ -2,7 +2,7 @@
 
 **Context.** Niklavs sometimes runs two sessions of the same player in parallel — typically two Jebrim sessions, one continuing a long quest and one branching off something side-channel. Today the visualizer renders one sprite per player ID, so both sessions' events route to the same sprite: intent bubbles overwrite each other, action streams interleave in COMMS without disambiguation, move events fight for the sprite's position, and the focal label can't represent "Jebrim is in *two* buildings doing *two* things."
 
-The parallel-session pattern has surfaced as an attribution-correctness problem before — [[S014]] (player swap mid-session), [[S022]] (Bash attribution flipped under parallel Jebrim work), [[S023]] (recency walk needed session-filtering), [[S024]] (intent silence after move under sustained tool use). Each fix has been a band-aid at the attribution layer. This decision makes the sessions visible as separate entities in the visualizer instead.
+The parallel-session pattern has surfaced as an attribution-correctness problem before — [[S014_visualizer_polish_and_aesthetics_pass]] (player swap mid-session), [[S022_visualizer_audit_fixes]] (Bash attribution flipped under parallel Jebrim work), [[S023_visualizer_ticker_and_cross_session_attribution]] (recency walk needed session-filtering), [[S024_visualizer_aliveness_pass_1_3]] (intent silence after move under sustained tool use). Each fix has been a band-aid at the attribution layer. This decision makes the sessions visible as separate entities in the visualizer instead.
 
 **Decision.** When the hook observes a second `sessionId` for an existing actor name, the visualizer spawns a second sprite for that actor. Each instance is independent: its own intent file, own building tracker, own bubble, own COMMS prefix, own sprite. Both stay rendered as long as either is alive.
 
@@ -63,7 +63,7 @@ An instance despawns when **either**:
 
 ## Related
 
-- [[S014]], [[S022]], [[S023]], [[S024]] — parallel-session attribution incidents.
+- [[S014_visualizer_polish_and_aesthetics_pass]], [[S022_visualizer_audit_fixes]], [[S023_visualizer_ticker_and_cross_session_attribution]], [[S024_visualizer_aliveness_pass_1_3]] — parallel-session attribution incidents.
 - [[D-014_visualizer_chat_panel]] visualizer chat panel — provides the COMMS surface this decision modifies.
 - [[D-016_gnomes_subagent]] gnomes — precedent for system-namespace sub-agents with their own numbering.
 - `Q-008` — visualizer aliveness, current parking lot for visual-layer work.

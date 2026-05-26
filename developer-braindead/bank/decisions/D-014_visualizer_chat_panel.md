@@ -76,6 +76,6 @@ System lines for `move` / `spawn-dwarf` / `despawn-dwarf` also surface in chat i
 - **Bubble two-line layout edge cases.** Single-word overruns, very narrow buildings, and dwarf bubbles that slide during move — all need a look once wrapping ships. Treat as visual polish, not blockers.
 - **Replacing per-actor intent file with a chat-broadcast tool.** Future-question — if the agent ever calls a dedicated "say" tool instead of writing a sidecar, both bubble and chat would feed from the same call. Defer; the sidecar pattern is working.
 
-**Session ref.** [[S016]] (in progress).
+**Session ref.** [[S016_visualizer_chat_panel_design]] (in progress).
 
 **Status.** Drafted in chat with Niklavs 2026-05-21. Awaiting implementation across hook + renderer + protocol.

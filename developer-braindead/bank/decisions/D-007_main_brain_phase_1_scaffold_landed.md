@@ -1,6 +1,6 @@
 # D-007 — 2026-05-20 — Main brain Phase 1 scaffold landed
 
-**Context.** End of [[S002]] left the dev brain restructured around RuneScape layers ([[D-006_dev_brain_restructure]]) and pointed at a "next session" task: sync with the parallel main-brain design session and start building `vault/`. The parallel session produced a complete Phase 1 design, handed off in [[S003]] as a full brief. This decision records that the build happened: scaffolding landed in `gielinor/` (renamed from the dev brain's working term `vault/`).
+**Context.** End of [[S002_dev_brain_runescape_restructure]] left the dev brain restructured around RuneScape layers ([[D-006_dev_brain_restructure]]) and pointed at a "next session" task: sync with the parallel main-brain design session and start building `vault/`. The parallel session produced a complete Phase 1 design, handed off in [[S003_main_brain_phase_1_scaffold]] as a full brief. This decision records that the build happened: scaffolding landed in `gielinor/` (renamed from the dev brain's working term `vault/`).
 
 **Decision.** Build the main brain Phase 1 scaffold today, at `Documents/GitHub/brain/gielinor/` — sibling to `developer-braindead/` under the same `brain/` parent. Defer the deferred mechanisms (cited in main-brain [[D-001_phase-1-scaffold]] under "Alternatives considered") to real use rather than designing them upfront.
 
@@ -24,6 +24,6 @@
 - The dev brain's job shifts from "design the main brain" to "observe and refine the main brain through use." Future dev brain decisions will be feedback loops, not design loops.
 - The main brain is now the canonical source of truth for its own architecture (see `gielinor/lorebook/decisions/D-001_phase-1-scaffold.md`). Dev-brain decisions about main-brain shape should cross-reference rather than duplicate.
 
-**Session ref.** [[S003]].
+**Session ref.** [[S003_main_brain_phase_1_scaffold]].
 
 **Cross-refs.** Main-brain [[D-001_phase-1-scaffold]] (`gielinor/lorebook/decisions/D-001_phase-1-scaffold.md`).

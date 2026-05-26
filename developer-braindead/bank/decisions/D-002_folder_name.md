@@ -8,4 +8,4 @@
 
 **Consequences.** Cosmetic. (And amusing.)
 
-**Session ref.** [[S001]].
+**Session ref.** [[S001_dev_brain_architecture]].

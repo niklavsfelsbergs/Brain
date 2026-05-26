@@ -1,6 +1,6 @@
 # D-015 — 2026-05-21 — Jebrim layer-utilization audit outcomes (layer routing + resume via inventory + skills drafts-gate)
 
-**Context.** [[S017]] closed with Niklavs queuing a specific handover topic: "Jebrim has done a lot of work but his `inventory/` is empty. For each apparently-underused layer, the question is binary: do we not need it, or are we just not utilizing it?" The brain has many layers per player + global, and some weren't getting used proportional to the work flowing through them. [[S018]] opened in dev-brain mode (Braindead) to execute the audit.
+**Context.** [[S017_d014_chat_panel_implementation]] closed with Niklavs queuing a specific handover topic: "Jebrim has done a lot of work but his `inventory/` is empty. For each apparently-underused layer, the question is binary: do we not need it, or are we just not utilizing it?" The brain has many layers per player + global, and some weren't getting used proportional to the work flowing through them. [[S018_jebrim_layer_utilization_audit]] opened in dev-brain mode (Braindead) to execute the audit.
 
 The audit scope narrowed at S018 T1 (via principal scoping questions): Jebrim only, main brain only, streaming findings. The reframe Niklavs supplied: "Question is if we are utilizing everything we developed or misusing something we have developed."
 
@@ -50,7 +50,7 @@ The audit scope narrowed at S018 T1 (via principal scoping questions): Jebrim on
 
 ## Anchor
 
-- [[S018]] in dev brain — the audit session, full turn log + the eight findings.
+- [[S018_jebrim_layer_utilization_audit]] in dev brain — the audit session, full turn log + the eight findings.
 - `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — the gielinor-side self-improvement log entry (principal approves to make canonical).
 - `gielinor/meta/layer-routing.md` — the canonical routing table the audit produced.
 - [[D-012_close_session_harvest_pump]] — the harvest-pump architecture this decision extends.

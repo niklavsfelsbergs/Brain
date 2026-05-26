@@ -1,6 +1,6 @@
 # D-028 — 2026-05-23 — Switchboard rebuild: standalone fleet cockpit
 
-**Context.** The switchboard accreted across ~18 of the last ~25 dev sessions (S037, S039, S042–S043, S047–S053, S056–S062). It started as an isometric map ([[D-009_visualizer_live_mode_v0]]), shed the map for switchboard+chat panels ([[D-026_switchboard_promotion]]), then grew an embedded agent chat ([[S060]]), a COMMS reskin, and a lifecycle feed — each session bolting a feature onto whichever of three identities felt urgent that day. The result is three uncoordinated products in one trenchcoat:
+**Context.** The switchboard accreted across ~18 of the last ~25 dev sessions (S037, S039, S042–S043, S047–S053, S056–S062). It started as an isometric map ([[D-009_visualizer_live_mode_v0]]), shed the map for switchboard+chat panels ([[D-026_switchboard_promotion]]), then grew an embedded agent chat ([[S060_ac10ec71_switchboard-embedded-chat]]), a COMMS reskin, and a lifecycle feed — each session bolting a feature onto whichever of three identities felt urgent that day. The result is three uncoordinated products in one trenchcoat:
 
 1. **Monitor** — which session needs me, what's each doing (the rows + `status-sidecar.py`).
 2. **Feed** — the cross-session narrative (COMMS / `chat.ndjson` / comms mirrors), which shapeshifted three times (coordination channel → action firehose → lifecycle ticker).
@@ -90,5 +90,5 @@ Each phase is independently useful and committable; no phase depends on a later 
 - [[D-024_parallel_player_coordination]] — parallel coordination; why greenfield avoids collision.
 - [[D-026_switchboard_promotion]] — switchboard promotion to brain root; the cockpit stays a both-brains surface.
 - [[D-027_inward_outward_build_imbalance]] — inward/outward build imbalance; this rebuild is meant to *end* the switchboard's time-sink, not extend it.
-- [[S060]] — embedded agent chat; the driver mechanism preserved here.
+- [[S060_ac10ec71_switchboard-embedded-chat]] — embedded agent chat; the driver mechanism preserved here.
 - S064 — quest-log entry capturing the rebuild construction.

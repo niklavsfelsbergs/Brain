@@ -1,6 +1,6 @@
 # S058 — 2026-05-23 — World personality: in-voice intent narration
 
-Principal opened in Guthix consultation ("our world has no personality — make the players talk more lively and different each, not flat like this"), then pivoted to dev-brain. Two asks; the second (a waiting-on-subagents status) was already shipped by sibling [[S057]], so this session was the personality half.
+Principal opened in Guthix consultation ("our world has no personality — make the players talk more lively and different each, not flat like this"), then pivoted to dev-brain. Two asks; the second (a waiting-on-subagents status) was already shipped by sibling [[S057_switchboard_awaiting_crew_state]], so this session was the personality half.
 
 - **Diagnosis — the flatness was a rule.** [[communication-protocol.md]] mandated intent narration be "functional, verb + noun, ≤100 chars." Personas were distinct only in terminal *responses*; the world surface (COMMS chat + row subtitle, post-S052 — map/bubbles gone) only ever saw the flat line. Leverage point: the COMMS feed renders every intent line as `<Actor>: <text>`, so making those in-voice livens chat + subtitle at once.
 - **Length, corrected mid-design.** First longer examples padded prose; principal pushed back — "using the space for the fuck of it." Reframed: longer = more *skimmable content*, not more words. Jebrim especially → terse dense status line. Saved as a feedback memory ([[feedback-content-over-verbosity]]).

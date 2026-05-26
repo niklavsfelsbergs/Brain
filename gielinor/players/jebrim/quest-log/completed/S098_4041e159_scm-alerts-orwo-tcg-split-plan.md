@@ -1,0 +1,52 @@
+# S098 — SCM alerts ORWO/TCG split: feasibility + implementation plan
+
+**Player:** Jebrim · **Session:** 4041e159 · **Opened:** 2026-05-26
+**Repo (read-only this session):** `Documents/GitHub/bi-analytics` — `NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py` (~3920 lines). Branch state not modified.
+**Target ask:** the SCM (shipping costs monitoring dashboard) alerts system should be split between **ORWO** and **TCG**. Feasibility, then a concrete implementation plan. NO edits this session.
+
+## Decisions locked (principal, this session)
+- **Split level:** detection grain — `entity` becomes a corridor dimension (true segmentation: own baselines/deviations/suppression/lifecycle per entity), NOT a presentation-only filter.
+- **Entity mapping:** `ORWO = order_source=='ORWO'`; `TCG = everything else` (PicaAPI + PCS + Picturator).
+
+## Volume check — VERDICT: green (the sparsity risk is retired)
+Source: live `data/daily.parquet` (refreshed 2026-05-26 15:49, 1.35M rows, through 05-25), last 12 complete weeks (2026-03-02 → 05-18). Script: `%TEMP%/scm_volume_check.py`.
+- **ORWO = 40% of volume** (526K shipments / 12wk vs TCG 787K), 37 distinct `(country, provider)` corridors (TCG: 212).
+- Clears detection floors (`ALERT_MIN_VOL=30`, baseline ≥30, confirmed ≥65% real-cost coverage): **ORWO ~14.4 early-warning + ~7.3 confirmed corridors/wk** (TCG 53.8 / 37.8); latest week **11 rate_spike-eligible** ORWO corridors (TCG 48).
+- **98.9% of ORWO volume sits in floor-clearing corridors** — concentrated in ~12 fat corridors. Long tail of 9 sub-10/wk corridors won't alert (~1% of volume) — optional lower ORWO floor only if the tail needs eyes.
+- ORWO `confirmed` queue proportionally thinner (~51% of EW corridors reach 65% coverage vs TCG ~70%) — consistent with ORWO's weaker invoice coverage (CASE-fallback expected). `early_warning` still fires immediately; `confirmed` lags as invoices land (true for both entities — by design, not a split artifact).
+- **No entity-specific floor lowering required** for the ORWO feed to be viable.
+
+## pipeline.py read-only trace — entity injection points
+- `df_weekly` (detection input) built L3712 from `processed/*.parquet` via `FRAMEWORK_COLS` (L3706-3711) — **`order_source` is NOT in FRAMEWORK_COLS** → must be added (+ confirm `processed/` carries it; daily tiers do, L2370/2423). Derive `entity` off it.
+- Corridor = literal `("destination_country","shippingprovider")` group-bys in ~20 sites (L675,760,856,867,941,951,985,1030,1400,1414,1497,1505,1513,1537,1640,1787,3207 + `.over(...)` share denominators). `CORRIDOR` is a LOCAL var (L1000 `["destination_country", PC]`), not a global lever.
+- `corridor_trends_weekly.parquet` — central artifact, written by `compute_trends(df_weekly, suffix="_weekly", ...)` L3729 (group L1400/1414 country/provider/week); read back by `_build_alerts` coverage (L1809), `_detect_corridor_changes` (L1581), `_detect_volume_anomaly` (L1761), `_build_issues` (L2617), `_build_single_issue` (L2852/3061).
+- `_issue_key` L2585-2597 = `type|country|provider`(+product) — append `entity`. Also: dedup `unique(subset=...)` L2663, suppression `_mkey` L3494 + L3365 comment, `_issue_id` (auto via key).
+- Frozen-baseline override dicts keyed `(country,provider)` / `(country,provider,product)` L3742-3770 → need entity in key (seed per-entity).
+- daily_product L2 shares (L2640) inside `_build_issues` — has `order_source` (L2461/2471); filter by entity per pass for share-within-entity.
+
+## Recommended strategy — Option B (per-entity detection loop)
+Wrap the detect→trends→alerts→issues section (L3728+) in `for entity in (ORWO, TCG):` — filter `df_weekly` to the entity, run the EXISTING engine, tag alert rows `entity=...`, concat. **Internal detection math untouched** → no regression on the share/shift/creep/severity logic S055+S076 just stabilized; share denominators come out within-entity for free. Cost: per-entity artifact paths (`corridor_trends_weekly_<entity>.parquet`) + filter the override-seed/daily_product reads by entity per pass; still append `entity` to `_issue_key`/dedup/suppression (concat spans both). vs **Option A** (entity threaded into all ~20 corridor group-bys + artifact schema) = more uniform but re-keys the proven internals (higher regression risk).
+
+## Effort (firmer)
+- pipeline.py (Option B): ~1 focused day (loop wrap + artifact path param + override/daily_product entity filters + _issue_key/dedup/suppression + FRAMEWORK_COLS/order_source/entity).
+- serving (TS): ~0.5 day **(softest number — TS serving layer NOT yet read this session)**. issues.parquet gains `entity` → `/api/alerts` filter param → Alerts tab toggle / two sections.
+- validation: ~0.5 day — offline replay from cache (S076 harness: `python pipeline.py` from cache, diff `issues.parquet` vs snapshot) + pytest (issue-shape tests need `entity`).
+- deploy: push → main → CICD → DAG re-trigger (principal-gated, CICD on main-merge). **OOM-watch** — S069/S097 OOM history; per-entity loop holds more intermediate frames; pod 20Gi, full pull ~18M rows.
+- **~2 focused days end-to-end** for a careful, validated, deployed split.
+
+## Turn log
+- T1: Respawn (grounding: keepsake, S076 audit quest + resume, vocab note). Noted SCM term → memory. Answered feasibility (medium effort, green-in-principle, sparsity risk flagged). Principal locked split level (detection grain) + mapping (order_source=ORWO).
+- T2: Ran volume check off live daily.parquet → green; sparsity risk retired. Principal chose "plan the implementation."
+- T3: Read-only pipeline.py trace (this entry). Recommend Option B. NO edits. Awaiting principal go on implementation (would open the build as a tracked checklist — mirrored in inventory resume).
+- T4: Principal: "build it." Branched `scm-alerts-entity-split` off shipping-mart-cutover (@f0c86f4). Built Option B in `pipeline.py`: `_entity_expr()` + entity on df_weekly (FRAMEWORK_COLS +order_source); `trends_suffix` param on `_detect_creep`/`_detect_volume_anomaly`/`_corridor_real_coverage`/`_build_alerts`/`_build_issues` (default `_weekly`, backward-compat); new `_entity_period_alerts(dfw, entity, cfgs, prior_issues)` helper runs the engine on the entity-filtered frame (per-entity `corridor_trends_weekly_<entity>.parquet`, frozen-baseline seed filtered by entity w/ transition guard, entity-stamped alert rows); main() loops ENTITIES, per-entity `_build_issues` (daily_product L2 shares filtered by entity), concat → entity-tagged alerts/issues; deviations stay global; meta l2 recomputed globally. **No `_issue_key`/dedup/suppression edits** (per-entity build keeps them within-entity). `py_compile` OK.
+- T5: Serving (tsc clean): `IssueRow.entity` (types.ts); alerts `route.ts` entity param + WHERE on both queries + IssueIncident passthrough; `detail/route.ts` optional entity clause; `AlertsTab.tsx` All/ORWO/TCG toggle (local state, mirrors statusView) threaded through all `/api/alerts` fetches + drill-down. No global Filters/URL changes (matches existing local-state pattern).
+- T6: Offline validation (cache mode, no Redshift, 177.5s, **no OOM**, exit 0). Diff vs `issues_before_S098.parquet`: entity col present, **0 null**; ORWO 21 / TCG 162 issues; active 17→**20** (ORWO 6 + TCG 14 — per-entity baselines surface ORWO-specific issues previously diluted); **0 impossible impacts** (S076 fix holds); TCG top set matches S076 post-fix exactly (DE UPS04STD +147K, DBSCHENKER +88K, MAERSKUK +46K…); ORWO top = DE DHL3 +20K / UPS +16K carrier shifts. **Cross-check: 0 orphan corridors** (every active issue's (entity,country,provider) carries that entity's volume in daily.parquet → attribution provably correct). **pytest 89/89.** alerts.parquet entity ORWO 425/TCG 1857; per-entity trends files written.
+- T7: Git surface = 5 files (pipeline.py +TS×4). **NOT committed** — awaiting principal review. Old unsuffixed `corridor_trends_weekly.parquet` now orphaned (pipeline-internal, not read by serving) — harmless, gitignored. Scratch `_s098_run.log` untracked (exclude from commit).
+- T8: Principal "commit and push, its all good." COMMITTED **54cde63** (5 files, +222/−117; `git commit -m … -- <pathspec>`, scratch log excluded) + PUSHED to **origin/scm-alerts-entity-split** (picanova/bi-analytics, new branch, tracking set). NOT merged to main (deploy = principal-gated CICD cycle, held). Remaining: main-merge → CICD → DAG re-trigger (OOM-watch) + serving pod restart to pick up `entity`. Brain records uncommitted (no brain commit without principal go).
+- T9: Principal "oh also merge to main." MERGED to **origin/main** (4a76307..**3535229**, `--no-ff` from detached origin/main per S076 method — local main untouched/stale). Pre-commit `--no-commit` inspection confirmed merge net effect = **exactly the 5 files**, 0 conflicts (merge base f0c86f4 already on main; the big branch-vs-main-tip diff is main-only advances my branch lacks, untouched by the merge). **CICD now building `:latest`.** Restored branch checkout (not left detached).
+  **Deploy-ordering hazard flagged:** the new serving image expects an `entity` column in issues.parquet. Live parquets are pre-S098 (no entity) until the DAG re-runs the new pipeline. "All" mode tolerates a missing column (entityFilter empty), but the ORWO/TCG toggle adds `AND entity = ?` → 500 until parquets are regenerated. **Sequence the DAG run before/with the serving pod restart.** Remaining principal/cluster-gated ops: watch CICD → trigger DAG (OOM-watch, ~13M-row pull) → restart serving pod.
+- T10 (close): Principal hit the flagged hazard live — "3 alerts in All, 0 in ORWO/TCG" — then "my bad it worked" once the DAG regenerated entity-tagged parquets. **Deployed + verified working in prod.** No dangling pending actions (commit/push/merge all completed; deploy ops done principal-side). **Quest COMPLETE** → moved to completed/. Harvest: 1 bank draft (SCM entity-split architecture) + 1 memory (schema-add deploy ordering). Brain records committed scoped to jebrim namespace + comms.
+
+## Discipline
+- READ-ONLY this session. Any implementation: branch-local, `git commit -- <pathspec>` only (shared-index hazard per 006248ef), NO push/main-merge without principal go (main = CICD).
+- polars prints on Windows need `PYTHONIOENCODING=utf-8`.

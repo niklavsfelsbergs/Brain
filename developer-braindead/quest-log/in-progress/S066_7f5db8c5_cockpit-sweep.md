@@ -1,4 +1,4 @@
-# S066 — cockpit sweep (first review since the S064 rebuild)
+# S066 — cockpit sweep (first review since the [[S064_78824901_switchboard-cockpit-rebuild|S064]] rebuild)
 
 **Session:** braindead-7f5db8c5. **Mode:** dev-brain. **Surface:** read-only
 sweep — no cockpit files touched (two siblings live-editing: [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]
@@ -20,10 +20,10 @@ dev server and never exercised in the icon-launched window. This is that sweep.
 
 | # | Severity | Finding | Where | Status |
 |---|---|---|---|---|
-| 1 | **P0** | **Esc doesn't cancel.** The composer `onKeyDown` binds only `Enter`. No `Escape` handler exists. Interrupt *does* work via the **Stop** button (`conn.interrupt()` → backend `control_request`), but Esc is unwired. | `cockpit/web/console.js` (composer `<textarea onKeyDown>`, ~L130) | **OPEN** — not covered by S065. One-liner: `if (e.key==="Escape" && model.busy) conn.interrupt()`. |
+| 1 | **P0** | **Esc doesn't cancel.** The composer `onKeyDown` binds only `Enter`. No `Escape` handler exists. Interrupt *does* work via the **Stop** button (`conn.interrupt()` → backend `control_request`), but Esc is unwired. | `cockpit/web/console.js` (composer `<textarea onKeyDown>`, ~L130) | **OPEN** — not covered by [[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]]. One-liner: `if (e.key==="Escape" && model.busy) conn.interrupt()`. |
 | 2 | **P0** | **Can't answer in-session questions.** Headless `claude -p` **auto-dismisses** `AskUserQuestion`/`ExitPlanMode` (injects its own `tool_result {is_error:true}` "Answer questions?") the instant they're called — no stream-json client can intercept or supply the answer. Console rendered the inert tool card; session then wedges at `busy`. | `cockpit/backend.py` `chat_handler`; `console.js` tool-card render | **FIXED in [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]** (bfa95764): `--disallowedTools "AskUserQuestion ExitPlanMode"` → agent falls back to **prose** questions, answerable in the composer. (Corrects my initial theory — a tool_result round-trip UI would NOT have worked; the CLI dismisses first.) |
-| 3 | P1 | **A wedged turn has no recovery but Stop.** When a session sits at `busy` with no `result` frame (the #2 signature, and any future hang), the composer shows only **Stop** — can't type a follow-up. S065's prose fix removes the main trigger, but the wedge state itself has no UI affordance. | `console.js` (`model.busy` gates Send↔Stop) | OPEN (mostly mitigated by S065). |
-| 4 | P1 | **`--permission-mode bypassPermissions` is un-gated and has no toggle.** Every cockpit-driven session auto-approves all permission prompts. The brain's *architectural* hooks (no-confirmed-writes, no-deletes, dwarf/gnome boundaries) still fire — they're PreToolUse `exit(2)`, independent of permission mode — so the six guarantees hold. But there's zero human gate on Bash/Edit in a cockpit session, and no `bypassPermissions`↔`acceptEdits` UI toggle (deferred since old S060). | `cockpit/backend.py` `chat_handler` args (~L179) | OPEN — **decision needed**, not obviously a bug. |
+| 3 | P1 | **A wedged turn has no recovery but Stop.** When a session sits at `busy` with no `result` frame (the #2 signature, and any future hang), the composer shows only **Stop** — can't type a follow-up. [[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]]'s prose fix removes the main trigger, but the wedge state itself has no UI affordance. | `console.js` (`model.busy` gates Send↔Stop) | OPEN (mostly mitigated by [[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]]). |
+| 4 | P1 | **`--permission-mode bypassPermissions` is un-gated and has no toggle.** Every cockpit-driven session auto-approves all permission prompts. The brain's *architectural* hooks (no-confirmed-writes, no-deletes, dwarf/gnome boundaries) still fire — they're PreToolUse `exit(2)`, independent of permission mode — so the six guarantees hold. But there's zero human gate on Bash/Edit in a cockpit session, and no `bypassPermissions`↔`acceptEdits` UI toggle (deferred since old [[S060_brain_self_audit_and_plan_reconciliation|S060]]). | `cockpit/backend.py` `chat_handler` args (~L179) | OPEN — **decision needed**, not obviously a bug. |
 | 5 | P2 | **No reconnect on WebSocket drop.** `ws.onclose` sets status "disconnected" and stops; backend `finally` calls `proc.terminate()`. A backend restart or network blip ends the session with no recovery UI. (Switching *rows* is fine — the conn stays alive in `fleet.js`, by design.) | `cockpit/web/fleet.js` (`SessionConn.connect` onclose) | OPEN. |
 | 6 | P2 | **No "working" indicator during silent tool runs.** The streaming preview only shows on text/thinking delta. During a long Bash with no output, nothing moves but the Stop button — hard to tell "thinking" from "wedged". | `cockpit/web/console.js` (`Preview` gated on `preview.text`/`thinking`) | OPEN — polish. |
 | 7 | P2 | **Feed drops/clusters comms.** `api_feed` filters any item whose `ts` won't parse; comms timestamps are coarse (date-only → all collapse to 00:00 ordering). Lifecycle kinds (`picked_up`/`intent`/`needs_you`/`done`) ARE wired correctly to the hook contract — feed isn't broken, just comms ordering. | `cockpit/backend.py` `api_feed` / `_comms_ts` | OPEN — minor. |
@@ -33,7 +33,7 @@ dev server and never exercised in the icon-launched window. This is that sweep.
 
 So future sessions don't re-audit the good parts: the one-process model (no
 server-dying disease), `Cache-Control: no-store` on all assets (kills the
-stale-JS tax that haunted the old board through S063), the fleet-board read
+stale-JS tax that haunted the old board through [[S063_switchboard_feed_liveness_and_cache_fix|S063]]), the fleet-board read
 model, `/history` transcript replay, persistent connections across row-switches,
 and the place/release flow all look correctly built. Hook contracts untouched
 and intact. The bones are good — what was missing is the **interactive-response
@@ -45,13 +45,13 @@ layer**, exactly the half headless-driving forces you to own.
 2. **Bug #4 (bypass/toggle)** — surface to principal as a decision: is fully
    un-gated the intended posture for a fleet console, or do we want an
    acceptEdits toggle?
-3. **#3/#5/#6** — robustness pass once #1 + S065 land.
+3. **#3/#5/#6** — robustness pass once #1 + [[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]] land.
 
-## Coordination note (D-024)
+## Coordination note ([[D-024_parallel_player_coordination|D-024]])
 
 Three parallel cockpit sessions at sweep time: this one (read-only sweep),
 bfa95764 ([[S065_bfa95764_cockpit-askuserquestion-hang-fix]] — question fix, landed on disk), f1df4fa5 (hit the same #2
-wall). Clean split: siblings build, I review. SNNN bumped 64→66 (S065 = the
+wall). Clean split: siblings build, I review. SNNN bumped 64→66 ([[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]] = the
 question-fix session). No cockpit files touched by this session.
 
 ## S066 cont. — the B pivot (build)
@@ -76,7 +76,7 @@ as a normal terminal).
   `claude --session-id <uuid>` interactively at brain root. Own module to stay
   off backend.py's merge surface.
 - `cockpit/backend.py` — **2-line additive edit** in `make_app` only (import +
-  `/pty` route). Did NOT touch `chat_handler` (bfa95764's S065 surface).
+  `/pty` route). Did NOT touch `chat_handler` (bfa95764's [[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]] surface).
 - `cockpit/web/term.js` (new) — xterm.js view; `TermConn` keeps the terminal +
   WS alive across row-switches (mirrors fleet.js); `termForSid8` so a board-row
   click returns to the live terminal. Inline styles — no `styles.css` touch.
@@ -137,7 +137,7 @@ with the principal in the cockpit window:
 - requirements.txt: add `pywinpty`.
 - Refinements: seed-timing (detect TUI-ready vs fixed delay); a release/“×” is
   wired but terminal persistence across reload (resume a PTY claude via
-  `--resume`) is not; once B is trusted, retire `/chat` + S065's workaround.
+  `--resume`) is not; once B is trusted, retire `/chat` + [[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]]'s workaround.
 - Original sweep bugs #1 (Esc) and #2 (questions) are **resolved by B** in the
   terminal path; #3/#5–#8 (headless-path robustness/polish) only matter if `/chat`
   is kept.

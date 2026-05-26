@@ -8,7 +8,7 @@
 
 ## Pre-flight
 
-SNNN determination: globbed `players/*/quest-log/**/*.md` for `^S\d{3}_` — max found = 29 (S029). Next SNNN = **S030**.
+SNNN determination: globbed `players/*/quest-log/**/*.md` for `^S\d{3}_` — max found = 29 ([[S029_2026-05-22_shipping-agent-vocab-harvest|S029]]). Next SNNN = **S030**.
 
 Session files in scope (this session only, all dated 2026-05-22, unprefixed):
 
@@ -64,9 +64,9 @@ Active inventory after step 4:
 - `main-merge-aws-cutover-resume.md` — parked, populated, in scope for next session.
 - `dashboard-agent-convergence-resume.md` — still parked (long-standing).
 - `shipping-agent-personal-folders-resume.md` — older parked quest, out of scope this session.
-- Multiple `S0NN-*-resume.md` files for older in-progress quests (S001, S002, S015, S023, S024, S026) — these are stale from prior sessions and remain in active inventory. Out of scope this pass per the brief ("Jebrim only" + "this session's files only") — flagging in anomalies for principal attention.
+- Multiple `S0NN-*-resume.md` files for older in-progress quests ([[S001_2026-05-20_repo-orientation|S001]], [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]], [[S015_2026-05-21_ttyd-review-and-dry-run|S015]], [[S023_2026-05-21_shipping-mart-coverage-audit|S023]], [[S024_2026-05-21_shipping-agent-rulebook-revamp|S024]], [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]]) — these are stale from prior sessions and remain in active inventory. Out of scope this pass per the brief ("Jebrim only" + "this session's files only") — flagging in anomalies for principal attention.
 
-Soft-check: `quest-log/in-progress/` has many older files (S001/S002/S015/S023/S024/S026/OPEN_* and the S026 dwarves). Each one has a matching `*-resume.md`. No step-3 gap among this-session quests.
+Soft-check: `quest-log/in-progress/` has many older files ([[S001_2026-05-20_repo-orientation|S001]]/[[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]]/[[S015_2026-05-21_ttyd-review-and-dry-run|S015]]/[[S023_2026-05-21_shipping-mart-coverage-audit|S023]]/[[S024_2026-05-21_shipping-agent-rulebook-revamp|S024]]/[[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]]/OPEN_* and the [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] dwarves). Each one has a matching `*-resume.md`. No step-3 gap among this-session quests.
 
 ## Step 6 — Observation harvest
 
@@ -77,7 +77,7 @@ Harvest skim across parent quest + 6 dwarf siblings. Per harvest cap (1-5, bias 
 1. **Bank note — CSV export architecture / helper module.** `src/lib/csv.ts` + `TableExportButton.tsx` pattern, applied across 10+ tables. Reusable knowledge about how this dashboard's export story now works. **Drafting.**
 2. **Examine — git add scoping with parallel sessions.** Brief flagged the lesson about unexpected files in commits when staged content from a parallel dev-brain session was pre-staged. **Drafting.**
 3. **Skill — two-wave dwarf pattern.** First wave for structural change (cutover apply), second wave for follow-up (CSV rework) once foundation laid. Each wave = 3 independent dwarves. Could earn a skill draft — but `spawning-dwarves.md` likely already covers parallel decomposition. **Skipping** — pattern is one session deep; let it surface again before formalizing.
-4. **Niksis8_character.** Nothing player-relationship-specific surfaced beyond what's already in S023/S027 lessons. **Skipping.**
+4. **Niksis8_character.** Nothing player-relationship-specific surfaced beyond what's already in [[S023_2026-05-21_shipping-mart-coverage-audit|S023]]/S027 lessons. **Skipping.**
 5. **Bank note — `cost_source` pandas-drops-all-NULL bug class.** The pipeline.py guard pattern (force-cast to `pl.Utf8` after pandas → polars boundary when column may have been dropped). Reusable knowledge for any future column added to the projection. **Drafting** — small but specific and load-bearing.
 
 Final: **3 drafts** (bank-note CSV, bank-note pandas-NULL-drop, examine git-scoping). Within the 1-5 cap.

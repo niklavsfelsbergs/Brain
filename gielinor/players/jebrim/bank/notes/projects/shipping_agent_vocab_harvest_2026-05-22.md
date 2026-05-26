@@ -1,6 +1,6 @@
-# Shipping-agent vocab harvest — 2026-05-22 (S029)
+# Shipping-agent vocab harvest — 2026-05-22 ([[S029_2026-05-22_shipping-agent-vocab-harvest|S029]])
 
-**As of:** 2026-05-22 (S029 — applied to shipping-agent same day).
+**As of:** 2026-05-22 ([[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] — applied to shipping-agent same day).
 
 > Recon harvest from NFE + `shipping_topics/` for things to teach the shipping agent. Six trip-up rules + glossary + negative-space. Sibling to [[shipping_mart_cost_vocabulary_2026-05-22]] and [[shipping_costs_monitoring_nextjs_vocab]].
 
@@ -13,7 +13,7 @@
 - `workbench/shipping_topics/*` — topics 1–22 not present in NFE, sampled (tassenlibling, Asendia US, US PHX shutdown).
 - Power BI: `Shop Order Info.tmdl` (production-site LIKE-patterns).
 
-**Not walked:** `bi-etl/`, `dashboards/shipping_costs_monitoring_nextjs/` (S026 covered it), other `NFE/projects/` siblings.
+**Not walked:** `bi-etl/`, `dashboards/shipping_costs_monitoring_nextjs/` ([[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] covered it), other `NFE/projects/` siblings.
 
 ---
 
@@ -146,7 +146,7 @@ State these as "the agent should not lean on these framings" — they don't appe
 
 ## § 4 — Application status
 
-Applied 2026-05-22 (S029) to `shipping-agent/how_to.md` §0 (rules 12–15 + rule 9 tightening) and `shipping-agent/reference/known-dq.md` (db_schenker section). Original proposal text in git history — commit `c48bac6` (bi-analytics-main).
+Applied 2026-05-22 ([[S029_2026-05-22_shipping-agent-vocab-harvest|S029]]) to `shipping-agent/how_to.md` §0 (rules 12–15 + rule 9 tightening) and `shipping-agent/reference/known-dq.md` (db_schenker section). Original proposal text in git history — commit `c48bac6` (bi-analytics-main).
 
 ## § 6 — Related
 

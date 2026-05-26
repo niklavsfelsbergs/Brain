@@ -2,7 +2,7 @@
 
 **Opened/closed:** 2026-05-25 (single session)
 **Player:** Jebrim
-**Working dir:** `Documents/GitHub/shipping-agent/` (additional working dir — maintainer work; this entry is the on-disk evidence per the S024 lapse lesson)
+**Working dir:** `Documents/GitHub/shipping-agent/` (additional working dir — maintainer work; this entry is the on-disk evidence per the [[S024_2026-05-21_shipping-agent-rulebook-revamp|S024]] lapse lesson)
 **Trigger:** Principal observed the shipping-agent *sometimes* opens with clarifying selection menus (scope + what-metric) and sometimes doesn't — asked why, then asked to make the good behavior fire more reliably and render as a clickable menu.
 
 ## What it was
@@ -13,7 +13,7 @@ A real-prompt diagnosis + two-part rulebook fix in `how_to.md`. Started as a por
 
 Two separate inconsistencies, kept apart:
 
-1. **Whether it decomposes at all (Mode 2 firing).** Mode 2's trigger examples were all *obviously* fuzzy ("how are we doing?"). The principal's prompt — *"outlier shipping charges in april/may which I should be aware of"* — was *covertly* fuzzy: undefined metric ("outlier") + discovery frame ("which I should be aware of"), but looked answerable, so it read as borderline-Mode-1 and coin-flipped. This is the documented "full rigor present, doesn't self-trigger on the fast path" root (S059→S067), here at mode-selection.
+1. **Whether it decomposes at all (Mode 2 firing).** Mode 2's trigger examples were all *obviously* fuzzy ("how are we doing?"). The principal's prompt — *"outlier shipping charges in april/may which I should be aware of"* — was *covertly* fuzzy: undefined metric ("outlier") + discovery frame ("which I should be aware of"), but looked answerable, so it read as borderline-Mode-1 and coin-flipped. This is the documented "full rigor present, doesn't self-trigger on the fast path" root ([[S059_9369b3f2_shipping-agent-limit-testing|S059]]→[[S067_6ccc2220_shipping-agent-bucket-first-harvest|S067]]), here at mode-selection.
 2. **How it presents the decomposition (menu vs prose).** The interactive menu is the harness question tool (`AskUserQuestion` in Claude Code). `how_to.md` said "surface readings in plain English / numbered selection" — content, not mechanism — so the model rendered prose sometimes, menu other times.
 
 ## Edits to `how_to.md` (§0)

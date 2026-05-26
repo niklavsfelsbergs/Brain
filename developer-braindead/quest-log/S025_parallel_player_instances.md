@@ -1,8 +1,8 @@
-# S025 — Parallel player instances (D-017 implementation)
+# S025 — Parallel player instances ([[D-017_parallel_player_instances|D-017]] implementation)
 
 **Date.** 2026-05-22.
 **Mode.** Dev-brain.
-**Outcome.** D-017 designed and shipped end-to-end in one session. Validated live on first run.
+**Outcome.** [[D-017_parallel_player_instances|D-017]] designed and shipped end-to-end in one session. Validated live on first run.
 
 ## What was asked
 
@@ -44,7 +44,7 @@ Wrote `bank/decisions/D-017_parallel_player_instances.md`. The decision doc cove
 - **`instanceLastEventAt[]`** tracker — updated on every event with an actor.
 - **`despawnIdleInstances()`** — sweeps every 30s, fades out instances with no events for 5+ minutes.
 - **CSS tint classes** `.parallel-instance.tint-{2,3,4}` — initially shipped with subtle `+25°` hue-rotate. Principal feedback: indistinguishable. Bumped to `+140°/+220°/+80°` with saturation/brightness tweaks. Face shifts too — accepted cost of whole-sprite filter rather than masking skin.
-- **`.day-night-overlay`** already existed (Q-008); no change. New animations gated under the existing reduced-motion media query.
+- **`.day-night-overlay`** already existed ([[Q-008_visualizer_aliveness|Q-008]]); no change. New animations gated under the existing reduced-motion media query.
 
 ## Validation
 
@@ -65,11 +65,11 @@ Principal hard-refreshed the visualizer mid-session and confirmed: second Jebrim
 
 ## Observations worth keeping
 
-**Live-development found the design's UX gap, not the static design.** D-017 specified "tint per instance" with no number on how much shift. First implementation went small (+25°) for accessibility caution; principal couldn't see the difference. The design doc updated to require strong shifts. Pattern: when a design ducks a magnitude question with "tint" instead of "tint by N°", the implementer's first guess is usually too conservative.
+**Live-development found the design's UX gap, not the static design.** [[D-017_parallel_player_instances|D-017]] specified "tint per instance" with no number on how much shift. First implementation went small (+25°) for accessibility caution; principal couldn't see the difference. The design doc updated to require strong shifts. Pattern: when a design ducks a magnitude question with "tint" instead of "tint by N°", the implementer's first guess is usually too conservative.
 
-**Two parallel Jebrim sessions were already running while we coded the support for them.** A `tail state.ndjson` showed the hook stamping `instance:2` on Jebrim's parallel session before the visualizer side was even merged. The hook side ran in production immediately on every PostToolUse — same workflow as S023's session-gating fix. No special deployment path.
+**Two parallel Jebrim sessions were already running while we coded the support for them.** A `tail state.ndjson` showed the hook stamping `instance:2` on Jebrim's parallel session before the visualizer side was even merged. The hook side ran in production immediately on every PostToolUse — same workflow as [[S023_visualizer_ticker_and_cross_session_attribution|S023]]'s session-gating fix. No special deployment path.
 
-**`claude-code-guide` agent's research was correct and saved a wrong default.** Claude Code's SessionEnd hook exists but is best-effort only — confirmed via the docs. Original D-017 draft would have made it load-bearing; the research forced the right design where the idle timer is the contract and SessionEnd is the speedup.
+**`claude-code-guide` agent's research was correct and saved a wrong default.** Claude Code's SessionEnd hook exists but is best-effort only — confirmed via the docs. Original [[D-017_parallel_player_instances|D-017]] draft would have made it load-bearing; the research forced the right design where the idle timer is the contract and SessionEnd is the speedup.
 
 **The instanceKey() abstraction is doing all the work.** Adopting "instance 1 = bare actor name" as the convention meant the static-HTML jebrim/zezima elements needed zero changes; only instance 2+ paths are new. Most of the visualizer touched lines look like `const actorKey = instanceKey(ev.actor, ev.instance);` followed by mechanical s/ev.actor/actorKey/. Low risk for a sweeping change.
 
@@ -88,20 +88,20 @@ Principal hard-refreshed the visualizer mid-session and confirmed: second Jebrim
 
 This session's own commit got eaten by Jebrim's parallel session. While I was writing this quest-log entry, Jebrim's session ran a broad `git add` and then `git commit`, which swept up my dev-brain changes alongside his CSV-export work. The combined commit landed as `5ec5c4c "CSV export rework: unified helper + 9 new buttons (quest log)"`, which contains:
 
-- D-017's decision doc, hook changes, visualizer changes, settings.json, respawn.md update, AND this quest-log file (all mine)
+- [[D-017_parallel_player_instances|D-017]]'s decision doc, hook changes, visualizer changes, settings.json, respawn.md update, AND this quest-log file (all mine)
 - Plus Jebrim's actual CSV export work in `gielinor/`
 
 The work is safely in the repo, just under a misleading commit message bundled with Jebrim's. No data loss.
 
-**The shape of this race.** D-017 fixed parallel-session visibility *in the visualizer*. It did **not** fix parallel-session interference *at the filesystem / git layer*. Two sessions sharing a working tree share a git index — whichever one calls `git add -A` first sweeps up everything that's staged and stages everything that isn't. The downstream `git commit` then captures whatever's in the index, regardless of authorship intent.
+**The shape of this race.** [[D-017_parallel_player_instances|D-017]] fixed parallel-session visibility *in the visualizer*. It did **not** fix parallel-session interference *at the filesystem / git layer*. Two sessions sharing a working tree share a git index — whichever one calls `git add -A` first sweeps up everything that's staged and stages everything that isn't. The downstream `git commit` then captures whatever's in the index, regardless of authorship intent.
 
 **Worth recording as a `bank/decisions/` candidate at next bankstanding.** Likely shape: *parallel sessions should commit with explicit paths only, never `git add -A` / `git add .`*. The global CLAUDE.md already warns against `git add -A` for a different reason (sensitive file leakage); add this as a second reason. Or: each session writes to a worktree-isolated branch when running in parallel.
 
-**Companion observation about S025 specifically.** It mirrors S024's "watching-it-run finds bugs the audit-and-validate phase missed" pattern at a different layer. The D-017 design was rigorous about which actor owns which sprite — but said nothing about which session owns the git index. The blind spot was real and surfaced only on the commit attempt. Pattern: design docs scope to a layer; cross-layer races only become visible at integration time.
+**Companion observation about S025 specifically.** It mirrors [[S024_visualizer_aliveness_pass_1_3|S024]]'s "watching-it-run finds bugs the audit-and-validate phase missed" pattern at a different layer. The [[D-017_parallel_player_instances|D-017]] design was rigorous about which actor owns which sprite — but said nothing about which session owns the git index. The blind spot was real and surfaced only on the commit attempt. Pattern: design docs scope to a layer; cross-layer races only become visible at integration time.
 
 ## Open follow-ups
 
 - Cross-instance dwarf delegation — when jebrim-1 spawns D1 and jebrim-2 spawns D2, the dwarves currently attribute to "jebrim" generically. First cut accepts this; revisit if the pattern matters for cross-reference reasoning.
 - Accessibility check of the chosen tint palette under common color-blindness simulators.
-- Active-player concept currently single-valued — focal label follows whichever Jebrim is "active". D-017 specifies "both active" — needs a `Set<activeInstance>` refactor in a follow-up.
+- Active-player concept currently single-valued — focal label follows whichever Jebrim is "active". [[D-017_parallel_player_instances|D-017]] specifies "both active" — needs a `Set<activeInstance>` refactor in a follow-up.
 - Same-building sprite stacking — handled by jitter() since the actorKey hashes differ. Likely fine for 2 instances per building; gets tight at 3+.

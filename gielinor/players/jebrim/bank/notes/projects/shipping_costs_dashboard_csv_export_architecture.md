@@ -1,6 +1,6 @@
 # Shipping-costs dashboard — CSV export architecture
 
-**Status:** draft (harvested S030, 2026-05-22).
+**Status:** draft (harvested [[S030_2026-05-22_dashboard-gold-cutover|S030]], 2026-05-22).
 **Repo:** `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/` on branch `shipping-mart-cutover`.
 
 ## What landed
@@ -53,4 +53,4 @@ The shared `csv.ts` helper means future tables with new data shapes can ship a D
 
 ## Anchor turns
 
-S030 / T7-T10 of `quest-log/completed/S030_2026-05-22_dashboard-gold-cutover.md`, dwarf siblings `S030_2026-05-22_d{1,2,3}_csv-*.md`. Commits `6233b4e`, `1d4004a`, `93a51ba` on `bi-analytics` `shipping-mart-cutover`.
+[[S030_2026-05-22_dashboard-gold-cutover|S030]] / T7-T10 of `quest-log/completed/S030_2026-05-22_dashboard-gold-cutover.md`, dwarf siblings `S030_2026-05-22_d{1,2,3}_csv-*.md`. Commits `6233b4e`, `1d4004a`, `93a51ba` on `bi-analytics` `shipping-mart-cutover`.

@@ -6,7 +6,7 @@
 
 Principal frame: "we are underutilizing a lot of things in the brain — discuss then improve." Jebrim's pre-flip diagnosis (see `gielinor/players/jebrim/quest-log/in-progress/OPEN_2026-05-22_brain-underutilization-frame.md`) named five symptoms collapsing to four roots:
 
-- **A. Promotion gate stalled** (drafts → confirmed; skills graduation): identity layers empty, S034 alching parked 8/8.
+- **A. Promotion gate stalled** (drafts → confirmed; skills graduation): identity layers empty, [[S034_guthix_consultation_mode|S034]] alching parked 8/8.
 - **B. Bank capture post-hoc, not turn-reflexive**: `bank/notes/` thinner than work justifies.
 - **C. Close-session backlog**: 11 in-flight Jebrim inventories, some likely stale-done.
 - **D. Guthix invisible**: cross-cutting questions go to whichever player is active, not consultation mode.
@@ -40,18 +40,18 @@ Each dwarf returns a tight diagnostic report. No fix proposals — pure recon.
 ### D2 — In-progress quest audit (Jebrim, 19 files)
 
 Classification:
-- **5 DONE-NOT-MOVED** — S023 (coverage audit), S024 (rulebook revamp), S026 (parent), S034_g2 (alching gnome artifact), OPEN_shipping-agent-personal-folders. All shipped; never walked to `completed/`.
-- **8 LIVE** — S002 + 3 dwarves, S015, S026 + 3 dwarves, S034 (active work, recent activity).
-- **2 PAUSED** — S001 (explicit carry-forward), S032 (parked + queued audit).
+- **5 DONE-NOT-MOVED** — [[S023_visualizer_ticker_and_cross_session_attribution|S023]] (coverage audit), [[S024_visualizer_aliveness_pass_1_3|S024]] (rulebook revamp), [[S026_d018_shipped_visualizer_audit_prep|S026]] (parent), S034_g2 (alching gnome artifact), OPEN_shipping-agent-personal-folders. All shipped; never walked to `completed/`.
+- **8 LIVE** — [[S002_dev_brain_runescape_restructure|S002]] + 3 dwarves, [[S015_dwarf_attribution_via_agent_id|S015]], [[S026_d018_shipped_visualizer_audit_prep|S026]] + 3 dwarves, [[S034_guthix_consultation_mode|S034]] (active work, recent activity).
+- **2 PAUSED** — [[S001_dev_brain_architecture|S001]] (explicit carry-forward), [[S032_terminal_switchboard_phases_1_and_2|S032]] (parked + queued audit).
 - **1 ABANDONED-CANDIDATE** — OPEN_brain-underutilization-frame (this session's bridge file; archive after S035 closes).
-- **2 AMBIGUOUS** — S030_g1 (gnome ritual artifact), S031 (live, but resume missing).
-- **2 missing inventory resume files** — S031, S032. Close-session step 3 didn't fire cleanly for these.
+- **2 AMBIGUOUS** — S030_g1 (gnome ritual artifact), [[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]] (live, but resume missing).
+- **2 missing inventory resume files** — [[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]], [[S032_terminal_switchboard_phases_1_and_2|S032]]. Close-session step 3 didn't fire cleanly for these.
 
 Root cause: close-session step 4 ("move done quests to completed") is **discretionary, not enforced**. The principal hasn't cued "this quest is done" for the 5 stale-done; the agent doesn't walk them on its own initiative.
 
 ### D3 — Ritual vs evidence (THE LOAD-BEARING FINDING)
 
-**Promotions to `confirmed/` HAVE happened.** S029 alching (2026-05-21) wrote 5 entries into `gielinor/players/jebrim/examine/confirmed/`. They exist on disk.
+**Promotions to `confirmed/` HAVE happened.** [[S029_parallel_braindead_and_comms_channel|S029]] alching (2026-05-21) wrote 5 entries into `gielinor/players/jebrim/examine/confirmed/`. They exist on disk.
 
 **But they don't appear in `current.md`.** Per `respawn.md` step 6.e: the agent reads `confirmed/current.md`, **not the full `confirmed/` folder**. `current.md` aggregation is user-only and **no ritual owns it**. So even when promotion happens, the promoted knowledge **doesn't load at respawn**.
 
@@ -88,8 +88,8 @@ The five symptoms map to **two bugs (structural)** and **two habits (tempo)**.
 | Phase | Surface | What | Effort | Impact |
 |---|---|---|---|---|
 | **1a** | structural | Decide: respawn reads `confirmed/` folder, OR alching aggregates to `current.md`. Implement the choice. | small (1 ritual edit + 1-line change OR a new alching step) | promoted knowledge actually loads next session |
-| **1b** | mechanical | Move 5 DONE-NOT-MOVED quests to `completed/`. Archive `OPEN_brain-underutilization-frame` post-S035. Add resume files for S031/S032 (or principal decides). | small (gnome work, 30 min) | queue halves; respawn quieter |
-| **1c** | mechanical | Promote 5 ready Jebrim drafts (2 examine + 3 skills) via principal triage in chat. Aggregate S029's 5 confirmed entries into Jebrim's `current.md`. | medium (principal turn cost, ~10 min) | identity layer populates from zero to seven entries |
+| **1b** | mechanical | Move 5 DONE-NOT-MOVED quests to `completed/`. Archive `OPEN_brain-underutilization-frame` post-S035. Add resume files for [[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]]/[[S032_terminal_switchboard_phases_1_and_2|S032]] (or principal decides). | small (gnome work, 30 min) | queue halves; respawn quieter |
+| **1c** | mechanical | Promote 5 ready Jebrim drafts (2 examine + 3 skills) via principal triage in chat. Aggregate [[S029_parallel_braindead_and_comms_channel|S029]]'s 5 confirmed entries into Jebrim's `current.md`. | medium (principal turn cost, ~10 min) | identity layer populates from zero to seven entries |
 | **2a** | structural | `/drafts` lightweight command — batched y/n/skip per draft. Lowers per-draft review cost from "context load" to "glance + key." | medium (command spec + implementation) | promotion tempo can sustain weekly cadence |
 | **2b** | structural | Close-session step 4 gains agent-initiative: scan in-progress for "no pending actions + last turn says ship/complete," propose moves to principal at session close. | small (ritual edit) | DONE-NOT-MOVED becomes self-clearing |
 | **2c** | habit | Guthix discoverability heuristic — at session start, if first prompt looks system-scope (cross-cutting, not player-domain), agent suggests `Hey Guthix`. | small (one rule in `meta/communication-protocol.md`) | consultation gets invited rather than remembered |
@@ -106,8 +106,8 @@ The five symptoms map to **two bugs (structural)** and **two habits (tempo)**.
 Principal approved `go all` + chose option (i) for 1a. Executed:
 
 - **1a** — `gielinor/spellbook/rituals/respawn.md` edited at steps 4, 5, 6.e, 6.f. Each now reads every `.md` in `confirmed/` instead of just `current.md`. All 12 previously-invisible Jebrim confirmed entries (+ any future promotions) load on next respawn.
-- **1b-1** — `git mv` 8 stale-done quests to `gielinor/players/jebrim/quest-log/completed/`: S023, S024, S026 (parent + d1/d2/d3 dwarves), S030_g1 gnome, OPEN_shipping-agent-personal-folders. Jebrim's in-progress went from 18 → 10 entries.
-- **1b-2** — Resume files written for S031 + S032. Each notes the close-session-step-3 gap as the reason for post-hoc creation.
+- **1b-1** — `git mv` 8 stale-done quests to `gielinor/players/jebrim/quest-log/completed/`: [[S023_visualizer_ticker_and_cross_session_attribution|S023]], [[S024_visualizer_aliveness_pass_1_3|S024]], [[S026_d018_shipped_visualizer_audit_prep|S026]] (parent + d1/d2/d3 dwarves), S030_g1 gnome, OPEN_shipping-agent-personal-folders. Jebrim's in-progress went from 18 → 10 entries.
+- **1b-2** — Resume files written for [[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]] + [[S032_terminal_switchboard_phases_1_and_2|S032]]. Each notes the close-session-step-3 gap as the reason for post-hoc creation.
 - **1c-1** — 3 drafts promoted (D1 over-counted; on-disk reality was 3 not 5): `check-artifact-mtimes-doc-not-source-of-truth.md` and `git-add-scoping-with-parallel-sessions.md` → `examine/confirmed/`; `elicitation-with-default-surfaced.md` → `spellbook/skills/`. Identity layer 12 → 14 entries, all loading next respawn.
 - **1c-2** — Skipped. After 1a, the folder gets read either way; `current.md` aggregation is now optional executive-summary territory.
 
@@ -133,7 +133,7 @@ Added a paragraph to `gielinor/spellbook/rituals/close-session.md` step 4: agent
 
 **2c — close-session step 8 orphan-quest-log catch.**
 
-Added a second pre-commit check to step 8: `git status --short` on quest-log paths, grep `??`, surface as part of commit scope. Anchored to today's S031/S034_g2 discovery. Now close-session won't leave untracked quest narratives drifting across sessions.
+Added a second pre-commit check to step 8: `git status --short` on quest-log paths, grep `??`, surface as part of commit scope. Anchored to today's [[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]]/S034_g2 discovery. Now close-session won't leave untracked quest narratives drifting across sessions.
 
 **2d — Guthix routing heuristic in communication-protocol.md.**
 

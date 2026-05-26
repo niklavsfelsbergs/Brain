@@ -1,12 +1,12 @@
-# Ģertrūdes iela 113, €120k — buy/no-buy synthesis & verdict (S066)
+# Ģertrūdes iela 113, €120k — buy/no-buy synthesis & verdict ([[S066_e2362ea0_domajamas-dalas-reconsider|S066]])
 
 **For:** Niklavs (owner-occupier, intends to mortgage-finance, hold horizon unknown).
-**Date:** 2026-05-25. **Author:** Zezima (S066), weaving three research files + the S056 base.
+**Date:** 2026-05-25. **Author:** Zezima ([[S066_e2362ea0_domajamas-dalas-reconsider|S066]]), weaving three research files + the [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] base.
 **The flat:** 2-rm, ~58 m², floor 5/6, fully-renovated pre-war (1913) brick, individual gas,
 high ceilings, restored tile stoves, land owned. Asking **€120,000 = €2,069/m²**. Held as
 **domājamās daļas** (ideal share of a *kopīpašums*), not a titled *dzīvokļa īpašums*.
 **Anchors:** `2026-05-25-gertrudes113-building-ownership.md`, `-location.md`, `-price-resale.md`;
-S056 generic base (`2026-05-23-domajamas-dalas-*`).
+[[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] generic base (`2026-05-23-domajamas-dalas-*`).
 
 ## Headline
 
@@ -44,7 +44,7 @@ gates Niklavs must close before any emotional commitment.
    shares** — this is an **~81-unit** building, the opposite case; no evidence the lending pool
    widened in 2025–26. The agent ("mortgage shouldn't be a problem… probably Altum") is the
    **seller's** agent. **A signed bank offer for THIS share is the gate; Altum is likely NOT
-   available here.** If no bank lends and he's not all-cash, this is S056 again.
+   available here.** If no bank lends and he's not all-cash, this is [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] again.
 3. **The "added 6th floor" is a legal check, not just a feature.** Real, recent (~2020–23), created
    mansard/duplex units. Per VZD, **adding floor area recalculates everyone's domājamās daļas**;
    per CL 1068 the addition required **unanimous co-owner consent**. Must verify: consent obtained,

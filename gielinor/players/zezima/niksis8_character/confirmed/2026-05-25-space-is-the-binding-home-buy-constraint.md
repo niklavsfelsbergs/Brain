@@ -4,9 +4,9 @@
 Niklavs is **spatial/layout fit**, specifically room to work — and it overrides clean legal and
 financial analysis. Two consecutive flats were passed on it:
 
-- **Duntes 28 (S056):** clean ownership, fair price, sound building — passed because *"it lures you
+- **Duntes 28 ([[S056_e5df54a2_apartment-domajamas-dalas-research|S056]]):** clean ownership, fair price, sound building — passed because *"it lures you
   in, but the room is narrow and long, there's not much space."*
-- **Ģertrūdes 113 (S066):** after a full legal + financing + price deep-dive that moved it from
+- **Ģertrūdes 113 ([[S066_e2362ea0_domajamas-dalas-reconsider|S066]]):** after a full legal + financing + price deep-dive that moved it from
   "walk" to "plausible eyes-open buy," he passed because *"this apartment doesn't really have place
   for a working station… not fully feeling it."*
 
@@ -23,5 +23,5 @@ financial analysis. Two consecutive flats were passed on it:
 - He **passes cleanly, without agonizing**, and accepts the cost ("I likely wont find anything for a
   long time. But so be it"). Don't push back on a clean fit-veto; affirm it.
 
-**Anchor.** S066 T7–T8 (2026-05-25), verbatim *"this apartment doesn't really have place for a
-working station"* + *"not fully feeling it"*; cross-ref Duntes S056 T20.
+**Anchor.** [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] T7–T8 (2026-05-25), verbatim *"this apartment doesn't really have place for a
+working station"* + *"not fully feeling it"*; cross-ref Duntes [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] T20.

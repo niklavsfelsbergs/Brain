@@ -191,7 +191,7 @@ Table presence/freshness. `Last commit` = most-recent commit touching DAG file. 
 
 **Grouped by ticket prefix** (commits with explicit `(NGE-NNNN)/` prefix per NGE-6129 convention):
 
-- **`(NGE-6129)`** — 9 commits (ORWO integration, Satya + Łukasz). All 6 steps merged per S001 carry-forward.
+- **`(NGE-6129)`** — 9 commits (ORWO integration, Satya + Łukasz). All 6 steps merged per [[S001_2026-05-20_repo-orientation|S001]] carry-forward.
 - **`(NGE-6125)`** — 5 commits (`fact_shipment_cost_summary` build-out).
 - Remaining 227 commits use **conventional-commit prefixes without NGE token** (`fix:`, `feat:`, `refactor:`, `docs:`, `perf:`). Team does not consistently include ticket IDs in commit messages outside NGE-6129 / NGE-6125 — ticket→commit mapping for the other 227 requires comment-thread cross-referencing (out of scope for D2; D1 handles ticket side).
 

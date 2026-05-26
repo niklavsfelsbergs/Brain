@@ -1,6 +1,6 @@
 # Substrate portability — what's Claude-Code-bound vs. portable
 
-**As-of:** 2026-05-24 (B-006). Anchor: consultation this session — *"would my setup work with Codex or have I made it Claude-specific?"* Read across `.claude/settings.json`, `.claude/hooks/`, the cockpit launcher (`cockpit/web/term.js`), and the meta/ ruleset.
+**As-of:** 2026-05-24 ([[B-006_2026-05-24_sixth-bankstanding|B-006]]). Anchor: consultation this session — *"would my setup work with Codex or have I made it Claude-specific?"* Read across `.claude/settings.json`, `.claude/hooks/`, the cockpit launcher (`cockpit/web/term.js`), and the meta/ ruleset.
 
 Cross-cutting knowledge about the brain itself: the split between what would survive a move to a different agent runtime (Codex, Gemini CLI, etc.) and what is wired to Claude Code specifically. Seed material for the unwritten `spellbook/rituals/ascension.md` (death-as-migration; see `meta/death-and-spawn.md`).
 

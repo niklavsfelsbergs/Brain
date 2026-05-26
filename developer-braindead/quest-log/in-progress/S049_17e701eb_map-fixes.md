@@ -5,7 +5,7 @@
 
 ## Frame
 
-S048 inverted the visualizer to manifest-driven and *thought* it had landed wander + sprite state-classes. Live observation post-S048: sprites are still standing still, switchboard rows show stale intent from earlier in session and never refresh. Principal asked to clarify map intent first, then dwarf the fix.
+[[S048_b070e9be_visualizer_manifest_driven_sprite_sync|S048]] inverted the visualizer to manifest-driven and *thought* it had landed wander + sprite state-classes. Live observation post-S048: sprites are still standing still, switchboard rows show stale intent from earlier in session and never refresh. Principal asked to clarify map intent first, then dwarf the fix.
 
 ## Intent doc (the contract the dwarves work against)
 

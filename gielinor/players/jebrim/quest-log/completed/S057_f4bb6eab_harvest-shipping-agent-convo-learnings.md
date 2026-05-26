@@ -44,7 +44,7 @@ Two corrections from the principal, both right:
 
 ## T3 — close (S057)
 
-- **Committed:** brain `eac16dd` (5 drafts + quest-log + comms), shipping-agent `c515140` (how_to.md rules 30–34, local-only — push denied by config). Scoped to exclude parallel session S058's contract-ingest work.
+- **Committed:** brain `eac16dd` (5 drafts + quest-log + comms), shipping-agent `c515140` (how_to.md rules 30–34, local-only — push denied by config). Scoped to exclude parallel session [[S058_1f0ae59a_shipping-contract-corpus-ingest|S058]]'s contract-ingest work.
 - **No pending external actions.**
 - **Deliverable shipped** — the convo was harvested into both my brain (5 drafts) and the agent's rulebook (rules 30–34). Quest reads **complete-ready**; proposing move to `completed/` (principal approval).
 - **Close harvest:** 1 examine draft — `2026-05-23-harvest-must-reach-the-agent-and-be-exhaustive.md` (the two principal corrections this session).

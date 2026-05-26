@@ -4,7 +4,7 @@
 
 ## What this was
 
-Principal handed over a 2nd shipping-agent board-prep transcript (the 1st was S063's board-numbers deck). Prompt to the agent: *"how has the cost quota developed since October for ORWO."* Asked: what can we teach the shipping agent from this. Became: critique → instrument the live mart → discover the real root → harvest → implement a rulebook rule → re-test → (commit pending).
+Principal handed over a 2nd shipping-agent board-prep transcript (the 1st was [[S063_5b1ac700_shipping-agent-board-numbers-learnings|S063]]'s board-numbers deck). Prompt to the agent: *"how has the cost quota developed since October for ORWO."* Asked: what can we teach the shipping agent from this. Became: critique → instrument the live mart → discover the real root → harvest → implement a rulebook rule → re-test → (commit pending).
 
 ## What happened
 
@@ -18,7 +18,7 @@ Principal handed over a 2nd shipping-agent board-prep transcript (the 1st was S0
 ## Decisions
 
 - DQ pass (known-dq.md + mart-contract.md §4 ORWO cost entry) **deliberately dropped** — transient reload, not a durable DQ fact; principal owns it post-reload.
-- Rule 36 numbered after 35 (no renumber — preserves cross-references), explicit every-mode scope line, same pattern as S063's rule 35.
+- Rule 36 numbered after 35 (no renumber — preserves cross-references), explicit every-mode scope line, same pattern as [[S063_5b1ac700_shipping-agent-board-numbers-learnings|S063]]'s rule 35.
 - Re-test honesty: gate-application validated; reload-block branch untestable until the next real reload window. Did not overclaim.
 
 ## Pending external actions

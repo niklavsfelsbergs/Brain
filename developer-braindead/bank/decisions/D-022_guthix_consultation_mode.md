@@ -1,8 +1,8 @@
 # D-022 — 2026-05-22 — Guthix consultation mode (general-question deity)
 
-**Context.** Guthix has been a ritual-only voice since [[D-016_gnomes_subagent]]-adjacent S028 work (subtask channel + Guthix landing) and the meta/guthix.md shipped soon after. He existed *only* during bankstanding — the ritual was his entire purpose. Anything outside that shape was refused with a redirect.
+**Context.** Guthix has been a ritual-only voice since [[D-016_gnomes_subagent]]-adjacent [[S028_subtask_channel_and_guthix|S028]] work (subtask channel + Guthix landing) and the meta/guthix.md shipped soon after. He existed *only* during bankstanding — the ritual was his entire purpose. Anything outside that shape was refused with a redirect.
 
-The friction surfaced in S034: Niklavs wanted a place to go for *general overall questions* about the brain — *"what do I have on X across the brain?"*, *"is anything in lorebook contradicting itself?"*, *"help me think about this design"*. The actor for those questions was undefined. Wisp (unscoped mode) was the default fallback, but wisp has no curation lens, no system-aware framing, no continuity. The principal's mental model — *"the brain's caretaker should be the actor I ask about the brain"* — didn't match the architecture.
+The friction surfaced in [[S034_guthix_consultation_mode|S034]]: Niklavs wanted a place to go for *general overall questions* about the brain — *"what do I have on X across the brain?"*, *"is anything in lorebook contradicting itself?"*, *"help me think about this design"*. The actor for those questions was undefined. Wisp (unscoped mode) was the default fallback, but wisp has no curation lens, no system-aware framing, no continuity. The principal's mental model — *"the brain's caretaker should be the actor I ask about the brain"* — didn't match the architecture.
 
 **Decision.** Expand Guthix from a ritual-only voice to a **two-mode deity**: a consultation residence (default) and a bankstanding residence (the ritual). Same actor, same voice, same sprite; different write authority.
 
@@ -28,7 +28,7 @@ Consultation can *flip into* bankstanding on explicit cue ("ok, let's bankstand 
 
 ## Wisp shrinks
 
-Wisp's territory narrows to "session that has truly had no prompt yet." The moment the principal speaks substantively without addressing someone specifically, route to Guthix (consultation) — questions about the brain are Guthix's now, not the wisp's. This was the principal's explicit call in S034 ("wisp is only if truly nothing was prompted").
+Wisp's territory narrows to "session that has truly had no prompt yet." The moment the principal speaks substantively without addressing someone specifically, route to Guthix (consultation) — questions about the brain are Guthix's now, not the wisp's. This was the principal's explicit call in [[S034_guthix_consultation_mode|S034]] ("wisp is only if truly nothing was prompted").
 
 The implication: most sessions that used to default to wisp will now default to Guthix the moment the first real question lands. Wisp persists as the "blank session" actor only.
 
@@ -50,7 +50,7 @@ Three reasons:
 
 1. **Mental-model match.** The principal already thinks of Guthix as "the brain's caretaker." Limiting him to bankstanding made the architecture surprise the user every time a system-level question arose. Expanding the role to "consultation default, ritual on cue" is the cheaper fix vs inventing a second system-level deity.
 2. **No new infrastructure needed.** Guthix already has a sprite, a building (lorebook-library), intent-file machinery, spawn/despawn hook events, and write-boundary discipline. Consultation reuses every one of those. The change is doc-only on disk plus a behavioral discipline at runtime.
-3. **Wisp gets a clean role.** Wisp was overloaded: "no player active" AND "the system itself, reactively." Splitting that — wisp = blank session, Guthix = consulted on questions — gives each actor a single clear job. Parallels the prior split in S028 (wisp → Guthix for bankstanding); this is the same split extended one degree further.
+3. **Wisp gets a clean role.** Wisp was overloaded: "no player active" AND "the system itself, reactively." Splitting that — wisp = blank session, Guthix = consulted on questions — gives each actor a single clear job. Parallels the prior split in [[S028_subtask_channel_and_guthix|S028]] (wisp → Guthix for bankstanding); this is the same split extended one degree further.
 
 ## What it doesn't do
 

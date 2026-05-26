@@ -11,7 +11,7 @@ Principal asked Jebrim to investigate the shipping-costs monitoring Next.js app 
 ## Decisions
 
 - **Depth:** full architecture read (principal's pick).
-- **Access:** worktree at `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics\` is checked out on `shipping-mart-cutover` — read the live tree there. `bi-analytics-main` stays on `main` with the existing S023 changes.
+- **Access:** worktree at `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics\` is checked out on `shipping-mart-cutover` — read the live tree there. `bi-analytics-main` stays on `main` with the existing [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] changes.
 - **Purpose:** seed knowledge for future asks. Bank draft, not a deliverable.
 - **App path:** `NFE/dashboards/shipping_costs_monitoring_nextjs/`.
 - **Branch diff scope vs main:** 13 commits ahead. Big diff — `sql/query.sql` deleted, `sql/query_mart.sql` + `sql/query_mart_items.sql` added, `pipeline.py` rewritten (858 LOC change), Buckets / Quota / Transit Times views added, lots of new components & API routes.
@@ -38,7 +38,7 @@ Draft landed: `players/jebrim/bank/drafts/notes/projects/shipping_costs_monitori
 
 Covers: routing (paths, branch, source-of-truth docs), cost columns + cost basis, the 11 cost buckets, quota/revenue, time/period machinery, alert + issue vocab (two-queue + 9 alert types + 8 suppression rules + lifecycle terms), data tiers (Tier 1 / 1b / processed + tricks), DuckDB query layer, old → new tab naming, frontend state vocab, order source split, things-to-verify, open questions.
 
-Cross-references existing keepsake pin for the shipping data mart and prior S023 bank/skill drafts.
+Cross-references existing keepsake pin for the shipping data mart and prior [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] bank/skill drafts.
 
 ## Notes / open
 
@@ -74,6 +74,6 @@ No pending external actions. All session output is on disk:
 - Three dwarf findings in `quest-log/in-progress/` (S026_d1, _d2, _d3)
 - This file (S026 narrative log)
 
-Quest decision: **continue** (in-progress). Drafts ship-shape but await alching alongside S023's parked drafts. Same pattern as S023.
+Quest decision: **continue** (in-progress). Drafts ship-shape but await alching alongside [[S023_2026-05-21_shipping-mart-coverage-audit|S023]]'s parked drafts. Same pattern as [[S023_2026-05-21_shipping-mart-coverage-audit|S023]].
 
-Harvest: empty. The two bank drafts and the parked-quest inventory file are this session's substantive durable output — there's nothing additional that earned its way. A skill draft for the "3-dwarf decomposition for codebase reads" pattern is tempting (used in S002 and now S026) but the two instances split differently — S002 across three external systems, S026 across three app layers. Wait for a clearer reproduction.
+Harvest: empty. The two bank drafts and the parked-quest inventory file are this session's substantive durable output — there's nothing additional that earned its way. A skill draft for the "3-dwarf decomposition for codebase reads" pattern is tempting (used in [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] and now S026) but the two instances split differently — [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] across three external systems, S026 across three app layers. Wait for a clearer reproduction.

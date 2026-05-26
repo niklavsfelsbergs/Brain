@@ -20,7 +20,7 @@ Five chunks, all landed before commit:
 
 **Chunk B — research/ folder + skill amendment.** `gielinor/spellbook/skills/research.md` retargeted output from `bank/drafts/notes/` to `research/` and added a "Two modes — principal-self vs penguin-spawn" section. `players/jebrim/research/_about.md` and `players/zezima/research/_about.md` created (parallel content; can diverge per character later). `meta/layer-routing.md` extended with the research row and a new *Research vs bank* paragraph in *Operational consequences* — the *"2,000-word writeup vs four-sentence pick"* framing.
 
-**Chunk C — hook enforcement.** `gielinor/.claude/hooks/penguin-write-boundary.py` shipped, structurally parallel to `gnome-write-boundary.py`. Allowed prefixes: research/, quest-log/, inventory/. Blocked substrings: confirmed/, bank/, all other drafts/, proposals/, rejected/, keepsake/, lorebook/, examine/, niksis8_character/, niksis8/, meta/, spellbook/rituals/, body files, `.claude/*`. Gates on `agent_type == "penguin"` per the S020 payload-field gating pattern. `block-sub-spawn.py` refactored from binary check to `ROLE_PLURALS` mapping (penguin added cleanly). `gielinor/.claude/settings.json` PreToolUse wired the new hook alongside dwarf/gnome boundary checks.
+**Chunk C — hook enforcement.** `gielinor/.claude/hooks/penguin-write-boundary.py` shipped, structurally parallel to `gnome-write-boundary.py`. Allowed prefixes: research/, quest-log/, inventory/. Blocked substrings: confirmed/, bank/, all other drafts/, proposals/, rejected/, keepsake/, lorebook/, examine/, niksis8_character/, niksis8/, meta/, spellbook/rituals/, body files, `.claude/*`. Gates on `agent_type == "penguin"` per the [[S020_gnomes_ratification_and_visualizer|S020]] payload-field gating pattern. `block-sub-spawn.py` refactored from binary check to `ROLE_PLURALS` mapping (penguin added cleanly). `gielinor/.claude/settings.json` PreToolUse wired the new hook alongside dwarf/gnome boundary checks.
 
 **Chunk D — agent config + spawning-penguins skill.** `gielinor/.claude/agents/penguin.md` shipped (frontmatter: `name: penguin`, `tools: Read, Edit, Write, Glob, Grep, WebSearch, WebFetch`; system prompt covers read-first list, write boundary, tool surface, operating discipline, reporting format, what-not-to-do). `gielinor/spellbook/skills/spawning-penguins.md` shipped, parallel to spawning-dwarves and spawning-gnomes. Heuristic: external work required AND (>5 fetches OR ≥2 independent clusters OR wall-time pressure). Briefing template, channel discipline (background by default), status-on-ping (tail-since-last), anti-patterns.
 
@@ -30,13 +30,13 @@ Five chunks, all landed before commit:
 
 The skill came up organically — the principal needs research support for work-flavored tasks (EU Tender 2026 has been chewing on this surface for weeks). The role escalation came once the skill existed and was clearly cross-player. The naming arc (researcher → wizard → Reldo → penguin) stabilized once the RS-race lineage clicked.
 
-The principal said *"do it all at once"* after the five-chunk sequencing question, which was an explicit license to bundle. The S029 carry-over observation (*"bundle big structural decisions; resist piecemeal landing"*) cashed in here — visualizer touched in the same pass as the role definition and the hooks.
+The principal said *"do it all at once"* after the five-chunk sequencing question, which was an explicit license to bundle. The [[S029_parallel_braindead_and_comms_channel|S029]] carry-over observation (*"bundle big structural decisions; resist piecemeal landing"*) cashed in here — visualizer touched in the same pass as the role definition and the hooks.
 
 ## Observations to carry
 
 - **Discipline rules pay off when consulted.** The `players/_about.md` rule (*"don't pre-create speculative players"*) stopped a wrong first move. The principal had a real need; the rule routed it to the right shape (skill + sub-agent role, not new player). Worth noting: surface this rule early when "new player" or "new role" cues land — it's cheap to read and the principal benefits from being asked.
 
-- **Predictive comments in code pay off.** `emit-event.py` line 65 said *"generalize to a mapping if a third kind lands"* — written when gnomes shipped in S019. Two sessions later, penguins land, and the comment becomes a checklist. Worth doing more of this kind of forward-thinking documentation: when a structure could obviously grow, name the growth pattern in-place.
+- **Predictive comments in code pay off.** `emit-event.py` line 65 said *"generalize to a mapping if a third kind lands"* — written when gnomes shipped in [[S019_gnomes_subagent_implementation|S019]]. Two sessions later, penguins land, and the comment becomes a checklist. Worth doing more of this kind of forward-thinking documentation: when a structure could obviously grow, name the growth pattern in-place.
 
 - **Naming arcs are cheap if surfaced.** Reldo → penguin took 30 seconds of principal time and reshaped the metaphor cleanly. Don't lock naming early; let the principal iterate while the architectural work is still in design.
 
@@ -44,7 +44,7 @@ The principal said *"do it all at once"* after the five-chunk sequencing questio
 
 - **Five-chunk bundle held together.** No mid-pass discoveries forced re-sequencing. The pre-flight survey (read modes.md, write-rules.md, layer-routing.md, players/_about.md, the existing hooks, the existing agent config, the spawning-dwarves and spawning-gnomes skills) gave a complete map of touch points before the first edit. Worth keeping the pattern: for large bundles, read the cascade before writing.
 
-- **The visualizer's ROLE_CONFIG generalization is the kind of payoff that "structure-first, content earns its way in" predicts.** S019's gnome-or-else binary was the right shape *at the time* (two roles). When penguins arrived, the binary became wrong and was generalized in two-line edits. The comment kept the upgrade path visible the whole time.
+- **The visualizer's ROLE_CONFIG generalization is the kind of payoff that "structure-first, content earns its way in" predicts.** [[S019_gnomes_subagent_implementation|S019]]'s gnome-or-else binary was the right shape *at the time* (two roles). When penguins arrived, the binary became wrong and was generalized in two-line edits. The comment kept the upgrade path visible the whole time.
 
 ## Cascade
 

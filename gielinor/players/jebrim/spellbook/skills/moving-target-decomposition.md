@@ -24,7 +24,7 @@ Authoring with status blocks beats waiting AND beats rewriting once the system s
 
 ## Origin
 
-S014 (2026-05-21), TTYD how-to. Mart was mid-V1-update; principal: *"ETL team's behind, we have to start building, we can correct later."* TTYD has long structural sections (orchestrator phases, table inventory, connection harness) and short state-dependent sections (NULL%, attribute fill, row counts). Status blocks let both ship in the same artifact without lying.
+[[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] (2026-05-21), TTYD how-to. Mart was mid-V1-update; principal: *"ETL team's behind, we have to start building, we can correct later."* TTYD has long structural sections (orchestrator phases, table inventory, connection harness) and short state-dependent sections (NULL%, attribute fill, row counts). Status blocks let both ship in the same artifact without lying.
 
 ## Related
 

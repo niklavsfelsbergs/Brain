@@ -1,6 +1,6 @@
 # D-009 — 2026-05-21 — Visualizer live-mode v0 ships as hooks + NDJSON + polling
 
-**Context.** [[Q-007]] proposed live mode as the substrate-change follow-up to the replay-from-git-log v0 shipped in [[S008_iso_visualizer_v0]] / [[D-008_iso_replay_v0_over_three_js]]. After [[S009_visualizer_six_deltas_and_frame]]'s aesthetic pass, the v0 was deemed "good enough to show people," which is the trigger Q-007 named for committing to real-time. Decision needed on transport, write sources, and engine-touch surface.
+**Context.** [[Q-007]] proposed live mode as the substrate-change follow-up to the replay-from-git-log v0 shipped in [[S008_iso_visualizer_v0]] / [[D-008_iso_replay_v0_over_three_js]]. After [[S009_visualizer_six_deltas_and_frame]]'s aesthetic pass, the v0 was deemed "good enough to show people," which is the trigger [[Q-007_gielinor_visualizer|Q-007]] named for committing to real-time. Decision needed on transport, write sources, and engine-touch surface.
 
 **Decision.** Ship live-mode v0 as: **Claude Code hooks appending events to an NDJSON file, renderer polling that file via a `?live=1` URL flag, engine untouched**. No server, no watchdog (deferred), no actor inference beyond path-based mapping.
 
@@ -16,7 +16,7 @@ The five knobs (settled in chat with Niklavs):
 
 - **Server + SSE.** Lower latency, smoother updates. Rejected for v0: requires running a Python process alongside Claude Code, breaks the single-HTML-file constraint inherited from [[D-008_iso_replay_v0_over_three_js]], and 500ms polling is already faster than the cadence of human-readable narrative.
 - **`watchdog` filesystem watcher as primary source.** Catches manual edits + git commits but misses Read / Glob / Grep — the interesting motion. Hooks cover the Claude side natively. Watchdog deferred to a "phase 2" if non-Claude writes turn out to matter visually.
-- **Mutate-in-place `state.json` (as Q-007 originally sketched).** Rejected for append-only NDJSON: safer with concurrent writers, tail-only-parse on the renderer side, trivially `tail -f`-able while debugging.
+- **Mutate-in-place `state.json` (as [[Q-007_gielinor_visualizer|Q-007]] originally sketched).** Rejected for append-only NDJSON: safer with concurrent writers, tail-only-parse on the renderer side, trivially `tail -f`-able while debugging.
 - **Auto-spawn the page on session start.** Rejected: annoying when Niklavs doesn't want to watch. Manual launch is one keystroke.
 
 **Consequences.**

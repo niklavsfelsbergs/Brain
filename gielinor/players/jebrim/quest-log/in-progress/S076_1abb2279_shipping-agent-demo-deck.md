@@ -7,7 +7,7 @@
 Principal: "Lets make a slide deck for the shipping agent DEMO. What do you suggest we put in there? I know that the final slide should be how to set it up." (Demo likely today/imminent — a prior session 006248ef opened "presenting the shipping agent tomorrow" on 05-25.)
 
 ## Subject = the NL agent, not the AWS dashboard
-"Shipping agent" = `picanova/shipping-agent` — the standalone plain-English talk-to-your-data harness over the gold `shipping_mart` (Redshift, `ship_mart_ro` read-only). Distinct from S073's bi-analytics Next.js costs-monitoring dashboard on AWS.
+"Shipping agent" = `picanova/shipping-agent` — the standalone plain-English talk-to-your-data harness over the gold `shipping_mart` (Redshift, `ship_mart_ro` read-only). Distinct from [[S073_006248ef_aws-report-swap-guide|S073]]'s bi-analytics Next.js costs-monitoring dashboard on AWS.
 
 ## Decisions (principal-picked via AskUserQuestion)
 - **Audience = Business stakeholders** (non-technical). → lighter on the 3 answer modes + setup mechanics, heavier on value / live demo / trust. Plain English throughout, no internal vocab.

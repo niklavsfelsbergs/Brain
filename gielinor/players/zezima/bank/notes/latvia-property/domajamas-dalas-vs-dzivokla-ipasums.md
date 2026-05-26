@@ -25,7 +25,7 @@ case; check whether it modifies *the apartment* (bad) or *the land* (normal). A
 *dzīvokļu īpašnieku biedrība* (apartment-owners' association) managing the building
 confirms it's divided into proper units.
 
-**Anchors.** S056 (2026-05-23). Two Riga apartments evaluated: #1 a ~70-unit building held
+**Anchors.** [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] (2026-05-23). Two Riga apartments evaluated: #1 a ~70-unit building held
 in domājamās daļas → walk (structural/legal danger); #2 Duntes 28 "Duntes Ozoli" where the
 land-share wording initially read as co-ownership but verbatim re-read + the biedrība
 confirmed a proper dzīvokļa īpašums.

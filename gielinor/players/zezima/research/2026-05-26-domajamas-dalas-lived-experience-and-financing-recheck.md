@@ -414,6 +414,6 @@ Expert pieces (could not open — flagged):
 - santa.lv — adv. Radziņš, "Kāpēc nepirkt mājas domājamās daļas?" (SANTA+ paywall) — https://www.santa.lv/raksts/majaundarzs/majai/kopipasuma-problemas-jeb-kapec-nepirkt-majas-domajamas-dalas-29498/
 
 Prior repo research (built on, not redone):
-- `players/zezima/research/2026-05-23-domajamas-dalas-*.md` (S056 generic base)
-- `players/zezima/research/2026-05-25-gertrudes113-*.md` (S066 specific)
+- `players/zezima/research/2026-05-23-domajamas-dalas-*.md` ([[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] generic base)
+- `players/zezima/research/2026-05-25-gertrudes113-*.md` ([[S066_e2362ea0_domajamas-dalas-reconsider|S066]] specific)
 - `players/zezima/bank/drafts/notes/latvia-property/2026-05-26-gertrudes113-folio-5262-gate2-closed.md` (folio read; 5-bank financing evidence)

@@ -9,7 +9,7 @@ metadata:
 
 **Rule.** Before publishing a population-level claim — rate, trend, classification, "what's going on" framing — split by the most obvious axis (time, source, dim, leaf, extkey). If the answer splits, restate at the post-split level. If it stays uniform, publish.
 
-**S014 T11→T23.** I encoded "PICT ~34%, PicaAPI ~78% carrier-ts NULL" as a classification heading into §9. Principal: *"this is an easy check we can do right now. Take a look — what is actually missing? Based on source and month."* Three probe rounds, three reframings:
+**[[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] T11→T23.** I encoded "PICT ~34%, PicaAPI ~78% carrier-ts NULL" as a classification heading into §9. Principal: *"this is an easy check we can do right now. Take a look — what is actually missing? Based on source and month."* Three probe rounds, three reframings:
 
 1. Source × month — PicaAPI 78% was regime change (carrier-ts landed 2025-11); PCS + Rewallution silently 100% NULL.
 2. Dim group — PICT 34% was DHL+UPS only.

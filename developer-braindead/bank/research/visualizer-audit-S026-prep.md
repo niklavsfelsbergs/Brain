@@ -1,10 +1,10 @@
-# Visualizer audit S026 — prep
+# Visualizer audit [[S026_d018_shipped_visualizer_audit_prep|S026]] — prep
 
 > **Why this file exists.** [[S025_parallel_player_instances]] closed by shipping [[D-017_parallel_player_instances]] (parallel-player sprite tinting) and [[D-018_parallel_session_substrate_isolation]] chunks 1–3 (per-session substrate isolation in the hook + per-session intent filenames). The next session audits the **visualizer SPA** — `developer-braindead/experiments/visualizer/index.html` (3249 lines) — to fix what's clearly broken and lift the obvious wins. This file is the primer: how the renderer works today, where the bugs are, where the improvements live. Cite line numbers so the audit session goes straight to the lines.
 >
-> **Recon basis.** Three Explore dwarves (D1 architecture, D2 event dispatch + state, D3 CSS/UX) walked the file in this session. Their findings are merged and de-duped below. Filtered out: findings already closed by D-017/D-018, design choices that read as bugs but aren't (e.g., scrub-back snaps rather than reverse-animates — intentional).
+> **Recon basis.** Three Explore dwarves (D1 architecture, D2 event dispatch + state, D3 CSS/UX) walked the file in this session. Their findings are merged and de-duped below. Filtered out: findings already closed by [[D-017_parallel_player_instances|D-017]]/[[D-018_parallel_session_substrate_isolation|D-018]], design choices that read as bugs but aren't (e.g., scrub-back snaps rather than reverse-animates — intentional).
 >
-> **Predecessor.** [[bank/research/visualizer-audit-S021.md]] is the historical audit that drove S022's fixes. It covered the hook + visualizer together; the issues there are largely closed or moved. This audit is visualizer-scoped.
+> **Predecessor.** [[bank/research/visualizer-audit-S021.md]] is the historical audit that drove [[S022_visualizer_audit_fixes|S022]]'s fixes. It covered the hook + visualizer together; the issues there are largely closed or moved. This audit is visualizer-scoped.
 
 ---
 
@@ -68,8 +68,8 @@ Ambient particles bake in per building: candle flicker on lorebook windows, parc
 
 ### Actor sprites
 
-- **Static HTML** for jebrim and zezima (lines 882–907) — born in DOM with SMIL `<animateTransform>` idle-breath (vertical 1 → 0.95 → 1, 2.6s / 2.9s). Switched from CSS-keyframe to SMIL after a `.bob` descendant-selector bug in S024.
-- **Dynamic spawn** for dwarves (line 2365), gnomes (2419), wisp (2596), braindead (2569), and parallel player instances (2484–2555). Instance ≥ 2 sprites are clones of the static HTML, with hue-rotate filter (`tint-2/3/4`, 140°/220°/80° from D-017) and a small `.instance-badge` gold "·N".
+- **Static HTML** for jebrim and zezima (lines 882–907) — born in DOM with SMIL `<animateTransform>` idle-breath (vertical 1 → 0.95 → 1, 2.6s / 2.9s). Switched from CSS-keyframe to SMIL after a `.bob` descendant-selector bug in [[S024_visualizer_aliveness_pass_1_3|S024]].
+- **Dynamic spawn** for dwarves (line 2365), gnomes (2419), wisp (2596), braindead (2569), and parallel player instances (2484–2555). Instance ≥ 2 sprites are clones of the static HTML, with hue-rotate filter (`tint-2/3/4`, 140°/220°/80° from [[D-017_parallel_player_instances|D-017]]) and a small `.instance-badge` gold "·N".
 - **Walking** sets `transition: transform 1800ms cubic-bezier(...)`, toggles `.walking` class for jerkier bob, drops dust particles every 240ms.
 
 ### Bubble rendering (lines 2686–2772)
@@ -108,7 +108,7 @@ Lines 3114–3144. `dayNightFill()` reads `new Date().getHours()`, not the repla
 Line 2277, used at lines 2344–2346. Two parallel instances of jebrim share one timer slot. Second move clobbers first's timer. The CSS transition is the real animation driver, so sprites both move correctly, but the `.walking` class teardown can fire at the wrong time, leaving a sprite in walking-pose after it stopped or stripping the class from a sprite still mid-walk. Re-key to `instanceKey`.
 
 ### B3 — Braindead missing from COMMS first-class [med]
-Tab HTML absent (around line 973), filter CSS gap at line 518/520, no dot/legend row. The S021 audit flagged this as "C2 structural gap" and it's still open. With dev-brain mode now actively used, Braindead's chat lines have nowhere to land coherently.
+Tab HTML absent (around line 973), filter CSS gap at line 518/520, no dot/legend row. The [[S021_visualizer_audit|S021]] audit flagged this as "C2 structural gap" and it's still open. With dev-brain mode now actively used, Braindead's chat lines have nowhere to land coherently.
 
 ### B4 — Sub-agent intent silence on clear [med]
 Lines 2686–2703 + 2910–2912. `setIntent("")` calls `clearIntent` — so any caller that empties text drops the bubble. For dwarves/gnomes the bubble is supposed to be a persistent task label; if a flow path ever clears it mid-task, it goes silent until next intent. Worth confirming the existing emit-event path can't trigger this; if it can, gate `clearIntent` on `isSubAgentActor()` returning false.
@@ -125,7 +125,7 @@ Line 2807. `const n = +instance || 1;` — falsy instance becomes 1, mis-keying 
 ### B8 — Speech bubble can overflow narrow viewports [low]
 Lines 2733–2760. Width grows with longest line × 6.2px, no max-width clamp. At 100-char intent on a narrow window, the bubble runs off-screen. Add a max-width or hard wrap shorter.
 
-### B9 — D-018 read race on `state-actors.json` migration [low — out of audit scope but flagged]
+### B9 — [[D-018_parallel_session_substrate_isolation|D-018]] read race on `state-actors.json` migration [low — out of audit scope but flagged]
 Hook-side, `emit-event.py` lines 167–192. Two parallel sessions reading the legacy flat shape simultaneously then both writing nested can lose one write. Atomic write (B8) means only one survives; the visualizer reads only the event stream so it's not directly affected. Acceptable for now, note for follow-up.
 
 ---
@@ -135,7 +135,7 @@ Hook-side, `emit-event.py` lines 167–192. Two parallel sessions reading the le
 Ordered by payoff.
 
 ### I1 — Centralize actor color taxonomy [high payoff]
-Lines 71–82 vs hardcoded hex at lines 427, 505, etc. (S021 C1, still open). Recoloring an actor today means hunting hex strings across CSS + JS. Convert all per-actor color uses to the `--<actor>-text` / `--<actor>-dot` vars. Payoff: single-source-of-truth.
+Lines 71–82 vs hardcoded hex at lines 427, 505, etc. ([[S021_visualizer_audit|S021]] C1, still open). Recoloring an actor today means hunting hex strings across CSS + JS. Convert all per-actor color uses to the `--<actor>-text` / `--<actor>-dot` vars. Payoff: single-source-of-truth.
 
 ### I2 — Scroll-lock for COMMS panel [high payoff for users]
 Line 2783 unconditionally pins scroll to bottom. Standard pattern: detect "user scrolled up" via `scrollTop < scrollHeight - clientHeight - threshold`, then suppress auto-scroll until they hit a "jump to latest" button. Without it, reading history is impossible during active sessions.
@@ -173,18 +173,18 @@ Line 260. `filter: url(#wispGlow)` rerenders per frame. For a near-static sprite
 3. **Live bootstrap performance.** First poll on a state.ndjson with 1000+ events fires 1000 SVG appends with `instant=true`. Modern desktop should be <1s but worth confirming.
 4. **Despawn-instance for instance 1.** Lines 2956–2964 — does instance 1's static sprite stay interactive after a `despawn-instance` event with `instance: 1`? Spec says "keep sprite, clear intent only," but worth confirming visually.
 5. **Idle-despawn sweep granularity.** Lines 3163–3178 — 30s sweep interval × 5min cutoff means actual despawn lags by up to 30s. Acceptable?
-6. **Gnome render path live test.** No `state-gnomes.json` exists on disk yet (D2 dwarf noted). Gnome rendering is wired but unexercised. First live gnome spawn (carried from S020+) is the natural test.
+6. **Gnome render path live test.** No `state-gnomes.json` exists on disk yet (D2 dwarf noted). Gnome rendering is wired but unexercised. First live gnome spawn (carried from [[S020_gnomes_ratification_and_visualizer|S020]]+) is the natural test.
 
 ---
 
 ## How to start the audit (recommended order)
 
-1. **Open visualizer in live mode**, both parallel Jebrim sessions still running. Confirm the bubble-clobber bug (chunk 3 of D-018) is gone now that this session's protocol edit has landed and any session that re-reads `meta/` adopts per-session intent files.
+1. **Open visualizer in live mode**, both parallel Jebrim sessions still running. Confirm the bubble-clobber bug (chunk 3 of [[D-018_parallel_session_substrate_isolation|D-018]]) is gone now that this session's protocol edit has landed and any session that re-reads `meta/` adopts per-session intent files.
 2. **B1 day/night in replay** — easy + visible. Pick replay or live anchor depending on what reads better.
-3. **B3 Braindead COMMS** — small, finishes the S021 C2 gap.
+3. **B3 Braindead COMMS** — small, finishes the [[S021_visualizer_audit|S021]] C2 gap.
 4. **I1 color taxonomy + I2 scroll-lock** — both high-payoff UX wins, contained in CSS + small JS deltas.
 5. **B2 actorMoveTimers re-key + B5 liveBytes shrink** — correctness fixes for parallel sessions and dev-brain cleanups respectively.
-6. **First live gnome spawn** (from respawn Step 2) — exercises the gnome render path under D-018's session-scoped substate. Open question #6.
+6. **First live gnome spawn** (from respawn Step 2) — exercises the gnome render path under [[D-018_parallel_session_substrate_isolation|D-018]]'s session-scoped substate. Open question #6.
 
 Lower-priority items (B4, B6–B8, I3–I10) batch into a polish pass after the high-value items land.
 

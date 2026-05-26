@@ -5,11 +5,11 @@
 
 ## Turn-by-turn so far
 
-1. **Opening cue.** Principal: *"fighting with the animation but it doesn't matter — switchboard most useful, chat secondary, kill the map, give it a dedicated space, split into files."* The visualizer's map half had been costing more than it returned for six sessions running (S047–S051 all touched map code; four of those debugged it). Switchboard rows + chat panel were doing the load-bearing work; map was charm tax.
+1. **Opening cue.** Principal: *"fighting with the animation but it doesn't matter — switchboard most useful, chat secondary, kill the map, give it a dedicated space, split into files."* The visualizer's map half had been costing more than it returned for six sessions running ([[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance|S047]]–[[S051_8bf3fdb7_visualizer_tree_and_bubble_scale|S051]] all touched map code; four of those debugged it). Switchboard rows + chat panel were doing the load-bearing work; map was charm tax.
 
 2. **Three parallel dwarves (pre-migration).**
    - **D1 — strip the map.** Excised SVG `<svg class="map">` and the entire isometric stack from `experiments/visualizer/index.html`: building defs, sprite defs, walk animations, wander logic, `applyEvent` map-mutating branches, `relayoutBubbles`, gather-slot tables, sprite-state CSS, day/night vestiges. Switchboard + chat panels left in place. Commit **9854b32**.
-   - **D2 — chat.ndjson humanizer + switchboard subtitle.** `emit-event.py` now appends one human-language line per event to `chat.ndjson` (`Braindead is editing index.html`, `Jebrim ran grep over sql/`, idle/spawn/despawn). Chat panel reads the stream directly — prose generation moved from client to hook. Switchboard row's S049 `latest_action` field repurposed as the row subtitle (one-line "what is this session doing right now"). Commit **c03f33b**.
+   - **D2 — chat.ndjson humanizer + switchboard subtitle.** `emit-event.py` now appends one human-language line per event to `chat.ndjson` (`Braindead is editing index.html`, `Jebrim ran grep over sql/`, idle/spawn/despawn). Chat panel reads the stream directly — prose generation moved from client to hook. Switchboard row's [[S049_17e701eb_visualizer_state_aware_motion_and_action_line|S049]] `latest_action` field repurposed as the row subtitle (one-line "what is this session doing right now"). Commit **c03f33b**.
    - **D3 — reference audit.** Read-only walk of the doc surfaces enumerating every `experiments/visualizer/` and `state-switchboard.json` reference across `developer-braindead/`, with grouping by "current state vs historical narrative" so the doc-update wave knew what to touch.
 
 3. **Migration (principal).** `git mv` of the three surviving files (`index.html`, `_README.md`, `path-map.json`) from `developer-braindead/experiments/visualizer/` to `switchboard/`. Hook constants (`VIZ_DIR` in `emit-event.py` and `status-sidecar.py`) updated to the new path. `.gitignore` patterns updated. Commit **1c94a57**.
@@ -37,7 +37,7 @@
 - **c03f33b** — `developer-braindead/.claude/hooks/emit-event.py`, `developer-braindead/experiments/visualizer/index.html` (chat panel subtitle wiring).
 - **1c94a57** — `developer-braindead/experiments/visualizer/{index.html,_README.md,path-map.json}` → `switchboard/`; `developer-braindead/.claude/hooks/emit-event.py`, `status-sidecar.py` (`VIZ_DIR` constant); `.gitignore`.
 - **31844e3** — `switchboard/{index.html,app.js,chat.js,state.js,switchboard.js,focus.js,styles.css,_about.md}` (D4 ES module split).
-- **ca02dde** — D5 doc updates (respawn, D-020/24/25/26, comms, quest log).
+- **ca02dde** — D5 doc updates (respawn, [[D-020_terminal_switchboard|D-020]]/24/25/26, comms, quest log).
 - **d0638dc** — denest `brain/switchboard/` → `switchboard/` + path-string sweep across docs.
 - **wrap-up commit** — `switchboard/styles.css` + `index.html` (scale-up), `brain/.claude/settings.json` (abs-path hardening), this quest log, respawn.md, comms CLOSING.
 

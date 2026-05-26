@@ -1,4 +1,4 @@
-# S078 — switchbar status vocabulary: two-axis rebuild (D-029)
+# S078 — switchbar status vocabulary: two-axis rebuild ([[D-029_switchbar_two_axis_states|D-029]])
 
 **Session:** 959a4c34 · Braindead · dev-brain via "lets develop gielinor".
 **Status:** built + backend-validated; **frontend verification (cockpit relaunch) pending.**

@@ -1,6 +1,6 @@
 # Niklavs decides homes by gut-fit, and uses research to rule out
 
-**Observation.** Across the S056 apartment hunt (2026-05-23), Niklavs used research not to
+**Observation.** Across the [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] apartment hunt (2026-05-23), Niklavs used research not to
 talk himself *into* a purchase but to **rule things out**, and reserved a final **gut-fit
 veto** that overrode favourable data.
 
@@ -19,5 +19,5 @@ to surface dealbreakers and frame the trade-offs — but the *final* call is his
 fit, and he should be encouraged to honour it. Don't push a "the numbers say buy" conclusion;
 give him the grounds to rule out, and trust his veto on fit.
 
-**Anchor.** S056 quest-log T20 + the session arc; verbatim *"It lures you in. But the room is
+**Anchor.** [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] quest-log T20 + the session arc; verbatim *"It lures you in. But the room is
 narrow and long."*

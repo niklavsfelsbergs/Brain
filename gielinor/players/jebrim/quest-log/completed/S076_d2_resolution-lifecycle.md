@@ -38,14 +38,14 @@
 
 ## SUSPICION (needs verification)
 
-### S-1 — Settle-to-new-normal (#5, S055) rarely fires; gated out by volume collapse + a too-wide window
+### S-1 — Settle-to-new-normal (#5, [[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]]) rarely fires; gated out by volume collapse + a too-wide window
 
 - **file:line:** `pipeline.py:2867-2873` (plateau detect) + `pipeline.py:2974-2979` (resolve-as-settled).
 - **Observation:** Across 92 cost-type issues only **5 carry the `settled` flag**. The plateau test takes the last `BASELINE_WEEKS=5` corridor weeks and resolves only if their spread is `< MIN_ABS_CHANGE_EUR (0.20)` **or** `< MIN_PCT_CHANGE (10%)`. Two ways this misses:
   1. **Volume-collapse noise.** For vanished/thinning corridors the last 5 weeks are low-n and noisy. `5a8273c0`'s last 5 weeks swing 5.99→8.84 (spread 47.6%) purely because n_all fell to 105/60/10 — so `cost_settled=False` and BUG-1 keeps it active. A genuinely-settled-then-vanished corridor never settles because its tail is statistically unstable.
   2. **Window mismatch.** The plateau window is the last 5 weeks of *available* corridor data regardless of how stale that is — same root as BUG-1. It can "settle" on data months old, or fail to settle on noise, but never keys off the current period.
 - **Why I can't fully prove it's the dominant cause:** distinguishing "should have settled but the window was too noisy" from "genuinely still volatile" requires per-corridor backtest replay, which I didn't run (read-only, no pipeline re-run). The 5/92 settled rate is suggestive, not conclusive.
-- **Severity (if confirmed):** MEDIUM — settle was the S055 mechanism meant to stop permanent step-changes re-arming; if it under-fires, long-runners persist (compounding BUG-1).
+- **Severity (if confirmed):** MEDIUM — settle was the [[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]] mechanism meant to stop permanent step-changes re-arming; if it under-fires, long-runners persist (compounding BUG-1).
 - **Proposed direction:** make the plateau test volume-weighted (or require a minimum n per week in the window before trusting the spread), and anchor the window to the latest *period* not the latest *available* corridor week. Likely folds into the BUG-1 fix.
 - **Confidence:** LOW / needs verification.
 

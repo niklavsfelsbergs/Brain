@@ -1,6 +1,6 @@
 # Shipping-costs dashboard ↔ shipping-agent — interrelation & convergence
 
-**As of:** 2026-05-24 (cost-basis alignment re-verified against ground truth — see Decision #3, now RECONCILED). Earlier body as-of 2026-05-22 (S026 — dashboard-side cutover in-progress; convergence directions open). Re-verify before relying on coverage-hole-reporting status or "long-term direction" framing.
+**As of:** 2026-05-24 (cost-basis alignment re-verified against ground truth — see Decision #3, now RECONCILED). Earlier body as-of 2026-05-22 ([[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] — dashboard-side cutover in-progress; convergence directions open). Re-verify before relying on coverage-hole-reporting status or "long-term direction" framing.
 
 How the two surfaces over the shipping data mart relate today, where they diverge, and the convergence directions Niklavs has affirmed.
 
@@ -24,9 +24,9 @@ Both ride the same mart, but they don't talk to each other. Specifically:
 
 - **Shared inputs, separate definitions.** The dashboard has codified a lot of operational vocab — `cost_for_routing`, the 11 buckets, the alert types, gap-and-island, frozen baselines, `trend_confirmed`, `real_cost_confirmed`. The shipping-agent's `how_to.md` is structured around the mart's schema, not the dashboard's analytical concepts.
 - **No URL routing from agent → dashboard.** If a user asks the agent something the dashboard already answers (e.g., "is DE-DHL creeping?"), the agent re-queries Redshift instead of pointing at `/?tab=alerts&type=creep&country=DE&provider=DHL`.
-- **Coverage holes asymmetry.** The S023 audit surfaced four concentrated holes (ORWO POST 0%, Picturator POST_DVF 0%, MAERSK 68.9%, ASENDIA 0%). Agent has them in `reference/coverage-audit.md`. Dashboard's Completeness tab shows real-cost coverage % but doesn't currently distinguish structural holes (no bulk-bill source exists) from invoice-pending (invoice hasn't landed yet). **Niklavs confirmed (S026): the dashboard is currently wrong on this; it will be resolved.**
+- **Coverage holes asymmetry.** The [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] audit surfaced four concentrated holes (ORWO POST 0%, Picturator POST_DVF 0%, MAERSK 68.9%, ASENDIA 0%). Agent has them in `reference/coverage-audit.md`. Dashboard's Completeness tab shows real-cost coverage % but doesn't currently distinguish structural holes (no bulk-bill source exists) from invoice-pending (invoice hasn't landed yet). **Niklavs confirmed ([[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]]): the dashboard is currently wrong on this; it will be resolved.**
 
-## Confirmed decisions (S026, Niklavs)
+## Confirmed decisions ([[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]], Niklavs)
 
 1. **Dashboard ↔ mart alignment is incomplete.** Mart is source of truth; dashboard needs alignment work. Implication: the dashboard's mart-cutover branch is not the final state — more cutover work pending.
 2. **Coverage-hole reporting in the dashboard is currently wrong.** Will be resolved. Until then, agent's `coverage-audit.md` is the authoritative source on structural holes.
@@ -79,7 +79,7 @@ Listed by reversibility — cheap-to-try first.
 
 ## Related
 
-- [[shipping_costs_monitoring_nextjs_vocab]] — dashboard glossary, drafted S026.
+- [[shipping_costs_monitoring_nextjs_vocab]] — dashboard glossary, drafted [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]].
 - [[shipping-data-mart routing]] — keepsake pin for the agent's home.
-- [[shipping_mart_coverage_audit_2026-05-21]] — S023 audit, where the structural holes were named.
+- [[shipping_mart_coverage_audit_2026-05-21]] — [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] audit, where the structural holes were named.
 - `inventory/dashboard-agent-convergence-resume.md` — parked quest covering the work above.

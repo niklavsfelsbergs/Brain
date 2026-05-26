@@ -6,7 +6,7 @@
 - [[S022_visualizer_audit_fixes]] — Bash attribution leak on the shared `state.ndjson` recency walk.
 - [[S023_visualizer_ticker_and_cross_session_attribution]] — dev-brain override flag (`active-mode.txt`) racy across sessions.
 - [[S024_visualizer_aliveness_pass_1_3]] — intent bubble silence after move (different bug; same shared-state family).
-- [[S025_parallel_player_instances]] — git index race; Jebrim's broad `git add` swept up D-017's staged changes into his commit.
+- [[S025_parallel_player_instances]] — git index race; Jebrim's broad `git add` swept up [[D-017_parallel_player_instances|D-017]]'s staged changes into his commit.
 
 Each got a local band-aid. The band-aids stack but don't address the underlying structural issue.
 
@@ -28,11 +28,11 @@ Data that semantically belongs to one session. Should be physically per-session 
 
 | Surface | Current state | Treatment |
 |---|---|---|
-| `state.ndjson` | shared append-only log, session-stamped events (S023) | already correct — append is interleave-safe per B9 (S021 audit); session-stamped events let readers filter |
-| `intent/<actor>.txt` | shared per-actor file | partially fixed in D-017 — per-session variant `<actor>-<sid8>.txt` exists; bare-file fallback remains for backwards compat. **Action: deprecate bare-file path once the cutover lands.** |
+| `state.ndjson` | shared append-only log, session-stamped events ([[S023_visualizer_ticker_and_cross_session_attribution|S023]]) | already correct — append is interleave-safe per B9 ([[S021_visualizer_audit|S021]] audit); session-stamped events let readers filter |
+| `intent/<actor>.txt` | shared per-actor file | partially fixed in [[D-017_parallel_player_instances|D-017]] — per-session variant `<actor>-<sid8>.txt` exists; bare-file fallback remains for backwards compat. **Action: deprecate bare-file path once the cutover lands.** |
 | `narration.txt` | shared, last-write-wins | acceptable as-is — narration is "system voice," and the most recent line is what should display. No fix needed. |
-| `active-mode.txt` | shared, last-write-wins | already partially fixed in S023 (`_mode_session_id` recorded in `state-actors.json`, dev-brain override gated on it). **Action: extend the session-gating pattern to any future similar markers.** |
-| `state-actors.json` | shared map `actor → building` | racy on concurrent moves of different actors. **Action: re-key as `(actor, sessionId) → building` for player-class actors**, matching the D-017 instance registry pattern. |
+| `active-mode.txt` | shared, last-write-wins | already partially fixed in [[S023_visualizer_ticker_and_cross_session_attribution|S023]] (`_mode_session_id` recorded in `state-actors.json`, dev-brain override gated on it). **Action: extend the session-gating pattern to any future similar markers.** |
+| `state-actors.json` | shared map `actor → building` | racy on concurrent moves of different actors. **Action: re-key as `(actor, sessionId) → building` for player-class actors**, matching the [[D-017_parallel_player_instances|D-017]] instance registry pattern. |
 | `state-instances.json` | shared registry of `(actor, session_id) → instance` | already session-keyed by construction. Counter increment IS a race but acceptable — at worst two sessions assign the same instance number; the visualizer collision (same sprite key) self-heals when the next event lands and re-resolves. Add a lock if it becomes a real problem. |
 | `state-dwarves.json`, `state-gnomes.json` | shared sub-agent registries | sub-agents are session-local by nature; should be session-keyed. **Action: re-key by `(sessionId, id)` to prevent collisions between two parallel sessions both spawning D1, D2, etc.** |
 
@@ -83,11 +83,11 @@ This decision is "working" when:
 
 - Bug surface from parallel-session shared-state races stays flat for 3+ sessions of mixed work.
 - A new shared mutable file added to the brain triggers the question "Category A/B/C?" before being merged.
-- The S014–S025 pattern stops appearing in respawn.md's carried-observations list.
+- The [[S014_visualizer_polish_and_aesthetics_pass|S014]]–[[S025_parallel_player_instances|S025]] pattern stops appearing in respawn.md's carried-observations list.
 
 This decision is "failing" when:
 
-- A sixth incident appears with the same shape as S014–S025 — at which point worktree-per-session moves from out-of-scope to recommended.
+- A sixth incident appears with the same shape as [[S014_visualizer_polish_and_aesthetics_pass|S014]]–[[S025_parallel_player_instances|S025]] — at which point worktree-per-session moves from out-of-scope to recommended.
 
 ## Related
 
@@ -99,5 +99,5 @@ This decision is "failing" when:
 ## Open questions
 
 - **Migration plan for state file re-keying.** `state-actors.json` re-key is a schema change — visualizer's bootstrap reader needs to handle both old (`actor: building`) and new (`actor:sid: building`) shapes. Cost: one half-day session.
-- **Bare intent-file deprecation.** The fallback path in D-017's `_intent_file_candidates` keeps backwards compat indefinitely. Drop it once the principal confirms all sessions are writing per-session files; until then, two parallel sessions writing to bare `<actor>.txt` will clobber each other on disk (the hook stream still gets both events via session-stamping at append time, so the visualizer is fine — the on-disk file is the casualty).
+- **Bare intent-file deprecation.** The fallback path in [[D-017_parallel_player_instances|D-017]]'s `_intent_file_candidates` keeps backwards compat indefinitely. Drop it once the principal confirms all sessions are writing per-session files; until then, two parallel sessions writing to bare `<actor>.txt` will clobber each other on disk (the hook stream still gets both events via session-stamping at append time, so the visualizer is fine — the on-disk file is the casualty).
 - **Cross-session principal arbitration UX.** When alching surfaces "two sessions drafted same-topic notes," what's the principal's interface? Today it's manual reading of both. A diff-style surface could help.

@@ -21,7 +21,7 @@ Principal chose to build it into the cockpit, **top-right corner**, design **(b)
 
 ## Why parked
 
-Live manifest at session time: `dbd41cc0` (braindead·2) is WORKING on cockpit zoom/layout ("scroll-to-zoom resizes the whole cockpit") — the exact surface the overlay sits over; `main.js`/`styles.css` carry uncommitted sibling WIP. Building into the shared tree now = head-on D-024 collision. Hold until it lands.
+Live manifest at session time: `dbd41cc0` (braindead·2) is WORKING on cockpit zoom/layout ("scroll-to-zoom resizes the whole cockpit") — the exact surface the overlay sits over; `main.js`/`styles.css` carry uncommitted sibling WIP. Building into the shared tree now = head-on [[D-024_parallel_player_coordination|D-024]] collision. Hold until it lands.
 
 ## Resume — next concrete step
 

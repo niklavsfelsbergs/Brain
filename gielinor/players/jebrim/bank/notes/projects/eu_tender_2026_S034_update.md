@@ -1,6 +1,6 @@
-# EU Tender 2026 — S034 update (delta to existing bank note)
+# EU Tender 2026 — [[S034_2026-05-22_eu-tender-logic-review|S034]] update (delta to existing bank note)
 
-**Source:** S034 audit + remediation session, 2026-05-22.
+**Source:** [[S034_2026-05-22_eu-tender-logic-review|S034]] audit + remediation session, 2026-05-22.
 **Status:** delta to `bank/notes/projects/eu_tender_2026.md` (last touched 2026-05-20).
 
 ## What changed since 2026-05-20

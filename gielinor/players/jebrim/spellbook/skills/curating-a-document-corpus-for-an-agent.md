@@ -1,6 +1,6 @@
 # Skill — curating a document corpus for an agent
 
-**Drafted:** 2026-05-23 (S058, shipping-contract ingest).
+**Drafted:** 2026-05-23 ([[S058_1f0ae59a_shipping-contract-corpus-ingest|S058]], shipping-contract ingest).
 
 When feeding a pile of source documents into an agent so it can answer from them:
 

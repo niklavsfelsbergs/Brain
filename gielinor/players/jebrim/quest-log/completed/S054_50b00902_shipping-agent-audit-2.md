@@ -6,7 +6,7 @@
 
 ## Turn log
 
-- **T1 — respawn.** Loaded globals + Jebrim. No live siblings (22fa153c ended). Posted OPEN to comms. Only in-progress quest on disk was S040 (Outlook MCP, unrelated) — no reconciliation needed for shipping work.
+- **T1 — respawn.** Loaded globals + Jebrim. No live siblings (22fa153c ended). Posted OPEN to comms. Only in-progress quest on disk was [[S040_1cf1eb75_outlook-mcp-research|S040]] (Outlook MCP, unrelated) — no reconciliation needed for shipping work.
 - **T2 — scoped the ask.** Four shipping-agent threads queued; principal picked **audit-2**.
 - **T3 — read-only audit pass.** Read full package: how_to.md (495 lines), CLAUDE/AGENTS/GEMINI/GROK shims, reference/ (mart-contract, tables, sources, coverage-audit, known-dq), skills/ (query-patterns, reprompting), harness chart code (build_inline_chart, build_report, _report_style), query_to_csv, settings.json, personal-folder _about.md files. 16 findings (table below).
 - **T4 — OK1/OK2 retracted.** Initial "personal folders unused" finding was wrong — Glob respects .gitignore and those folders are gitignored. `find` off disk showed 6 real workbench items + ~35 scratchpad files + Mode-3 bundles in active use. Self-note candidate: don't assert disk-absence from a gitignore-aware search tool.

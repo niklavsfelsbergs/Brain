@@ -105,7 +105,7 @@ This order is deliberate. Phase 1 alone gives a *machine-readable* signal even b
 - [[D-018_parallel_session_substrate_isolation]] — per-session intent files; actor-from-disk detection here reuses that filename convention.
 - `gielinor/meta/communication-protocol.md` — the intent narration rule; this sidecar reads what intent narration has already written.
 
-## S052 amendment — 2026-05-23
+## [[S052_98d4ec5e_switchboard-rebuild|S052]] amendment — 2026-05-23
 
 The manifest mirror moved. `state-switchboard.json` now lives at `switchboard/state-switchboard.json` (was `developer-braindead/experiments/visualizer/state-switchboard.json`) — the surface was promoted to brain root in [[D-026_switchboard_promotion]] when the map collapsed and the switchboard became load-bearing on its own. `status-sidecar.py`'s `VIZ_DIR` constant points at the new location; everything in this doc about the contract, state machine, and write path is unchanged on the *shape* side.
 

@@ -5,7 +5,7 @@
 
 ## Close (session-end)
 
-Ten iterations of switchboard chat work, all landed on disk, none committed. **Cascade (dev brain):** `switchboard/chat.js` (channel mutes, pills, flex columns, collapse, gap-rail, code-ref de-emphasis, mention-strip), `switchboard/styles.css` (OSRS bottom bar, pencil, font, layout — chat region only), `switchboard/switchboard.js` (pencil rename, sound-on-WAITING, pause-on-hover), `switchboard/index.html` (bottom bar markup, RS font link), new `switchboard/settings.js`, `developer-braindead/comms/_about.md` (gist authoring rule), this quest-log, `comms/active.md` (OPEN + ping + CLOSING). **Main-brain changes:** `gielinor/comms/_about.md` — the "lead with a human gist" authoring rule (player-side twin). **Commit: HELD** — the shared client files (`index.html`, `styles.css`, `switchboard.js`) are entangled with live siblings 3b367751/7c9033f4 (S060 terminal/chat) + carry S057's AWAITING-CREW hunks; a blanket commit would sweep their in-progress `server.py`/`terminal.js`/terminal-UI work. Deferred to a coordinated client-file commit (principal call). **No marker flip** — sibling Braindead 3b367751 is still live, so `active-mode.txt` stays `dev-brain`.
+Ten iterations of switchboard chat work, all landed on disk, none committed. **Cascade (dev brain):** `switchboard/chat.js` (channel mutes, pills, flex columns, collapse, gap-rail, code-ref de-emphasis, mention-strip), `switchboard/styles.css` (OSRS bottom bar, pencil, font, layout — chat region only), `switchboard/switchboard.js` (pencil rename, sound-on-WAITING, pause-on-hover), `switchboard/index.html` (bottom bar markup, RS font link), new `switchboard/settings.js`, `developer-braindead/comms/_about.md` (gist authoring rule), this quest-log, `comms/active.md` (OPEN + ping + CLOSING). **Main-brain changes:** `gielinor/comms/_about.md` — the "lead with a human gist" authoring rule (player-side twin). **Commit: HELD** — the shared client files (`index.html`, `styles.css`, `switchboard.js`) are entangled with live siblings 3b367751/7c9033f4 ([[S060_brain_self_audit_and_plan_reconciliation|S060]] terminal/chat) + carry [[S057_switchboard_awaiting_crew_state|S057]]'s AWAITING-CREW hunks; a blanket commit would sweep their in-progress `server.py`/`terminal.js`/terminal-UI work. Deferred to a coordinated client-file commit (principal call). **No marker flip** — sibling Braindead 3b367751 is still live, so `active-mode.txt` stays `dev-brain`.
 
 ## Ask
 
@@ -61,8 +61,8 @@ Principal: double-click rename "operates" badly; wants an explicit button. Decid
 ## Coordination state (parallel sessions — IMPORTANT for commit)
 
 Three siblings touched switchboard files this session:
-- **`213ea2ab` (S057, closed)** added `waiting_for_subagents` / "AWAITING CREW". Its **render hunks are uncommitted in THIS working tree** and it pinged me to preserve them in the S056 commit: `switchboard.js` STATE_RANK (`waiting_for_subagents:2`, closing/idle/ended/unknown→3/4/5/6) + STATE_LABEL `'AWAITING CREW'`; `styles.css` `.sb-row[data-state="waiting_for_subagents"]` block + `@keyframes sbCrewPulse` + sparkline color. **Must NOT clobber; include in S056 commit.**
-- **`e482340b` (S058, closed)** longer in-voice messages — committed its own work (4af5279), avoided my files. Left optional follow-up: `.sb-intent` line-clamp 2→~4 (deferred).
+- **`213ea2ab` ([[S057_switchboard_awaiting_crew_state|S057]], closed)** added `waiting_for_subagents` / "AWAITING CREW". Its **render hunks are uncommitted in THIS working tree** and it pinged me to preserve them in the S056 commit: `switchboard.js` STATE_RANK (`waiting_for_subagents:2`, closing/idle/ended/unknown→3/4/5/6) + STATE_LABEL `'AWAITING CREW'`; `styles.css` `.sb-row[data-state="waiting_for_subagents"]` block + `@keyframes sbCrewPulse` + sparkline color. **Must NOT clobber; include in S056 commit.**
+- **`e482340b` ([[S058_world_personality_in_voice_narration|S058]], closed)** longer in-voice messages — committed its own work (4af5279), avoided my files. Left optional follow-up: `.sb-intent` line-clamp 2→~4 (deferred).
 - **`ac10ec71` (embedded PTY terminal, LIVE)** edits `index.html` + `styles.css` (terminal markup/styles). Overlap with me on `styles.css`. Mitigation: I touch **no** `index.html`; my `styles.css` edits are in the switchboard-row region only. Posted a heads-up to comms.
 
 ## Iteration 5 — chatbox legibility pass (10 improvements, all approved)
@@ -91,7 +91,7 @@ Principal: disliked the wrap (still tucked under the username) and asked what th
 
 Principal flagged two bad parts: (a) long ownerless italic narration blocks at the top read as walls; (b) the `@braindead-<sid8>` / dialog-target hex is meaningless to a human.
 - **Hex (b):** `cleanLine()` now strips `(?:→)?\s*@?[a-z]+-[0-9a-f]{8}` mention tokens from comms previews + expanded body lines; the dialog `↪` pill no longer renders the sid8 target (the pill alone signals the heads-up). So `UPDATE → @braindead-e433ac17 @braindead-ac10ec71 Hunks…` → `[UPDATE] Hunks…`.
-- **Walls (a):** live intent/narrate ndjson lines clamped to `NDJSON_LINE_MAX=150` via `clip()` (the longer S058 in-voice text isn't load-bearing in scrollback); `maybeTimeRail` resets `lastStreamSpeaker=null` after inserting a rail so a post-gap line re-shows its speaker name instead of rendering as an ownerless continuation.
+- **Walls (a):** live intent/narrate ndjson lines clamped to `NDJSON_LINE_MAX=150` via `clip()` (the longer [[S058_world_personality_in_voice_narration|S058]] in-voice text isn't load-bearing in scrollback); `maybeTimeRail` resets `lastStreamSpeaker=null` after inserting a rail so a post-gap line re-shows its speaker name instead of rendering as an ownerless continuation.
 - chat.js only; `node --check` clean. No styles bump.
 
 ## Iteration 8 — human-readable messages (authoring + display, "Both")
@@ -107,7 +107,7 @@ Principal: comms posts are unfollowable — dense agent-to-agent jargon (`.sb-ro
 - `renderCommsEntry` joins all body lines into one `.body` block; `.comms-collapsed .body` line-clamps to **2 lines**. After append it **measures** `scrollHeight > clientHeight` — only overflowing posts get a `⌄`/`⌃` toggle (whole-row click) + stay collapsed; short gist-first posts render full, no toggle. Replaces the separate-comms-body-divs approach.
 - CSS `.comms-collapsed .body` (-webkit-line-clamp:2) + `.comms-toggle` chevron (Segoe UI Symbol, clear). Old `.comms-body` / `.comms-toggleable` rules now dead (left harmless).
 - chat.js `node --check` clean. Display-only; no new doc/hook writes.
-- Not addressed: long ndjson **intent** narration lines (S058) could still wall — not visible in the reported screenshot (all comms); revisit if they appear.
+- Not addressed: long ndjson **intent** narration lines ([[S058_world_personality_in_voice_narration|S058]]) could still wall — not visible in the reported screenshot (all comms); revisit if they appear.
 
 ## Iteration 10 — time-rail is gap-driven, not per-minute
 

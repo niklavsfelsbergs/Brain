@@ -1,4 +1,4 @@
-# S032 — 2026-05-22 — Terminal switchboard (D-020 Phases 1 + 2)
+# S032 — 2026-05-22 — Terminal switchboard ([[D-020_terminal_switchboard|D-020]] Phases 1 + 2)
 
 A new instrumentation layer for parallel-session operation. Principal addressed Guthix to brainstorm "how do I know which of my five Claude Code terminals is waiting for me right now" — the question that the visualizer answers spatially but not temporally. Design surfaced as a three-phase switchboard; session pivoted into dev-brain and shipped Phases 1 + 2 end-to-end. A terminal-rendering incident mid-session forced a partial rollback of Phase 1's wiring; the code stayed on disk, only the high-frequency registrations were paused pending diagnosis.
 
@@ -14,7 +14,7 @@ A new instrumentation layer for parallel-session operation. Principal addressed 
 
 - **Settings wired then partially rolled back.** `brain/.claude/settings.json` initially registered the sidecar for `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SessionEnd`. Mid-session diagnosis of a stuck terminal-rendering state ruled hook frequency out as the root cause but left the four high-frequency registrations *paused* defensively until the actual cause is found — only `SessionEnd` remains live. A `_comment_status_sidecar` field documents the pause inline.
 
-- **Comms entries.** `OPEN` at session start (declaring D-020 scope and steering clear of `index.html`), `UPDATE` mid-session when the principal redirected to Phase 2, `→ @braindead-f39b5b3f` ping before touching `index.html`. `CLOSING` lands at this step. The status sidecar caught a real-time signal that one of the "stale-intent" siblings I flagged at respawn (ab5ad0df) was actually alive — surfacing the limitation of intent-file-mtime as a liveness check.
+- **Comms entries.** `OPEN` at session start (declaring [[D-020_terminal_switchboard|D-020]] scope and steering clear of `index.html`), `UPDATE` mid-session when the principal redirected to Phase 2, `→ @braindead-f39b5b3f` ping before touching `index.html`. `CLOSING` lands at this step. The status sidecar caught a real-time signal that one of the "stale-intent" siblings I flagged at respawn (ab5ad0df) was actually alive — surfacing the limitation of intent-file-mtime as a liveness check.
 
 ## The terminal-rendering incident
 
@@ -29,11 +29,11 @@ Outcome: status sidecar retains only its `SessionEnd` registration; the per-turn
 
 ## Why this came together now
 
-The principal's question came framed as "I have N terminals open, how do I know which one wants me" — exactly the question that emerges once D-017's parallel-instances + D-019's parallel-Braindead pattern goes from "thing that ships" to "default operating mode." The visualizer answers "where in the brain is each actor," not "is this actor currently waiting on me." Different question, different surface — the sidebar belongs next to COMMS, not on the canvas.
+The principal's question came framed as "I have N terminals open, how do I know which one wants me" — exactly the question that emerges once [[D-017_parallel_player_instances|D-017]]'s parallel-instances + [[D-019_parallel_braindead_and_comms_channel|D-019]]'s parallel-Braindead pattern goes from "thing that ships" to "default operating mode." The visualizer answers "where in the brain is each actor," not "is this actor currently waiting on me." Different question, different surface — the sidebar belongs next to COMMS, not on the canvas.
 
 The decoupled hook script (vs. extending `emit-event.py`) was the right call given the terminal incident — the visualizer pipeline kept working through the diagnosis cycle because the two scripts have no shared state. The architectural value paid off the same day it was chosen.
 
-The user-global file path (vs. project-local) was correct in spirit but premature in execution: the hook is only *registered* in `brain/.claude/settings.json`, so only brain sessions write status files. To get true cross-repo visibility, the hook needs to move to `~/.claude/settings.json` (user-level). The status file path was designed for that future; only the registration needs to migrate. Punted as out of scope for first cut, but flagged in D-020.
+The user-global file path (vs. project-local) was correct in spirit but premature in execution: the hook is only *registered* in `brain/.claude/settings.json`, so only brain sessions write status files. To get true cross-repo visibility, the hook needs to move to `~/.claude/settings.json` (user-level). The status file path was designed for that future; only the registration needs to migrate. Punted as out of scope for first cut, but flagged in [[D-020_terminal_switchboard|D-020]].
 
 ## Observations to carry
 
@@ -41,7 +41,7 @@ The user-global file path (vs. project-local) was correct in spirit but prematur
 
 - **Decoupled hook scripts paid off in real-time.** When the registration of one hook needed to be partially rolled back, the other's behavior was untouched and the visualizer kept running through the diagnosis. The "shared file, separate processes" pattern is strictly better than "one script does everything" for failure isolation. Same logic suggests Phase 3's window-focus helper, when it lands, should also be a separate script.
 
-- **Status sidecar is a strictly stronger sibling-liveness signal than intent-file mtime.** At respawn I flagged `ab5ad0df` as a potential `ABANDONED` candidate because their intent file was 9 minutes stale; the sidecar showed them very-much-alive (their last hook fire was 5 seconds ago, intent had been updated since I read it). The comms ritual's sibling-detection check (D-019 §3) could swap from `intent-file mtime <5min` to `status-sidecar state ≠ ended AND last_event_ts <5min` once the sidecar stabilizes — strictly stronger.
+- **Status sidecar is a strictly stronger sibling-liveness signal than intent-file mtime.** At respawn I flagged `ab5ad0df` as a potential `ABANDONED` candidate because their intent file was 9 minutes stale; the sidecar showed them very-much-alive (their last hook fire was 5 seconds ago, intent had been updated since I read it). The comms ritual's sibling-detection check ([[D-019_parallel_braindead_and_comms_channel|D-019]] §3) could swap from `intent-file mtime <5min` to `status-sidecar state ≠ ended AND last_event_ts <5min` once the sidecar stabilizes — strictly stronger.
 
 - **"Cross-repo" is a registration question, not a file-path question.** Putting status files at `~/.claude/status/` was correct, but only sessions whose hook *fires* can populate the dir, and the hook only fires for sessions whose settings.json includes it. The visibility scope is the *intersection* of "where the file lives" and "where the hook runs" — and the latter is the binding constraint. Worth keeping in mind when designing user-level instrumentation.
 

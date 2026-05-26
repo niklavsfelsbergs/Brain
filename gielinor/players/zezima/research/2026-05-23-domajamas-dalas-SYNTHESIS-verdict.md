@@ -1,7 +1,7 @@
 # Buying a Riga apartment held as *domājamās daļas* — synthesis & verdict
 
 **For:** Niklavs (mortgage-financed, intends to live in it, hold horizon unknown).
-**Date:** 2026-05-23. **Author:** Zezima (S056), weaving four penguin research files.
+**Date:** 2026-05-23. **Author:** Zezima ([[S056_e5df54a2_apartment-domajamas-dalas-research|S056]]), weaving four penguin research files.
 **Anchors:** `2026-05-23-domajamas-dalas-legal-structure.md` (P1),
 `-mortgage-financing.md` (P2), `-resale-and-conversion.md` (P3),
 `-practical-risks.md` (P4).

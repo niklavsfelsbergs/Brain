@@ -15,7 +15,7 @@ Built the curated dispatch from scratch and overwrote the stale Phase 1 pack at
 
 ## Turn log
 
-- **T1** — Respawn; read keepsake + EU tender bank notes + S034 update. Surfaced where-we-are: review doc done, Keep/Drop/Reframe walkthrough never run, B1 zone fee (EUR 3.04M, 47%) the hanging decision. Flagged DPD PL = quantitatively retire-only but the verdict rides on the pessimistic Blocks.
+- **T1** — Respawn; read keepsake + EU tender bank notes + [[S034_2026-05-22_eu-tender-logic-review|S034]] update. Surfaced where-we-are: review doc done, Keep/Drop/Reframe walkthrough never run, B1 zone fee (EUR 3.04M, 47%) the hanging decision. Flagged DPD PL = quantitatively retire-only but the verdict rides on the pessimistic Blocks.
 - **T2** — Showed the two-file structure via Hermes (review doc 15 Qs → dispatch 10, 5 dropped).
 - **T3** — User gave 14 picks, asked which are low-impact. Recommended bundling #7–10 (<EUR 60k aggregate, ~0 likely). User chose "bundle into one line."
 - **T4** — Wrote the dispatch file (full annotated version, 11 Qs).

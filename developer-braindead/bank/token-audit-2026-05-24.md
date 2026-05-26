@@ -23,11 +23,11 @@ Global `confirmed/`+keepsake = 240 tok total — that layer is well-disciplined;
 
 ## ✅ #1 — respawn.md collapse (DONE)
 
-410 lines / ~49.5k tok → 42 lines / ~2k tok. **~47.5k saved per dev session, zero information lost.** The file was append-PREPENDed with ~20 stacked `Last updated` blocks (S049→S072) + a redundant `Where we are` section (re-summarizing the same sessions) + a `Next step` section thick with obsolete struck-through steps + a ~105-line cross-session lessons tail — all read in full every dev respawn, while the file's *own* discipline said *"Overwritten in place — not append-only. History lives in quest-log/."* The tail navigation (`Files to read first`) was also stale (pointed at S052 switchboard while the head was S072 cockpit).
+410 lines / ~49.5k tok → 42 lines / ~2k tok. **~47.5k saved per dev session, zero information lost.** The file was append-PREPENDed with ~20 stacked `Last updated` blocks ([[S049_17e701eb_visualizer_state_aware_motion_and_action_line|S049]]→[[S072_dbd41cc0_cockpit-fluid-ui|S072]]) + a redundant `Where we are` section (re-summarizing the same sessions) + a `Next step` section thick with obsolete struck-through steps + a ~105-line cross-session lessons tail — all read in full every dev respawn, while the file's *own* discipline said *"Overwritten in place — not append-only. History lives in quest-log/."* The tail navigation (`Files to read first`) was also stale (pointed at [[S052_98d4ec5e_switchboard-rebuild|S052]] switchboard while the head was [[S072_dbd41cc0_cockpit-fluid-ui|S072]] cockpit).
 
 - Lessons tail relocated **verbatim** to `bank/build-lessons.md` (read on demand, not loaded at respawn). Individual lessons can graduate to `examine/I-NNN_*.md` during a reflection pass.
 - Stacked blocks + `Where we are` summaries dropped from the file (recoverable from git history + the per-session `quest-log/SNNN_*.md` entries they duplicate).
-- Discipline note hardened + a D-024 parallel note added: **prepend one line at close, don't overwrite from a stale full copy** (a sibling S074 close already exercised this correctly).
+- Discipline note hardened + a [[D-024_parallel_player_coordination|D-024]] parallel note added: **prepend one line at close, don't overwrite from a stale full copy** (a sibling [[S074_cockpit_switchboard_status_fixes|S074]] close already exercised this correctly).
 
 ---
 
@@ -59,7 +59,7 @@ Drop from `@import`, keep a one-line pointer in `gielinor/CLAUDE.md`, read on cu
 
 20 files / ~8,930 tok, read in full every Jebrim session (the respawn ritual reads *every* `.md` in `confirmed/`). Two things to know:
 
-- **`current.md` is a 278-char placeholder.** Do NOT "consolidate into current.md and read only it" — that's exactly the S038 regression (respawn was *changed* from reading `current.md` to reading the folder because the summary was silently dropping entries; see `bank/build-lessons.md` → S038 "frame ≠ root cause"). The summary doesn't reduce load anyway; it adds.
+- **`current.md` is a 278-char placeholder.** Do NOT "consolidate into current.md and read only it" — that's exactly the [[S038_brain_underutilization_diagnosis|S038]] regression (respawn was *changed* from reading `current.md` to reading the folder because the summary was silently dropping entries; see `bank/build-lessons.md` → [[S038_brain_underutilization_diagnosis|S038]] "frame ≠ root cause"). The summary doesn't reduce load anyway; it adds.
 - **The real lever is brevity + pruning, done in a Jebrim alching pass.** The brevity discipline is already on record (claim + anchor + rule; cross-project memory `confirmed_entry_brevity`). A tight entry is ~150–300 chars (~50–75 tok). These are 4–10× over:
 
   | entry | tok | |

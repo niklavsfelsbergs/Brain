@@ -1,12 +1,12 @@
 # D-029 — 2026-05-24 — Switchbar status vocabulary: two-axis split (state + tags)
 
-**Context.** The fleet board's status enum ([[D-020_terminal_switchboard]] / [[D-028_switchboard_cockpit_rebuild]]) was one field doing two jobs. It carried both *ball-holder* states (`working`, `waiting_for_user`, `waiting_for_answers`, `waiting_for_subagents`, `idle`) and *activity-flavor* states (`alching`, `wrapped_up`) in a single `state` field. The symptom: a precedence ladder in `status-sidecar.py` main() — "alching only replaces a *plain* working turn", "wrapped_up *holds across* working/waiting" — which exists solely because two orthogonal axes were crammed into one slot. Three live seams traced back to it (S077 parked finds + this audit):
+**Context.** The fleet board's status enum ([[D-020_terminal_switchboard]] / [[D-028_switchboard_cockpit_rebuild]]) was one field doing two jobs. It carried both *ball-holder* states (`working`, `waiting_for_user`, `waiting_for_answers`, `waiting_for_subagents`, `idle`) and *activity-flavor* states (`alching`, `wrapped_up`) in a single `state` field. The symptom: a precedence ladder in `status-sidecar.py` main() — "alching only replaces a *plain* working turn", "wrapped_up *holds across* working/waiting" — which exists solely because two orthogonal axes were crammed into one slot. Three live seams traced back to it ([[S077_e0f2af5d_cockpit-swarm-verification|S077]] parked finds + this audit):
 
 1. **Stuck `WORKING` is indistinguishable from a long real turn.** The sidecar fires only on `UserPromptSubmit`, `Stop`, `SessionEnd`, and Pre/Post for two tight matchers — *not* ordinary tool calls. So `last_event_ts` is frozen for a whole working turn, and the only decay we had was `waiting_for_user → idle`. A crashed-mid-turn session reads WORKING until the liveness gate drops the whole row (process-dead, or 1h stale).
 2. **`ENDED` was dead config** — in `STATE_LABEL`/`STATE_RANK` but filtered out of the manifest, so it never rendered.
-3. **Manifest staleness** when one session is mid-long-turn (S077 find #1) — same root as #1.
+3. **Manifest staleness** when one session is mid-long-turn ([[S077_e0f2af5d_cockpit-swarm-verification|S077]] find #1) — same root as #1.
 
-Decided in dev-brain S078 with the principal driving the reframe.
+Decided in dev-brain [[S078_959a4c34_switchbar-two-axis-states|S078]] with the principal driving the reframe.
 
 ## Decision
 
@@ -59,4 +59,4 @@ Contracts otherwise preserved per [[D-028_switchboard_cockpit_rebuild]] (the coc
 - [[D-020_terminal_switchboard]] — terminal switchboard; origin of the status sidecar + state vocabulary.
 - [[D-028_switchboard_cockpit_rebuild]] — cockpit rebuild; preserved-contract note and the original state list this supersedes.
 - [[D-027_inward_outward_build_imbalance]] — inward/outward imbalance; this is observability polish, explicitly bounded so it doesn't extend the time-sink.
-- S078 — quest-log entry capturing the build.
+- [[S078_959a4c34_switchbar-two-axis-states|S078]] — quest-log entry capturing the build.

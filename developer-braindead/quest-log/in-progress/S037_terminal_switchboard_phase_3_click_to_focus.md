@@ -36,7 +36,7 @@ The chain shape that landed for both new-format sessions: `bash.exe → bash.exe
 
 - **Old-format sessions need a refresh.** Any session whose last hook fired before the sidecar edit has only `claude_pid`, no chain. Either send any message in those sessions (re-fires sidecar with new code) or just spawn fresh ones for the multi-window test.
 
-- **D-020 doc update.** The decision doc still describes the original 5-event registration design and the original single-PID Phase 3 plan. Both have moved. Update the §"Hook wiring" and §"Phase build order" sections, plus add a §"Process tree walk" subsection capturing the chain rationale.
+- **[[D-020_terminal_switchboard|D-020]] doc update.** The decision doc still describes the original 5-event registration design and the original single-PID Phase 3 plan. Both have moved. Update the §"Hook wiring" and §"Phase build order" sections, plus add a §"Process tree walk" subsection capturing the chain rationale.
 
 - **Lorebook draft on hook-fire-rate-as-budget.** Carried from [[S032_terminal_switchboard_phases_1_and_2]]; the option-1 decision provides the lesson but the draft hasn't been written.
 
@@ -64,5 +64,5 @@ The chain shape that landed for both new-format sessions: `bash.exe → bash.exe
 
 1. Open a second VS Code window with a fresh `claude` session. Send any prompt to populate its chain.
 2. From this window's visualizer (`http://localhost:8765/?live=1`), click that other session's row. Confirm the other window jumps forward and this one recedes.
-3. If it works: update D-020 + write the hook-fire-rate / ASCII-PS lorebook draft + close out S037.
+3. If it works: update [[D-020_terminal_switchboard|D-020]] + write the hook-fire-rate / ASCII-PS lorebook draft + close out S037.
 4. If it doesn't work: check `~/.claude/status/focus.log` for which Code.exe HWND it targeted; the chain capture might need disambiguation logic when multiple Code.exe siblings are alive.

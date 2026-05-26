@@ -1,6 +1,6 @@
 # Shipping-agent skill loading — load-on-cue + how_to.md trigger registry
 
-**Source:** S036 T5 — second live reprompt test failed because the new skill file existed but never loaded. Diagnostic: `shipping-agent/skills/_about.md` says skills are *"loaded on cue; not always-in-context"* and `how_to.md` is the only always-loaded file. Without a hook in the always-loaded surface, the agent has no signal to read the skill at trigger time.
+**Source:** [[S036_2026-05-22_reprompting-iteration-and-shipping-port|S036]] T5 — second live reprompt test failed because the new skill file existed but never loaded. Diagnostic: `shipping-agent/skills/_about.md` says skills are *"loaded on cue; not always-in-context"* and `how_to.md` is the only always-loaded file. Without a hook in the always-loaded surface, the agent has no signal to read the skill at trigger time.
 
 ## The mechanism
 
@@ -35,7 +35,7 @@ Each load-on-cue skill adds one bullet. The hook carries: trigger phrases, disam
 ## Implications
 
 - **Shipping a skill file is half the work.** The other half is the trigger hook. A skill without a hook is invisible.
-- **Live test on a real prompt before considering it shipped.** The S036 iteration loop only completed because the second live test exposed the load gap. Without that test, the skill would have been "shipped" but inert.
+- **Live test on a real prompt before considering it shipped.** The [[S036_2026-05-22_reprompting-iteration-and-shipping-port|S036]] iteration loop only completed because the second live test exposed the load gap. Without that test, the skill would have been "shipped" but inert.
 - **Other load-on-cue skills will need the same pattern.** `query-patterns.md` is already load-on-cue but is loaded indirectly (via § 1 *Where to find things* + § 7 mode references). New behavioral skills that need to fire on user phrasing need an explicit entry in `### Skill triggers — load on cue`.
 - **Cross-repo skills land twice.** The same skill in `gielinor/spellbook/skills/` and `shipping-agent/skills/` won't auto-sync. Future iterations on `reprompting.md` (and the next cross-repo skill) need to update both files explicitly and keep their substance — not their prose — in sync.
 

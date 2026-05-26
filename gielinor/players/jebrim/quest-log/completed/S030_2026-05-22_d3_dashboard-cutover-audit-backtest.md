@@ -8,7 +8,7 @@ Branch (not touching): `shipping-mart-cutover`.
 
 ### Turn 1 — context load
 
-- Read resume file (`inventory/dashboard-gold-cutover-resume.md`), S026 D1 quest-log (`S026_d1_sql_pipeline.md`), `audit.py` (603 lines), `backtest.py` (333 lines), pipeline `RAW_KEEP_COLS` + transform.
+- Read resume file (`inventory/dashboard-gold-cutover-resume.md`), [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] D1 quest-log (`S026_d1_sql_pipeline.md`), `audit.py` (603 lines), `backtest.py` (333 lines), pipeline `RAW_KEEP_COLS` + transform.
 - Enumerated current `data/`: `raw.parquet`, `processed/<YYYY-MM>.parquet` (Jan-2024 → May-2026, 29 monthly partitions), `daily.parquet`, `daily_product.parquet`, `corridor_trends_weekly.parquet`, `deviations.parquet`, `deviations_summary.parquet`, `alerts.parquet`, `issues.parquet`, `outlier_thresholds.parquet`, `filter_combos.parquet`, `meta.json`. Stale `raw_cache/*` parquets remain (legacy from pre-cutover; not consumed by current pipeline).
 - Confirmed legacy files referenced by both scripts (`layer1_corridors.parquet`, `layer1_decomp.parquet`, `layer2_shifts.parquet`, `layer3_countries.parquet`, `layer3_providers.parquet`, `layer4_providers.parquet`, `avg_costs.parquet`, `completeness.parquet`, `outliers.parquet`, `corridor_trends.parquet`, single-file `processed.parquet`) are not produced anywhere in `pipeline.py` — all replaced by the corridor_trends_weekly / alerts / issues / daily / daily_product / outlier_thresholds set.
 
@@ -46,7 +46,7 @@ Add new:
 - `alerts.parquet` schema + `alert_queue ∈ {early_warning, confirmed}`.
 - `issues.parquet` schema + status values sane.
 - `corridor_trends_weekly.parquet` cost_type enum check.
-- Bucket-sum identity: `bkt_*` summed across `daily.parquet` ≈ `sum_real` (server-verified to the cent in mart, per S026 D1 quest log line 15 / mart contract).
+- Bucket-sum identity: `bkt_*` summed across `daily.parquet` ≈ `sum_real` (server-verified to the cent in mart, per [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] D1 quest log line 15 / mart contract).
 
 Threshold-flag (surface for principal):
 - `baseline_weeks` literal: pipeline now uses 5. Old audit said 6. Update or just read from meta + assert equals BASELINE_WEEKS constant? Best to soft-check: `meta["baseline_weeks"] in (5, 6)` plus print actual value — surface for principal review.
@@ -66,7 +66,7 @@ Threshold-flag (surface for principal):
 ### Turn 5 — backtest.py rewrite + smoke run
 
 - Minimal change: load logic switched from `pl.read_parquet(DATA / "processed.parquet")` to `pl.read_parquet([str(p) for p in sorted((DATA/"processed").glob("*.parquet"))])`, with back-compat fallback to single-file if `processed/` dir doesn't exist.
-- All L1/L2 simulation logic (week_mondays, compute_l1_for_week, compute_l2_for_week) kept verbatim. The thresholds (MIN_ABS_CHANGE_EUR=0.50, MIN_PCT_CHANGE=10, MIN_SHIPMENTS=100, MIN_VOL_PERIOD=2500, TOP_N=10) are unchanged — these are deliberately stricter than pipeline alerts per S026 D1 quest log (line 182 "stricter thresholds than pipeline alerts ... simpler historical signal-quality check"). No principal sign-off needed unless we want to recalibrate. Flagged as discretionary.
+- All L1/L2 simulation logic (week_mondays, compute_l1_for_week, compute_l2_for_week) kept verbatim. The thresholds (MIN_ABS_CHANGE_EUR=0.50, MIN_PCT_CHANGE=10, MIN_SHIPMENTS=100, MIN_VOL_PERIOD=2500, TOP_N=10) are unchanged — these are deliberately stricter than pipeline alerts per [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] D1 quest log (line 182 "stricter thresholds than pipeline alerts ... simpler historical signal-quality check"). No principal sign-off needed unless we want to recalibrate. Flagged as discretionary.
 - Smoke run with `--weeks 2`: completed in 1.7s, wrote 20 rows to `data/backtest.parquet`. L1=3+1 detected, L2=7+9 detected, top weekly impacts €7,148 / €2,512. No errors.
 
 ## Summary
@@ -123,7 +123,7 @@ Threshold-flag (surface for principal):
 
 1. **`meta.baseline_weeks` literal 6 → 5.** The old audit asserted `meta["baseline_weeks"] == 6`. `pipeline.py:69` is `BASELINE_WEEKS = 5`. `meta.json` shows `5`. Soft-checked in the new audit as `in {5, 6}` with the actual value printed. If 5 is the locked-in value, the audit can tighten to `== 5`. **Asking before tightening.**
 2. **`backtest.py` thresholds** (`MIN_ABS_CHANGE_EUR=0.50`, `MIN_SHIPMENTS=100`). Deliberately stricter than pipeline alerts (which use 0.20 / less restrictive volume). Post-cutover, `cost_for_routing` distribution may have shifted (ORWO rows now NULL where the inline-CASE used to fill). Worth a sanity look at one historical week's output to see if signal density is similar. **Not blocking the rewrite; flagging for review.**
-3. **Bucket-sum tolerance (`daily.parquet`).** Mart guarantees row-level cents-exact equality between `cs.total_eur` and `fs.real_shipping_cost_eur` (per S026 D1). At the aggregated daily level: current diff is 237K EUR / 0.37% on a 63M EUR base. Audit tolerance set to 1% / 1000 EUR floor. The 0.37% maps to a combination of the 0.5% `cost_source='invoice_estimate'` transient remnant rows + bucket cols' `fill_null(0)` (pipeline.py:451) vs `shipping_cost`'s NULL preservation. **Not flagging — this is expected behavior; the 1% threshold has room.** If the remnant rows disappear upstream, expect this to drop toward 0.1%.
+3. **Bucket-sum tolerance (`daily.parquet`).** Mart guarantees row-level cents-exact equality between `cs.total_eur` and `fs.real_shipping_cost_eur` (per [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] D1). At the aggregated daily level: current diff is 237K EUR / 0.37% on a 63M EUR base. Audit tolerance set to 1% / 1000 EUR floor. The 0.37% maps to a combination of the 0.5% `cost_source='invoice_estimate'` transient remnant rows + bucket cols' `fill_null(0)` (pipeline.py:451) vs `shipping_cost`'s NULL preservation. **Not flagging — this is expected behavior; the 1% threshold has room.** If the remnant rows disappear upstream, expect this to drop toward 0.1%.
 
 ### Whether the rewritten scripts run cleanly against current `data/`
 

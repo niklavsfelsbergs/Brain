@@ -1,6 +1,6 @@
 # Mart NULL classification by drill-down
 
-> **Status.** Draft. Pending alching. Authored 2026-05-21 in S019 (Jebrim) as harvest from S014 (Shipping Data Mart TTYD how-to) §9 work.
+> **Status.** Draft. Pending alching. Authored 2026-05-21 in S019 (Jebrim) as harvest from [[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] (Shipping Data Mart TTYD how-to) §9 work.
 
 ## When to use
 
@@ -35,7 +35,7 @@ The drill protocol replaces "what bucket does this column live in?" with "what s
 
 ## Originating observation
 
-S014 §9 work, 2026-05-21. Three sequential probes proved each previous framing wrong:
+[[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] §9 work, 2026-05-21. Three sequential probes proved each previous framing wrong:
 
 - **Probe 1** (source × month): showed PCS / Rewallution were silently 100% NULL alongside ORWO (T11 only flagged ORWO), PicaAPI ~78% NULL was a regime-change average (carrier-ts ingestion landed 2025-11), Picturator ~34% NULL was a real degradation starting 2025-09.
 - **Probe 2** (source × month × dim group): showed the "PICT degraded Sep 2025" framing was wrong — only DHL and UPS groups degraded, plus a dim-coverage gap and DPD UK delivered-events not wired. All other carriers stayed clean.

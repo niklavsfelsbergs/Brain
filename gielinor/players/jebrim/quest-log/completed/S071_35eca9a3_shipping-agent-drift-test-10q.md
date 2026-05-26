@@ -1,14 +1,14 @@
 # S071 — Shipping-agent 10-question drift test (focus recent changes + general)
 
 **Opened:** 2026-05-25 ~21:07. Principal cue: "Hey Jebrim, do another 10 question test on the shipping agent and report where it drifts. Focus recent changes, also some general."
-**Mode:** READ-ONLY eval. Embodied the agent in 10 background dwarves vs the LIVE mart (redshift MCP, shipping_mart.*). Graded vs the CURRENT working-copy rulebook (how_to.md dirty `M` = S070 Mode-2/menu edits in tree, on top of committed @cd0b0e3). NO shipping-agent edits. Every number ground-truth-verified by me.
-**Method skill:** [[stress-testing-an-agent-by-embodying-it]]. Follows S059/S060 campaigns + the per-transcript harvests S064/S067/S070.
+**Mode:** READ-ONLY eval. Embodied the agent in 10 background dwarves vs the LIVE mart (redshift MCP, shipping_mart.*). Graded vs the CURRENT working-copy rulebook (how_to.md dirty `M` = [[S070_a43c1779_shipping-agent-mode2-trigger-and-menu-rendering|S070]] Mode-2/menu edits in tree, on top of committed @cd0b0e3). NO shipping-agent edits. Every number ground-truth-verified by me.
+**Method skill:** [[stress-testing-an-agent-by-embodying-it]]. Follows [[S059_9369b3f2_shipping-agent-limit-testing|S059]]/[[S060_7cd31d19_shipping-agent-training-campaign|S060]] campaigns + the per-transcript harvests [[S064_1fc49f17_shipping-agent-orwo-quota-reload-rule|S064]]/[[S067_6ccc2220_shipping-agent-bucket-first-harvest|S067]]/[[S070_a43c1779_shipping-agent-mode2-trigger-and-menu-rendering|S070]].
 
 ## Question set (7 recent-change probes + 3 core)
 
 1. bucket-first r4 — "Why was TCG per-parcel higher than a year ago?" (TCG named, isolate r4)
 2. scope-gate r12 + Mode-2 menu — "How are our shipping costs doing this year?" (neutral)
-3. Mode-2 covert-fuzzy (S070 held) — "Anything in April's TCG shipping I should worry about?" (TCG)
+3. Mode-2 covert-fuzzy ([[S070_a43c1779_shipping-agent-mode2-trigger-and-menu-rendering|S070]] held) — "Anything in April's TCG shipping I should worry about?" (TCG)
 4. set-coherence r35 — "Five headline numbers for a board slide" (neutral)
 5. UPS oversize bands r15 — "€620 on one UPS parcel — what surcharge?" (carrier)
 6. which-cut / Root E — "Move DPD-UK 2-day parcels to standard to save?" (carrier)

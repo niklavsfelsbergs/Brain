@@ -1,8 +1,8 @@
 # Read the routing manifest before proposing new docs
 
-**Captured:** 2026-05-22 (S032)
+**Captured:** 2026-05-22 ([[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]])
 **Status:** drafted; awaits alching review.
-**Origin:** S032 bi-etl shipping-mart harvest, D1.
+**Origin:** [[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] bi-etl shipping-mart harvest, D1.
 
 ## The skill
 
@@ -27,7 +27,7 @@ Look specifically for:
 
 ## What the failure looks like
 
-S032 (verbatim trigger): I proposed a new `data-caveats.md` for the shipping-agent reference layer. Niklāvs approved. Mid-implementation, I read `reference/_about.md` and discovered it carried an explicit routing rule that split caveats across 4 existing files. The new file would have duplicated content and violated convention. Pivoting cost a turn and required re-validating the placement with Niklāvs.
+[[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] (verbatim trigger): I proposed a new `data-caveats.md` for the shipping-agent reference layer. Niklāvs approved. Mid-implementation, I read `reference/_about.md` and discovered it carried an explicit routing rule that split caveats across 4 existing files. The new file would have duplicated content and violated convention. Pivoting cost a turn and required re-validating the placement with Niklāvs.
 
 The cost: a planning loop, mid-implementation surprise, and the user briefly questioning a decision they'd just approved.
 

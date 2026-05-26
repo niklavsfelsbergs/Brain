@@ -1,6 +1,6 @@
 # pipeline.py — pandas drops all-NULL columns at the polars boundary
 
-**Status:** draft (harvested S030, 2026-05-22).
+**Status:** draft (harvested [[S030_2026-05-22_dashboard-gold-cutover|S030]], 2026-05-22).
 **Repo:** `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py`.
 
 ## The bug class
@@ -11,7 +11,7 @@ When `pipeline._pull_query` chunks data out of Redshift via pandas and then conv
 polars.exceptions.SchemaError: extra column in file outside of expected schema: <column>
 ```
 
-## How it manifested (S030, 2026-05-22)
+## How it manifested ([[S030_2026-05-22_dashboard-gold-cutover|S030]], 2026-05-22)
 
 D1's pipeline plumbing added `cost_source` (string, enum) to `RAW_KEEP_COLS` + `write_processed`. Older months had all-NULL `cost_source` upstream (mart only recently started populating); newer months had data. Pandas dropped the column for older-month chunks; polars choked on read-back.
 
@@ -42,4 +42,4 @@ If all three hold, the guard is mandatory before `--refresh-full` against histor
 
 ## Anchor turn
 
-S030 / T11 of `quest-log/completed/S030_2026-05-22_dashboard-gold-cutover.md`. Commit `eb1c2ea` on `bi-analytics` `shipping-mart-cutover`.
+[[S030_2026-05-22_dashboard-gold-cutover|S030]] / T11 of `quest-log/completed/S030_2026-05-22_dashboard-gold-cutover.md`. Commit `eb1c2ea` on `bi-analytics` `shipping-mart-cutover`.

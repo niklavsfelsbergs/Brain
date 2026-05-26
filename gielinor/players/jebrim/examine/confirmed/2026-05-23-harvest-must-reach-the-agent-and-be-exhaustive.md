@@ -1,6 +1,6 @@
 # Harvesting learnings: reach the agent, and read the whole convo
 
-**2026-05-23 (S057).** Asked to "pick learnings" from a shipping-agent conversation, I took two corrections from the principal:
+**2026-05-23 ([[S057_f4bb6eab_harvest-shipping-agent-convo-learnings|S057]]).** Asked to "pick learnings" from a shipping-agent conversation, I took two corrections from the principal:
 
 1. *"Did we teach the agent?"* — I'd written the learnings into my own brain (drafts) and called it done. But the shipping-agent's `how_to.md` — the file it actually reads at runtime — was untouched, so the agent would have repeated the blind spot. Capturing into my memory ≠ teaching the tool that made the mistake.
 2. *"Is that all?"* — I'd surfaced the headline lesson (dimension-gating) and stopped. Re-reading found five teachable items, including the principal's *first* pushback in that conversation ("where are the actual suggestions") which I'd skipped entirely.

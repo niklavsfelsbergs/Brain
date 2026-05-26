@@ -2,7 +2,7 @@
 
 **Principal:** Niklavs (BI analyst, lead on Shipping Data Mart by shipping-domain specialty)
 **Player:** Jebrim
-**Born:** 2026-05-20 (scoping in S001); resumed 2026-05-21 across S003 (execution + synthesis), S008 (design challenges + NGE-6127 reopen), S011 (ORWO lineage + destination_country + Grzegorz NGE-7094).
+**Born:** 2026-05-20 (scoping in [[S001_2026-05-20_repo-orientation|S001]]); resumed 2026-05-21 across S003 (execution + synthesis), S008 (design challenges + NGE-6127 reopen), S011 (ORWO lineage + destination_country + Grzegorz NGE-7094).
 **External actions:** all **completed** (3 dwarf spawns from S003; 2 ClickUp comments S008; 1 dwarf scrape S011). **No pending external actions.**
 
 > Resume state for this quest lives in `players/jebrim/inventory/S002-shipping-data-mart-v1-resume.md` (per `meta/layer-routing.md`). This quest-log keeps narrative, decisions, dwarf plan, and the turn log. Threads detail and "Where we are" summary now live in the inventory file.
@@ -103,7 +103,7 @@ For each of the 8 mart tables:
 - **Anomalies** — anything that breaks a V1 assumption. Examples: source_systems missing from a fact that should carry them, cost_source distributions that don't match expected (real/expected/avg), zero rows in a table that should have rows, suspiciously stale `MAX(loaded_at)`.
 - **SLA-breach feasibility check** — can `sla_breach_flag` and `days_vs_sla` be computed at query time? Probe `dim_carrier_sla` for coverage.
 
-Briefing note: per S001's quest log, baseline mart schemas are `enterprise_silver` (curated) with bronze at `enterprise_bronze`. `sl_gold` and `ol_gold` hold curated downstream. Source priority order (from NFE design but verified usable): `enterprise_silver` → `enterprise_bronze` → `poc_landing` → `dw` legacy.
+Briefing note: per [[S001_2026-05-20_repo-orientation|S001]]'s quest log, baseline mart schemas are `enterprise_silver` (curated) with bronze at `enterprise_bronze`. `sl_gold` and `ol_gold` hold curated downstream. Source priority order (from NFE design but verified usable): `enterprise_silver` → `enterprise_bronze` → `poc_landing` → `dw` legacy.
 
 **Out of scope:** ClickUp reads, repo reads, NFE doc reads. If something is found that needs ticket context to interpret, flag it; principal-Jebrim bridges it.
 
@@ -124,7 +124,7 @@ Briefing note: per S001's quest log, baseline mart schemas are `enterprise_silve
 
 Niklavs takes the task list into the ETL check-in. Whatever gets agreed in the check-in, he pushes to ClickUp himself afterward.
 
-## Carry-forward from S001 (useful, not duplicated work)
+## Carry-forward from [[S001_2026-05-20_repo-orientation|S001]] (useful, not duplicated work)
 
 - **Repo paths (verified):**
   - NFE: `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics-main\NFE\`
@@ -134,7 +134,7 @@ Niklavs takes the task list into the ETL check-in. Whatever gets agreed in the c
   - Reads need no approval; writes do.
   - Drafts go to chat first; principal approves; only then write to `bank/notes/`.
   - bi-etl `git pull origin main` before any read.
-- **The shipping data mart landing-note draft from S001** (under S001's "Pending drafts" section) is **superseded** by this quest's eventual output. Once `bank/notes/projects/shipping_data_mart_v1_gap_analysis.md` lands, S001's pending draft block can be cleared. Don't write the S001-era landing note as a separate file.
+- **The shipping data mart landing-note draft from [[S001_2026-05-20_repo-orientation|S001]]** (under [[S001_2026-05-20_repo-orientation|S001]]'s "Pending drafts" section) is **superseded** by this quest's eventual output. Once `bank/notes/projects/shipping_data_mart_v1_gap_analysis.md` lands, [[S001_2026-05-20_repo-orientation|S001]]'s pending draft block can be cleared. Don't write the S001-era landing note as a separate file.
 
 ## Self-observation worth saving later
 
@@ -146,7 +146,7 @@ Not drafting it this session because (a) close-session is firing, (b) the observ
 
 ## Turn log (history; reference only)
 
-- T1: Address opens session, Jebrim active. Respawn ran. Surfaced S001's in-progress entry for reconciliation.
+- T1: Address opens session, Jebrim active. Respawn ran. Surfaced [[S001_2026-05-20_repo-orientation|S001]]'s in-progress entry for reconciliation.
 - T2: Principal redirected — new quest for Shipping Data Mart V1, ignore NFE planning docs, ground truth from ClickUp NGE-6120 + bi-etl + redshift MCP. Check-in tomorrow morning. Asked: can I read HTML in ClickUp?
 - T3: Discussed scope, proposed attack order, asked 5 clarifying questions, flagged the HTML uncertainty pending capability test.
 - T4: Principal pointed at NGE-6129 as a concrete example with an HTML attachment in comments.
@@ -154,7 +154,7 @@ Not drafting it this session because (a) close-session is firing, (b) the observ
 - T6: Principal answered the 5 clarifying questions: ORWO required for V1, NGE-6120 is the epic, repo carries the commentary, bi-etl `main`, task list grouped by area + estimated owner. Asked the meta-question: "How will you do this? Its a lot of work. You will have to spawn dwarves. Would you have known that?"
 - T7: Answered honestly — no, I'd have gone serial without the prompt. Proposed the 3-dwarf plan above. Asked for go-ahead.
 - T8: Principal: "lets close the session and do this in a new spawn." Close-session ritual fires.
-- T9 (2026-05-21): New spawn. Principal cues "lets get to the shipping data mart audit." Jebrim active. Read S001 + S002 for resume context. Spawning 3 Jebrim-inherited dwarves in parallel per S002 plan: D1 (ClickUp NGE-6120 subtree), D2 (bi-etl mart-dir scan), D3 (Redshift coverage probe). Each writes to its sibling file under `quest-log/in-progress/S002_dN_*.md`. Pending until dwarves return.
+- T9 (2026-05-21): New spawn. Principal cues "lets get to the shipping data mart audit." Jebrim active. Read [[S001_2026-05-20_repo-orientation|S001]] + S002 for resume context. Spawning 3 Jebrim-inherited dwarves in parallel per S002 plan: D1 (ClickUp NGE-6120 subtree), D2 (bi-etl mart-dir scan), D3 (Redshift coverage probe). Each writes to its sibling file under `quest-log/in-progress/S002_dN_*.md`. Pending until dwarves return.
 - T10 (2026-05-21): All three dwarves returned. D1 walked 93 tickets (16 V1-blocking, 18 V1-followup, 4 out-of-scope, 3 unclear). D2 confirmed 7 of 8 mart tables wired in repo; `dim_carrier_sla` absent. D3 confirmed 7 of 8 tables present + fresh in Redshift; SLA-breach not computable; ORWO 100% NULL on destination + delivered_ts + revenue; Rewallution structurally unusable; `fact_shipment_cost_summary` is wired and fresh but main README still calls it "v2 not built." Three dwarf spawns marked completed.
 - T11 (2026-05-21): Synthesized the V1 gap matrix (sections A–F: Done & verified · Tickets vs reality · In progress + owner · Blocked · Open follow-ups · Surprises not ticketed) and the 12-area task list with estimated owners + severity flags. Drafted to chat.
 - T12 (2026-05-21): Principal asked for HTML deliverable instead of `.md`. Wrote `bank/notes/projects/shipping_data_mart_v1_gap_analysis.html` — self-contained, sticky-nav, color-coded severity. Principal cued close.

@@ -1,6 +1,6 @@
 # Structural restructure: mechanism over shape
 
-> **Status:** draft, anchor S024 T14 (2026-05-22). Surface at next alching.
+> **Status:** draft, anchor [[S024_2026-05-21_shipping-agent-rulebook-revamp|S024]] T14 (2026-05-22). Surface at next alching.
 
 ## The rule
 
@@ -23,7 +23,7 @@ When restructuring an information architecture (folder layouts, doc systems, cod
 4. **Map the new shape against the mechanisms.** Each file should be classifiable: always-loaded vs on-cue, live vs stable, AI vs analyst vs human. Files that don't classify cleanly are usually doing too many things.
 5. **Verify the split doesn't break invariants.** For code: smoke-test (does the import still resolve? does the path anchor still work?). For docs: cross-references updated, audience tags applied, stamps where applicable.
 
-## What this looked like in S024
+## What this looked like in [[S024_2026-05-21_shipping-agent-rulebook-revamp|S024]]
 
 First pass (mine): mechanical split by content shape — rules / knowledge / skills. The user pushed: *"we're on a good path. But can we do better?"*
 
@@ -37,7 +37,7 @@ Skip mechanism-first for cosmetic moves (rename a file, fix a path). The discipl
 
 ## Anchor
 
-S024 T14 (2026-05-22). how_to.md split from 793 → 313 lines. First proposal was mechanical; user push forced the mechanism-first reading. The deeper insight — *"the file structure is the visible part; the mechanism is what keeps it from rotting"* — surfaced only after the second pass.
+[[S024_2026-05-21_shipping-agent-rulebook-revamp|S024]] T14 (2026-05-22). how_to.md split from 793 → 313 lines. First proposal was mechanical; user push forced the mechanism-first reading. The deeper insight — *"the file structure is the visible part; the mechanism is what keeps it from rotting"* — surfaced only after the second pass.
 
 ## Related
 

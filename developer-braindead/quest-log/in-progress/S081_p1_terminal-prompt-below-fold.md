@@ -23,7 +23,7 @@ the error is in the *measured height*, not the division.
 
 Why H1 over H2 (_follow desync): the screenshot signature is decisive — thumb *just shy* of
 bottom + prompt clipped is "xterm has more rows than fit," not "scrollToBottom can't reach the
-end." The _follow/viewport-sync path was already hardened twice (S077 open path, S078 streaming
+end." The _follow/viewport-sync path was already hardened twice ([[S077_e0f2af5d_cockpit-swarm-verification|S077]] open path, [[S078_959a4c34_switchbar-two-axis-states|S078]] streaming
 path); the rows×cellHeight-vs-frame-clientHeight path had never been guarded.
 
 ## The change (all in `cockpit/web/term.js`, nothing committed)

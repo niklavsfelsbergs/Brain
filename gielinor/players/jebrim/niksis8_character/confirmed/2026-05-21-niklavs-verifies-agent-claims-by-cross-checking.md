@@ -1,6 +1,6 @@
 # Niklavs verifies agent claims by commissioning a second read
 
-## Situation (S023)
+## Situation ([[S023_2026-05-21_shipping-mart-coverage-audit|S023]])
 
 The shipping-agent (folder-scoped) surfaced a concerning coverage claim about uk.photo.gifts — "27% missing, wiring incomplete."
 
@@ -15,4 +15,4 @@ The shipping-agent (folder-scoped) surfaced a concerning coverage claim about uk
 
 ## Anchor
 
-S023 opening turn.
+[[S023_2026-05-21_shipping-mart-coverage-audit|S023]] opening turn.

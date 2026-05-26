@@ -65,7 +65,7 @@ Principal asked how to host the agent for company use online. Resolved:
 2. **Repeatable setup** — clone + Python env + `requirements.txt` (+ `openpyxl` S061 fix) + own `.env`. Worth a setup script.
 3. **Launcher / delivery vehicle** — decided: **Claude Code desktop app, per seat**, on a **Claude Team/Enterprise plan** (company-managed seats + billing, not personal subs). Legitimate — own interactive seat, no multiplex, no metering trap. The app opens the shipping-agent project; CLAUDE.md/how_to.md make it behave as the agent. Cockpit-style custom wrapper deferred (entangled with the brain; only if the app UX proves insufficient).
 
-**Team-pitch framing (added this session):** pitch the *capability* (plain-English shipping-cost Q&A → verified numbers/charts/reports, no SQL), not the tool. Three honest prereqs the pitch must carry: (a) N Team-plan seats = budget ask; (b) IT provisions per-user read-only gold-only DB access = the real gate (app is useless until this exists); (c) ~30 min one-time per-machine setup. Credibility line: S060 — 10-Q battery, ground-truth-verified, zero hallucination, read-only by design. Offered to draft the concrete IT credential ask (user/role/schema/grants) next.
+**Team-pitch framing (added this session):** pitch the *capability* (plain-English shipping-cost Q&A → verified numbers/charts/reports, no SQL), not the tool. Three honest prereqs the pitch must carry: (a) N Team-plan seats = budget ask; (b) IT provisions per-user read-only gold-only DB access = the real gate (app is useless until this exists); (c) ~30 min one-time per-machine setup. Credibility line: [[S060_7cd31d19_shipping-agent-training-campaign|S060]] — 10-Q battery, ground-truth-verified, zero hallucination, read-only by design. Offered to draft the concrete IT credential ask (user/role/schema/grants) next.
 
 **S061 under B — partial deflation, NOT full.** Still live per-seat: secrets handling (N laptops), `python:*` escape hatch (per-machine), PII-in-artifacts (if reports shared). Deflated: multi-user SQL perimeter, HTML injection from untrusted shared artifacts. **So a subset of S061 hardening is a deployment dependency, not optional.**
 
@@ -76,5 +76,5 @@ Principal asked how to host the agent for company use online. Resolved:
 ## Boundary notes
 
 - Out-of-tree repo `Documents/GitHub/shipping-agent/` (push denied by design).
-- **Uncommitted S060 edits already sit in that repo** awaiting principal go — keep any S061 work clear of them.
+- **Uncommitted [[S060_7cd31d19_shipping-agent-training-campaign|S060]] edits already sit in that repo** awaiting principal go — keep any S061 work clear of them.
 - Nothing in this session touched the repo. Documentation only.

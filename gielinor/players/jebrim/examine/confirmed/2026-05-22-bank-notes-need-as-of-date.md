@@ -2,7 +2,7 @@
 
 ## Before / after
 
-**Before (S029 alching, Bank Draft 1):** the dashboard-convergence note had *"Drafted 2026-05-22 (S026)"* as a subtitle line. Functional, but easy to miss when skim-reading. Future sessions reading the note couldn't see at a glance that the convergence directions, cost-basis alignment, and coverage-hole status are a **snapshot from a specific date** — they could rot silently.
+**Before ([[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] alching, Bank Draft 1):** the dashboard-convergence note had *"Drafted 2026-05-22 ([[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]])"* as a subtitle line. Functional, but easy to miss when skim-reading. Future sessions reading the note couldn't see at a glance that the convergence directions, cost-basis alignment, and coverage-hole status are a **snapshot from a specific date** — they could rot silently.
 
 **After:** every bank note carries an **`As of:` YYYY-MM-DD** line near the top, formatted bold so the date is unmissable. When the world has clearly moved since (e.g. cutover landed, decisions changed), the line is updated and a short *"superseded by"* / *"check before relying"* note is added.
 
@@ -22,4 +22,4 @@ When reading an existing bank note: the `As of:` is the first thing to check. If
 
 ## Anchor
 
-S029 alching, Bank Draft 1. Niklavs: *"give a date stamp so we know that this might be outdated info."*
+[[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] alching, Bank Draft 1. Niklavs: *"give a date stamp so we know that this might be outdated info."*

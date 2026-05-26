@@ -1,10 +1,10 @@
-# S066 — reconsidering THE domājamās-daļas apartment (S056 apartment #1)
+# S066 — reconsidering THE domājamās-daļas apartment ([[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] apartment #1)
 
 **Player:** Zezima. **Opened:** 2026-05-25 ~15:41. **Session:** e2362ea0.
 
 ## What this is
 
-Niklavs returns to the apartment-buy thread (last worked in S056, 2026-05-23). He says he's
+Niklavs returns to the apartment-buy thread (last worked in [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]], 2026-05-23). He says he's
 "considering buying it afterall," cites that ~4,000 apartments in Latvia are also held as
 *domājamās daļas*, and that after ~2 years of looking he won't find better. Link:
 `ss.lv/.../befhkm.html`.
@@ -12,18 +12,18 @@ Niklavs returns to the apartment-buy thread (last worked in S056, 2026-05-23). H
 ## Identity of the property — CORRECTED (turn 2)
 
 Turn 1 I mis-read this as a new third property. **It is not.** Niklavs corrected: "this is the
-one, I just didn't share the link before." So the link **= S056 apartment #1**, the
+one, I just didn't share the link before." So the link **= [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] apartment #1**, the
 *domājamās-daļas* flat we leaned **WALK** on. The listing detail is now known where it wasn't
-in S056:
+in [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]]:
 - **Ģertrūdes 113, Rīga Centrs** — 2 isolated rooms, **58 m²**, floor **5/6**, **brick, pre-war**
   ("P. kara"), **fully renovated** (individual gas boiler, high ceilings, restored tile stoves,
   designer finish), **€120,000 = €2,069/m²**, **"Zeme īpašumā"** (land owned), recently had a
   **6th floor + new roof added**.
-- Per S056 **T9**, Niklavs himself supplied the disambiguating fact: **~70 apartments** in the
+- Per [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] **T9**, Niklavs himself supplied the disambiguating fact: **~70 apartments** in the
   building → the "time bomb" / large-multi-apartment case, NOT a *pusmāja*. That principal-supplied
-  count is what sharpened S056 to LEAN WALK.
+  count is what sharpened [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] to LEAN WALK.
 
-## Why the WALK stands (S056 T9, P2/P4)
+## Why the WALK stands ([[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] T9, P2/P4)
 
 The reasons were **structural**, untouched by "4k exist" or "2 years looking":
 1. **Financing** — a bare 1/70 ideal share is what Tier-1 banks won't mortgage; Altum is
@@ -68,7 +68,7 @@ Niklavs answered the three structural concerns:
    prefer buy-out; 2022 5-yr bar). The stranger-co-owner risk touches his occupancy **only if the
    use-arrangement is unregistered** → #3 collapses into the registration hinge.
 
-**Verdict shift:** with financing apparently real, this moves from S056 "lean WALK" → **plausible
+**Verdict shift:** with financing apparently real, this moves from [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] "lean WALK" → **plausible
 eyes-open buy**, gated on: (a) registered *lietošanas kārtība* covering his flat; (b) signed bank
 offer; (c) ordinary good-apartment checks (price fair? building sound? 6th-floor addition legit?
 fit?).
@@ -77,12 +77,12 @@ fit?).
 
 He said "pull everything you can on this building." Spawned **3 background research agents**
 (general-purpose briefed as penguins — true penguin type only registers from gielinor/ CWD; same
-substrate workaround as S056), all writing to `zezima/research/2026-05-25-gertrudes113-*.md`:
+substrate workaround as [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]]), all writing to `zezima/research/2026-05-25-gertrudes113-*.md`:
 - **R1** — building + ownership/management (confirm ~70 apts, the 6th-floor addition's legality +
   effect on shares, kopīpašums vs biedrība, public kadastrs/Zemesgrāmata).
 - **R2** — location & daily life (Ģertrūdes 113 micro-location, transport, amenities, parking, noise).
 - **R3** — price (€2,069/m² fair for renovated pre-war Centre?) + the *domājamās-daļas* resale
-  reality (discount magnitude vs titled, buyer pool, time-on-market — refine the S056 gap).
+  reality (discount magnitude vs titled, buyer pool, time-on-market — refine the [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] gap).
 
 ## Turn 4 — 3 researchers returned; synthesis delivered
 
@@ -200,13 +200,13 @@ Zezima alching pass per [[bank-notes-harvest-from-finished-quests]]:
   consecutive flats decided on it; WFH station is a hard requirement, not a nice-to-have (2nd
   instance strengthening the gut-fit-veto note). Search-spec reframe: he needs 3-room / flexible
   layout, not a 2-room.
-- `bank/notes/latvia-property/`: refine S056 share-discount magnitude w/ the **Bruņinieku-28 comp**
+- `bank/notes/latvia-property/`: refine [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] share-discount magnitude w/ the **Bruņinieku-28 comp**
   (~⅓ off, replaces the 90% anecdote); **"added floor recalculates domājamās daļas / CL 1068
   unanimous consent"** check; **risk model** ("categorical vs degree"; forced-division is the one
   difference-in-kind; the gates are the filter between fine + burned; discount = risk price captured
   on entry but upside capped). Anchors: `research/2026-05-25-gertrudes113-*`. Still on offer if he wants it: the bank/Altum call script + the folio/BIS pull
 checklist (the *self*-side of due diligence, vs these seller-facing questions). Harvest to
-`bank/notes/latvia-property/` on a later alching pass (refines S056 share-discount magnitude w/ the
+`bank/notes/latvia-property/` on a later alching pass (refines [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] share-discount magnitude w/ the
 Bruņinieku-28 comp; "added-floor recalculates shares / CL 1068 consent" check; "discount = risk
 price, not a gift" framing).
 

@@ -2,8 +2,8 @@
 
 **Session** ac10ec71 · 2026-05-23 · Braindead (dev-brain mode)
 
-> Renumbered S058 → **S060** at close — siblings shipped S058 (in-voice
-> narration, `4af5279`) and S059 (ALCHING/WRAPPED-UP states) during this session.
+> Renumbered [[S058_world_personality_in_voice_narration|S058]] → **S060** at close — siblings shipped [[S058_world_personality_in_voice_narration|S058]] (in-voice
+> narration, `4af5279`) and [[S059_2de9789c_switchboard_alching_wrapped_up_states|S059]] (ALCHING/WRAPPED-UP states) during this session.
 
 ## Ask
 
@@ -15,7 +15,7 @@ terminal inside the switchboard app instead of vscode?"*
 1. **Feasibility framing.** Answered: yes, but it's an observer→interactor
    crossing, and it only works cleanly for sessions the switchboard **launches
    itself** — an existing VS Code session lives in a PTY VS Code owns, and there
-   is no PTY-attach on Windows (those keep the D-020 Phase 3 click-to-focus).
+   is no PTY-attach on Windows (those keep the [[D-020_terminal_switchboard|D-020]] Phase 3 click-to-focus).
    Surfaced the direction fork → principal chose **host new sessions in-app**.
 2. **Stack fork.** Probed the box: Node v25.9 / npm 11 / Python 3.13, no
    pywinpty. Recommended **Python (pywinpty + aiohttp)** over Node — matches the

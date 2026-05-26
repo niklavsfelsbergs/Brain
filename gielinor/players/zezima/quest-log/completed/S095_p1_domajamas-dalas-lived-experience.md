@@ -47,7 +47,7 @@ in practice; resale reality. Deliverable: `research/2026-05-26-domajamas-dalas-l
   sale). (5) Resale slower+discounted, "pašnāvnieks vai biznesmenis" quote confirmed (re: messy shares);
   achieved-price data still null; ~25–45% range stands. **Null results:** LSM + santa.lv bodies never
   cracked (403/paywall); no Reddit/FB share threads; LTV-on-share unquantified. Run-log complete.
-- **T0** — Read all prior research (5× S056 generic, 3× S066 gertrudes, folio Gate-2 draft).
+- **T0** — Read all prior research (5× [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] generic, 3× [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] gertrudes, folio Gate-2 draft).
   Key prior state: financing flagged as "predominantly cash / no evidence widened" (confirmed
   note) BUT the folio draft already found 5 banks (SEB, Swedbank, Luminor, Citadele, BigBank)
   registered on individual shares in this building 2025–26 — primary counter-evidence. My job:

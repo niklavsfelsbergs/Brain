@@ -14,7 +14,7 @@ quest-log/
   archive/              # abandoned in-progress entries, plus aged completed entries
 ```
 
-One file per **quest** (not per session). A quest is a unit of work with a deliverable; a session is one continuous principal-agent interaction. A single quest may span multiple sessions — see S014_*shipping-data-mart-ttyd* for the proof case (S014/S015/S016 all advanced the same quest file). Filename: `SNNN_YYYY-MM-DD_<slug>.md` (the SNNN is the session the quest opened in; the file persists past that session).
+One file per **quest** (not per session). A quest is a unit of work with a deliverable; a session is one continuous principal-agent interaction. A single quest may span multiple sessions — see S014_*shipping-data-mart-ttyd* for the proof case ([[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]]/[[S015_2026-05-21_ttyd-review-and-dry-run|S015]]/S016 all advanced the same quest file). Filename: `SNNN_YYYY-MM-DD_<slug>.md` (the SNNN is the session the quest opened in; the file persists past that session).
 
 ## Discipline (critical for crash recovery)
 

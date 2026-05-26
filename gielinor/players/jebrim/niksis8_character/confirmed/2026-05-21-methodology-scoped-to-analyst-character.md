@@ -5,6 +5,6 @@ description: Niklavs scopes analytical methodology to the analyst character, not
 
 # Methodology lives with the analyst
 
-**S014 T23.** I proposed routing the drill-to-disprove rule to Jebrim's `examine/` with "lift to global later if Zezima hits the same shape." Niklavs: *"Don't make this global - Jebrim is the analyst."*
+**[[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] T23.** I proposed routing the drill-to-disprove rule to Jebrim's `examine/` with "lift to global later if Zezima hits the same shape." Niklavs: *"Don't make this global - Jebrim is the analyst."*
 
 **Rule.** Route methodology to whichever character's practice it lives in. Don't pre-stage a lift-to-global; let bankstanding find cross-cutting patterns later. When in doubt, per-player.

@@ -8,9 +8,9 @@ That future arrived. Niklavs routinely runs parallel player sessions — two Jeb
 2. **Quest-log `SNNN_*.md` allocation race.** SNNN picked by scanning existing files; two sessions starting near-simultaneously can both pick the same N.
 3. **Cross-player wrong-terminal blindness.** The `communication-protocol.md` wrong-instance check is *content-based* (does this ask fit my domain?). It catches the principal mis-addressing one terminal but doesn't catch the agent being unaware a sibling exists.
 4. **Cross-player global-surface collisions** — `players/inbox/`, global `examine/drafts/`, `niksis8/drafts/`, `lorebook/drafts/`. Date-prefix filenames; last-write wins.
-5. **Liveness signal is intent-file mtime.** S032 flagged this as strictly weaker than [[D-020_terminal_switchboard]]'s status sidecar — a session can be alive with a 10-minute-old intent file mid-long-task.
+5. **Liveness signal is intent-file mtime.** [[S032_terminal_switchboard_phases_1_and_2|S032]] flagged this as strictly weaker than [[D-020_terminal_switchboard]]'s status sidecar — a session can be alive with a 10-minute-old intent file mid-long-task.
 
-The light-coordination posture D-017 took for parallel Jebrims ("principal disambiguates by eyeballing the visualizer") doesn't cover the disk hazards. This decision fixes the bulk of them with one new file + one suffix rule + a sidecar swap, parallel to D-019's shape.
+The light-coordination posture [[D-017_parallel_player_instances|D-017]] took for parallel Jebrims ("principal disambiguates by eyeballing the visualizer") doesn't cover the disk hazards. This decision fixes the bulk of them with one new file + one suffix rule + a sidecar swap, parallel to [[D-019_parallel_braindead_and_comms_channel|D-019]]'s shape.
 
 ## Decision
 
@@ -20,13 +20,13 @@ Four coordinated changes:
 
 Append-only log, same protocol as `developer-braindead/comms/active.md`. Single file covering Jebrim, Zezima, Guthix, future-roster — cross-player visibility from day one. Per-player files would fragment the wrong-terminal check at exactly the moment it pays off.
 
-Entry kinds: `OPEN` (respawn), `UPDATE` (mid-session pivot), `→ @<actor>-<sid8>` (dialogue), `CLOSING` (session-close). Header format identical to D-019:
+Entry kinds: `OPEN` (respawn), `UPDATE` (mid-session pivot), `→ @<actor>-<sid8>` (dialogue), `CLOSING` (session-close). Header format identical to [[D-019_parallel_braindead_and_comms_channel|D-019]]:
 
 ```
 [YYYY-MM-DD HH:MM] <actor>-<sid8> <KIND>
 ```
 
-Concurrent-write safety inherits from D-019: `open(..., 'a')` is atomic for small writes on Win+POSIX; line-level garbling tolerated, no lockfile.
+Concurrent-write safety inherits from [[D-019_parallel_braindead_and_comms_channel|D-019]]: `open(..., 'a')` is atomic for small writes on Win+POSIX; line-level garbling tolerated, no lockfile.
 
 ### 2. Liveness via [[D-020_terminal_switchboard]] status sidecar
 
@@ -38,7 +38,7 @@ state ≠ ended AND last_event_ts < 5min AND actor in {jebrim, zezima, ...}
 
 Cross-reference with `gielinor/comms/active.md` — any session id in the sidecar manifest without a matching `CLOSING` entry is a confirmed-live sibling. Surface to principal before posting OPEN.
 
-Strictly stronger than intent-file mtime (S032 carry-forward). Ship from the start; don't retrofit later.
+Strictly stronger than intent-file mtime ([[S032_terminal_switchboard_phases_1_and_2|S032]] carry-forward). Ship from the start; don't retrofit later.
 
 ### 3. Session-suffix only the state files
 
@@ -49,7 +49,7 @@ Two surfaces get `__<sid8>` suffix:
 
 Drafts (`bank/drafts/notes/`, `examine/drafts/`, `niksis8_character/drafts/`, `keepsake/proposals/`) stay plain. The comms `OPEN` announces topic territory; drafts are spontaneous enough that filename collision risk is low and disk clutter avoidance wins.
 
-The SNNN race window survives — two sessions allocating SNNN+1 within seconds get different files (different sid8) but same N. Acceptable: SNNN drifts from unique-key to approximate-temporal-ordering. Same tolerance D-019 took for dev-brain.
+The SNNN race window survives — two sessions allocating SNNN+1 within seconds get different files (different sid8) but same N. Acceptable: SNNN drifts from unique-key to approximate-temporal-ordering. Same tolerance [[D-019_parallel_braindead_and_comms_channel|D-019]] took for dev-brain.
 
 ### 4. Respawn rule for inventory recovery
 
@@ -71,15 +71,15 @@ Suffixing alone doesn't decide which file is canonical. The discipline line does
 
 - **Cross-brain coordination.** A Jebrim session and a Braindead session in parallel don't see each other — two comms files (`gielinor/comms/active.md` and `developer-braindead/comms/active.md`), no bridge. The fix is one root-level `comms/active.md` shared across both brains; defer to a future decision.
 - **Draft filename collision prevention.** Two parallel Jebrims drafting the same source on the same day still overwrite. Comms OPEN gives advance warning but doesn't enforce. Tolerated.
-- **SNNN allocation lock.** Race window survives. Lockfile possible but D-019 declined the same tradeoff and this decision matches.
+- **SNNN allocation lock.** Race window survives. Lockfile possible but [[D-019_parallel_braindead_and_comms_channel|D-019]] declined the same tradeoff and this decision matches.
 - **Hook enforcement.** No `parallel-coordination.py` hook. Discipline rule lives in `respawn.md` and `close-session.md`.
 - **Players posting to dev-brain comms or vice versa.** Each brain reads its own file.
 
 ## Open questions
 
-- **Comms file growth.** Unbounded append. Inherits D-019's manual-rotation plan; can automate to `comms/archive/active-YYYY-MM-DD.md` later.
+- **Comms file growth.** Unbounded append. Inherits [[D-019_parallel_braindead_and_comms_channel|D-019]]'s manual-rotation plan; can automate to `comms/archive/active-YYYY-MM-DD.md` later.
 - **Three-fresh-sessions collision.** Three Jebrim respawns within seconds could all see "no siblings" before any posts OPEN. Principal sees three fresh OPENs and brokers. If routine, brief lockfile at respawn-step.
-- **Cross-brain drift.** D-019 §Out-of-scope §4 noted Jebrim+Braindead might "collide on intent." This decision doesn't fix that. Track as a deferred branch; revisit when a real collision happens.
+- **Cross-brain drift.** [[D-019_parallel_braindead_and_comms_channel|D-019]] §Out-of-scope §4 noted Jebrim+Braindead might "collide on intent." This decision doesn't fix that. Track as a deferred branch; revisit when a real collision happens.
 - **Guthix consultation entries in comms.** Consultation is chat-only by default ([[D-022_guthix_consultation_mode]]). Should Guthix post OPEN/CLOSING? First cut: yes, lightweight — one line each. Sidecar already tracks his sessions.
 
 ## Related
@@ -91,6 +91,6 @@ Suffixing alone doesn't decide which file is canonical. The discipline line does
 - [[D-022_guthix_consultation_mode]] — Guthix consultation; in scope as a participant in the global comms file.
 - `gielinor/meta/communication-protocol.md` §"Wrong-instance check" — content-based sibling check; this decision adds the file-system-based one.
 
-## S052 amendment — 2026-05-23
+## [[S052_98d4ec5e_switchboard-rebuild|S052]] amendment — 2026-05-23
 
 `status-sidecar.py` still mirrors both `comms/active.md` files into the switchboard dir for browser fetch (the http.server roots there). Mirror filenames unchanged (`state-comms-braindead.md`, `state-comms-gielinor.md`); their destination moved from `developer-braindead/experiments/visualizer/` to `switchboard/` per [[D-026_switchboard_promotion]]. Sandbox shape and concurrent-append discipline above are unchanged.

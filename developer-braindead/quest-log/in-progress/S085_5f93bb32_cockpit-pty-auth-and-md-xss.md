@@ -9,12 +9,12 @@ Principal pasted 6 Codex findings on the cockpit and asked for my read. Triaged 
 
 - **#1 (Critical) — /pty unauthenticated WS + arbitrary `launch`.** REAL. `ptybridge.pty_handler` had no Origin/token check, and `elif launch: proc.write(launch + "\r")` wrote any `launch` query value straight into a PowerShell PTY → drive-by RCE from any visited webpage while the cockpit runs.
 - **#2 (High) — md.js link XSS.** REAL. `esc()` neutralizes `<>&` but not `"`; link regex URL class `[^)\s]+` allowed `"` (attribute breakout) and `javascript:`/`data:` schemes. Sink: `console.js` renders transcript text via `dangerouslySetInnerHTML` (5 sites).
-- **#3 — editing retired switchboard/.** Correct workflow note (cockpit/ is the live tree per S064/D-028), no code bug. Codex itself half-tripped: it flags `switchboard/terminal.js` while its real findings all point at `cockpit/`.
+- **#3 — editing retired switchboard/.** Correct workflow note (cockpit/ is the live tree per [[S064_78824901_switchboard-cockpit-rebuild|S064]]/[[D-028_switchboard_cockpit_rebuild|D-028]]), no code bug. Codex itself half-tripped: it flags `switchboard/terminal.js` while its real findings all point at `cockpit/`.
 - **#4 — port 8770 trusted on TCP-connect.** REAL, low impact. Deferred.
 - **#5 — rename localStorage-first masks disk.** REAL (`board.js:39` `nameFor || s.name`; terminal `/rename`→`names.js` localStorage only). Cosmetic. Deferred.
-- **#6 — sel.id vs session_id.** ALREADY FIXED by S084 (`main.js:465` `sel.id.slice(0,8)`→`selectedSid8`, `board.js:145` `s.sid8===selectedSid8`). Codex snapshot predates 22:55 2026-05-24.
+- **#6 — sel.id vs session_id.** ALREADY FIXED by [[S084_454e276c_cockpit-switchbar-selection-and-nav|S084]] (`main.js:465` `sel.id.slice(0,8)`→`selectedSid8`, `board.js:145` `s.sid8===selectedSid8`). Codex snapshot predates 22:55 2026-05-24.
 
-Principal chose (AskUserQuestion): **fix #1 + #2 now**; leave #4/#5 parked (more inward polish — D-027 says §C is the real next step), #3 no-op, #6 done.
+Principal chose (AskUserQuestion): **fix #1 + #2 now**; leave #4/#5 parked (more inward polish — [[D-027_inward_outward_build_imbalance|D-027]] says §C is the real next step), #3 no-op, #6 done.
 
 ## What landed (5 files + tests)
 
@@ -49,7 +49,7 @@ Second Codex batch (system-level, not cockpit). Triage verdicts:
 - **#1 (Critical) — boundary hooks not enforced at brain root. CONFIRMED + the real one.** `brain/.claude/settings.json` wired only observability hooks; all six boundary hooks were wired solely in `gielinor/.claude/settings.json` via `${CLAUDE_PROJECT_DIR}/.claude/hooks/block-*.py` — at brain root that resolves to `brain/.claude/hooks/` (which lacks them). **Proven empirically: `rm` of a temp file at brain root SUCCEEDED — block-deletes did not fire.** And the cockpit launches every session with `cwd=brain root` (`ptybridge.py:96`), so the dominant path had zero boundary enforcement. The "six guarantees… cannot bypass" were prompt discipline in the default mode.
 - **#2 (High) — `bypassPermissions` at root.** Confirmed (`settings.json:7`). Deliberate; only dangerous in combination with #1 (no gates + no prompts = no net).
 - **#3 (High→I rate Medium) — penguin `BRAIN_ROOT` scope bug. CONFIRMED.** `penguin-write-boundary.py:42` had one extra `.parent` (repo root) vs dwarf/gnome (gielinor/), pulling dev-brain paths into the in-brain test.
-- **#4 ritual-heavy / #5 overbuilt-inward / #6 manual coordination** — agreed; judgment calls. Through-line across #1/#4/#6: the system favors documented discipline over enforced mechanism. #5 = D-027, §C is the fix.
+- **#4 ritual-heavy / #5 overbuilt-inward / #6 manual coordination** — agreed; judgment calls. Through-line across #1/#4/#6: the system favors documented discipline over enforced mechanism. #5 = [[D-027_inward_outward_build_imbalance|D-027]], §C is the fix.
 
 Principal chose (AskUserQuestion): **fix #1 + #3 now.**
 
@@ -77,4 +77,4 @@ The fix makes penguin **consistent** with dwarf/gnome (abstain on out-of-gielino
 
 - #4 (port identity check) — folds nearly free into the token work if ever wanted; not done.
 - #5 (rename single-source: terminal `/rename` should POST `/api/rename`, board read disk-first, retire `names.js` localStorage) — real cleanup, low urgency.
-- The strategic next step is unchanged: **§C shipping-mart freshness pilot** (D-027 / plan.md §C) — the load-bearing outward build after a long run of inward cockpit work.
+- The strategic next step is unchanged: **§C shipping-mart freshness pilot** ([[D-027_inward_outward_build_imbalance|D-027]] / plan.md §C) — the load-bearing outward build after a long run of inward cockpit work.

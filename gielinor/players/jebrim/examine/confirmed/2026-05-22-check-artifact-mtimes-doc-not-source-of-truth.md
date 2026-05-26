@@ -1,6 +1,6 @@
 # 2026-05-22 — When a project's findings doc is older than its sibling artifacts, treat the doc as stale
 
-**Observation.** S030 T10 (DB Schenker meeting prep). The principal asked me to summarize project 38's prior conclusion. The CLAUDE.md ended on a "Status update — 2026-05-11 (too early to call)" section. I summarized that and presented the question framing as if the open thread was the May-11 status check.
+**Observation.** [[S030_2026-05-22_dashboard-gold-cutover|S030]] T10 (DB Schenker meeting prep). The principal asked me to summarize project 38's prior conclusion. The CLAUDE.md ended on a "Status update — 2026-05-11 (too early to call)" section. I summarized that and presented the question framing as if the open thread was the May-11 status check.
 
 The principal corrected me: *"But there was already a conclusion in project 38 last time I looked at it I think, I want to check what happened since then."*
 
@@ -21,6 +21,6 @@ Reading the xlsx recovered the actual conclusion — of 523 DBS shipments since 
 3. If the doc is older and sibling artifacts exist post-doc-update — **the doc is incomplete.** Read the artifacts.
 4. Surface the staleness in the response so the principal knows the doc wasn't the source of truth.
 
-**Anchor.** S030 T10, 2026-05-22. The Glob results in `38_ups_de_cost_investigation_apr_2026/` showed `data/dbs_carrier_migration_since_may9.xlsx` dated 2026-05-15-11:43; CLAUDE.md dated 2026-05-11-15:53. 4-day gap should have been the immediate signal.
+**Anchor.** [[S030_2026-05-22_dashboard-gold-cutover|S030]] T10, 2026-05-22. The Glob results in `38_ups_de_cost_investigation_apr_2026/` showed `data/dbs_carrier_migration_since_may9.xlsx` dated 2026-05-15-11:43; CLAUDE.md dated 2026-05-11-15:53. 4-day gap should have been the immediate signal.
 
 **Caveat.** Single occurrence. Pattern firms up with the next time I open a stale doc and either catch it or miss it.

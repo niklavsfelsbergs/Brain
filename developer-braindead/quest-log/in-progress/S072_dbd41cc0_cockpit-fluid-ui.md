@@ -1,6 +1,6 @@
 # S072 — cockpit fluid UI: scroll-to-zoom + resizable pillars
 
-> Renumbered from S071 (claimed by the parallel neuron-overlay session e11aff01).
+> Renumbered from [[S071_e11aff01_neuron-overlay-design|S071]] (claimed by the parallel neuron-overlay session e11aff01).
 
 **Session:** dbd41cc0 · dev-brain via "Lets develop gielinor" · 2026-05-24
 **State:** committed; **principal relaunch + eyeball pending** (pywebview can't be observed headlessly).
@@ -29,8 +29,8 @@ Decisions taken (AskUserQuestion): zoom gesture = **Ctrl/Cmd+scroll**; extras = 
 **4. Shift+Enter → newline (`term.js`).** Principal asked if the zoom work broke Shift+Enter in the terminal. It didn't (the key handler only fires on Ctrl/Cmd). Root cause: plain xterm sends bare `\r` for both Enter and Shift+Enter, so Shift+Enter just submits. Added an explicit intercept in `attachCustomKeyEventHandler` — Shift+Enter sends a literal `\n` (Ink/claude TUI treats `\r`=submit, `\n`=insert-newline). Strictly safe; plain Enter untouched. **Sequence is a best-bet — needs a live confirm; fallbacks are `\x1b[13;2u` (kitty) or the `\`+Enter trick.**
 
 ## Baseline + sibling carry
-- Built on top of the uncommitted **S070** scroll-lock fix + feed-state board merge already in the tree (principal-confirmed working). Folded into this commit (term.js/console.js/main.js), credited.
-- **Carried live sibling [[2f4981ed]]'s handoff**: it built a new `waiting_for_answers` board state ("Waiting for answers…", splitting AskUserQuestion/ExitPlanMode out of the overloaded `waiting_for_user`). It committed the clean logic side (`status-sidecar.py` + `backend.py`) and **ceded the render hunks to this session's files** — `board.js` STATE_LABEL entry + `styles.css` `--answers`/`.state-waiting_for_answers` hot-pink chip. Those hunks ride in my `board.js`/`styles.css` commit (D-024 / S057 pattern). Did NOT touch their Python.
+- Built on top of the uncommitted **[[S070_2f4981ed_cockpit-terminal-crash-and-scroll-fix|S070]]** scroll-lock fix + feed-state board merge already in the tree (principal-confirmed working). Folded into this commit (term.js/console.js/main.js), credited.
+- **Carried live sibling [[2f4981ed]]'s handoff**: it built a new `waiting_for_answers` board state ("Waiting for answers…", splitting AskUserQuestion/ExitPlanMode out of the overloaded `waiting_for_user`). It committed the clean logic side (`status-sidecar.py` + `backend.py`) and **ceded the render hunks to this session's files** — `board.js` STATE_LABEL entry + `styles.css` `--answers`/`.state-waiting_for_answers` hot-pink chip. Those hunks ride in my `board.js`/`styles.css` commit ([[D-024_parallel_player_coordination|D-024]] / [[S057_switchboard_awaiting_crew_state|S057]] pattern). Did NOT touch their Python.
 
 ## Parked
 - A proper **test environment** for iterating on the cockpit without disrupting work sessions. Investigated and surfaced the low-friction path (no-store assets + `app.py`'s port-reuse → dogfood from a second browser-tab client at `127.0.0.1:8770`, work stays in the window). Principal parked it for now — capture for a future session.

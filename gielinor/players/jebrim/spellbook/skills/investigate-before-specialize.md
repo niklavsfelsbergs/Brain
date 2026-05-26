@@ -19,7 +19,7 @@ If the existing chain is obviously absent (no scaffolding for Y at all), investi
 
 ## Source
 
-S015 (2026-05-21). Principal proposed a shipping-data-mart specialist. `bi-analytics-main/CLAUDE.md` had no shipping-mart mention; `NFE/CLAUDE.md` pointed only at the lighter reference, never at TTYD. Discoverability gap a specialist would have masked. Fix: one-callout edit + keepsake pin. Specialist deferred until the dogfood run produces evidence.
+[[S015_2026-05-21_ttyd-review-and-dry-run|S015]] (2026-05-21). Principal proposed a shipping-data-mart specialist. `bi-analytics-main/CLAUDE.md` had no shipping-mart mention; `NFE/CLAUDE.md` pointed only at the lighter reference, never at TTYD. Discoverability gap a specialist would have masked. Fix: one-callout edit + keepsake pin. Specialist deferred until the dogfood run produces evidence.
 
 ## Related
 

@@ -2,7 +2,7 @@
 
 > **Purpose.** A parked study of how Niklavs actually writes, sampled from his own Slack messages, so a player's voice can later be tuned to one of his registers. **Player assignment is deferred** — this profile characterizes the registers; Niklavs decides which one(s) a player should adopt. When he does, the relevant register graduates into that player's `persona.md` (and the voice-narration content table in `gielinor/meta/communication-protocol.md`).
 >
-> Captured S102, 2026-05-26 (dev-brain, Braindead). Source: Slack MCP (korotovsky, read-only). Scope chosen by principal: **broad, profile by register.**
+> Captured [[S102_3b333c4d_agentic_os_gap_survey|S102]], 2026-05-26 (dev-brain, Braindead). Source: Slack MCP (korotovsky, read-only). Scope chosen by principal: **broad, profile by register.**
 
 ## Method & corpus
 

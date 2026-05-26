@@ -136,7 +136,7 @@ Smoke test: `python harness/connect_redshift.py --query "SELECT 1 AS smoke;"` re
 
 Committed `d0d8386`, pushed.
 
-### T16 — cost vocabulary + % invoiced reporting rule (S026, 2026-05-22)
+### T16 — cost vocabulary + % invoiced reporting rule ([[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]], 2026-05-22)
 
 Principal flagged friction: the shipping-agent doesn't distinguish `real_shipping_cost_eur` (invoiced, trusted) from `expected_shipping_cost_eur` (pre-invoice approximation) from `final_shipping_cost_eur` (the coalesce). Wants a doc addition that teaches the agent (a) when to use which column, (b) to report what % of any cost figure is invoiced.
 
@@ -147,7 +147,7 @@ Column model confirmed from prior Jebrim work (`S001` L87, `S014_d1` L36/L50, `S
 - `avg_shipping_cost_eur` — historical-average fallback; low trust.
 - `final_shipping_cost_eur = COALESCE(real, expected, avg)`; `cost_source` flags which one populated it.
 
-State update (principal, T16): the prior "fact_shipments cost cols 100% NULL outside Phase 5" finding from S014 D1 / S023 is **stale** — the cost cols are now wired and populated. The caveat has been stripped from the bank draft.
+State update (principal, T16): the prior "fact_shipments cost cols 100% NULL outside Phase 5" finding from [[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] D1 / [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] is **stale** — the cost cols are now wired and populated. The caveat has been stripped from the bank draft.
 
 Constraint: `bi-analytics-main` repo is **not present on this machine** (`Test-Path` = False). Cannot edit `shipping-agent/` docs directly. Drafted the column-vocabulary and the doc-edit proposal text into Jebrim's bank/drafts so the next bi-analytics session can apply it without re-thinking.
 
@@ -293,7 +293,7 @@ Principal answered the apply-session open questions from T19. Two coupled outcom
 
 **Pattern noted (worth holding for skill-draft consideration).** The T20 verification exposed three layers of "stuff we assumed without checking":
 
-1. `cost_source` values (`'real'` vs `'invoice'` — wrong from S001 forward).
+1. `cost_source` values (`'real'` vs `'invoice'` — wrong from [[S001_2026-05-20_repo-orientation|S001]] forward).
 2. Bucket column shape (`bkt_*` prefix — wrong from the original cost-vocab sketch).
 3. Phantom column `dim_shipping_providers.shippingprovider_name` referenced in sample_queries.sql but never existed in documented schema.
 

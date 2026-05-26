@@ -51,7 +51,7 @@ Then the edits, sequenced by file, tracked via task list.
 
 **The principal's mental model is load-bearing.** When the principal said "he should be the guy I go to for overall questions," the meaning was *role assignment*, not *behavior tweak*. The architectural shift had to be visible in the doc surfaces the agent reads at session start — `CLAUDE.md`, `modes.md`, `guthix.md` — not just internal discipline. A purely-discipline change ("Guthix will now also answer general questions") would have evaporated by the next session because the address-routing rules in `CLAUDE.md` would still describe him as bankstanding-only.
 
-**Wisp's overload was a symptom, not a cause.** Wisp carried "no player active" AND "the system reflecting on itself," and the latter was already moved to Guthix during S028 (bankstanding). What S034 finished was the *other* half — "no player active but principal is asking about the brain." Now wisp carries one job: blank-session opener. The split done in S028 was the harder half (a ritual voice splitting off); S034's split is the easier one (a default conversational target). Pattern: when an actor is doing two unrelated jobs, expect to split both off in sequence, not at once.
+**Wisp's overload was a symptom, not a cause.** Wisp carried "no player active" AND "the system reflecting on itself," and the latter was already moved to Guthix during [[S028_subtask_channel_and_guthix|S028]] (bankstanding). What S034 finished was the *other* half — "no player active but principal is asking about the brain." Now wisp carries one job: blank-session opener. The split done in [[S028_subtask_channel_and_guthix|S028]] was the harder half (a ritual voice splitting off); S034's split is the easier one (a default conversational target). Pattern: when an actor is doing two unrelated jobs, expect to split both off in sequence, not at once.
 
 **Bankstanding being one mode of Guthix (not all of him) makes future rituals easier.** If we later want a `Hey Guthix, audit lorebook` mode that's lighter than full bankstanding, it's now a third mode on the same actor rather than a forced rebrand. The shape is open.
 
@@ -61,7 +61,7 @@ Then the edits, sequenced by file, tracked via task list.
 - **Live test the flip.** Start a consultation; mid-chat say "ok, let's bankstand on this." Observe: write authority widens; bankstanding procedure begins; `B-NNN` lands on close.
 - **Watch wisp's role over time.** Now that the floor has narrowed, see whether wisp sessions effectively cease to exist or whether the "blank opener" pattern is more common than expected.
 - **Observe `G-NNN` cadence.** Empirical question — how often do consultations produce traces?
-- **Update `respawn.md`.** S034 doesn't change the next-concrete-step. The visualizer Step 0 from S031 still needs verification. But the open-questions section may want a "post-D-022 live test consultation" item.
+- **Update `respawn.md`.** S034 doesn't change the next-concrete-step. The visualizer Step 0 from [[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]] still needs verification. But the open-questions section may want a "post-D-022 live test consultation" item.
 
 ## Cascade
 

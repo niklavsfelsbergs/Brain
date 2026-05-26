@@ -1,6 +1,6 @@
 # Shipping-agent personal folders + reproducibility — design plan
 
-**Opened:** 2026-05-22 (handoff from S029).
+**Opened:** 2026-05-22 (handoff from [[S029_2026-05-22_shipping-agent-vocab-harvest|S029]]).
 **Status:** in-progress — implementation landed 2026-05-22 (this session), awaiting commit + push.
 **Type:** project (multi-session work in the shipping-agent core).
 
@@ -55,7 +55,7 @@ This is the **first real-use validation** of the new shipping-agent model — ex
 
 ## Where we are
 
-S029 ran a design conversation that landed a complete plan for converting the shipping-agent into a **standalone product** with **personal user folders**. The plan is below — implementation hasn't started. The next session opens fresh in `bi-analytics-main` and does the file work.
+[[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] ran a design conversation that landed a complete plan for converting the shipping-agent into a **standalone product** with **personal user folders**. The plan is below — implementation hasn't started. The next session opens fresh in `bi-analytics-main` and does the file work.
 
 ## The model
 
@@ -243,7 +243,7 @@ The bi-analytics-main working tree at handoff time has uncommitted/untracked wor
 
 Use `git add` with specific paths under `shipping-agent/` for the personal-folder work; don't `git add -A`.
 
-## Decisions locked during S029 design conversation
+## Decisions locked during [[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] design conversation
 
 - Standalone agent product model (core vs personal split).
 - 3 personal dirs: workbench / memory / scratchpad. visualization-studio removed.
@@ -261,7 +261,7 @@ Use `git add` with specific paths under `shipping-agent/` for the personal-folde
 
 ## Open considerations to surface during implementation
 
-- **Cross-user permissions / team scope.** Mentioned in S029, not resolved. Whether memory/ might need encryption or just stays plain markdown. Probably plain markdown for now; flag if a user pushes back.
+- **Cross-user permissions / team scope.** Mentioned in [[S029_2026-05-22_shipping-agent-vocab-harvest|S029]], not resolved. Whether memory/ might need encryption or just stays plain markdown. Probably plain markdown for now; flag if a user pushes back.
 - **The `data/` snapshot disk-cost question.** Comparative snapshots in `data/` could grow. If it becomes a real issue, add a cleanup rule. Defer until real use.
 - **AGENTS.md / GEMINI.md / GROK.md sync.** Today they're tiny pointer files routing to how_to.md. When how_to.md grows substantially (which it will), check whether the pointers need updating to mention the new personal folders.
 
@@ -271,8 +271,8 @@ The shipping-agent is Jebrim's working surface (per `keepsake/current.md` routin
 
 ## Related
 
-- `bank/notes/projects/shipping_agent_vocab_harvest_2026-05-22.md` — S029 vocab harvest already applied to the agent.
+- `bank/notes/projects/shipping_agent_vocab_harvest_2026-05-22.md` — [[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] vocab harvest already applied to the agent.
 - `bank/notes/projects/dashboard_and_shipping_agent_convergence.md` — sibling note on dashboard vs agent.
 - `examine/confirmed/2026-05-22-drafts-need-lead-with-concrete-example.md` — drafting protocol applied during the design conversation.
-- S029 quest-log (completed) — the design conversation context.
+- [[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] quest-log (completed) — the design conversation context.
 - bi-analytics-main `c48bac6` — last shipped state of the agent before this quest.

@@ -5,17 +5,17 @@
 **Decision.** Add a chat panel below the map fed by three streams:
 
 1. **Intent (extended).** Same `intent/<actor>.txt` contract as [[D-010_visualizer_intent_narration]], but the cap rises from ~60 to **~100 chars**, with bubbles allowed to wrap to two lines (text centered). Bubble and chat read the *same* string — no second sidecar.
-2. **Narration (new authored channel).** A global system-voice channel for broader-scope commentary the actor doesn't speak in their own voice — *"Bankstanding phase 0 begins"*, *"Session S016 opens"*. Single global sidecar `.claude/narration.txt`, overwrite semantics (the file holds the most recent narration line, the chat keeps history). Cap ~200 chars.
+2. **Narration (new authored channel).** A global system-voice channel for broader-scope commentary the actor doesn't speak in their own voice — *"Bankstanding phase 0 begins"*, *"Session [[S016_visualizer_chat_panel_design|S016]] opens"*. Single global sidecar `.claude/narration.txt`, overwrite semantics (the file holds the most recent narration line, the chat keeps history). Cap ~200 chars.
 3. **Action (new mechanical event).** A new `action` event emitted by the hook on selected tool calls — Edit, Write, Bash, Grep, Glob. Read is **skipped** by default (too noisy; sprite moves already show building shifts). Schema: `{type: "action", actor, verb, target, wallTime, source: "hook"}`.
 
 System lines for `move` / `spawn-dwarf` / `despawn-dwarf` also surface in chat in muted/italic style — they were already in the event stream, the chat just renders them too.
 
-**Discipline rule (codified in protocol).** Intent describes *why/what scope* ("Drafting S016 entry"); actions show *which file/command* ("editing .../S016.md"). They complement; they do not mirror. Keeps the chat from becoming two-line redundant pairs.
+**Discipline rule (codified in protocol).** Intent describes *why/what scope* ("Drafting [[S016_visualizer_chat_panel_design|S016]] entry"); actions show *which file/command* ("editing .../[[S016_visualizer_chat_panel_design|S016]].md"). They complement; they do not mirror. Keeps the chat from becoming two-line redundant pairs.
 
 **Alternatives considered.**
 
 - **Two-line sidecar (short bubble + longer chat).** Considered and rejected. Cleaner separation but doubles the agent's per-turn writes and the renderer's parsing. With the bubble cap at 100 and two-line wrap allowed, one string serves both surfaces.
-- **Narration as a renderer derivation (mechanical only — option (a) from chat).** Auto-derive narration lines from `move`/`spawn`/`despawn` events only, no new contract. Cheaper but thinner — no way to announce *"Bankstanding phase 0 begins"* or *"Session S016 opens"*. We took the authored channel.
+- **Narration as a renderer derivation (mechanical only — option (a) from chat).** Auto-derive narration lines from `move`/`spawn`/`despawn` events only, no new contract. Cheaper but thinner — no way to announce *"Bankstanding phase 0 begins"* or *"Session [[S016_visualizer_chat_panel_design|S016]] opens"*. We took the authored channel.
 - **Bundle narration into intent files with a `*` prefix.** Considered. Conflates first-person speech and third-person narration in one file — wrong mental model. Two channels keep the agent's discipline cleaner.
 - **Append-only narration log file.** Considered. File would grow unbounded; chat panel + `state.ndjson` already keep durable history. Overwrite matches the existing intent pattern.
 - **Narrating Reads.** Floods the chat (most turns are Read-heavy). Sprite movement already shows building shifts. Skip by default; revisit if reads become invisible in a meaningful way.
@@ -35,7 +35,7 @@ System lines for `move` / `spawn-dwarf` / `despawn-dwarf` also surface in chat i
   - Glob → `verb: "globbing"`, `target: <pattern>`.
   - Read → **not emitted**.
 - Action events skip the `move` path — they emit a chat-only event, not a building change. (Edit on a file inside a known building still emits `move` via the existing path map.)
-- Actor attribution reuses S015's `agent_id` → dwarf-id binding. Dwarves emit `action` events under `actor:Dn`.
+- Actor attribution reuses [[S015_dwarf_attribution_via_agent_id|S015]]'s `agent_id` → dwarf-id binding. Dwarves emit `action` events under `actor:Dn`.
 
 *Renderer side (`experiments/visualizer/index.html`):*
 

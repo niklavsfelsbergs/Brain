@@ -2,13 +2,13 @@
 
 **Date:** 2026-05-22
 **Player:** Jebrim
-**Anchor:** S033 audit finding H1 + D4 dwarf report. Pass 1 flagged `workbench/investigations/ups-de-zv-130cm-diversion/` as "committed despite gitignore rule" — the folder was on disk, `.gitignore` had a `workbench/` rule, so I assumed git was tracking it and proposed `git rm --cached -r` as the fix. D4 ran the command during apply; it failed with `pathspec did not match`. The folder was already untracked. The disk presence was independent of git state.
+**Anchor:** [[S033_2026-05-22_shipping-agent-audit|S033]] audit finding H1 + D4 dwarf report. Pass 1 flagged `workbench/investigations/ups-de-zv-130cm-diversion/` as "committed despite gitignore rule" — the folder was on disk, `.gitignore` had a `workbench/` rule, so I assumed git was tracking it and proposed `git rm --cached -r` as the fix. D4 ran the command during apply; it failed with `pathspec did not match`. The folder was already untracked. The disk presence was independent of git state.
 
 ## The observation
 
 **Disk presence ≠ git tracking.** A file or folder can exist on disk for many reasons:
 
-- It's in `.gitignore` and was never tracked (untracked + ignored — the S033 case).
+- It's in `.gitignore` and was never tracked (untracked + ignored — the [[S033_2026-05-22_shipping-agent-audit|S033]] case).
 - It was tracked, got `git rm --cached`'d, and is now ignored (untracked but on disk).
 - It's tracked and clean (`git ls-files` lists it).
 - It's tracked and modified.

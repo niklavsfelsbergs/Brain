@@ -1,6 +1,6 @@
 # Shipping Costs Monitoring (nextjs) — vocabulary
 
-**As of:** 2026-05-23 — full technical + mathematical review (S055); cutover branch reviewed + fixed. Cost-basis and alert wiring verified. See **Post-cutover review (S055)** below for what changed.
+**As of:** 2026-05-23 — full technical + mathematical review ([[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]]); cutover branch reviewed + fixed. Cost-basis and alert wiring verified. See **Post-cutover review ([[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]])** below for what changed.
 
 > Term glossary for the `shipping_costs_monitoring_nextjs` app post-mart-cutover. The architecture lives in the app's own `CLAUDE.md` + `README.md`; this note pins the *language*. Deep references: `players/jebrim/quest-log/in-progress/S026_d{1,2,3}_*.md`.
 
@@ -207,8 +207,8 @@ The cutover consolidated tabs. Legacy URLs and alert refs still route via `OLD_T
 
 ## Things to verify when re-touching
 
-- **`audit.py` / `backtest.py` are POST-cutover** (re-targeted in commit `0001b36`; verified S055). `audit.py` loads `processed/*.parquet` + the full output set; `backtest.py` globs `processed/*.parquet` with a single-file fallback. No legacy `layer*` refs remain. *(The earlier "pre-cutover, will fail" note was stale — corrected S055.)*
-- ~~**`order_date >= '2025-01-01'` floor** on `/api/carrier-share-trends` + `/api/dimension-share-trends`~~ **FIXED (S055)** — both now bind the sidebar `from`/`to`; pre-2025 history is reachable.
+- **`audit.py` / `backtest.py` are POST-cutover** (re-targeted in commit `0001b36`; verified [[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]]). `audit.py` loads `processed/*.parquet` + the full output set; `backtest.py` globs `processed/*.parquet` with a single-file fallback. No legacy `layer*` refs remain. *(The earlier "pre-cutover, will fail" note was stale — corrected [[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]].)*
+- ~~**`order_date >= '2025-01-01'` floor** on `/api/carrier-share-trends` + `/api/dimension-share-trends`~~ **FIXED ([[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]])** — both now bind the sidebar `from`/`to`; pre-2025 history is reachable.
 - **`cost_for_routing` is a straight pass-through of `shipping_cost_final`** (= mart `final_shipping_cost_eur` = `COALESCE(real, expected, avg)`, mart-internal) post-cutover — NOT the old in-pipeline `COALESCE(final, expected)`. NULL final = uncosted, carried as NULL.
 - **ORWO `expected_shipping_cost`** comes from the SQL-level `CASE` fallback, not the mart's `expected_shipping_cost_eur` (which is null for ORWO source rows). Stand-in until ORWO procedure migrates to the mart.
 - **Decimal → Float8 server cast** in `query_mart.sql` is non-optional. Polars schema inference dies on all-null Decimal chunks if the cast is removed.
@@ -217,11 +217,11 @@ The cutover consolidated tabs. Legacy URLs and alert refs still route via `OLD_T
 ## Open questions (for future asks)
 
 - Coordination with the shipping data mart: when does ORWO expected migrate from the inline CASE fallback to a mart-side procedure? See keepsake pin for mart routing.
-- ~~`audit.py` rewrite~~ DONE (re-targeted `0001b36`, verified S055).
+- ~~`audit.py` rewrite~~ DONE (re-targeted `0001b36`, verified [[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]]).
 - The `corridor_costs_weekly.parquet` referenced by `_build_alerts` fallback path — is it actually written in main flow? Not seen in pipeline write path. (Still open.)
-- ~~`/api/generic-trend` full-glob under cost-range~~ FIXED (S055) — now bounds the read to the chart window + adds an `order_date` bind.
+- ~~`/api/generic-trend` full-glob under cost-range~~ FIXED ([[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]]) — now bounds the read to the chart window + adds an `order_date` bind.
 
-## Post-cutover review (S055, 2026-05-23)
+## Post-cutover review ([[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]], 2026-05-23)
 
 Full technical + mathematical review of the cutover branch + fixes. Findings doc lives in-repo at `docs/cutover-review-2026-05-23/findings.md`. What changed (effective on the next pipeline refresh for the `pipeline.py` items):
 
@@ -235,5 +235,5 @@ Full technical + mathematical review of the cutover branch + fixes. Findings doc
 ## Related
 
 - [[shipping-data-mart routing]] — keepsake pin for the underlying mart (the `shipping-agent/how_to.md` etc.).
-- [[coverage-questions-time-and-source-axis]] — skill draft from S023 on cost-coverage methodology.
+- [[coverage-questions-time-and-source-axis]] — skill draft from [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] on cost-coverage methodology.
 - [[shipping_mart_coverage_audit_2026-05-21]] — bank draft, the four concentrated holes (ORWO POST, Picturator POST_DVF, MAERSK, ASENDIA).

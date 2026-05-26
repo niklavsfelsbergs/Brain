@@ -1,7 +1,7 @@
 # Domājamās daļas — the risk model, the share discount, and the added-floor trap
 
-**Claim.** Extends the S056 notes ([[domajamas-dalas-vs-dzivokla-ipasums]],
-[[riga-apartment-buy-evaluation]]) with what the Ģertrūdes 113 deep-dive (S066) pinned down.
+**Claim.** Extends the [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] notes ([[domajamas-dalas-vs-dzivokla-ipasums]],
+[[riga-apartment-buy-evaluation]]) with what the Ģertrūdes 113 deep-dive ([[S066_e2362ea0_domajamas-dalas-reconsider|S066]]) pinned down.
 
 **The risk model — categorical vs degree.** Most risks of owning an ideal share are matters of
 *degree* and you'd rarely feel them day-to-day: worse liquidity, a permanent discount, coordination
@@ -28,7 +28,7 @@ Key framing: the discount **is the risk price, not a gift** — buying at the go
 you're *not* over-compensated for the risk, and your upside is **capped** vs titled stock (which
 appreciates to full market). It can wash if you bought low and hold; it bites if you overpay or need
 a fast sale. The pool was *thought* **predominantly cash** — but see the **financing correction
-below** (added S095): in functioning, managed, actively-traded buildings banks demonstrably lend on
+below** (added [[S095_f60153e0_gertrudes113-buy-deliberation|S095]]): in functioning, managed, actively-traded buildings banks demonstrably lend on
 individual shares.
 
 **The added-floor trap (new due-diligence item).** If a building had floor area added (a *virsstāva
@@ -44,7 +44,7 @@ financing is *pusmāja*-shaped (2–3 co-owners), not an 80-unit building. Get a
 for the specific share** before emotional commitment — a lender's real yes is also the one validation
 that doesn't come from someone selling you the flat.
 
-**CORRECTION (2026-05-26, S095 — Ģertrūdes 113 folio + lived-experience re-test).** The "Tier-1 banks
+**CORRECTION (2026-05-26, [[S095_f60153e0_gertrudes113-buy-deliberation|S095]] — Ģertrūdes 113 folio + lived-experience re-test).** The "Tier-1 banks
 resist / Altum *pusmāja*-only / predominantly cash" picture above is **miscalibrated to *unsorted /
 dysfunctional* shares.** In a functioning, managed, actively-traded building, banks lend on individual
 shares routinely: Ģertrūdes 113 carried **five** bank share-*hipotēkas* within ~18 months (Luminor
@@ -55,6 +55,6 @@ step still stands** as personal due diligence — a registered *hipotēka* prove
 LTV or haircut for *your* share. Net: building-level base rate is "financeable," not "cash-only."
 See [[2026-05-26-gertrudes113-folio-5262-gate2-closed]].
 
-**Anchors.** S066 (2026-05-25), Ģertrūdes 113 deep-dive. Research:
+**Anchors.** [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] (2026-05-25), Ģertrūdes 113 deep-dive. Research:
 `research/2026-05-25-gertrudes113-{SYNTHESIS-verdict,building-ownership,price-resale,location}.md`.
 Civillikums 1068 / 1074; VZD share-recalculation rule.

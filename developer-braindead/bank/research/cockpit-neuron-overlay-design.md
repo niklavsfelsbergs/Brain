@@ -1,6 +1,6 @@
 # Cockpit neuron overlay — v0 design sketch
 
-> **Status.** Design parked, not built (S071, sid e11aff01, 2026-05-24). Build deferred until the live cockpit sessions land their work (zoom/layout rework + term.js paste fix) — see *Sequencing* below. Captured so resume can build straight from it.
+> **Status.** Design parked, not built ([[S071_e11aff01_neuron-overlay-design|S071]], sid e11aff01, 2026-05-24). Build deferred until the live cockpit sessions land their work (zoom/layout rework + term.js paste fix) — see *Sequencing* below. Captured so resume can build straight from it.
 >
 > **Origin.** Principal asked "does the brain consist of thousands of wiki-links?" → discussion of what the *neurons* of this brain would be → chose to render it as a small live widget in the **top-right corner of the cockpit**, design **(b) a fixed overlay outside `.app-grid`**.
 
@@ -25,7 +25,7 @@ The cockpit shell is a 3-column grid: `Board | console-col | FeedPanel` (`main.j
 
 Two reasons this beats docking it into the feed column:
 
-1. **Dodges the `zoom:1.35` landmine.** The whole `.app-grid` renders under CSS `zoom:1.35`; S069 burned a session proving pixel-sensitive children break under it (xterm mouse-mapping drifted ~10 rows). A canvas mounted *outside* `.app-grid` gets honest 1:1 pixels for free — no counter-scale dance, and any future hover-a-neuron interaction Just Works. **If it ever moves inside the grid, it inherits the zoom bug** — keep it out.
+1. **Dodges the `zoom:1.35` landmine.** The whole `.app-grid` renders under CSS `zoom:1.35`; [[S069_c3f2e3f3_terminal-scale-fix-and-brain-presentation|S069]] burned a session proving pixel-sensitive children break under it (xterm mouse-mapping drifted ~10 rows). A canvas mounted *outside* `.app-grid` gets honest 1:1 pixels for free — no counter-scale dance, and any future hover-a-neuron interaction Just Works. **If it ever moves inside the grid, it inherits the zoom bug** — keep it out.
 2. **Lowest collision.** A new self-contained module barely touches shared files (see *Mount contract*), which matters because the cockpit is under active sibling edit right now.
 
 ## Data model the widget consumes
@@ -99,12 +99,12 @@ The whole point of (b): keep the footprint to near-nothing in contested files.
 
 ## Sequencing — why we wait
 
-As of S071 the live manifest shows **two sibling sessions inside the cockpit**:
+As of [[S071_e11aff01_neuron-overlay-design|S071]] the live manifest shows **two sibling sessions inside the cockpit**:
 
 - `2f4981ed` (braindead·1) — just fixed the term.js paste-handler crash.
 - `dbd41cc0` (braindead·2) — **actively reworking cockpit zoom/layout** ("scroll-to-zoom should resize the whole cockpit").
 
-The zoom rework touches the exact layout the overlay sits over, and `main.js`/`styles.css` carry uncommitted sibling WIP. Even though (b) is the lowest-collision shape possible, building it into the shared tree now is a head-on D-024 collision. **Hold until those land**, then build `brain.js` + coordinate the ≤2-line mount via `comms/active.md`.
+The zoom rework touches the exact layout the overlay sits over, and `main.js`/`styles.css` carry uncommitted sibling WIP. Even though (b) is the lowest-collision shape possible, building it into the shared tree now is a head-on [[D-024_parallel_player_coordination|D-024]] collision. **Hold until those land**, then build `brain.js` + coordinate the ≤2-line mount via `comms/active.md`.
 
 ## Open questions / deferred decisions
 

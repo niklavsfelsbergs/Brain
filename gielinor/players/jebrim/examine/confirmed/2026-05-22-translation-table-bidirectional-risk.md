@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-22
 **Player:** Jebrim
-**Anchor:** S033 shop-vs-vertical fix conversation. The shipping-agent's `how_to.md` translation table listed `source_system` against multiple external handles ("production line" and "shop platform"). When Niklāvs asked for a shop-grain breakdown, the agent freehand-mapped "shop" to `source_system` and returned a by-vertical breakdown instead — the wrong grain. Folded into commit `9e63dd5`.
+**Anchor:** [[S033_2026-05-22_shipping-agent-audit|S033]] shop-vs-vertical fix conversation. The shipping-agent's `how_to.md` translation table listed `source_system` against multiple external handles ("production line" and "shop platform"). When Niklāvs asked for a shop-grain breakdown, the agent freehand-mapped "shop" to `source_system` and returned a by-vertical breakdown instead — the wrong grain. Folded into commit `9e63dd5`.
 
 ## The observation
 
@@ -13,7 +13,7 @@ The translation table lists **internal-name → external-handle** mappings as a 
 
 When a single internal name carries **multiple external aliases** in the table (e.g., `source_system` ↔ "production line" AND `source_system` ↔ "shop platform"), the agent will resolve ANY of those external phrases to that internal name — even if one of them is wrong for the user's actual question. The forward mapping is fine; the backward mapping is what fires the bug.
 
-In S033, "shop" (substring match on "shop platform") got resolved to `source_system` because that's where the table front-listed it. The user meant `vertical` (the actual shop-grain column). The agent had no signal that "shop" was ambiguous because the table was structured as one entry per internal name with comma-separated aliases.
+In [[S033_2026-05-22_shipping-agent-audit|S033]], "shop" (substring match on "shop platform") got resolved to `source_system` because that's where the table front-listed it. The user meant `vertical` (the actual shop-grain column). The agent had no signal that "shop" was ambiguous because the table was structured as one entry per internal name with comma-separated aliases.
 
 ## The lesson
 

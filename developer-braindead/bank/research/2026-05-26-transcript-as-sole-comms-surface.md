@@ -1,6 +1,6 @@
 # Transcript view as the sole comms surface — feasibility
 
-**Date:** 2026-05-26 · **Session:** S099 (braindead-be7867be) · **Status:** research-only, parked behind §C (principal call)
+**Date:** 2026-05-26 · **Session:** [[S099_acf8fc80_obsidian_quest_link_migration|S099]] (braindead-be7867be) · **Status:** research-only, parked behind §C (principal call)
 
 ## The question
 
@@ -20,7 +20,7 @@ Can the cockpit **transcript view** become the *only* surface you talk to a sess
 
 **The easy 80% (buildable now):**
 - *Output*: already structured and clean; the transcript shows the conversation better than the terminal. 2s poll → true streaming (SSE / tail the jsonl) is a straightforward upgrade — the file is appended live.
-- *Input*: lift a compose box into the transcript, reusing the S095 bracketed-paste→PTY mechanism. Covers read-the-reply / type-the-next-prompt.
+- *Input*: lift a compose box into the transcript, reusing the [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble|S095]] bracketed-paste→PTY mechanism. Covers read-the-reply / type-the-next-prompt.
 
 **The hard 20% — interactive TUI moments:** permission prompts (allow/deny), plan-mode approval (`ExitPlanMode`), `AskUserQuestion` menus, slash-command autocomplete, the `@`-file picker, Esc-to-interrupt.
 - These are **never in the `.jsonl`** — the transcript only receives *committed* turns. A transcript-only view goes blind exactly when a decision is needed: you'd hit an AskUserQuestion menu and the panel would sit idle while the terminal silently waits for arrow-keys.

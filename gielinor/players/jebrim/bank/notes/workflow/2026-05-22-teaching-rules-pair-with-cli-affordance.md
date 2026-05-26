@@ -4,7 +4,7 @@ When teaching the agent a chart-hygiene (or analogous behavior) rule that transl
 
 ## Why
 
-S045: principal cued *"teach the agent that when you filter a chart to 1 dimension, it should show labels."* If only the rule had been written to `how_to.md` §7 Mode 2, the agent would have had to freelance Plotly code to honor it (the existing CLI had no way to mark one trace as focused and others as legend-only). Freelancing is exactly the path that produced the original `,.0f` bug class — agent-authored chart code drifts away from the centralized styling.
+[[S045_91ee1383_shipping-agent-chart-system-fixes|S045]]: principal cued *"teach the agent that when you filter a chart to 1 dimension, it should show labels."* If only the rule had been written to `how_to.md` §7 Mode 2, the agent would have had to freelance Plotly code to honor it (the existing CLI had no way to mark one trace as focused and others as legend-only). Freelancing is exactly the path that produced the original `,.0f` bug class — agent-authored chart code drifts away from the centralized styling.
 
 Pairing the rule with `--focus <value>` made the rule cheap: the agent calls `build_inline_chart.py --color carrier --focus FEDEX` and the helper handles labels, legend-only siblings, line thickness. No freelance.
 

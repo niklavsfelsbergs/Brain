@@ -1,6 +1,6 @@
 # Shipping mart — V1-freeze reconciliation (agent docs synced to live mart)
 
-**As of:** 2026-05-25 (S068). Mart V1 declared complete/frozen. Reconciled the shipping-agent's `reference/*.md` (all stamped 2026-05-22 gold-cutover) against live `shipping_mart.*` via redshift MCP (9 probes) and synced the docs. Committed + pushed to picanova/main (`393fdcf`). Narrative: `quest-log/in-progress/S068_363fdec7_*`.
+**As of:** 2026-05-25 ([[S068_363fdec7_v1-freeze-mart-knowledge-reconciliation|S068]]). Mart V1 declared complete/frozen. Reconciled the shipping-agent's `reference/*.md` (all stamped 2026-05-22 gold-cutover) against live `shipping_mart.*` via redshift MCP (9 probes) and synced the docs. Committed + pushed to picanova/main (`393fdcf`). Narrative: `quest-log/in-progress/S068_363fdec7_*`.
 
 ## What V1 landed — caveats that were WRONG, now fixed in the agent docs
 

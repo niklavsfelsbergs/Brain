@@ -1,30 +1,30 @@
 # Ģertrūdes 113, flat 41 — the Zemesgrāmata folio (Nr. 5262) read: Gate 2 closed
 
 **Status.** DRAFT (bank/drafts). Factual record from reading the authenticated folio; the
-buy/no-buy decision itself stays open. Continues the S066 deep-dive
+buy/no-buy decision itself stays open. Continues the [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] deep-dive
 ([[2026-05-25-domajamas-dalas-risk-model-and-share-discount]], the `research/2026-05-25-gertrudes113-*`
-files). **This is Gate 2 from the S066 verdict — now closed.** Source document:
+files). **This is Gate 2 from the [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] verdict — now closed.** Source document:
 `players/zezima/docs/Nodalijums_01000320073.pdf` (folio Nr. 5262, kadastrs 01000320073,
 pulled 2026-04-28). Asking price **€120,000**.
 
 **Process note (for me).** Niklavs opened with "I am *once again* considering" — a continuation
-cue. I re-derived the whole thing from the PDF cold before connecting it to S066. The right first
+cue. I re-derived the whole thing from the PDF cold before connecting it to [[S066_e2362ea0_domajamas-dalas-reconsider|S066]]. The right first
 move was to read my own bank/research and recognise the upload as Gate 2. (Same lesson as
 [[feedback_anchor_referent_before_analyzing]] / [[feedback_check_own_memory_before_working_repo]].)
 
-## What the folio settles (the S066 Gate-2 checklist, now answered)
+## What the folio settles (the [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] Gate-2 checklist, now answered)
 
 - **Registered *lietošanas kārtība* — YES.** The use-order is recorded as an *atzīme* (II daļas
   2. iedaļa, originally ieraksts 22.1 / žurn. 300003582619, 30.01.2014; restated through the 74.x
   series). It binds the co-owners. Flat 41's exclusive use sits with its share-holder on the
-  register. **This is the hinge S066 flagged — it clears.** Occupancy risk neutralised; the
+  register. **This is the hinge [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] flagged — it clears.** Occupancy risk neutralised; the
   finance/resale story de-risked.
 - **The added-floor trap — CLEARS.** The attic build-out (flats Nr. 80–94, developer chain
   RP89 → Revolution Development s.r.o., ~2018–2020) is on the folio with the Rīgas būvvalde
   commissioning act (2018.12.10, žurn. 300004758052) **and** the *domājamās daļas* were
   recalculated — denominators shifted from /7000 and /14000 to /29167 and /204169000 for the
   affected shares. So consent + permit + share-recalculation are evidenced, not missing. (CL 1068 /
-  VZD recalculation concern from S066 → satisfied.)
+  VZD recalculation concern from [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] → satisfied.)
 - **Flat 41 specifics.** Owner **Līga Putniņa** (p.k. 280563-13079) since **Dec 2017** (purchase
   from the original denationalisation owners Tuma/Krolls; contract 12.10.2017). Share **83/7000**
   (~1.19%). **57.88 m²**, 5-storey building lit. Nr.2. Bought 2017 for **€21,300** (low — likely
@@ -62,13 +62,13 @@ lending widened" against this primary-source counter-evidence. Likely refinement
 shares in *functioning, managed, actively-traded* buildings (e.g. Ģertrūdes 113) ARE bank-financed
 in 2025–26; the cash-only generalisation is calibrated to unchecked/dysfunctional shares."
 
-## Price, with the building's own internal comps (new vs S066)
+## Price, with the building's own internal comps (new vs [[S066_e2362ea0_domajamas-dalas-reconsider|S066]])
 
-S066 priced €2,069/m² as **fair-for-a-share, not a steal** — the ~30% discount to clean-title
+[[S066_e2362ea0_domajamas-dalas-reconsider|S066]] priced €2,069/m² as **fair-for-a-share, not a steal** — the ~30% discount to clean-title
 (~€2,900–3,100/m²) is *the going share price*, not a bonus; upside is **capped** (an 80-unit share
 won't convert, so it won't re-rate to titled money). That framing holds and is the right one.
 
-What the folio adds that S066 lacked — **internal €/m² comps from the building's own sales:**
+What the folio adds that [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] lacked — **internal €/m² comps from the building's own sales:**
 - Building's realised ceiling ≈ **€1,891/m²** (flat 86, attic, €135k/71.4 m², Apr 2026); flats 91
   (€1,835) and 25 (€1,826, an old renovated flat) just behind.
 - This **corroborates the external Bruņinieku-28 share comp (~€1,860/m²)** — the building's own
@@ -79,13 +79,13 @@ What the folio adds that S066 lacked — **internal €/m² comps from the build
 - **Negotiation lever:** "the most anyone has paid per metre in this building is ~€1,890, and that
   was the new-build attic — what carries an old flat to €2,070?" Grounded in her own building.
 
-## Where the decision stands now (both S066 gates revisited)
+## Where the decision stands now (both [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] gates revisited)
 
 - **Gate 2 (folio) — CLOSED, clean.** Use-order registered, attic shares recalculated, flat 41
-  unencumbered bar the ordinary SEB loan. The legal file is *better* than S066 dared assume.
+  unencumbered bar the ordinary SEB loan. The legal file is *better* than [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] dared assume.
 - **Gate 1 (financing) — looks open, not walled.** Building-level evidence says banks lend here;
   Niklavs still gets his own signed offer to be sure.
-- **Residual = a values call, as S066 said:** pay fair-share-price (at the shallow end of the
+- **Residual = a values call, as [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] said:** pay fair-share-price (at the shallow end of the
   discount, ~10% above the building's ceiling at ask) for a flat he loves, accepting capped upside
   + the always-present-but-low CL 1074 forced-division tail-risk in a functioning managed building.
   A defensible eyes-open yes.
@@ -112,7 +112,7 @@ What the folio adds that S066 lacked — **internal €/m² comps from the build
   out-product an attic conversion. So the building-record ask ≠ overreach; may just be the best unit.
 - **Net read:** price stops being the blocker. Top-of-range for plausibly top-of-building, furnished,
   with a live bidder — defensible, not an overpay. Decision reverts to the values call (share +
-  capped upside) and life-fit, as S066 always framed it.
+  capped upside) and life-fit, as [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] always framed it.
 
 ## The "lose if I sold after a year" frame (bounded-downside calc)
 

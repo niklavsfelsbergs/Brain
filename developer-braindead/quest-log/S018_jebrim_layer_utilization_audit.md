@@ -17,17 +17,17 @@
 **Principal:** Niklavs
 **Mode:** dev-brain (Braindead)
 **Born:** 2026-05-21
-**Carries forward from:** S017 close — explicit handover topic.
+**Carries forward from:** [[S017_d014_chat_panel_implementation|S017]] close — explicit handover topic.
 
 ## The ask
 
-Niklavs flagged at S017 close: the brain has many layers per player + global, and some aren't being used proportional to the work flowing through them. Concrete example — Jebrim has done a lot of work but his `inventory/` is empty. For each apparently-underused layer: do we not need it, or are we just not utilizing it?
+Niklavs flagged at [[S017_d014_chat_panel_implementation|S017]] close: the brain has many layers per player + global, and some aren't being used proportional to the work flowing through them. Concrete example — Jebrim has done a lot of work but his `inventory/` is empty. For each apparently-underused layer: do we not need it, or are we just not utilizing it?
 
 This session's scope (narrowed at T1 via questions): **Jebrim only**, **main brain only**, findings streamed live.
 
 The reframe Niklavs supplied: "He has been working a lot. Question is if we are utilizing everything we developed or misusing something we have developed."
 
-## Inventory snapshot (Jebrim, end of S017)
+## Inventory snapshot (Jebrim, end of [[S017_d014_chat_panel_implementation|S017]])
 
 | Layer | Active items | Last touched | Notes |
 |---|---|---|---|
@@ -35,7 +35,7 @@ The reframe Niklavs supplied: "He has been working a lot. Question is if we are 
 | `bank/drafts/notes/` | 1 file (`workflow/moving-target-work-decomposition.md`) | 2026-05-21 11:49 | awaiting alching promotion |
 | `bank/archive/` | 0 | — | — |
 | `bank/rejected/notes/` | 0 | — | — |
-| `quest-log/in-progress/` | 11 files (S001, S002 + 3 dwarves, S014 + 4 dwarves + 1 scaffold) | 2026-05-21 15:05 | S014 file is 187 lines / 16 turns spanning S014/S015/S016 |
+| `quest-log/in-progress/` | 11 files ([[S001_dev_brain_architecture|S001]], [[S002_dev_brain_runescape_restructure|S002]] + 3 dwarves, [[S014_visualizer_polish_and_aesthetics_pass|S014]] + 4 dwarves + 1 scaffold) | 2026-05-21 15:05 | [[S014_visualizer_polish_and_aesthetics_pass|S014]] file is 187 lines / 16 turns spanning [[S014_visualizer_polish_and_aesthetics_pass|S014]]/[[S015_dwarf_attribution_via_agent_id|S015]]/[[S016_visualizer_chat_panel_design|S016]] |
 | `quest-log/completed/` | **0** | — | nothing has ever moved here |
 | `quest-log/archive/` | 0 | — | — |
 | `inventory/` | **0** (only `_about.md`) | 2026-05-20 21:23 | never used |
@@ -49,26 +49,26 @@ The reframe Niklavs supplied: "He has been working a lot. Question is if we are 
 | `spellbook/rituals/` | 0 | — | (rare-by-design per `_about.md`) |
 | `last-alched.md` | "Never" | 2026-05-20 22:32 | 1 day old, 3 sessions of work, never alched |
 
-Three sessions where Jebrim was principal: **S001** (repo orientation), **S002** (shipping data mart V1 gap analysis), **S014** (shipping data mart TTYD how-to — still mid-flight). S014 alone has 16 turns and crosses S014/S015/S016 session boundaries.
+Three sessions where Jebrim was principal: **[[S001_dev_brain_architecture|S001]]** (repo orientation), **[[S002_dev_brain_runescape_restructure|S002]]** (shipping data mart V1 gap analysis), **[[S014_visualizer_polish_and_aesthetics_pass|S014]]** (shipping data mart TTYD how-to — still mid-flight). [[S014_visualizer_polish_and_aesthetics_pass|S014]] alone has 16 turns and crosses [[S014_visualizer_polish_and_aesthetics_pass|S014]]/[[S015_dwarf_attribution_via_agent_id|S015]]/[[S016_visualizer_chat_panel_design|S016]] session boundaries.
 
 ## Findings (streaming, updated per turn)
 
 ### F1 — `inventory/` is empty, but the *content* exists; it's just landing in quest-log
 
 **Spec.** Working memory: "open threads carried across turns within a session," "today's working state."
-**Reality.** S014's quest-log file carries `Where we are` / `Next concrete step` / `Task list state` / `Decision summary (load verbatim into next session)` — all of which is verbatim working-memory content. The information is being captured; it's just being captured in `quest-log/in-progress/` instead of `inventory/`.
+**Reality.** [[S014_visualizer_polish_and_aesthetics_pass|S014]]'s quest-log file carries `Where we are` / `Next concrete step` / `Task list state` / `Decision summary (load verbatim into next session)` — all of which is verbatim working-memory content. The information is being captured; it's just being captured in `quest-log/in-progress/` instead of `inventory/`.
 **Disposition: under-used because of layer overlap.** The quest-log file is acting as both episodic memory (narrative) and working memory (resume state). Two possible fixes:
 - **(a) Collapse:** drop `inventory/` from Jebrim's design; accept that quest-log carries both.
-- **(b) Clarify boundary:** quest-log = narrative + decisions for posterity; inventory = "right now, this turn, what am I holding." Then the `Where we are` / `Next concrete step` blocks at the top of S014's quest log should be in `inventory/` and re-pulled at respawn.
+- **(b) Clarify boundary:** quest-log = narrative + decisions for posterity; inventory = "right now, this turn, what am I holding." Then the `Where we are` / `Next concrete step` blocks at the top of [[S014_visualizer_polish_and_aesthetics_pass|S014]]'s quest log should be in `inventory/` and re-pulled at respawn.
 
 The 3-sessions-old rule in `inventory/_about.md` ("if something hasn't been touched in a session, drop it") is unsatisfiable when inventory is never touched at all.
 
 ### F2 — `quest-log/completed/` is empty; 11 in-progress files spanning multiple sessions
 
 **Spec.** "On clean session end, file moves from `in-progress/` to `completed/`."
-**Reality.** Three sessions ran. S014 alone has 16 turns and spans S014/S015/S016 (per its turn log). Nothing has ever moved to `completed/`. Either:
+**Reality.** Three sessions ran. [[S014_visualizer_polish_and_aesthetics_pass|S014]] alone has 16 turns and spans [[S014_visualizer_polish_and_aesthetics_pass|S014]]/[[S015_dwarf_attribution_via_agent_id|S015]]/[[S016_visualizer_chat_panel_design|S016]] (per its turn log). Nothing has ever moved to `completed/`. Either:
 - The close-session ritual isn't being run / isn't moving quests, **or**
-- The "session = quest entry" assumption is broken — one *quest* legitimately spans multiple *sessions*, so "session close" ≠ "quest complete." S014 is the proof case: a single deliverable taking many sessions to ship.
+- The "session = quest entry" assumption is broken — one *quest* legitimately spans multiple *sessions*, so "session close" ≠ "quest complete." [[S014_visualizer_polish_and_aesthetics_pass|S014]] is the proof case: a single deliverable taking many sessions to ship.
 
 **Disposition: wrong shape (likely).** If a quest spans sessions, then `completed/` needs a different trigger than session-close. Two options:
 - **(a) Rename and re-trigger:** `in-progress/` = active across any session; move to `completed/` when the quest itself wraps (deliverable shipped, principal signals done). Session-close ritual leaves quest files in place.
@@ -79,30 +79,30 @@ Either way, the current discipline as written in `quest-log/_about.md` does not 
 ### F3 — `spellbook/skills/` is empty; recurring procedures are accumulating in `bank/drafts/notes/workflow/` instead
 
 **Spec.** "Procedures Jebrim invokes — running a recurring BI report, doing a standard ETL fix." Threshold: "settled into stable shape — same inputs, same steps, same shape of output."
-**Reality.** S002 and S014 both used the same 3–4-dwarves-in-parallel reconnaissance pattern (ClickUp/Redshift/bi-etl/template recon). S014 used the Stream A scaffold / Stream B authoring split — a methodology, not a project artifact. The `moving-target-work-decomposition.md` draft in `bank/drafts/notes/workflow/` is *itself a procedure* — it describes how to decompose work into A/B/C buckets. That's a skill, not a knowledge note.
+**Reality.** [[S002_dev_brain_runescape_restructure|S002]] and [[S014_visualizer_polish_and_aesthetics_pass|S014]] both used the same 3–4-dwarves-in-parallel reconnaissance pattern (ClickUp/Redshift/bi-etl/template recon). [[S014_visualizer_polish_and_aesthetics_pass|S014]] used the Stream A scaffold / Stream B authoring split — a methodology, not a project artifact. The `moving-target-work-decomposition.md` draft in `bank/drafts/notes/workflow/` is *itself a procedure* — it describes how to decompose work into A/B/C buckets. That's a skill, not a knowledge note.
 **Disposition: under-used due to overlap with `bank/drafts/notes/workflow/`.** Workflow knowledge is competing with two layers (bank-workflow vs spellbook-skills) and bank is winning because it has a working harvest path and skills has none. Fix candidates:
 - Disambiguate: `bank/notes/` is *about* the work (the EU tender, the mart); `spellbook/skills/` is *how to do* the work (decomposition patterns, recon-spawn patterns).
 - Add a graduation path: alching scans `bank/drafts/notes/workflow/` and proposes skill promotions.
 
-The skills threshold ("a few times") has actually been met for the recon-dwarves pattern (S002 + S014). It just hasn't been proposed.
+The skills threshold ("a few times") has actually been met for the recon-dwarves pattern ([[S002_dev_brain_runescape_restructure|S002]] + [[S014_visualizer_polish_and_aesthetics_pass|S014]]). It just hasn't been proposed.
 
 ### F4 — `examine/drafts/` is empty after 3 sessions; self-observations are landing in quest-log turns
 
 **Spec.** "Patterns in how Jebrim approaches analytical work — where his bias toward terseness helps, where it hurts."
-**Reality.** S014 T11 has a Jebrim self-observation captured in the principal's correction: "the notes stem from the quest, we don't know enough about the mart yet — Notes are harvested from finished work." That's an `examine/drafts/` candidate (about Jebrim's bias to capture-too-early). It lives in the quest-log turn instead. Same with the moving-target decomposition — that contains Jebrim-shaped observations about how he handles ambiguous downstream state.
+**Reality.** [[S014_visualizer_polish_and_aesthetics_pass|S014]] T11 has a Jebrim self-observation captured in the principal's correction: "the notes stem from the quest, we don't know enough about the mart yet — Notes are harvested from finished work." That's an `examine/drafts/` candidate (about Jebrim's bias to capture-too-early). It lives in the quest-log turn instead. Same with the moving-target decomposition — that contains Jebrim-shaped observations about how he handles ambiguous downstream state.
 **Disposition: under-used due to capture path.** `niksis8_character/drafts/` is healthy (2 drafts today) because observations about *Niklavs* have an obvious capture moment (mid-conversation). Observations about *Jebrim himself* are subtler and need a sweep path. Fix candidate: alching scans recent quest-log turns for self-observations and proposes drafts.
 
 ### F5 — `keepsake/current.md` is empty; load-bearing projects aren't pinned
 
 **Spec.** "Currently load-bearing work projects, deadlines, stakeholder commitments."
-**Reality.** Jebrim has two: **EU Tender 2026** (mid-flight, multi-carrier triage, hard deadline implicit) and **Shipping Data Mart TTYD** (S014 still open, gold-migration was scheduled 2026-05-22 = tomorrow). Neither is in keepsake. Both qualify on the spec.
+**Reality.** Jebrim has two: **EU Tender 2026** (mid-flight, multi-carrier triage, hard deadline implicit) and **Shipping Data Mart TTYD** ([[S014_visualizer_polish_and_aesthetics_pass|S014]] still open, gold-migration was scheduled 2026-05-22 = tomorrow). Neither is in keepsake. Both qualify on the spec.
 **Disposition: under-used — discipline lapse, low cost to fix.** Once the audit closes, propose pins for both via `keepsake/proposals/`.
 
 ### F6 — `bank/notes/` has 1 file despite 3 sessions of mart knowledge; gated correctly but slow
 
 **Spec.** Knowledge graph from real work in `bi-analytics-main` + `bi-etl`.
-**Reality.** S014 produced extensive mart knowledge — NULL classification rubric, source dedup chain, 6-phase orchestrator, dim_shipping_providers PK gotcha, carrier-event timestamp coverage anomaly. None of it is in `bank/notes/`. *All* of it is in the S014 quest log. The principal's explicit rule (from memory): **harvest from finished quests**, not in flight. S014 hasn't finished.
-**Disposition: gate working as designed, but the gate is slow because S014 won't close.** This is F2 again from a different angle — quests not closing means knowledge not harvesting. The `workflow/moving-target-work-decomposition.md` draft *is* a harvest, so harvesting does happen on the methodological side; the mart-domain knowledge waits.
+**Reality.** [[S014_visualizer_polish_and_aesthetics_pass|S014]] produced extensive mart knowledge — NULL classification rubric, source dedup chain, 6-phase orchestrator, dim_shipping_providers PK gotcha, carrier-event timestamp coverage anomaly. None of it is in `bank/notes/`. *All* of it is in the [[S014_visualizer_polish_and_aesthetics_pass|S014]] quest log. The principal's explicit rule (from memory): **harvest from finished quests**, not in flight. [[S014_visualizer_polish_and_aesthetics_pass|S014]] hasn't finished.
+**Disposition: gate working as designed, but the gate is slow because [[S014_visualizer_polish_and_aesthetics_pass|S014]] won't close.** This is F2 again from a different angle — quests not closing means knowledge not harvesting. The `workflow/moving-target-work-decomposition.md` draft *is* a harvest, so harvesting does happen on the methodological side; the mart-domain knowledge waits.
 
 ### F7 — `niksis8_character/` is healthy
 
@@ -123,7 +123,7 @@ This is mechanism, not malice. The fix has to make the other layers as cheap to 
 
 ## Open questions for principal
 
-1. **Quest vs session.** Does `quest-log/completed/` move on session close, or quest close? S014 is the proof case for "quest spans sessions" — the current `_about.md` doesn't accommodate this.
+1. **Quest vs session.** Does `quest-log/completed/` move on session close, or quest close? [[S014_visualizer_polish_and_aesthetics_pass|S014]] is the proof case for "quest spans sessions" — the current `_about.md` doesn't accommodate this.
 2. **Inventory's purpose.** Keep `inventory/` as a real per-turn working-memory surface (and rewire the `Where we are` / `Next step` blocks out of quest-log into inventory), or accept that quest-log carries both and archive the layer?
 3. **Skills vs bank/workflow.** Disambiguate (about-the-work vs how-to-do-the-work), or collapse one into the other?
 4. **Self-observation sweep.** Add an alching step that scans quest-log turns for Jebrim self-observations and proposes `examine/drafts/`?
@@ -176,5 +176,5 @@ This is mechanism, not malice. The fix has to make the other layers as cheap to 
 Session-close ritual when cued by principal. The close needs to:
 - Write resume state for S018 to `developer-braindead/respawn.md` (dev-brain equivalent of inventory resume — the dev-brain follows its own session-close convention per `developer-braindead/spellbook/session-close.md`).
 - Tighten this S018 file's resume sections (or move them out, depending on dev-brain ritual).
-- Surface drafts for triage: the gielinor lorebook draft (1), keepsake proposals (2), spellbook/drafts/skills (1 from the move), niksis8_character drafts (2 pre-existing from S017 era).
+- Surface drafts for triage: the gielinor lorebook draft (1), keepsake proposals (2), spellbook/drafts/skills (1 from the move), niksis8_character drafts (2 pre-existing from [[S017_d014_chat_panel_implementation|S017]] era).
 - Commit per dev-brain commit discipline.

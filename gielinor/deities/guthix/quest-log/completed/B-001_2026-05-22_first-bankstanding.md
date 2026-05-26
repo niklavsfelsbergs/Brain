@@ -8,7 +8,7 @@
 
 **Roster:** Jebrim, Zezima. (Inbox is not a player.)
 
-- **Jebrim.** `last-alched.md` = 2026-05-22 (S030 alching). Many files newer than that timestamp — bank drafts, examine drafts, inventory, multiple in-progress quests (S031, S032, S033, OPEN_shipping-agent-personal-folders, S030_g1). **Has changes AND has open in-progress work.** Per ritual rule: default is to flag to the principal and skip this round; alching a player mid-quest risks tending work that is not settled. Flagging now.
+- **Jebrim.** `last-alched.md` = 2026-05-22 ([[S030_2026-05-22_dashboard-gold-cutover|S030]] alching). Many files newer than that timestamp — bank drafts, examine drafts, inventory, multiple in-progress quests ([[S031_2026-05-22_temp-tracking-missing-orderitems|S031]], [[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]], [[S033_2026-05-22_shipping-agent-audit|S033]], OPEN_shipping-agent-personal-folders, S030_g1). **Has changes AND has open in-progress work.** Per ritual rule: default is to flag to the principal and skip this round; alching a player mid-quest risks tending work that is not settled. Flagging now.
 - **Zezima.** `last-alched.md` = "Never." But Zezima's tree is scaffold-only: `.gitkeep` files, the persona, CLAUDE.md, confirmed/current.md placeholders. No drafts, no quest-log entries, no bank notes. Nothing to alch. Skip silently this round; will pick up when she starts operating.
 
 **Phase 0 outcome:** no alching performed. Principal confirmed default (skip Jebrim mid-quest). Zezima skipped silently. Flagged Jebrim for the next session-close/alching cycle once in-progress quests settle.
@@ -84,7 +84,7 @@ No defensive alchings recommended.
 **Filed lorebook draft:** `gielinor/lorebook/drafts/2026-05-22-powershell-utf8-readall-not-getcontent.md` — system-scope behavioral rule for PowerShell snippet authoring. Observation-backed (this incident).
 
 Round outcomes revised:
-- 4 lorebook drafts promoted (D-018 — D-021).
+- 4 lorebook drafts promoted ([[D-018_close-session-ritual-adoption|D-018]] — [[D-021_lorebook-folder-naming-correction|D-021]]).
 - 9 meta/ line edits across 6 files (lorebook/decisions/ → lorebook/confirmed/).
 - 2 new lorebook drafts filed (expanded-scope follow-up; PowerShell UTF-8 rule).
 - Jebrim flagged for next-cycle alching.
@@ -98,7 +98,7 @@ B-001 closing. Quest log moves to `completed/`. Guthix recedes.
 B-001 was structurally light because the brain is young: 1 active player, mostly-empty globals, no rejection patterns. The valuable surfacing was Phase 2 — the 4-draft lorebook backlog had been waiting for exactly this ritual to land it, and the broader doc-rot pattern (5 more `decisions/` references) only surfaced because Phase 2 forced the `grep`.
 
 **Ritual outcome:**
-- 4 lorebook drafts greenlit for principal promotion (D-018 through D-021).
+- 4 lorebook drafts greenlit for principal promotion ([[D-018_close-session-ritual-adoption|D-018]] through [[D-021_lorebook-folder-naming-correction|D-021]]).
 - 1 new follow-up draft filed (`lorebook-folder-naming-correction-expanded-scope`).
 - Jebrim flagged for next-cycle alching.
 - Zezima still in pre-operational state.

@@ -1,6 +1,6 @@
 # Is the system eating itself? — a critical audit
 
-> **Session:** S104 (braindead-cf03bfe1), 2026-05-26. Dev-brain, doc-only.
+> **Session:** [[S104_78e596a8_obsidian_gielinor_link_migration|S104]] (braindead-cf03bfe1), 2026-05-26. Dev-brain, doc-only.
 > **Prompt origin:** an external review prompt written by someone who had **only read the documentation**, asking whether the brain is over-engineered across 8 dimensions, with the standing instruction to "look at this with a critical eye" — including criticizing the prompt's own premises.
 > **Method:** measurement over impression. 3 read-only evidence sub-agents (file census, inward/outward classification, discipline-leak rates) + direct empirical hook testing. Evidence cited inline.
 
@@ -12,8 +12,8 @@
 
 But the audit, by looking for the wrong disease, **walked past the two real ones**:
 
-1. **🔴 Four of the six "architectural guarantees" do not fire from the real entry point.** The dwarf/gnome/penguin write-boundaries and the no-sub-spawn hook gate on `payload.agent_type ∈ {dwarf,gnome,penguin}` — a condition that is *unreachable* from brain root (where the cockpit launches everything). This is the S085 enforcement-gap repeating itself, **uncaught**, in the half of the hooks S085 didn't empirically re-test. This is the actual bug.
-2. **🟠 The inward/outward imbalance (D-027) is real and live** — ~65% of all effort points inward (the agent observing/building itself), and the single most expensive artifact in the whole system (the cockpit/visualizer/switchboard line, ~S032–S095) exists *to watch the agent work*. The prompt's cut-instinct points at the cheap stuff (empty draft folders, theming words); the expensive inward thing goes unquestioned.
+1. **🔴 Four of the six "architectural guarantees" do not fire from the real entry point.** The dwarf/gnome/penguin write-boundaries and the no-sub-spawn hook gate on `payload.agent_type ∈ {dwarf,gnome,penguin}` — a condition that is *unreachable* from brain root (where the cockpit launches everything). This is the [[S085_5f93bb32_cockpit-pty-auth-and-md-xss|S085]] enforcement-gap repeating itself, **uncaught**, in the half of the hooks [[S085_5f93bb32_cockpit-pty-auth-and-md-xss|S085]] didn't empirically re-test. This is the actual bug.
+2. **🟠 The inward/outward imbalance ([[D-027_inward_outward_build_imbalance|D-027]]) is real and live** — ~65% of all effort points inward (the agent observing/building itself), and the single most expensive artifact in the whole system (the cockpit/visualizer/switchboard line, ~[[S032_terminal_switchboard_phases_1_and_2|S032]]–[[S095_f9310a45_cockpit-transcript-full-width-speech-bubble|S095]]) exists *to watch the agent work*. The prompt's cut-instinct points at the cheap stuff (empty draft folders, theming words); the expensive inward thing goes unquestioned.
 
 The honest reframe of "fewer moving parts working harder": the cheap markdown parts mostly pay rent and cutting them saves ~nothing. The leverage is in **enforcing the structure that already exists** (#1) and **building the outward half** (#2) — not in deleting layers.
 
@@ -45,32 +45,32 @@ Census (read-only sub-agent): Jebrim's full stack is the workhorse (88 completed
 - `players/inbox/` — unscoped-capture triage, never received a capture.
 - `brain/ideas/` — the `note this idea:` mechanism, never fired.
 - `deities/guthix/proposals/rejected/` — no godly proposal ever rejected.
-- **Guthix consultation mode — 0 runs ever** (no `G-NNN` file exists; only 6 Guthix OPENs, all bankstanding). This is the standout: a whole *mode* with documented routing, voice, write-reach, and a dedicated heuristic in `communication-protocol.md` (the "Hey Guthix" suggestion rule, born S038 to fix exactly this) — and it has never once been used.
+- **Guthix consultation mode — 0 runs ever** (no `G-NNN` file exists; only 6 Guthix OPENs, all bankstanding). This is the standout: a whole *mode* with documented routing, voice, write-reach, and a dedicated heuristic in `communication-protocol.md` (the "Hey Guthix" suggestion rule, born [[S038_brain_underutilization_diagnosis|S038]] to fix exactly this) — and it has never once been used.
 - **Zezima — 3 sessions vs Jebrim's 44.** 0 skills, no `spellbook/drafts/skills/` dir at all, 4 bank notes. The personal-life player is near-dormant.
 
 **Verdict:** *Not* systemic ceremony-without-use. A short list of cold mechanisms. At 6 days, the right move for most is **watchlist, not cut** — except where the cold spot reveals a *design* problem (Guthix consultation; see below).
 
 ### D2 — Inward/outward ratio  →  🟠 *the real imbalance, already self-diagnosed*
 
-~147 distinct sessions: ~88 Braindead (inward by definition) + 8 Guthix bankstandings (inward-meta) + 48 Jebrim (outward) + 3 Zezima (outward). **≈65% inward / 35% outward**, and a large slice of the "outward" Jebrim work is building his *own* shipping-agent tooling rather than delivering analyst artifacts. Git corroborates: ~23% of 249 commit subjects carry outward keywords. The system's own S060 audit measured ~52% observability-scaffold / ~28% player-work — consistent.
+~147 distinct sessions: ~88 Braindead (inward by definition) + 8 Guthix bankstandings (inward-meta) + 48 Jebrim (outward) + 3 Zezima (outward). **≈65% inward / 35% outward**, and a large slice of the "outward" Jebrim work is building his *own* shipping-agent tooling rather than delivering analyst artifacts. Git corroborates: ~23% of 249 commit subjects carry outward keywords. The system's own [[S060_brain_self_audit_and_plan_reconciliation|S060]] audit measured ~52% observability-scaffold / ~28% player-work — consistent.
 
 Two honest nuances:
-- **The outward channel is alive, not dead.** Shipped/deployed/executed deliverables land as recently as the audit date (S097 prod OOM fix, S098 SCM alert split deployed, S078 EU-tender dispatch). ~15 concrete outward deliverables in 6 days. The imbalance is *proportion and reflex*, not absence of hands.
-- **The expensive thing is inward.** The largest continuous build in the entire history is the cockpit/switchboard/visualizer line (~S032–S095) — a fleet-management UI so the operator can watch the agent work. **This is the one component whose cost most exceeds its outward value, and the audit prompt never points at it** because it's looking for cheap ceremony (markdown layers) not expensive infrastructure (code).
+- **The outward channel is alive, not dead.** Shipped/deployed/executed deliverables land as recently as the audit date ([[S097_b3c2b8dd_rag_research_and_obsidian_interlink|S097]] prod OOM fix, [[S098_b53fca39_obsidian_fit_and_dlink_migration|S098]] SCM alert split deployed, [[S078_959a4c34_switchbar-two-axis-states|S078]] EU-tender dispatch). ~15 concrete outward deliverables in 6 days. The imbalance is *proportion and reflex*, not absence of hands.
+- **The expensive thing is inward.** The largest continuous build in the entire history is the cockpit/switchboard/visualizer line (~[[S032_terminal_switchboard_phases_1_and_2|S032]]–[[S095_f9310a45_cockpit-transcript-full-width-speech-bubble|S095]]) — a fleet-management UI so the operator can watch the agent work. **This is the one component whose cost most exceeds its outward value, and the audit prompt never points at it** because it's looking for cheap ceremony (markdown layers) not expensive infrastructure (code).
 
-**Verdict:** D-027 is borne out and live. The cure is not "less structure" — it's the unbuilt operational half (`plan.md` §C pilot / scheduled triggers). Cutting layers does nothing for this.
+**Verdict:** [[D-027_inward_outward_build_imbalance|D-027]] is borne out and live. The cure is not "less structure" — it's the unbuilt operational half (`plan.md` §C pilot / scheduled triggers). Cutting layers does nothing for this.
 
 ### D3 — Discipline leak rate  →  *one rule leaks; the leak has a structural cause and a known fix*
 
 | Discipline | Hit rate | Reading |
 |---|---|---|
-| OPEN-posting (dev-brain) | ~15% early → ~85% recent (~44% lifetime) | S082 doc-fix substantially worked; residual leak is mid-conversation entry bypassing the respawn checkpoint |
+| OPEN-posting (dev-brain) | ~15% early → ~85% recent (~44% lifetime) | [[S082_open_on_entry_discipline|S082]] doc-fix substantially worked; residual leak is mid-conversation entry bypassing the respawn checkpoint |
 | OPEN-posting (gielinor) | ~90% | leaks only on immediate-task entry |
 | CLOSING-posting | ~85–90% both channels | faithfully followed |
 | Drafts observation-backed (not aspirational) | **~100% anchored, 0 aspirational** | best discipline measured; followed *without* a hook |
 | Per-turn quest-log + `pending` action markers | append: spirit-met; `pending` markers: **~0%** | the literal mechanism was superseded |
 
-**The cross-cutting pattern is the finding:** disciplines with a **reliable trigger point** (close-session cue, alching review) are followed faithfully; the one discipline whose trigger gets **bypassed** (OPEN at respawn, skipped on mid-conversation entry) is the one that leaks. This argues the fix is a **trigger/hook**, not more documentation — and S082 itself already scoped (and deferred) a `SessionStart`/`UserPromptSubmit` hook that refuses to proceed without an OPEN.
+**The cross-cutting pattern is the finding:** disciplines with a **reliable trigger point** (close-session cue, alching review) are followed faithfully; the one discipline whose trigger gets **bypassed** (OPEN at respawn, skipped on mid-conversation entry) is the one that leaks. This argues the fix is a **trigger/hook**, not more documentation — and [[S082_open_on_entry_discipline|S082]] itself already scoped (and deferred) a `SessionStart`/`UserPromptSubmit` hook that refuses to proceed without an OPEN.
 
 One doc-vs-reality drift worth fixing: `death-and-spawn.md`'s `pending`-before-execution action-marker rule is ~0% followed because a **better** mechanism emerged organically — commit-SHA + "HELD for principal go / COMMITTED+PUSHED" state tracked in comms + `inventory/*-resume__<sid8>.md`. Update the doc to describe what actually works; don't flag the gap as a behavioral failure.
 
@@ -85,7 +85,7 @@ If anything the bias runs the *other* way: drafts get triaged so fast (in-sessio
 ### D5 — Persona behavioral delta  →  *both earn keep; the under-used player is the more justified one*
 
 - **Jebrim:** delta is real but ~70% lives in the *loaded layers* (bank/examine/keepsake encode pathspec-hygiene, ground-truthing-every-number, hold-for-sign-off reflex) and ~30% in voice. Strip the costume and "analyst-Claude + these notes" approximates him — the biggest loss being the encoded git/verification discipline, which isn't really persona, it's accumulated `examine/confirmed/`.
-- **Zezima:** **larger, more genuine delta.** His persona produces a *decision-making posture* a generic helpful-assistant default actively fights — declining to over-recommend, holding ambivalence, honoring a "gut-fit veto" (S066: named the pattern across two flats, explicitly *did not relitigate* the user's gut call). The default assistant instinct is to resolve and recommend; Zezima's persona suppresses it. That's the persona doing load-bearing work.
+- **Zezima:** **larger, more genuine delta.** His persona produces a *decision-making posture* a generic helpful-assistant default actively fights — declining to over-recommend, holding ambivalence, honoring a "gut-fit veto" ([[S066_7f5db8c5_cockpit-sweep|S066]]: named the pattern across two flats, explicitly *did not relitigate* the user's gut call). The default assistant instinct is to resolve and recommend; Zezima's persona suppresses it. That's the persona doing load-bearing work.
 
 **The irony worth surfacing:** the player the prompt's logic would flag for cutting (Zezima, 3 sessions) is the one whose persona is *most* behaviorally justified. Usage frequency ≠ behavioral value. **Verdict:** neither persona is overhead; if anything Zezima is under-used relative to his distinctiveness.
 
@@ -117,7 +117,7 @@ Highest translation cost (the ones that actually cause mistakes), worst first:
 
 ### D8 — Hooks-in-name-only  →  🔴 *the real bug: 4 of 6 guarantees inert from the default entry point*
 
-Re-ran the S085 logic empirically from this brain-root session. Results:
+Re-ran the [[S085_5f93bb32_cockpit-pty-auth-and-md-xss|S085]] logic empirically from this brain-root session. Results:
 
 | # | Guarantee | Wired at brain root? | **Fires from brain root?** | Evidence |
 |---|---|---|---|---|
@@ -131,15 +131,15 @@ Re-ran the S085 logic empirically from this brain-root session. Results:
 **Why #3–#6 are inert from the default entry point** (chain of proof):
 
 - The four role hooks block **iff** `payload.agent_type` is exactly `"dwarf"/"gnome"/"penguin"`. Direct-invocation harness (11 cases, all pass): they correctly block on those strings and correctly **exit 0 (allow) when `agent_type` is `"general-purpose"` or absent.**
-- For that trigger to fire, you must spawn a sub-agent of `subagent_type` dwarf/gnome/penguin. But: **(a)** no `dwarf` agent config exists *anywhere* (only `gnome.md` + `penguin.md`); **(b)** those two live in `gielinor/.claude/agents/`, which is **not loaded at brain root** — proven directly: *this* brain-root session's available agent types are `claude, Explore, general-purpose, Plan, …` with **no gnome/penguin**; **(c)** the cockpit (the system's real driver) spawns `claude` with `cwd = brain root` (per the S085 settings.json comment).
+- For that trigger to fire, you must spawn a sub-agent of `subagent_type` dwarf/gnome/penguin. But: **(a)** no `dwarf` agent config exists *anywhere* (only `gnome.md` + `penguin.md`); **(b)** those two live in `gielinor/.claude/agents/`, which is **not loaded at brain root** — proven directly: *this* brain-root session's available agent types are `claude, Explore, general-purpose, Plan, …` with **no gnome/penguin**; **(c)** the cockpit (the system's real driver) spawns `claude` with `cwd = brain root` (per the [[S085_5f93bb32_cockpit-pty-auth-and-md-xss|S085]] settings.json comment).
 - Therefore every sub-agent the system actually spawns is `general-purpose`/`Explore`/`claude`, whose payload `agent_type` is never one of the three magic strings → the boundary hooks exit 0 → **no enforcement.** Even the per-role *tool restrictions* in `penguin.md`/`gnome.md` don't apply, because those configs aren't loaded either.
 - Corroboration from inside the codebase: `emit-event.py:1689` explicitly codes a fallback for `agent_type` being *"absent or unknown (older Claude Code versions)"* and defaults to `"dwarf"`. The brain's *own* instrumentation hook knows `agent_type` is unreliable; the *boundary* hooks (which have no fallback) assume it's always present and correct.
 
-This is precisely the S085 failure mode — "the guarantees were prompt discipline, not gates" — except S085 only fixed and re-tested the two *path-based* hooks (confirmed-writes, deletes). The four *role-based* hooks were re-wired into brain-root settings.json in the same pass but **never empirically confirmed to fire**, because doing so requires actually spawning a typed sub-agent, which isn't possible from the entry point they were wired for. The brain believes guarantees #3–#6 are closed. They are not.
+This is precisely the [[S085_5f93bb32_cockpit-pty-auth-and-md-xss|S085]] failure mode — "the guarantees were prompt discipline, not gates" — except [[S085_5f93bb32_cockpit-pty-auth-and-md-xss|S085]] only fixed and re-tested the two *path-based* hooks (confirmed-writes, deletes). The four *role-based* hooks were re-wired into brain-root settings.json in the same pass but **never empirically confirmed to fire**, because doing so requires actually spawning a typed sub-agent, which isn't possible from the entry point they were wired for. The brain believes guarantees #3–#6 are closed. They are not.
 
 **This does not mean the system is unsafe today** — sub-agent behavior is still constrained by prompt discipline and by what tools the spawn grants. But the *architectural* claim ("hook-enforced, cannot bypass, do not try" — `CLAUDE.md`) is false for 4 of the 6. Per the brain's own memory note (`verify-enforcement-fires`): *a documented guarantee isn't real until you've watched it fire from the actual entry point.* These four have never been watched firing, and cannot fire as currently wired.
 
-**Definitive empirical resolution (run this session, S104).** A passive payload-capture probe was temporarily registered (`settings.local.json`, PostToolUse, exit-0-always, reverted after) and a real `general-purpose` sub-agent was spawned through it. Captured payloads:
+**Definitive empirical resolution (run this session, [[S104_78e596a8_obsidian_gielinor_link_migration|S104]]).** A passive payload-capture probe was temporarily registered (`settings.local.json`, PostToolUse, exit-0-always, reverted after) and a real `general-purpose` sub-agent was spawned through it. Captured payloads:
 
 - **Principal tool call:** `agent_type: <ABSENT>`, `agent_id: <ABSENT>`.
 - **Sub-agent tool calls (Bash + Write):** `agent_type: "general-purpose"`, `agent_id: "a3f29aead298e808c"`.
@@ -153,7 +153,7 @@ This is precisely the S085 failure mode — "the guarantees were prompt discipli
 
 ---
 
-### D8 fix — implemented this session (S106), verification deferred
+### D8 fix — implemented this session ([[S106_cf03bfe1_self-eating-audit-and-d8-enforcement-fix|S106]]), verification deferred
 
 Registered the three agent configs at **brain-root `.claude/agents/`** (the launch dir for cockpit/default sessions): `gnome.md` + `penguin.md` (copied verbatim from `gielinor/.claude/agents/`) and a newly-authored `dwarf.md` (none existed). Brain-root `.claude/agents/` is outside the live §O.6 sibling's gielinor+dev-brain `.md` rewrite scope, so no Edit-race; committed separately from that session.
 
@@ -168,11 +168,11 @@ Registered the three agent configs at **brain-root `.claude/agents/`** (the laun
 ## What to actually cut / simplify / fix (ranked by leverage)
 
 1. **Fix the 4 inert guarantees (D8) — confirmed cheap.** Highest leverage and now known to be a small fix: register `dwarf.md`/`gnome.md`/`penguin.md` at brain-root `.claude/agents/` (the empirical test proved `agent_type` passes the subagent_type string through, so the existing hooks then enforce as designed — no code changes). Until done, stop calling #3–#6 "architectural guarantees" in `CLAUDE.md`; they're discipline.
-2. **Build the outward half (D2 / D-027 §C).** Not a cut — the actual missing organ. Every layer of inward structure is in place; the agent still has no autonomous hands.
-3. **Land the deferred OPEN hook (D3).** The one discipline that leaks, with a known structural fix already scoped in S082.
+2. **Build the outward half (D2 / [[D-027_inward_outward_build_imbalance|D-027]] §C).** Not a cut — the actual missing organ. Every layer of inward structure is in place; the agent still has no autonomous hands.
+3. **Land the deferred OPEN hook (D3).** The one discipline that leaks, with a known structural fix already scoped in [[S082_open_on_entry_discipline|S082]].
 4. **Disambiguate the two cheap two-brain taxes (D6):** split the SNNN counter per-brain (or per-actor); disambiguate the dual D-NNN namespace.
 5. **Dual-name the 3 routing-ambiguous metaphors (D7):** `alching`/`bankstanding`/the sub-agent roles get functional subtitles. Keep the flavor.
-6. **Decide Guthix consultation's fate (D1).** A whole mode with 0 uses ever. Either actively route to it (the S038 heuristic was meant to; it hasn't taken) or fold it into bankstanding. This is the one cold spot that reflects a *design* question, not just youth.
+6. **Decide Guthix consultation's fate (D1).** A whole mode with 0 uses ever. Either actively route to it (the [[S038_brain_underutilization_diagnosis|S038]] heuristic was meant to; it hasn't taken) or fold it into bankstanding. This is the one cold spot that reflects a *design* question, not just youth.
 
 ## What NOT to cut (defending against the audit's cut-bias)
 

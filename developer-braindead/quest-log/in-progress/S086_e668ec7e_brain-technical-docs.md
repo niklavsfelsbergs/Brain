@@ -40,13 +40,13 @@ fixed the two appendix links to it.
 
 ## Notable facts the recon surfaced (folded into the docs)
 
-- **S085** wired the enforcement hooks at brain-root `.claude/settings.json` with absolute
+- **[[S085_5f93bb32_cockpit-pty-auth-and-md-xss|S085]]** wired the enforcement hooks at brain-root `.claude/settings.json` with absolute
   paths — the six guarantees were previously prompt-discipline-only for brain-root/cockpit
   sessions (an `rm` at brain root was proven not blocked). Role hooks (dwarf/gnome/penguin)
   are inert for a principal (gated on `agent_type`, absent on principal calls) → a principal
   is constrained only by block-confirmed-writes + block-deletes.
 - **Bug documented (not fixed):** `emit-commit-event.py` still writes to the legacy
-  `experiments/visualizer/state.ndjson`; every other hook moved to `switchboard/` in S052.
+  `experiments/visualizer/state.ndjson`; every other hook moved to `switchboard/` in [[S052_98d4ec5e_switchboard-rebuild|S052]].
   Commit events land in the stale stream. Flagged in docs/08.
 - Cockpit billing rationale (2026-06-15 headless metering → real PTY stays on subscription)
   is the load-bearing "why" of the cockpit; captured in docs/09.
@@ -62,11 +62,11 @@ fixed the two appendix links to it.
 ## Comms
 
 OPEN + UPDATE posted (e668ec7e). No live Braindead siblings the whole session; one
-ABANDONED candidate (5f93bb32, read-only Codex triage = S085, no collision). active-mode.txt
+ABANDONED candidate (5f93bb32, read-only Codex triage = [[S085_5f93bb32_cockpit-pty-auth-and-md-xss|S085]], no collision). active-mode.txt
 cleared to `unscoped` at session close.
 
 **Cascade.** New repo-root `docs/` tree (12 MD pages + `brain-docs.html` + `build-html.py`);
-dev-brain `quest-log/in-progress/S086_*`, `respawn.md` (S086 prepend + S084 block trimmed to a
+dev-brain `quest-log/in-progress/S086_*`, `respawn.md` (S086 prepend + [[S084_454e276c_cockpit-switchbar-selection-and-nav|S084]] block trimmed to a
 Prior-sessions pointer + docs note in "Where we are"), `bank/build-lessons.md` (+1 lesson),
 `comms/active.md` (OPEN/UPDATE/CLOSING); cross-conversation memory `clarify-deliverable-form`.
 **Main-brain changes.** none — no writes into `gielinor/`. `docs/` is a repo-root artifact that

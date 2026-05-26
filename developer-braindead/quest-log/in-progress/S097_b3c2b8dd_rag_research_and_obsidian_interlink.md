@@ -8,6 +8,6 @@ Dev-brain via "lets develop gielinor", mid-conversation from a brain-root sessio
 - **Posted a `→ @braindead-b53fca39` comms flag** so the Obsidian session knows a downstream consumer depends on its migration, with one ask: name a readable resolved-link artifact and keep cross-brain links unresolved.
 - **Learning harvested** (`bank/build-lessons.md` + cross-conv memory): when parked work depends on something the principal is *actively doing*, inspect the live session/artifacts and wire the concrete interlink — don't abstract a live, inspectable dependency into a vague gate. (The principal's "check what the obsidian session is doing" was the correction.)
 
-**Cascade.** New `developer-braindead/bank/research/2026-05-26-rag-for-the-brain.md`; `bank/plan.md` (+§N); `comms/active.md` (OPEN + @-flag + CLOSING); `bank/build-lessons.md` (+1 lesson); `respawn.md` (prepended Last-updated); this quest entry. `active-mode.txt` left `dev-brain` (two live siblings — f9310a45/S095, b53fca39/Obsidian — so not despawning the workshop).
+**Cascade.** New `developer-braindead/bank/research/2026-05-26-rag-for-the-brain.md`; `bank/plan.md` (+§N); `comms/active.md` (OPEN + @-flag + CLOSING); `bank/build-lessons.md` (+1 lesson); `respawn.md` (prepended Last-updated); this quest entry. `active-mode.txt` left `dev-brain` (two live siblings — f9310a45/[[S095_f9310a45_cockpit-transcript-full-width-speech-bubble|S095]], b53fca39/Obsidian — so not despawning the workshop).
 
 **Main-brain changes.** none.

@@ -41,7 +41,7 @@ Fixed across: `how_to.md` (rule 12 parenthetical; translation table PicaAPI row 
 
 ## State / open
 
-- shipping-agent edits **made, uncommitted, HELD** for principal go (commit + push to picanova/main; repo IS pushable per S062 correction). Will `git commit -- <pathspec>` (never bare `git add .`) per the shared-index hazard from 006248ef.
+- shipping-agent edits **made, uncommitted, HELD** for principal go (commit + push to picanova/main; repo IS pushable per [[S062_7f1aecf4_shipping-agent-euro-precision-and-build-report|S062]] correction). Will `git commit -- <pathspec>` (never bare `git add .`) per the shared-index hazard from 006248ef.
 - Brain writes: this quest-log + comms OPEN + intent only.
 - No bank harvest yet (harvest after the picture stabilizes / on close).
 - Possible follow-up if principal wants it: the translation-table could gain plain-English handles for specific site codes (PCS CGN → "our Cologne site", etc.) — deferred, not needed for the rule to work.

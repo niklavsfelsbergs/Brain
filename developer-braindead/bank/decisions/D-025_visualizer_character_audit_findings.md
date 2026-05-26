@@ -1,14 +1,14 @@
-# D-025 — visualizer character audit (S042 findings)
+# D-025 — visualizer character audit ([[S042_visualizer_character_audit|S042]] findings)
 
-**Status.** Decision: ratify the audit findings as the canonical bug list; fix order #3 → #6 → #1 → #5 → #2 with the first two landed in S042 commit `cd402d6`; remaining items carried forward with exact code refs so any session can resume in ~10 minutes.
+**Status.** Decision: ratify the audit findings as the canonical bug list; fix order #3 → #6 → #1 → #5 → #2 with the first two landed in [[S042_visualizer_character_audit|S042]] commit `cd402d6`; remaining items carried forward with exact code refs so any session can resume in ~10 minutes.
 
 **Date.** 2026-05-22.
-**Session.** S042 (third dev-brain SNNN today after S040 ideas-folder + S041 D-024).
+**Session.** [[S042_visualizer_character_audit|S042]] (third dev-brain SNNN today after [[S040_ideas_folder_at_brain_root|S040]] ideas-folder + [[S041_parallel_player_coordination_design|S041]] [[D-024_parallel_player_coordination|D-024]]).
 **Trigger.** Principal: *"Fix the map once and for all. Sprites and speech bubbles keep getting stuck or things not appearing. Full audit on character behavior and bugs."*
 
 ## Why an audit
 
-Visualizer carries 26+ open carryforwards across S027 → S039. Symptoms ("stuck sprites", "missing bubbles") are user-visible but the cause map is fragmented across quest-logs. Audit consolidates the cause map into one ranked list so future fix work can prioritize by user-visible severity rather than session-chronological accident.
+Visualizer carries 26+ open carryforwards across [[S027_visualizer_audit|S027]] → [[S039_switchboard_zombie_gc_and_instance_reclaim|S039]]. Symptoms ("stuck sprites", "missing bubbles") are user-visible but the cause map is fragmented across quest-logs. Audit consolidates the cause map into one ranked list so future fix work can prioritize by user-visible severity rather than session-chronological accident.
 
 ## Audit shape (the reusable pattern)
 
@@ -36,10 +36,10 @@ Each dwarf returned a self-contained markdown report with `file_path:line_number
 
 ### Tier 2 — confirmed live in the running state files
 
-**#3. Switchboard manifest renders all parallel Braindeads as `instance:1`** despite `state-instances.json` correctly assigning 1/2/3/4. Cause: `_write_manifest` only refreshes `actor`+`intent` per row at write time; `instance` was stamped once at this session's own sidecar fire and never re-derived. Collapses S023/D-017 parallel-instance UX into ambiguous "Braindead·1" — sidebar can't tell sessions apart, click-to-focus can't disambiguate.
-- **Status.** ✅ Landed in S042 commit `cd402d6`. Refactored `_detect_instance` to return `Optional[int]` (None when uncertain), then both the existing call site at line ~736 and the new per-row manifest refresh fall through to prev value instead of regressing real N→1.
+**#3. Switchboard manifest renders all parallel Braindeads as `instance:1`** despite `state-instances.json` correctly assigning 1/2/3/4. Cause: `_write_manifest` only refreshes `actor`+`intent` per row at write time; `instance` was stamped once at this session's own sidecar fire and never re-derived. Collapses [[S023_visualizer_ticker_and_cross_session_attribution|S023]]/[[D-017_parallel_player_instances|D-017]] parallel-instance UX into ambiguous "Braindead·1" — sidebar can't tell sessions apart, click-to-focus can't disambiguate.
+- **Status.** ✅ Landed in [[S042_visualizer_character_audit|S042]] commit `cd402d6`. Refactored `_detect_instance` to return `Optional[int]` (None when uncertain), then both the existing call site at line ~736 and the new per-row manifest refresh fall through to prev value instead of regressing real N→1.
 
-**#4. `actor: unknown` on UserPromptSubmit-first-turn.** UserPromptSubmit fires before the agent writes intent for the turn. The cascading resolver (S039) eventually corrects via write-time refresh from another session, but if no other session fires sidecar in the meantime, it sticks until this session's `Stop`. Self-corrects fast on multi-session machines.
+**#4. `actor: unknown` on UserPromptSubmit-first-turn.** UserPromptSubmit fires before the agent writes intent for the turn. The cascading resolver ([[S039_switchboard_zombie_gc_and_instance_reclaim|S039]]) eventually corrects via write-time refresh from another session, but if no other session fires sidecar in the meantime, it sticks until this session's `Stop`. Self-corrects fast on multi-session machines.
 - **Status.** Deferred — bites only on truly-single-session machines. Mitigation: principal's typical use is 3-5 parallel sessions, so write-time refresh from sibling fires resolves it within seconds.
 
 ### Tier 2 (continued) — confirmed but lower-severity
@@ -49,7 +49,7 @@ Each dwarf returned a self-contained markdown report with `file_path:line_number
 - **Fix shape.** Extend the function to also walk `dwarfNodes` / `gnomeNodes` / `penguinNodes`. Same 5min idle threshold. Cleanup via `despawnDwarf(id)` / `despawnGnome(id)` / `despawnPenguin(id)` + `clearIntent(id, false)`. ~25 lines.
 
 **#6. `state-instances.json` byId never gets cleaned on session crash.** Was: only `handle_session_end` cleared byId. Crashes left entries forever; `next` drifts upward; slot reclaim operates against polluted byId; symptom = "Braindead-17 with four live sessions."
-- **Status.** ✅ Landed in S042 commit `cd402d6`. New `_gc_state_instances(live_full)` paralleling `_gc_state_actors`, wired into the `UserPromptSubmit`-only GC pass.
+- **Status.** ✅ Landed in [[S042_visualizer_character_audit|S042]] commit `cd402d6`. New `_gc_state_instances(live_full)` paralleling `_gc_state_actors`, wired into the `UserPromptSubmit`-only GC pass.
 
 ### Tier 3 — medium / latent (real but require specific conditions)
 
@@ -65,11 +65,11 @@ Each dwarf returned a self-contained markdown report with `file_path:line_number
 ### Tier 4 — housekeeping (cruft)
 
 - Two garbled-path files at brain root from PowerShell escape pathology. Archive only, don't delete.
-- Dead procedural-building helpers (`isoBuilding`, `wallTexture`, `roofTexture`, `swWallPoly`, `seWallPoly`) — uncalled after S039 sprite migration. Sweep next bankstanding.
+- Dead procedural-building helpers (`isoBuilding`, `wallTexture`, `roofTexture`, `swWallPoly`, `seWallPoly`) — uncalled after [[S039_switchboard_zombie_gc_and_instance_reclaim|S039]] sprite migration. Sweep next bankstanding.
 - 5 zombie empty `bySession` entries in `state-dwarves.json`. Not GC'd by `_gc_state_actors`. Possible #6-style extension to also clean state-dwarves.
-- Stale carry-forward in `respawn.md:133` about dead day-night code — already deleted in S033, retire the line.
+- Stale carry-forward in `respawn.md:133` about dead day-night code — already deleted in [[S033_visualizer_audit_live_mode_and_hooks|S033]], retire the line.
 
-## What S042 landed
+## What [[S042_visualizer_character_audit|S042]] landed
 
 - **#3** manifest per-row instance refresh — `status-sidecar.py` (commit `cd402d6`)
 - **#6** state-instances.json crash cleanup — `status-sidecar.py` (commit `cd402d6`)
@@ -88,20 +88,20 @@ In priority order, with exact code refs:
 ## Lessons
 
 - **"Proceed in parallel" works for non-overlapping commits, not interactive concurrent editing.** Three Edit-tool attempts back-to-back failed because f9da453a was rewriting sprite definitions between my Read and Edit. Line numbers shifted +13 then more. Edit tool requires file stability between read-anchor and write — that doesn't hold under live concurrent writes. Worth folding into [[D-024_parallel_player_coordination]] as a constraint: "logically separable" doesn't help if the toolchain can't apply changes against a moving file.
-- **Audit-then-fix shape generalizes.** Three dwarves on non-overlapping scopes → principal synthesis → tier-ranked triage → fix loop with sign-off. Same shape used for S027 visualizer audit, S033 visualizer audit, this S042 audit. Worth promoting the *shape* to a [[gielinor/spellbook]] skill — "cross-cutting subsystem audit." Penguins do the same for outward-facing research; this is the inward-facing equivalent.
-- **The respawn carry-forward list ages fast.** D3's verification pass found at least 3 carry-forwards already-fixed but still listed (S031 dead day-night code, S033's `despawnPlayerInstance` bubble-fade, S033's `ensureActorExists` strip — partially fixed). Carry-forward debt accumulates on its own clock; a respawn-section "verify still-pending" pass every N sessions would help.
+- **Audit-then-fix shape generalizes.** Three dwarves on non-overlapping scopes → principal synthesis → tier-ranked triage → fix loop with sign-off. Same shape used for [[S027_visualizer_audit|S027]] visualizer audit, [[S033_visualizer_audit_live_mode_and_hooks|S033]] visualizer audit, this [[S042_visualizer_character_audit|S042]] audit. Worth promoting the *shape* to a [[gielinor/spellbook]] skill — "cross-cutting subsystem audit." Penguins do the same for outward-facing research; this is the inward-facing equivalent.
+- **The respawn carry-forward list ages fast.** D3's verification pass found at least 3 carry-forwards already-fixed but still listed ([[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]] dead day-night code, [[S033_visualizer_audit_live_mode_and_hooks|S033]]'s `despawnPlayerInstance` bubble-fade, [[S033_visualizer_audit_live_mode_and_hooks|S033]]'s `ensureActorExists` strip — partially fixed). Carry-forward debt accumulates on its own clock; a respawn-section "verify still-pending" pass every N sessions would help.
 - **Frame ≠ root cause** (echoing [[S038_brain_underutilization_diagnosis]]'s lesson). "Stuck sprites" sounds like a visual bug; the load-bearing cause is event-key-pollution in pure JS state-mapping (#1). The symptom is visual; the bug is invisible.
 
 ## Related
 
-- [[D-024_parallel_player_coordination]] — parallel player coordination (drafted same day, S041). This session lived the problem D-024 is about.
+- [[D-024_parallel_player_coordination]] — parallel player coordination (drafted same day, [[S041_parallel_player_coordination_design|S041]]). This session lived the problem [[D-024_parallel_player_coordination|D-024]] is about.
 - [[D-019_parallel_braindead_and_comms_channel]] — parallel Braindead instances + comms channel (the substrate that lets parallel sessions coordinate at all).
 - [[D-020_terminal_switchboard]] — terminal switchboard (the system whose `instance:1` collapse #3 fixes).
-- [[D-017_parallel_player_instances]] — parallel player instances (parent of D-019/D-020).
+- [[D-017_parallel_player_instances]] — parallel player instances (parent of [[D-019_parallel_braindead_and_comms_channel|D-019]]/[[D-020_terminal_switchboard|D-020]]).
 - [[S033_visualizer_audit_live_mode_and_hooks]] — prior visualizer audit (12 fixes shipped, same shape).
 - [[S027_visualizer_audit]] — earlier visualizer audit (11 fixes shipped).
 - `gielinor/spellbook/rituals/` — candidate home for the audit-then-fix skill if promoted.
 
-## S052 amendment — 2026-05-23
+## [[S052_98d4ec5e_switchboard-rebuild|S052]] amendment — 2026-05-23
 
 The map was killed in [[S052_98d4ec5e_switchboard-rebuild]] / [[D-026_switchboard_promotion]] — the visualizer collapsed to switchboard + chat and moved to `switchboard/`. The Tier-3/Tier-4 carry-forwards above that targeted map code (sprite anchor recalibration #2, idle GC for sub-agent sprites #5, lane-layout viewBox-edge clamp #13, animal scatter housekeeping, dead procedural-building helpers) are **obsolete** — the surface they referenced no longer exists. State-file paths in §D3 above now live at `switchboard/state-*.json`. The event-routing and resolver concerns (#1 suffix-strip, #3 manifest instance refresh, #4 actor-unknown, #6 byId crash cleanup, #11 setIntent silent-return) live on through `status-sidecar.py` / `emit-event.py` and remain relevant for the chat panel + switchboard rows.

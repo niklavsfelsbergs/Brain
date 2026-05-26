@@ -1,6 +1,6 @@
 # Slack MCP install — korotovsky cookie-auth path
 
-**Drafted:** 2026-05-23 (S047). **Anchor:** the install walkthrough in `quest-log/in-progress/S047_1cf1eb75_slack-mcp-install.md`.
+**Drafted:** 2026-05-23 ([[S047_1cf1eb75_slack-mcp-install|S047]]). **Anchor:** the install walkthrough in `quest-log/in-progress/S047_1cf1eb75_slack-mcp-install.md`.
 
 ## What this is
 
@@ -32,7 +32,7 @@ End-to-end install of `korotovsky/slack-mcp-server` against a corporate Slack wo
 5. **Pre-warm the npx cache** (see gotcha #2 below) before relying on Claude Code's auto-start.
 6. **Restart Claude Code** in the same dir. `/mcp` should show `slack: connected` within a few seconds (post-warm).
 
-## Gotchas — each one cost a turn during S047
+## Gotchas — each one cost a turn during [[S047_1cf1eb75_slack-mcp-install|S047]]
 
 1. **URL-encoded `xoxd`.** Edge displayed the `d` cookie value with `%2F` (slash) and `%2B` (plus) percent-encoded. The server wants the raw cookie (literal `/` and `+`). Symptom: `auth.test` returns `invalid_auth` immediately even though tokens look correct. Fix: decode the percent-escapes before pasting.
 2. **30s MCP-connect timeout vs first-run npx download.** `npx -y slack-mcp-server@latest` downloads the npm wrapper + Go binary on first run — easily exceeds Claude Code's MCP-connect timeout. Symptom: `Failed to reconnect to slack: MCP server "slack" connection timed out after 30000ms`. Fix: pre-warm by running the server manually in a separate PowerShell with the same env vars; Ctrl+C once it logs *"Slack MCP Server is fully ready"*. Subsequent Claude Code starts hit the warm cache and connect in <5s.

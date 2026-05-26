@@ -1,7 +1,7 @@
 # Duntes 28 ("Duntes Ozoli"), €120k — buy/no-buy synthesis & verdict
 
 **For:** Niklavs (owner-occupier, mortgage-financed, hold horizon unknown).
-**Date:** 2026-05-23. **Author:** Zezima (S056), weaving four penguin research files.
+**Date:** 2026-05-23. **Author:** Zezima ([[S056_e5df54a2_apartment-domajamas-dalas-research|S056]]), weaving four penguin research files.
 **Anchors:** `2026-05-23-duntes28-location.md` (P5), `-price-market.md` (P6),
 `-building-project.md` (P7), `-money-costs.md` (P8). Listing: 2-rm, 70.4 m², 9/16,
 2006/07, courtyard parking + 8.6 m² loggia, asking €120,000 (€1,714/m²).

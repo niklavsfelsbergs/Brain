@@ -1,4 +1,4 @@
-# Visualizer audit — S021
+# Visualizer audit — [[S021_visualizer_audit|S021]]
 
 > **Scope.** `developer-braindead/experiments/visualizer/index.html` (~2933 lines), `developer-braindead/.claude/hooks/emit-event.py` (630 lines), state files (`state.ndjson`, `state-actors.json`, `state-dwarves.json`, `path-map.json`; `state-gnomes.json` not yet created — emerges on first gnome spawn).
 >
@@ -149,7 +149,7 @@ If `save_json` succeeds but `append` fails (disk full mid-append; though both wr
 
 **Where:** `emit-event.py:55-58, 388-391` and `index.html:2675-2706`.
 
-Reads emit a `move` event but no `action`. The sprite walks into the building; nothing appears in chat to explain why. If an agent does many quick reads across buildings (e.g., this very audit pass), the sprite ping-pongs with chat only carrying the "walks to X" narration. Working-as-designed per D-014 ("read events too noisy"), but worth surfacing as a UX item — *some* trace would help debug "why did the sprite move there?"
+Reads emit a `move` event but no `action`. The sprite walks into the building; nothing appears in chat to explain why. If an agent does many quick reads across buildings (e.g., this very audit pass), the sprite ping-pongs with chat only carrying the "walks to X" narration. Working-as-designed per [[D-014_visualizer_chat_panel|D-014]] ("read events too noisy"), but worth surfacing as a UX item — *some* trace would help debug "why did the sprite move there?"
 
 ---
 
@@ -241,42 +241,42 @@ Mirror `current_main_actor`'s short-circuit.
 ### I8. Surface attribution-failure trail (per B6)
 `print(..., file=sys.stderr)` when `attribute_to_subagent` returns `(None, None, None)` despite having an `agent_id`.
 
-### I9. Idle indicator (D-009 deferred)
+### I9. Idle indicator ([[D-009_visualizer_live_mode_v0|D-009]] deferred)
 Fade active actor's glow after N seconds of no events in live mode.
 
-### I10. Watchdog for non-Claude writes (D-009 deferred)
+### I10. Watchdog for non-Claude writes ([[D-009_visualizer_live_mode_v0|D-009]] deferred)
 Periodic disk scan to detect writes that bypassed the hook (IDE-direct edits, OS-level moves).
 
-### I11. SSE upgrade (D-009 deferred)
+### I11. SSE upgrade ([[D-009_visualizer_live_mode_v0|D-009]] deferred)
 Replace 500ms polling with server-sent events when justified.
 
-### I12. Action target prettification (D-014 follow-up)
+### I12. Action target prettification ([[D-014_visualizer_chat_panel|D-014]] follow-up)
 Bash commands show raw command text. Could pattern-match common verbs (mv, cp, git, python -m http.server) and prettify.
 
-### I13. Chat scroll-lock UX (D-014 follow-up)
+### I13. Chat scroll-lock UX ([[D-014_visualizer_chat_panel|D-014]] follow-up)
 `logEl.scrollTop = logEl.scrollHeight` at `index.html:2591, 2605` defeats the user's read-history intent. Only auto-scroll when already at bottom.
 
-### I14. Bubble two-line edge cases (D-014 follow-up)
+### I14. Bubble two-line edge cases ([[D-014_visualizer_chat_panel|D-014]] follow-up)
 `wrapBubbleText` (`:2515`) hard-slices single long tokens at 50 chars (`:2520`); multi-word edge cases unverified for cases like single-word over the limit followed by short trailing.
 
-### I15. Per-building character (S009 aesthetic backlog)
+### I15. Per-building character ([[S009_visualizer_six_deltas_and_frame|S009]] aesthetic backlog)
 Ambient particles per building (lanterns at Inn, gem-shine at Vault, papers fluttering at Inbox Square).
 
-### I16. Gnome workshop building (D-016 deferred)
+### I16. Gnome workshop building ([[D-016_gnomes_subagent|D-016]] deferred)
 Revisit after a few live gnome spawns. If the gnome lacks a "home," consider adding.
 
 ### I17. Tighten gnome-write-boundary allowlist
 Per respawn iteration menu: `/spellbook/drafts/` → `/spellbook/drafts/skills/`. Out-of-scope for *this* audit (lives in `gielinor/.claude/hooks/`), flagged for traceability.
 
 ### I18. Narration shakedown
-End-to-end test: write to `.claude/narration.txt` at multiple session-boundary moments, verify each renders correctly and at the right position. Used briefly at S019/S020 open; not stress-tested.
+End-to-end test: write to `.claude/narration.txt` at multiple session-boundary moments, verify each renders correctly and at the right position. Used briefly at [[S019_gnomes_subagent_implementation|S019]]/[[S020_gnomes_ratification_and_visualizer|S020]] open; not stress-tested.
 
 ---
 
 ## D. Documentation surface
 
 ### D1. README stale (`_README.md:29-34`)
-"Steps still pending (per D-009)" lists Steps 3-6; Steps 4-6 have all shipped (read/glob/grep hooks, Task spawn pipeline, bootstrap-from-tail). README pre-dates D-014 (chat panel), S012 (Braindead), D-016 (gnomes), the narration channel, the active-mode marker, and the entire sub-agent attribution model.
+"Steps still pending (per [[D-009_visualizer_live_mode_v0|D-009]])" lists Steps 3-6; Steps 4-6 have all shipped (read/glob/grep hooks, Task spawn pipeline, bootstrap-from-tail). README pre-dates [[D-014_visualizer_chat_panel|D-014]] (chat panel), [[S012_braindead_character_and_workshop|S012]] (Braindead), [[D-016_gnomes_subagent|D-016]] (gnomes), the narration channel, the active-mode marker, and the entire sub-agent attribution model.
 
 ### D2. No reference for event schema
 `state.ndjson` carries ~14 event types: `session-start`, `log`, `move`, `intent`, `action`, `narrate`, `spawn-dwarf` / `despawn-dwarf`, `spawn-gnome` / `despawn-gnome`, `spawn-wisp` / `despawn-wisp`, `spawn-braindead` / `despawn-braindead`, `commit`. The shape of each is implicit in `applyEvent` (`index.html:2657-2747`) and the emit functions. Worth one short reference doc for the maintainer who arrives without context.
@@ -297,7 +297,7 @@ Inline `_notes` (`path-map.json:50-56`) cover building-rule ordering and the dev
 
 **Most architectural:** B7 + B8 + I4 + I5 together — the state files lack atomicity and crash recovery. If gnome/dwarf usage scales up, this layer needs attention. The fix is well-known (temp-file + rename, startup GC pass) but adds complexity.
 
-**Validation event:** The S020 cascade hasn't yet had a live gnome spawn. That run will exercise B1's preconditions (if two gnomes spawn close together), B3's dev-brain override gap (if the spawn happens before the first intent write), and the gnome render path end-to-end. Recommend pairing this audit with the deferred Step 2 — running the audit-and-validation together exposes more than either alone.
+**Validation event:** The [[S020_gnomes_ratification_and_visualizer|S020]] cascade hasn't yet had a live gnome spawn. That run will exercise B1's preconditions (if two gnomes spawn close together), B3's dev-brain override gap (if the spawn happens before the first intent write), and the gnome render path end-to-end. Recommend pairing this audit with the deferred Step 2 — running the audit-and-validation together exposes more than either alone.
 
 **Documentation debt:** D1 is the highest-leverage doc fix. The README is the entry point for a future maintainer; today it tells them about the world as it existed at S010-ish.
 

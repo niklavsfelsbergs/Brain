@@ -1,8 +1,8 @@
 # S093 — cockpit transcript readability pass + terminal fit-while-hidden fix
 
-**Session:** braindead-f3239bdc · 2026-05-25 · dev-brain via "lets develop gielinor" (mid-conversation; OPEN posted; no live Braindead siblings — S092 just CLOSING'd).
+**Session:** braindead-f3239bdc · 2026-05-25 · dev-brain via "lets develop gielinor" (mid-conversation; OPEN posted; no live Braindead siblings — [[S092_327b1216_cockpit_transcript_and_rename_persistence|S092]] just CLOSING'd).
 
-**One line:** The S092 clean-text transcript landed but read poorly; three principal-driven rounds turned it from a flat document into an actual reading surface, and a fourth round fixed a terminal-collapse bug the toggle exposed. All in `cockpit/web/`. Doc-free, no hooks, no backend.
+**One line:** The [[S092_327b1216_cockpit_transcript_and_rename_persistence|S092]] clean-text transcript landed but read poorly; three principal-driven rounds turned it from a flat document into an actual reading surface, and a fourth round fixed a terminal-collapse bug the toggle exposed. All in `cockpit/web/`. Doc-free, no hooks, no backend.
 
 ## The arc
 
@@ -40,14 +40,14 @@ Scoped: `cockpit/web/{transcript.js, styles.css, md.js, term.js}` + this quest-l
 
 ## Round 4 (follow-on, same session) — rename-on-restart, RESOLVED + verified
 
-Principal: renamed sessions STILL lose their name on restart — i.e. S092's rename-persistence fix (which shipped with its EYES-ONLY verify never done) regressed. This is the SECOND attempt at this bug, so per the instrument-don't-reguess lesson I refused to ship patch #2 blind.
+Principal: renamed sessions STILL lose their name on restart — i.e. [[S092_327b1216_cockpit_transcript_and_rename_persistence|S092]]'s rename-persistence fix (which shipped with its EYES-ONLY verify never done) regressed. This is the SECOND attempt at this bug, so per the instrument-don't-reguess lesson I refused to ship patch #2 blind.
 
-**Read-only diagnosis:** disk store works + backend injects the name by sid8 (`backend.py:282`), and `--resume` likely *keeps* the id (the docs' `--fork-session` flag — "new id instead of reusing the original" — implies plain resume reuses it, inverting S092's premise). Ground truth on disk: all 5 `state-names.json` entries were stranded on DEAD sids — the carry never lands on a live session. Logic was self-consistent on paper → a runtime fact I couldn't see by reading.
+**Read-only diagnosis:** disk store works + backend injects the name by sid8 (`backend.py:282`), and `--resume` likely *keeps* the id (the docs' `--fork-session` flag — "new id instead of reusing the original" — implies plain resume reuses it, inverting [[S092_327b1216_cockpit_transcript_and_rename_persistence|S092]]'s premise). Ground truth on disk: all 5 `state-names.json` entries were stranded on DEAD sids — the carry never lands on a live session. Logic was self-consistent on paper → a runtime fact I couldn't see by reading.
 
 **Built (principal picked "instrument + safe anchor fix"):** (1) a disk-log instrument (`switchboard/rename-diag.log`) tracing every announce/rotate/carry; (2) a resume-anchor carry — copy the disk label from the resume-uuid's sid8 → the live id, in `ptybridge` + the localStorage half in `term.js`.
 
 **The trace (one restart) was decisive:** both resumed sessions announced `resuming:true` with the SAME uuid (`f3239bdc`, `48847e45`) and produced **zero `rotate` events**. `claude --resume` KEEPS the id — it does not rotate. So the name persists via the stable sid8 + durable localStorage (`nameFor()` first, disk fallback). The earlier breakage was the running window holding **stale code** and/or `/clear`-rotation cases. Principal confirmed: **"works."**
 
-**Wrap:** the anchor carry stays (insurance for the `/clear`-then-restart path, still unverified for that specific path). The always-on disk logger was **stripped** once it answered its question; a zero-cost gated `window.__RENAMEDIAG` client console trace remains. Build-lesson recorded + the S092 substrate-fact corrected (`--resume` pins, doesn't rotate). `py_compile` + `node --check` green; `test_backend.py` 9/9.
+**Wrap:** the anchor carry stays (insurance for the `/clear`-then-restart path, still unverified for that specific path). The always-on disk logger was **stripped** once it answered its question; a zero-cost gated `window.__RENAMEDIAG` client console trace remains. Build-lesson recorded + the [[S092_327b1216_cockpit_transcript_and_rename_persistence|S092]] substrate-fact corrected (`--resume` pins, doesn't rotate). `py_compile` + `node --check` green; `test_backend.py` 9/9.
 
 **Commit (round 4):** `cockpit/ptybridge.py` + `cockpit/web/term.js` (anchor carry; diag stripped). `switchboard/rename-diag.log` is a transient untracked artifact — not committed.

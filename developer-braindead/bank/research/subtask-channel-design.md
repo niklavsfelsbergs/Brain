@@ -1,6 +1,6 @@
 # Subtask channel — making the visualizer feel alive under sustained work
 
-> **Why this file exists.** S027 closed the visualizer audit. Sitting under the still-open "make the world alive" goal from [[Q-008]] is a more pointed complaint from the principal at end of S027: *the sprite gets stuck on one intent for 10 minutes while doing a billion things underneath.* This file sketches the fix — a third communication channel between **intent** (agent-authored, slow, scope-level) and **action** (hook-authored, fast, raw tool calls) — and prepares the next session to pick it up cleanly.
+> **Why this file exists.** [[S027_visualizer_audit|S027]] closed the visualizer audit. Sitting under the still-open "make the world alive" goal from [[Q-008]] is a more pointed complaint from the principal at end of [[S027_visualizer_audit|S027]]: *the sprite gets stuck on one intent for 10 minutes while doing a billion things underneath.* This file sketches the fix — a third communication channel between **intent** (agent-authored, slow, scope-level) and **action** (hook-authored, fast, raw tool calls) — and prepares the next session to pick it up cleanly.
 >
 > **Status.** Design only. No code. Pick up next session.
 
@@ -12,7 +12,7 @@ Today the visualizer has two channels feeding the COMMS panel and the sprite bub
 
 | Channel | Author | Cadence | Content shape |
 |---|---|---|---|
-| **Intent** | Agent (Claude), writes `.claude/intent/<actor>-<sid8>.txt` | Slow — only on scope changes per [[gielinor/meta/communication-protocol.md]] | Why / what scope ("Auditing visualizer", "Wrapping up S027") |
+| **Intent** | Agent (Claude), writes `.claude/intent/<actor>-<sid8>.txt` | Slow — only on scope changes per [[gielinor/meta/communication-protocol.md]] | Why / what scope ("Auditing visualizer", "Wrapping up [[S027_visualizer_audit|S027]]") |
 | **Action** | Hook (`emit-event.py` PreToolUse) | Fast — every tool call | Raw file/command ("Bash: git status", "Edit: index.html") |
 
 Both work as designed. Both feed COMMS. But two failure modes:
@@ -36,7 +36,7 @@ The subtask line is **hook-authored, natural-language, debounced**. The agent ne
 
 ### The three speeds, no overlap
 
-- **Intent** says *why* — slow, deliberate, scope-bounded. "Wrapping up S027."
+- **Intent** says *why* — slow, deliberate, scope-bounded. "Wrapping up [[S027_visualizer_audit|S027]]."
 - **Subtask** says *current step* — fast enough to feel alive, natural enough to read at a glance. "writing the close commit."
 - **Action** says *exact call* — exhaustive, the audit trail. "Bash: git commit -m ..."
 
@@ -91,7 +91,7 @@ Without debounce a turn that fires 12 fast tool calls becomes a strobe. Strategy
 - **Aggregation window: 1.5s.** Within this window, identical verbs collapse — three `Read` calls in 1s become "reading 3 files" rather than three flashes of the latest basename.
 - **Reset on new tool call after silence.** First call after a >2s gap always lands; the bubble shouldn't have a stale "reading X" while the agent is now writing.
 
-These are starting numbers, tune in S028+.
+These are starting numbers, tune in [[S028_subtask_channel_and_guthix|S028]]+.
 
 ## Long-operation heartbeat (deferred but related)
 
@@ -115,7 +115,7 @@ The same gap also opens during long-running Bash commands or dwarf waits (a 30s 
 2. **Subtask in replay mode.** EVENTS array is hand-authored; no PreToolUse to drive subtask. Either (a) leave subtask absent in replay — fine, replay is the demo, not the working aliveness target; or (b) bake some subtask events into EVENTS for the demo arc. Recommend (a).
 3. **Per-session subtask file?** Probably not — subtask is event-driven, not file-driven. The event carries the subtask text directly. No `.claude/subtask/...` sidecar.
 4. **What about the COMMS panel?** Do subtask events also append to COMMS, or only update the bubble? Recommend: yes-append, with a new line class `.log-entry.subtask`. Adds chat aliveness directly. Tab routing: shares the speaker's tab (so Jebrim subtask events go to JEBRIM tab + ALL).
-5. **Replay-mode demo of the channel.** Once shipped, the audit primer / S028 close should include a short EVENTS-array demo sequence showing intent + subtask + action together. Worth its own follow-up.
+5. **Replay-mode demo of the channel.** Once shipped, the audit primer / [[S028_subtask_channel_and_guthix|S028]] close should include a short EVENTS-array demo sequence showing intent + subtask + action together. Worth its own follow-up.
 
 ## Recommended next-session start order
 
@@ -127,7 +127,7 @@ The same gap also opens during long-running Bash commands or dwarf waits (a 30s 
 6. **Live test in a real working session.** Watch a Jebrim session do 10 minutes of work and confirm the bubble updates ~every few seconds without becoming a strobe.
 7. **Tune the debounce numbers** based on observation. Adjust verb table for any common patterns that fall through to "running shell command" too often.
 
-Stretch (defer to S029+ if S028 doesn't reach it):
+Stretch (defer to [[S029_parallel_braindead_and_comms_channel|S029]]+ if [[S028_subtask_channel_and_guthix|S028]] doesn't reach it):
 
 - Long-operation heartbeat (the "still working" pulse for slow Bash + dwarf waits).
 - Replay-mode demo events.

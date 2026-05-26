@@ -1,6 +1,6 @@
 # Agentic-OS gap survey — what comparable systems do that the brain doesn't
 
-> **Provenance.** [[S102_3b333c4d_agentic_os_gap_survey]] (braindead-3b333c4d — SNNN claimed behind the confirmed-taken S099/acf8fc80 + S101/be7867be; sid8 is the unambiguous anchor under heavy parallel load), 2026-05-26. Principal cue: *"reflect on the brain and research agentic operating systems in a similar direction as mine. What is very useful which I am not utilizing?"* — Obsidian (see [[obsidian-fit-and-migration-spec]]) was the worked example of a previously-unknown-but-useful adoption.
+> **Provenance.** [[S102_3b333c4d_agentic_os_gap_survey]] (braindead-3b333c4d — SNNN claimed behind the confirmed-taken [[S099_acf8fc80_obsidian_quest_link_migration|S099]]/acf8fc80 + [[S101_transcript_as_sole_comms_surface_feasibility|S101]]/be7867be; sid8 is the unambiguous anchor under heavy parallel load), 2026-05-26. Principal cue: *"reflect on the brain and research agentic operating systems in a similar direction as mine. What is very useful which I am not utilizing?"* — Obsidian (see [[obsidian-fit-and-migration-spec]]) was the worked example of a previously-unknown-but-useful adoption.
 >
 > **Method.** Three parallel research scouts (WebSearch/WebFetch), each calibrated against the brain's *current* state so findings are **gaps, not echoes**: (A) agent memory & cognitive architectures, (B) personal-AI / second-brain tooling + PKM practice, (C) agentic-dev frameworks & autonomous operation. Synthesised against the layer model + [[D-027_inward_outward_build_imbalance]].
 >

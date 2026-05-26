@@ -1,6 +1,6 @@
 # D-010 — 2026-05-21 — Visualizer intent narration via agent-written sidecar
 
-**Context.** [[S010_visualizer_live_mode_v0]] shipped live-mode v0; characters walk and dwarves spawn but the viewer can't tell *what* an actor is actually doing. Niklavs asked for a small glimpse of intent above each player (e.g. "Wrapping up S002"). Two readings of "what they're doing" exist: derived from the last file touched, or self-narrated by the agent. Path-derived would have been ~30 minutes of work; we picked the truthful version instead.
+**Context.** [[S010_visualizer_live_mode_v0]] shipped live-mode v0; characters walk and dwarves spawn but the viewer can't tell *what* an actor is actually doing. Niklavs asked for a small glimpse of intent above each player (e.g. "Wrapping up [[S002_dev_brain_runescape_restructure|S002]]"). Two readings of "what they're doing" exist: derived from the last file touched, or self-narrated by the agent. Path-derived would have been ~30 minutes of work; we picked the truthful version instead.
 
 **Decision.** Ship intent narration as **per-actor plaintext sidecars the agent writes after stating its Plan**, the existing PostToolUse hook converting writes into `intent` events, and the renderer hanging a speech bubble over the actor.
 
@@ -38,7 +38,7 @@ Four knobs (settled in chat with Niklavs):
 **Open follow-ups (deferred).**
 
 - **Mid-task dwarf re-narration.** If dwarves doing long work want to update their bubble, we need a description-slug → dwarf-id mapping in the hook plus a sidecar path dwarves can write to. Wait for a session where this actually matters.
-- **Idle indicator interplay.** D-009 deferred an idle-fade on actors with no recent events. Speech bubbles should probably fade with the actor when idle. Re-check when idle indicator lands.
+- **Idle indicator interplay.** [[D-009_visualizer_live_mode_v0|D-009]] deferred an idle-fade on actors with no recent events. Speech bubbles should probably fade with the actor when idle. Re-check when idle indicator lands.
 - **Stale-intent eviction on death-as-crash.** Today's design: a stale intent file from a crashed session re-emits on next session start (because the file still exists). Close-session ritual could clear the directory; reconciliation prompt is also a candidate place. Defer until it actually misleads.
 - **Per-building intent restoration.** Current design clears on move; if the agent's intent legitimately spans buildings ("Bankstanding for Zezima — pass across all layers"), the user sees flicker. Defer; revisit if observed.
 

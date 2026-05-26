@@ -7,7 +7,7 @@
 
 ## T1 — quest opened, dwarves spawned (principal)
 
-Read inventory resume + S023/S026/agent-side context. Confirmed scope is locked (Niklavs framed three points + answered clarifications in S028 — decisions in resume file's Scope section).
+Read inventory resume + [[S023_2026-05-21_shipping-mart-coverage-audit|S023]]/[[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]]/agent-side context. Confirmed scope is locked (Niklavs framed three points + answered clarifications in S028 — decisions in resume file's Scope section).
 
 Decomposition: three dwarves in parallel.
 

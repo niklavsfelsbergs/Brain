@@ -1,12 +1,12 @@
-# S024 — Visualizer aliveness pass (Q-008 options 1–3) + intent re-emit on move
+# S024 — Visualizer aliveness pass ([[Q-008_visualizer_aliveness|Q-008]] options 1–3) + intent re-emit on move
 
 **Date.** 2026-05-22.
 **Mode.** Dev-brain.
-**Outcome.** Q-008 options 1, 2, 3 shipped; one bug surfaced under live observation and fixed.
+**Outcome.** [[Q-008_visualizer_aliveness|Q-008]] options 1, 2, 3 shipped; one bug surfaced under live observation and fixed.
 
 ## What was asked
 
-Principal entered dev-brain after `/clear` and asked to work on aliveness. Picked the most ambitious slice from the Q-008 menu — all of options 1–3 (idle sprite breath + per-building ambient particles + day/night hue overlay).
+Principal entered dev-brain after `/clear` and asked to work on aliveness. Picked the most ambitious slice from the [[Q-008_visualizer_aliveness|Q-008]] menu — all of options 1–3 (idle sprite breath + per-building ambient particles + day/night hue overlay).
 
 ## What was built
 
@@ -45,7 +45,7 @@ JS function `dayNightFill()` interpolates between four anchor colors keyed on wa
 
 ### 4. Reduced-motion gate
 
-`@media (prefers-reduced-motion: reduce)` zeroes `.bob`, `.candle-flicker`, `.parchment-flutter`, `.forge-smoke` animations and `display: none`s the day/night overlay. Per Q-008's accessibility note.
+`@media (prefers-reduced-motion: reduce)` zeroes `.bob`, `.candle-flicker`, `.parchment-flutter`, `.forge-smoke` animations and `display: none`s the day/night overlay. Per [[Q-008_visualizer_aliveness|Q-008]]'s accessibility note.
 
 ### 5. Intent re-emit on actor move (bug fix)
 
@@ -61,11 +61,11 @@ Fix in `developer-braindead/.claude/hooks/emit-event.py`: new helper `_reemit_in
 
 **Intent re-emit on move is design-shaped, not just plumbing.** The visualizer's "intents expire on building change" rule was written assuming intent writes were frequent. In practice, a session can run for minutes on tool calls without writing a new intent line — and the bubble vanishes. Re-emit on move papers over this without changing the visualizer's expire-on-move rule. If the pattern recurs (e.g., dwarves/gnomes hit similar silences), the underlying design choice is worth revisiting.
 
-**Watching-it-run found the intent bug, not the audit.** Third-tier observation phase confirms the S023 pattern: code review and validation passed; only sustained live use surfaced the silence. Four-incident pattern now (S014, S022, S023, S024).
+**Watching-it-run found the intent bug, not the audit.** Third-tier observation phase confirms the [[S023_visualizer_ticker_and_cross_session_attribution|S023]] pattern: code review and validation passed; only sustained live use surfaced the silence. Four-incident pattern now ([[S014_visualizer_polish_and_aesthetics_pass|S014]], [[S022_visualizer_audit_fixes|S022]], [[S023_visualizer_ticker_and_cross_session_attribution|S023]], S024).
 
 ## Files touched
 
-- `developer-braindead/experiments/visualizer/index.html` (+118 / −7 from Q-008 work, plus the SMIL iterations)
+- `developer-braindead/experiments/visualizer/index.html` (+118 / −7 from [[Q-008_visualizer_aliveness|Q-008]] work, plus the SMIL iterations)
 - `developer-braindead/.claude/hooks/emit-event.py` (+ `_reemit_intent_after_move` helper and one call site)
 - `developer-braindead/bank/open-questions/Q-008_visualizer_aliveness.md` — updated status (next entry)
 - `developer-braindead/respawn.md` — updated at session close

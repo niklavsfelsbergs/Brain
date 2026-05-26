@@ -1,6 +1,6 @@
 # D-028 — 2026-05-23 — Switchboard rebuild: standalone fleet cockpit
 
-**Context.** The switchboard accreted across ~18 of the last ~25 dev sessions (S037, S039, S042–S043, S047–S053, S056–S062). It started as an isometric map ([[D-009_visualizer_live_mode_v0]]), shed the map for switchboard+chat panels ([[D-026_switchboard_promotion]]), then grew an embedded agent chat ([[S060_ac10ec71_switchboard-embedded-chat]]), a COMMS reskin, and a lifecycle feed — each session bolting a feature onto whichever of three identities felt urgent that day. The result is three uncoordinated products in one trenchcoat:
+**Context.** The switchboard accreted across ~18 of the last ~25 dev sessions ([[S037_terminal_switchboard_phase_3_click_to_focus|S037]], [[S039_switchboard_zombie_gc_and_instance_reclaim|S039]], [[S042_visualizer_character_audit|S042]]–[[S043_switchboard_state_visibility|S043]], [[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance|S047]]–[[S053_c082b489_switchboard_visual_ux_overhaul|S053]], [[S056_e433ac17_switchboard-osrs-chatbox|S056]]–[[S062_switchboard_lifecycle_feed_persistent_server_peek|S062]]). It started as an isometric map ([[D-009_visualizer_live_mode_v0]]), shed the map for switchboard+chat panels ([[D-026_switchboard_promotion]]), then grew an embedded agent chat ([[S060_ac10ec71_switchboard-embedded-chat]]), a COMMS reskin, and a lifecycle feed — each session bolting a feature onto whichever of three identities felt urgent that day. The result is three uncoordinated products in one trenchcoat:
 
 1. **Monitor** — which session needs me, what's each doing (the rows + `status-sidecar.py`).
 2. **Feed** — the cross-session narrative (COMMS / `chat.ndjson` / comms mirrors), which shapeshifted three times (coordination channel → action firehose → lifecycle ticker).
@@ -46,7 +46,7 @@ The hooks are where ~18 sessions of subtle parallel-session / PID-liveness / Win
 - **`state-switchboard.json`** — per-session manifest: `sid8`, `session_id`, `actor`, `instance`, `state`, `last_event_kind/ts`, `started_at`, `first_prompt`, `intent`, `project_dir`, `cwd`, `host`, `claude_pid`, `claude_pid_chain`, `claude_hwnd`, `building`, `latest_action`/`_ts`, `subtitle`. The board's primary source.
 - **State vocabulary** — `working / waiting_for_user / waiting_for_subagents / alching / wrapped_up / closing / idle / ended`, derived hook-side (incl. PID-liveness drop, `.mode` marker overrides for alching/wrapped_up). Exactly the states the principal listed.
 - **Subagent state** — `state-dwarves.json` / `-gnomes.json` / `-penguins.json` (`bySession[sid].byToolUseId`/`pendingQueue`/`byAgentId`), and `state-instances.json` for instance numbering.
-- **`chat.ndjson`** — append-only humanized event + lifecycle-checkpoint stream (`{ts, kind, actor, text}`; kinds incl. the S062 PICKED UP/PLAN/PROGRESS/NEEDS YOU/DONE).
+- **`chat.ndjson`** — append-only humanized event + lifecycle-checkpoint stream (`{ts, kind, actor, text}`; kinds incl. the [[S062_switchboard_lifecycle_feed_persistent_server_peek|S062]] PICKED UP/PLAN/PROGRESS/NEEDS YOU/DONE).
 - **`state-comms-{gielinor,braindead}.md`** — comms mirrors.
 - **Driving** — headless `claude -p --input-format stream-json --output-format stream-json --include-partial-messages --verbose --permission-mode bypassPermissions --session-id <uuid>` at brain root; `/history?session=<uuid>` parses on-disk `.jsonl` into visual turns; `{type:"interrupt"}` → `control_request`; resume via `--resume`. Re-implemented cleanly in the new backend, same protocol.
 - **Persistence** — detached launch (`start-switchboard.vbs` pattern) survives terminal closes; folded into the pywebview launcher.
@@ -61,7 +61,7 @@ Each phase is independently useful and committable; no phase depends on a later 
 4. **Activity feed.** Lifecycle checkpoints + comms; raw actions off-by-default toggle; merged, filterable, click-to-jump.
 5. **Package + polish.** Compile to `.exe` + icon; sort/pulse + optional sound on WAITING; remembers size/position, single-instance, optional always-on-top; clean-modern theme.
 
-## Locked product decisions (S064 elicitation)
+## Locked product decisions ([[S064_78824901_switchboard-cockpit-rebuild|S064]] elicitation)
 
 - **Aesthetic:** clean modern (not the OSRS parchment of the old client).
 - **Permissions:** `bypassPermissions` for cockpit-driven sessions; an in-cockpit approval surface is a possible later phase.
@@ -78,7 +78,7 @@ Each phase is independently useful and committable; no phase depends on a later 
 
 ## Consequences
 
-- The old `switchboard/` keeps running untouched during the build; sibling session `braindead-3d2dc4b1` (S063) was on the incremental-patch path (cache-bust, rename COMMS) — those follow-ups are moot under the rebuild and were flagged off in comms.
+- The old `switchboard/` keeps running untouched during the build; sibling session `braindead-3d2dc4b1` ([[S063_switchboard_feed_liveness_and_cache_fix|S063]]) was on the incremental-patch path (cache-bust, rename COMMS) — those follow-ups are moot under the rebuild and were flagged off in comms.
 - Greenfield means no migration churn and no parallel-edit collisions ([[D-024_parallel_player_coordination]]) with the live client.
 - At swap, the old client archives; `path-map.json`/vestigial bits get resolved then.
 
@@ -91,4 +91,4 @@ Each phase is independently useful and committable; no phase depends on a later 
 - [[D-026_switchboard_promotion]] — switchboard promotion to brain root; the cockpit stays a both-brains surface.
 - [[D-027_inward_outward_build_imbalance]] — inward/outward build imbalance; this rebuild is meant to *end* the switchboard's time-sink, not extend it.
 - [[S060_ac10ec71_switchboard-embedded-chat]] — embedded agent chat; the driver mechanism preserved here.
-- S064 — quest-log entry capturing the rebuild construction.
+- [[S064_78824901_switchboard-cockpit-rebuild|S064]] — quest-log entry capturing the rebuild construction.

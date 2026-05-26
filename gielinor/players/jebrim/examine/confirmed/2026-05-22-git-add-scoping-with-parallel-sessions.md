@@ -1,11 +1,11 @@
 # `git add` scoping when parallel sessions stage content
 
-**Date:** 2026-05-22 (session S030, dashboard gold cutover).
+**Date:** 2026-05-22 (session [[S030_2026-05-22_dashboard-gold-cutover|S030]], dashboard gold cutover).
 **Status:** draft.
 
 ## The observation
 
-During S030 close, the brain repo had pre-existing modifications staged by a parallel `developer-braindead/` session that Niklavs ran alongside this Jebrim session (D-017 decision, S025 dev quest log — committed in `5ec5c4c`). When the cutover quest's earlier brain commit (`c41ce97`) was staged, the `git add` was scoped to `gielinor/players/jebrim/...` and worked correctly — but the pattern of "`git add <specific>` + `git commit`" almost picked up extra parallel-session content on at least one occasion in this session, because:
+During [[S030_2026-05-22_dashboard-gold-cutover|S030]] close, the brain repo had pre-existing modifications staged by a parallel `developer-braindead/` session that Niklavs ran alongside this Jebrim session ([[D-017_user-only-with-explicit-permission|D-017]] decision, S025 dev quest log — committed in `5ec5c4c`). When the cutover quest's earlier brain commit (`c41ce97`) was staged, the `git add` was scoped to `gielinor/players/jebrim/...` and worked correctly — but the pattern of "`git add <specific>` + `git commit`" almost picked up extra parallel-session content on at least one occasion in this session, because:
 
 - `git add <specific>` only adds the named paths, but
 - `git commit` (without `--only` / `-o`) commits *everything currently staged*, including content staged by the parallel session.
@@ -31,4 +31,4 @@ Already the close-session step 8 discipline ("Stage scoped. Verify with `git sta
 
 ## Anchor
 
-Session S030 (Jebrim, dashboard gold cutover). Parent quest `quest-log/completed/S030_2026-05-22_dashboard-gold-cutover.md` T6 commit-cycle + close-session brief's `git add` warning.
+Session [[S030_2026-05-22_dashboard-gold-cutover|S030]] (Jebrim, dashboard gold cutover). Parent quest `quest-log/completed/S030_2026-05-22_dashboard-gold-cutover.md` T6 commit-cycle + close-session brief's `git add` warning.

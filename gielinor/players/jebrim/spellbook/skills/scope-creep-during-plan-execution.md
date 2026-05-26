@@ -1,6 +1,6 @@
 # Scope creep during plan execution — silent vs surface
 
-**Drafted:** 2026-05-22 (S030, shipping-agent personal-folders implementation).
+**Drafted:** 2026-05-22 ([[S030_2026-05-22_dashboard-gold-cutover|S030]], shipping-agent personal-folders implementation).
 
 ## The observation
 

@@ -1,7 +1,7 @@
 # Close-session ritual adoption
 
 **Date:** 2026-05-20
-**Session:** S001
+**Session:** [[S001_2026-05-20_repo-orientation|S001]]
 
 ## What changed
 
@@ -22,7 +22,7 @@ Close-session closes those gaps in one ritual.
 
 ## What triggered it
 
-The principal asked in S001 how a Jebrim session would hand off to the next session. The agent walked through the respawn-side mechanism (quest-log entry → reconciliation prompt) and admitted three gaps:
+The principal asked in [[S001_2026-05-20_repo-orientation|S001]] how a Jebrim session would hand off to the next session. The agent walked through the respawn-side mechanism (quest-log entry → reconciliation prompt) and admitted three gaps:
 
 1. The shipping-data-mart landing note had been drafted in chat but never persisted — would be lost on restart.
 2. External actions weren't being marked `pending` / `completed` per `death-and-spawn.md`.

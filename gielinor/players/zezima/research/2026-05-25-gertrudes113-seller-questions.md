@@ -1,7 +1,7 @@
 # Ģertrūdes 113 — jautājumi pārdevējam (seller due-diligence questions, LV)
 
-**For:** Niklavs, to put to the seller/agent of Ģertrūdes 113. **Date:** 2026-05-25 (S066).
-Grounded in the S066 synthesis + 3 research files. **Make-or-break:** Q1 (registered
+**For:** Niklavs, to put to the seller/agent of Ģertrūdes 113. **Date:** 2026-05-25 ([[S066_e2362ea0_domajamas-dalas-reconsider|S066]]).
+Grounded in the [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] synthesis + 3 research files. **Make-or-break:** Q1 (registered
 *lietošanas kārtība*), Q10–11 (the 6th-floor addition was consented + shares recalculated),
 Q12–13 (financing actually exists for this share). Cross-check the answers against the
 Zemesgrāmata folio Nr. 5262 pull — don't rely on the seller's word for the legal items.

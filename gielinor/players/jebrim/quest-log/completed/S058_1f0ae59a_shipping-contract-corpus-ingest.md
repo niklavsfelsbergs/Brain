@@ -18,7 +18,7 @@
 ## State
 
 - My uncommitted files: `.gitignore`, `contracts/_about.md` (+ 77 ignored raw files on disk).
-- **Parallel sibling `jebrim-f4bb6eab` (S057) is in the same repo** — its uncommitted `how_to.md` (§0 rules 30–34) is NOT mine. Exclude from any commit I make.
+- **Parallel sibling `jebrim-f4bb6eab` ([[S057_f4bb6eab_harvest-shipping-agent-convo-learnings|S057]]) is in the same repo** — its uncommitted `how_to.md` (§0 rules 30–34) is NOT mine. Exclude from any commit I make.
 
 ## Dig-through (verified map)
 
@@ -36,7 +36,7 @@ Principal approved dropping all 8 (5 dupes/corrupt + 3 non-contract). Corpus now
 ## State
 
 - **Committed** as `543c24d` on `main` (shipping-agent repo): `.gitignore`, `contracts/_about.md`, `contracts/INDEX.md` — 3 files, 209 insertions. Single atomic, revertible commit; raw files gitignored so a revert never touches local source. Not pushed (push-denied repo).
-- S057's `how_to.md` change committed separately by that session (`c515140`) — never entangled with mine.
+- [[S057_f4bb6eab_harvest-shipping-agent-convo-learnings|S057]]'s `how_to.md` change committed separately by that session (`c515140`) — never entangled with mine.
 
 ## Discovery hook — done (committed)
 

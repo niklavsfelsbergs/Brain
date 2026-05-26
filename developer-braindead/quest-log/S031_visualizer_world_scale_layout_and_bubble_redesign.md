@@ -10,7 +10,7 @@ All changes are in `developer-braindead/experiments/visualizer/index.html` (one 
 
 ### 1. World scaled 1.4×
 
-Principal asked at S028 close: *"give the map room to breathe."* Scaled the world coordinate space by 1.4× in viewBox units. Container size unchanged so it stays on-screen.
+Principal asked at [[S028_subtask_channel_and_guthix|S028]] close: *"give the map room to breathe."* Scaled the world coordinate space by 1.4× in viewBox units. Container size unchanged so it stays on-screen.
 
 - `viewBox` 1200×820 → 1680×1148.
 - `BUILDINGS`, `STAND`: all x/y × 1.4 (10 buildings).
@@ -116,8 +116,8 @@ Refactored `relayoutBubbles`:
 ## Carried-forward
 
 - **Lane-based bubble layout untested.** Step 0 next session.
-- **ensureActorExists braindead suffix bug.** Find the path that didn't strip; align with `NON_PLAYER_SUFFIX_ACTORS` from S028.
-- Plus everything carried from S030: live-test penguins, live-test parallel Braindead, etc.
+- **ensureActorExists braindead suffix bug.** Find the path that didn't strip; align with `NON_PLAYER_SUFFIX_ACTORS` from [[S028_subtask_channel_and_guthix|S028]].
+- Plus everything carried from [[S030_penguins_subagent_and_research_folder|S030]]: live-test penguins, live-test parallel Braindead, etc.
 
 ## Files of note
 

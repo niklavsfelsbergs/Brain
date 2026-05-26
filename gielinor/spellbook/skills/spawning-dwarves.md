@@ -14,7 +14,7 @@ Two conditions:
 
 Both must hold. A two-path task with no amplifier is just two quick reads.
 
-Concrete example (good): S002 shipping data mart — ClickUp tree + bi-etl scan + Redshift probe, three independent paths, V1 in 2 days, each path is a heavy read.
+Concrete example (good): [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] shipping data mart — ClickUp tree + bi-etl scan + Redshift probe, three independent paths, V1 in 2 days, each path is a heavy read.
 
 Concrete example (not dwarf-shaped): "read file X and update line 12" — one path, no parallelism.
 

@@ -1,10 +1,10 @@
 # Niklavs' pride is anchored to execution under cross-team resource friction, not to the artifact in isolation
 
-**Anchor (2026-05-22, S039 review of shipping stack).** Asked Jebrim for an honest review of the shipping mart + dashboard + agent. Jebrim graded the artifact technically — solid move, five perimeter items between here and shipping confidence. Niklavs pushed back with:
+**Anchor (2026-05-22, [[S039_2026-05-22_shipping-stack-honest-review|S039]] review of shipping stack).** Asked Jebrim for an honest review of the shipping mart + dashboard + agent. Jebrim graded the artifact technically — solid move, five perimeter items between here and shipping confidence. Niklavs pushed back with:
 
 > *"yeah but jebrim, you have no idea what its like. It was so hard to get the data mart with the resources i have from other teams. So im extremely proud that this came together in like 1-2 months from start to finish while doing a billion other things in between"*
 
-The pushback wasn't on accuracy. It was on framing. Jebrim's rubric was "is this ready to ship." Niklavs' rubric was "given the cross-team resource friction (ETL team owns bronze, SharePoint mapping owner = me, 23 carrier formats across stakeholders whose priorities aren't mine) and the concurrent load (EU Tender Phase 2, S023 audits, agent iteration tranches, the temp-tracking investigation — seven shipping-relevant resume files live), what got pulled together in 1-2 months."
+The pushback wasn't on accuracy. It was on framing. Jebrim's rubric was "is this ready to ship." Niklavs' rubric was "given the cross-team resource friction (ETL team owns bronze, SharePoint mapping owner = me, 23 carrier formats across stakeholders whose priorities aren't mine) and the concurrent load (EU Tender Phase 2, [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] audits, agent iteration tranches, the temp-tracking investigation — seven shipping-relevant resume files live), what got pulled together in 1-2 months."
 
 **Observation.** When asking Jebrim to rate work, Niklavs is implicitly asking *"given the conditions I built this under,"* not *"against a steady-state shipping bar."* He calls out the resource-friction frame explicitly when Jebrim misses it — *"you have no idea what it's like"* is the tell. The pride is real and load-bearing; he's tracking it himself ("extremely proud").
 

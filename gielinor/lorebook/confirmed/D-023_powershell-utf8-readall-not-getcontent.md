@@ -17,7 +17,7 @@ The agent reaches for `Get-Content -Raw` because it's the documented PowerShell 
 
 ## What triggered it
 
-Concrete moment: bankstanding B-001, 2026-05-22, the `meta/` lorebook-folder-naming-correction patch.
+Concrete moment: bankstanding [[B-001_2026-05-22_first-bankstanding|B-001]], 2026-05-22, the `meta/` lorebook-folder-naming-correction patch.
 
 The agent gave the principal this one-liner:
 
@@ -46,4 +46,4 @@ Going forward, the rule shapes the agent's PowerShell snippet output. Any shell-
 
 ## Anchor
 
-Bankstanding B-001 chat transcript, 2026-05-22. Specific message: the one-liner pasted into PowerShell that produced the encoding damage. Byte-level evidence: `od -c` on `gielinor/meta/layer-routing.md` before recovery showed `303 242 342 202 254 342 200 235` where the header em-dash should have been a single `342 200 224` (UTF-8 `—`).
+Bankstanding [[B-001_2026-05-22_first-bankstanding|B-001]] chat transcript, 2026-05-22. Specific message: the one-liner pasted into PowerShell that produced the encoding damage. Byte-level evidence: `od -c` on `gielinor/meta/layer-routing.md` before recovery showed `303 242 342 202 254 342 200 235` where the header em-dash should have been a single `342 200 224` (UTF-8 `—`).

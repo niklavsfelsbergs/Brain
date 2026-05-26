@@ -1,6 +1,6 @@
 # Defensive rules need counter-pressure rules
 
-## What happened (S015 dogfood)
+## What happened ([[S015_2026-05-21_ttyd-review-and-dry-run|S015]] dogfood)
 
 Test question: "how many packages did we ship in April?"
 
@@ -24,4 +24,4 @@ When reviewing or authoring a §0-style behavior spec:
 
 ## Anchor
 
-S015 quest, two dogfood runs of the shipping-agent §0 spec. The shipping-agent's §0 rules 1, 3, 6 are the column-2 anchors (answer-first, length-matches-question, partial-beats-refusal) — load-bearing, not flair.
+[[S015_2026-05-21_ttyd-review-and-dry-run|S015]] quest, two dogfood runs of the shipping-agent §0 spec. The shipping-agent's §0 rules 1, 3, 6 are the column-2 anchors (answer-first, length-matches-question, partial-beats-refusal) — load-bearing, not flair.

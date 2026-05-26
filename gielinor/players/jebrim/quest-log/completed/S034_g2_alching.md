@@ -14,11 +14,11 @@ Read ritual `alching.md`, gnome operating spec `spawning-gnomes.md`, and Jebrim'
 6 entries surveyed:
 
 - `2026-05-22-audit-finding-vs-ground-truth.md` — observation-anchored (S034 D1 vs F1), full citation, actionable rule. **PROMOTE.**
-- `2026-05-22-check-artifact-mtimes-doc-not-source-of-truth.md` — anchored (S030 T10 + concrete mtimes), 4-day-gap example, generalizable procedure. Author flagged "Single occurrence" caveat in body. **HOLD** (one occurrence; per author's own caveat, pattern firms with next instance).
+- `2026-05-22-check-artifact-mtimes-doc-not-source-of-truth.md` — anchored ([[S030_2026-05-22_dashboard-gold-cutover|S030]] T10 + concrete mtimes), 4-day-gap example, generalizable procedure. Author flagged "Single occurrence" caveat in body. **HOLD** (one occurrence; per author's own caveat, pattern firms with next instance).
 - `2026-05-22-git-add-scoping-with-parallel-sessions.md` — near-miss, not actual incident. Procedure already documented in close-session step 8 per the draft's own note. Marginal new content; the anchor is a "could-have-been," not a "did." **HOLD** (anchor strength low; promote on real incident).
 - `2026-05-22-rule-text-becomes-agent-vocabulary.md` — anchored to shipping-agent §0r2 fix (commit `ce58e1d`); concrete observation about external/internal vocabulary leakage; rule for future rule-writing. **PROMOTE.**
-- `2026-05-22-translation-table-bidirectional-risk.md` — anchored to S033 shop-vs-vertical fix (commit `9e63dd5`); names a meta-pattern (bidirectional read of internal→external translation tables). **PROMOTE.**
-- `2026-05-22-verify-git-tracked-with-ls-files-not-disk-presence.md` — anchored to S033 H1 + D4 failure-at-apply; concrete command (`git ls-files`); generalization to "name property → name observing command" is reusable. **PROMOTE.**
+- `2026-05-22-translation-table-bidirectional-risk.md` — anchored to [[S033_2026-05-22_shipping-agent-audit|S033]] shop-vs-vertical fix (commit `9e63dd5`); names a meta-pattern (bidirectional read of internal→external translation tables). **PROMOTE.**
+- `2026-05-22-verify-git-tracked-with-ls-files-not-disk-presence.md` — anchored to [[S033_2026-05-22_shipping-agent-audit|S033]] H1 + D4 failure-at-apply; concrete command (`git ls-files`); generalization to "name property → name observing command" is reusable. **PROMOTE.**
 
 No keepsake proposals pending. No niksis8_character/drafts pending.
 
@@ -27,9 +27,9 @@ No keepsake proposals pending. No niksis8_character/drafts pending.
 4 entries surveyed (3 in `projects/`, 1 in `workflow/`):
 
 - `projects/eu_tender_2026_S034_update.md` — explicit delta to existing `bank/notes/projects/eu_tender_2026.md` (2026-05-20). New scorer state, top-5 portfolios, DPD PL retire-only confirmation, FedEx-as-surprise-lever, doc/code-drift methodological finding. **PROMOTE** as delta merge — but flag: this should fold *into* the existing canonical note (delta-merge), not land as a sibling. Principal decides merge shape.
-- `projects/pipeline_pandas_drops_all_null_columns.md` — anchored to S030 T11 + commit `eb1c2ea`; concrete bug class with reusable fix pattern at pandas→polars boundary; trigger conditions listed. **PROMOTE.**
-- `projects/shipping_costs_dashboard_csv_export_architecture.md` — anchored to S030 T7-T10 + commits; architectural reference for the unified CSV export across 13 components; conventions locked. **PROMOTE.**
-- `workflow/shipping-agent-skills-loading.md` — anchored to S036 T5 live-test failure; documents load-on-cue mechanism + trigger-hook pattern in `how_to.md`. Reusable across future cross-repo skill landings. **PROMOTE.**
+- `projects/pipeline_pandas_drops_all_null_columns.md` — anchored to [[S030_2026-05-22_dashboard-gold-cutover|S030]] T11 + commit `eb1c2ea`; concrete bug class with reusable fix pattern at pandas→polars boundary; trigger conditions listed. **PROMOTE.**
+- `projects/shipping_costs_dashboard_csv_export_architecture.md` — anchored to [[S030_2026-05-22_dashboard-gold-cutover|S030]] T7-T10 + commits; architectural reference for the unified CSV export across 13 components; conventions locked. **PROMOTE.**
+- `workflow/shipping-agent-skills-loading.md` — anchored to [[S036_2026-05-22_reprompting-iteration-and-shipping-port|S036]] T5 live-test failure; documents load-on-cue mechanism + trigger-hook pattern in `how_to.md`. Reusable across future cross-repo skill landings. **PROMOTE.**
 
 ## T4 — Step 2b: bank/notes/ staleness check
 
@@ -39,20 +39,20 @@ No keepsake proposals pending. No niksis8_character/drafts pending.
 
 4 entries surveyed:
 
-- `2026-05-22-audit-then-apply-via-parallel-dwarves.md` — anchored to S033 (4 dwarves) with explicit file-ownership-map invariant. Author notes "Worth promoting from skill-draft to skill once a third invocation lands." Currently 2 invocations: S032 (recon variant) + S033 (apply variant) — author counts these as the same parallelization mechanic with different terminal step. **PROMOTE** (per ≥2-repetitions rule in alching step 6; the author's "wait for third" is conservative — 2 distinct uses with named pattern clears the bar).
+- `2026-05-22-audit-then-apply-via-parallel-dwarves.md` — anchored to [[S033_2026-05-22_shipping-agent-audit|S033]] (4 dwarves) with explicit file-ownership-map invariant. Author notes "Worth promoting from skill-draft to skill once a third invocation lands." Currently 2 invocations: [[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] (recon variant) + [[S033_2026-05-22_shipping-agent-audit|S033]] (apply variant) — author counts these as the same parallelization mechanic with different terminal step. **PROMOTE** (per ≥2-repetitions rule in alching step 6; the author's "wait for third" is conservative — 2 distinct uses with named pattern clears the bar).
 - `2026-05-22-elicitation-with-default-surfaced.md` — anchored to shipping-agent §0r7 (commit `ce75031`); names a discrete pattern (detect → discrete options → surface default → accept generic affirm); cross-links to scope-creep skill. Single application but the pattern is structurally reusable. **HOLD** (one occurrence; promote on second invocation per skill-graduation rule).
-- `2026-05-22-read-routing-manifest-before-proposing.md` — anchored to S032 D1 (data-caveats.md near-miss). Author marked HOLD at S034 g1 for single-occurrence. Still single occurrence. **HOLD** (continued; no new instance since g1).
-- `scope-creep-during-plan-execution.md` — anchored to S030 T7. Author flagged HOLD at S034 g1. Still single occurrence. **HOLD** (continued).
+- `2026-05-22-read-routing-manifest-before-proposing.md` — anchored to [[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] D1 (data-caveats.md near-miss). Author marked HOLD at S034 g1 for single-occurrence. Still single occurrence. **HOLD** (continued; no new instance since g1).
+- `scope-creep-during-plan-execution.md` — anchored to [[S030_2026-05-22_dashboard-gold-cutover|S030]] T7. Author flagged HOLD at S034 g1. Still single occurrence. **HOLD** (continued).
 
 ## T6 — Step 3: quest-log/completed graduation scan
 
 Walked 38 entries in `quest-log/completed/`. Most are dwarf siblings (already-extracted material). Candidates for graduation to `bank/drafts/notes/`:
 
-- **S014 ttyd-howto cluster (5 files, 2026-05-21).** "How TTYD agent invocation works" insight has matured into shipping-agent + keepsake routing. Already largely harvested. No new draft recommended.
-- **S029 shipping-agent-vocab-harvest (2026-05-22).** Already produced `bank/notes/projects/shipping_agent_vocab_harvest_2026-05-22.md`. No new draft.
+- **[[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] ttyd-howto cluster (5 files, 2026-05-21).** "How TTYD agent invocation works" insight has matured into shipping-agent + keepsake routing. Already largely harvested. No new draft recommended.
+- **[[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] shipping-agent-vocab-harvest (2026-05-22).** Already produced `bank/notes/projects/shipping_agent_vocab_harvest_2026-05-22.md`. No new draft.
 - **S034 audit/fix cluster (15 files).** Already produced the `eu_tender_2026_S034_update.md` delta in `bank/drafts/notes/projects/` covered above.
-- **S033 shipping-agent-audit.** The audit-then-apply-via-parallel-dwarves skill draft already captures this. No new bank draft.
-- **S036 reprompting-iteration.** Produced the `shipping-agent-skills-loading.md` bank draft already covered above.
+- **[[S033_2026-05-22_shipping-agent-audit|S033]] shipping-agent-audit.** The audit-then-apply-via-parallel-dwarves skill draft already captures this. No new bank draft.
+- **[[S036_2026-05-22_reprompting-iteration-and-shipping-port|S036]] reprompting-iteration.** Produced the `shipping-agent-skills-loading.md` bank draft already covered above.
 
 **No additional bank/drafts/notes graduations recommended.** The harvest is already in flight.
 
@@ -79,7 +79,7 @@ No rotations needed. (Note: identity confirmed layers remain empty because no ex
 - `2026-05-21-escalates-symptom-to-system.md` — about *Niklavs's* behavior pattern (escalates from local fix to systemic question); was rejected as Jebrim-niksis8_character because it's a universal-Niklavs pattern, not player-specific. Belongs in global `niksis8/` instead.
 - `2026-05-21-prefers-evidence-over-premature-infrastructure.md` — about Niklavs's deferral-acceptance pattern. Same rejection reason: universal, not player-specific.
 
-**Pattern:** Both rejections flag the same miscalibration — Jebrim's `niksis8_character/drafts/` capturing universal-Niklavs observations that belong at the global layer. This is exactly what the prior `last-alched.md` already flagged for next bankstanding ("Universal-Niklavs routing pattern (2 rejected niksis8_character entries from S021) remains flagged for next bankstanding"). **No new action; pattern already surfaced for bankstanding.**
+**Pattern:** Both rejections flag the same miscalibration — Jebrim's `niksis8_character/drafts/` capturing universal-Niklavs observations that belong at the global layer. This is exactly what the prior `last-alched.md` already flagged for next bankstanding ("Universal-Niklavs routing pattern (2 rejected niksis8_character entries from [[S021_2026-05-21_alching-and-rule-fix|S021]]) remains flagged for next bankstanding"). **No new action; pattern already surfaced for bankstanding.**
 
 ## T10 — Step 6: skill-graduation from confirmed layers
 

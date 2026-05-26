@@ -7,16 +7,16 @@ Principal: "The shipping agent has migrated to the official repo (github.com/pic
 ## What I found
 
 The migration was a **seed, not a transfer** — both repos exist independently, old URL does not redirect:
-- Local working copy + `niklavsfelsbergs/shipping-agent`: HEAD `854128ac` (S064, rule 36 reload-detection).
-- `picanova/shipping-agent`: HEAD `7562825c` (S062 state) — **behind by the S064 commit.**
+- Local working copy + `niklavsfelsbergs/shipping-agent`: HEAD `854128ac` ([[S064_1fc49f17_shipping-agent-orwo-quota-reload-rule|S064]], rule 36 reload-detection).
+- `picanova/shipping-agent`: HEAD `7562825c` ([[S062_7f1aecf4_shipping-agent-euro-precision-and-build-report|S062]] state) — **behind by the [[S064_1fc49f17_shipping-agent-orwo-quota-reload-rule|S064]] commit.**
 - Local `origin` still pointed at `niklavsfelsbergs`. Working tree clean.
 
-Sibling check: jebrim-1fc49f17 (S064) ended ~11 min prior; only live sibling braindead-f3239bdc (dev-brain, no overlap). Posted OPEN.
+Sibling check: jebrim-1fc49f17 ([[S064_1fc49f17_shipping-agent-orwo-quota-reload-rule|S064]]) ended ~11 min prior; only live sibling braindead-f3239bdc (dev-brain, no overlap). Posted OPEN.
 
 ## Actions
 
 - **[completed]** Repoint local `origin`: `niklavsfelsbergs` → `picanova/shipping-agent.git`.
-- **[completed]** Push `7562825..854128a main -> main` to picanova (clean FF, verified `git merge-base --is-ancestor` first). picanova now current with rule 36. In sync 0/0. **Push succeeded with no auth block** — consistent with the S062 correction that the repo IS pushable.
+- **[completed]** Push `7562825..854128a main -> main` to picanova (clean FF, verified `git merge-base --is-ancestor` first). picanova now current with rule 36. In sync 0/0. **Push succeeded with no auth block** — consistent with the [[S062_7f1aecf4_shipping-agent-euro-precision-and-build-report|S062]] correction that the repo IS pushable.
 - **[completed]** Updated onboarding-message bank draft (`bank/drafts/notes/projects/shipping-agent-onboarding-message.md`): clone URL → picanova; access note rewritten for org-membership model (was: personal-private + "make public").
 - **[pending — principal action]** Archive `niklavsfelsbergs/shipping-agent` on GitHub now that picanova is confirmed current. Flagged safe. Optional `gh repo archive niklavsfelsbergs/shipping-agent`.
 

@@ -1,8 +1,8 @@
-# S050 — singleton despawn race fix (S047 carry, complement to S048's inversion)
+# S050 — singleton despawn race fix ([[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance|S047]] carry, complement to [[S048_b070e9be_visualizer_manifest_driven_sprite_sync|S048]]'s inversion)
 
-**Session.** braindead-f72c6979 (this session). Opened in dev-brain mode via "lets develop gielinor", picking up S047's high-priority carry.
+**Session.** braindead-f72c6979 (this session). Opened in dev-brain mode via "lets develop gielinor", picking up [[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance|S047]]'s high-priority carry.
 
-**Number.** Bumped 048→050. Mid-session discovered parallel sibling `braindead-b070e9be` had already taken S048 with "manifest-driven sprite sync inversion" (commit `c2b1fbf`) addressing the same carry from a different angle, and `braindead-17e701eb` had S049 OPEN with map fixes. The two changes are complementary: S048 made `syncSpritesFromManifest` the truth source for spawn/move/intent; S050 fixes the singleton despawn timeout race that the inversion didn't touch (the race lives inside `despawnBraindead`/`Wisp`/`Guthix` themselves, called by both the new sync Pass 3 and the existing `applyEvent` despawn-* cases).
+**Number.** Bumped 048→050. Mid-session discovered parallel sibling `braindead-b070e9be` had already taken [[S048_b070e9be_visualizer_manifest_driven_sprite_sync|S048]] with "manifest-driven sprite sync inversion" (commit `c2b1fbf`) addressing the same carry from a different angle, and `braindead-17e701eb` had [[S049_17e701eb_visualizer_state_aware_motion_and_action_line|S049]] OPEN with map fixes. The two changes are complementary: [[S048_b070e9be_visualizer_manifest_driven_sprite_sync|S048]] made `syncSpritesFromManifest` the truth source for spawn/move/intent; S050 fixes the singleton despawn timeout race that the inversion didn't touch (the race lives inside `despawnBraindead`/`Wisp`/`Guthix` themselves, called by both the new sync Pass 3 and the existing `applyEvent` despawn-* cases).
 
 **Surface touched.** `developer-braindead/experiments/visualizer/index.html` only.
 
@@ -17,7 +17,7 @@ setTimeout(() => { if (braindeadNode) braindeadNode.remove(); braindeadNode = nu
 The closure reads `braindeadNode` when the timeout fires, not when it was queued. Two scenarios where this clobbers a live sprite:
 
 1. **Live race.** A fresh `spawnBraindead` within the 500ms fade window sets `braindeadNode = newg`. The pending timeout fires, removes `newg`, sets `braindeadNode = null`. Spawn lost.
-2. **Bootstrap replay (the load-bearing scenario in S047's repro).** `state.ndjson` in this repo carried ~9 historical spawn-braindead + ~9 despawn-braindead pairs, ending on `a110d573`'s spawn at 22:04 with no matching despawn. `pollLive`'s first chunk replays all 18 events synchronously. Each despawn queues a 500ms timeout closing over `braindeadNode`. After the loop ends, `braindeadNode = g_22:04` (latest spawn). ~500ms later the first queued timeout fires, reads `braindeadNode` (now g_22:04), removes it, sets to null. Remaining queued timeouts fire but see `braindeadNode === null` → noop. Net: `braindeadActive=true` (set by 22:04 spawn-braindead), `braindeadNode=null` (clobbered).
+2. **Bootstrap replay (the load-bearing scenario in [[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance|S047]]'s repro).** `state.ndjson` in this repo carried ~9 historical spawn-braindead + ~9 despawn-braindead pairs, ending on `a110d573`'s spawn at 22:04 with no matching despawn. `pollLive`'s first chunk replays all 18 events synchronously. Each despawn queues a 500ms timeout closing over `braindeadNode`. After the loop ends, `braindeadNode = g_22:04` (latest spawn). ~500ms later the first queued timeout fires, reads `braindeadNode` (now g_22:04), removes it, sets to null. Remaining queued timeouts fire but see `braindeadNode === null` → noop. Net: `braindeadActive=true` (set by 22:04 spawn-braindead), `braindeadNode=null` (clobbered).
 
 `hasSpriteFor('braindead')` returns `braindeadActive && !!braindeadNode` → `true && false` → false. Pass 4 of `syncSpritesFromManifest` (orphan-intent clear) wipes the bubble every 2s poll. Pass 1 (`setIntent`) re-adds it from the manifest. **Pulsate.**
 
@@ -66,12 +66,12 @@ Caller compatibility verified — `syncSpritesFromManifest` Pass 3 (lines 2569/2
 
 `despawnPlayerInstance` correctly captures `g` locally and doesn't null any module variable — so it doesn't suffer the singleton clobber. But it deletes `instanceNodes[actorKey]` immediately while the old DOM node is still fading. `spawnPlayerInstance` then early-returns due to `document.getElementById('actor-' + actorKey)` finding the fading remnant. The respawn is silently dropped within the 500ms window. Next sync (2s later, beyond the fade) recovers.
 
-Not the load-bearing case from S047's repro (the parallel `braindead-3` sprite was stable in the screenshot), but worth fixing pre-emptively for the same family. Either remove the fading remnant in `spawnPlayerInstance` (parallel to `spawnBraindead`'s eager `if (braindeadNode) braindeadNode.remove()`), or thread `instant` through `despawnPlayerInstance` and the `case 'despawn-instance'` branch.
+Not the load-bearing case from [[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance|S047]]'s repro (the parallel `braindead-3` sprite was stable in the screenshot), but worth fixing pre-emptively for the same family. Either remove the fading remnant in `spawnPlayerInstance` (parallel to `spawnBraindead`'s eager `if (braindeadNode) braindeadNode.remove()`), or thread `instant` through `despawnPlayerInstance` and the `case 'despawn-instance'` branch.
 
 ### Verification still owed
 
 Open visualizer at `?live=1` with two Braindead sessions live, devtools console open. Expected:
-- `actor-braindead` DOM node present for the bare `braindead` instance (was missing in S047 repro).
+- `actor-braindead` DOM node present for the bare `braindead` instance (was missing in [[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance|S047]] repro).
 - No pulsating speech cloud — bubble stays anchored to a present sprite.
 - `Object.keys(intents)` and `[...document.querySelectorAll('svg.map .actor')].map(g => g.id)` should both contain `actor-braindead`.
 

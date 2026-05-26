@@ -29,6 +29,6 @@ dominant; agent normally seller-paid). All-in to own a €120k flat ≈ €730�
 **Negotiation levers that work:** an absent reserve fund (you inherit uncapped repair risk)
 and an inflated headline area are both legitimate, hard-to-argue grounds for a price cut.
 
-**Anchors.** S056 (2026-05-23), Duntes 28 deep-dive. Verdict cooled good→fair when buyer
+**Anchors.** [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] (2026-05-23), Duntes 28 deep-dive. Verdict cooled good→fair when buyer
 surfaced "no reserve fund" + real size ~58 m². **Source:** `research/2026-05-23-duntes28-*`
 (location, price-market, building-project, money-costs, SYNTHESIS-verdict).

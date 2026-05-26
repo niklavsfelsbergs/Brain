@@ -7,7 +7,7 @@
 
 Principal: a cockpit-launched braindead session "suddenly turned into running on VScode, but it definitely isnt, i just triggered it from the cockpit" + "split into 2 switchboard sessions — one idle (the real one), and the one showing statuses says the original is in vscode … somehow got doubled." Later, with a board screenshot: *the bottom two rows are the same session — the "braindead" one is read-only like the VScode ones, the "chat" one is where I can actually drive it.*
 
-## Diagnosis (read the live payload first — S087 lesson)
+## Diagnosis (read the live payload first — [[S087_23dcc534_cockpit-ctrl-c-copy|S087]] lesson)
 
 It was never a host-classification bug:
 
@@ -39,5 +39,5 @@ Headless (all green):
 ## Notes / caveats
 
 - The **current** on-screen dupe only clears on relaunch (the running window holds old JS); that terminal will resume the **earlier** conversation (its owned-uuid predates this fix). Rotations self-heal from here on.
-- Cross-link: @f731b4e8's **D-030** (git-worktree isolation) is the parallel-session collision-**gate** track; this S089 is the cockpit display-**attribution** track — same neighborhood, different layer.
+- Cross-link: @f731b4e8's **[[D-030_worktree_isolation_for_parallel_sessions|D-030]]** (git-worktree isolation) is the parallel-session collision-**gate** track; this S089 is the cockpit display-**attribution** track — same neighborhood, different layer.
 - Strategic next step unchanged — the §C shipping-mart pilot (the outward build) per [[D-027_inward_outward_build_imbalance]].

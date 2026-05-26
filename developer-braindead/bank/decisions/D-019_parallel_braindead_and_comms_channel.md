@@ -7,11 +7,11 @@ That moment arrived. Niklavs wants to run multiple dev-brain sessions in paralle
 1. **Visualization.** Today every dev-brain session writes events as `actor=braindead`, routing to a single sprite. Bubbles overwrite, COMMS interleaves without disambiguation, the workshop sprite can't represent two construction crews in flight.
 2. **Coordination.** More important than the visual half: two Braindeads editing `gielinor/meta/modes.md` in the same window produce merge pain that no tint variant prevents. The collision surface is `gielinor/` writes — the dev brain itself has enough natural namespacing (per-session quest-log files) to be mostly safe, but main-brain writes are not.
 
-The light-coordination posture D-017 takes for parallel Jebrims (principal disambiguates by eyeballing the visualizer) is insufficient for Braindead because Braindead's collision surface includes shared files in `gielinor/` that Jebrim doesn't touch.
+The light-coordination posture [[D-017_parallel_player_instances|D-017]] takes for parallel Jebrims (principal disambiguates by eyeballing the visualizer) is insufficient for Braindead because Braindead's collision surface includes shared files in `gielinor/` that Jebrim doesn't touch.
 
 **Decision.** Two coordinated changes ship together:
 
-### 1. Extend D-017 instance routing to Braindead
+### 1. Extend [[D-017_parallel_player_instances|D-017]] instance routing to Braindead
 
 Mechanical parallel to player-class instances:
 
@@ -19,7 +19,7 @@ Mechanical parallel to player-class instances:
 - **Visualizer.** `ensureActorExists('braindead', ...)` calls `spawnPlayerInstance('braindead', n, at)` for `n > 1`. The existing `spawnBraindead` covers instance 1 (the canonical workshop sprite). Tint variants reuse the existing `.parallel-instance.tint-2/3/4` CSS — Braindead's robe hue-shifts the same way Jebrim's does. Instance badge above head reads `2`, `3`, etc.
 - **Despawn.** Same 5-min idle timer + SessionEnd hook coverage; identical to player despawn.
 - **Naming.** Label `Braindead·2`. Instance-1 keeps the short label `Braindead`. COMMS prefix gains the dot-number when `instance > 1`.
-- **Collision.** Two Braindeads at the workshop stack on `STAND['braindead-workshop']`. Use the existing per-instance jitter offset (D-017 §"Out of scope for the first cut"). Gather-slot scaffolding from S028 already handles bubble layout.
+- **Collision.** Two Braindeads at the workshop stack on `STAND['braindead-workshop']`. Use the existing per-instance jitter offset ([[D-017_parallel_player_instances|D-017]] §"Out of scope for the first cut"). Gather-slot scaffolding from [[S028_subtask_channel_and_guthix|S028]] already handles bubble layout.
 
 ### 2. New dev-to-dev comms channel: `developer-braindead/comms/active.md`
 
@@ -83,7 +83,7 @@ Body is free-form markdown, indented 2 spaces. Multi-line bodies are fine.
 
 Before posting the OPEN entry, a fresh Braindead:
 
-1. Lists `brain/.claude/intent/braindead-*.txt` files with `mtime` within 5 minutes (matches D-017 despawn threshold). These are the live siblings.
+1. Lists `brain/.claude/intent/braindead-*.txt` files with `mtime` within 5 minutes (matches [[D-017_parallel_player_instances|D-017]] despawn threshold). These are the live siblings.
 2. Reads `developer-braindead/comms/active.md`. Last 20 entries are scanned for any session id appearing in step 1 but missing a `CLOSING` entry — that's a confirmed-live sibling.
 3. Surfaces the result to the principal: *"Detected one live sibling: braindead-9c1f2a4b, working on gielinor/meta/communication-protocol.md. Open targets I'd grab next are …"* — and waits for direction before committing to a task.
 4. Posts the OPEN entry once direction is given.

@@ -1,6 +1,6 @@
 # Biases progress over completeness when blocked
 
-**S014 T5.** TTYD how-to parked in HOLD STATE waiting for the mart V1 refresh. Niklavs pivoted: *"okay ETL team is fucking up and the mart wont be refreshed so soon, but we have to start building. We can correct later. How could we continue?"*
+**[[S014_2026-05-21_shipping-data-mart-ttyd-howto|S014]] T5.** TTYD how-to parked in HOLD STATE waiting for the mart V1 refresh. Niklavs pivoted: *"okay ETL team is fucking up and the mart wont be refreshed so soon, but we have to start building. We can correct later. How could we continue?"*
 
 **Pattern.** When an upstream slips, he converts the slip into a re-plan and ships against partial information. Status blocks and patch-later are acceptable; idle is not. Not impatience — corrected artifact beats delayed artifact.
 

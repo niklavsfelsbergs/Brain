@@ -7,10 +7,10 @@
 
 Principal (in dev-brain): *"continue iterating on the chat UI."*
 
-## Coordination (D-024 — lived hard this session)
+## Coordination ([[D-024_parallel_player_coordination|D-024]] — lived hard this session)
 
 - Respawn sibling-detection caught a live sibling `7c9033f4` re-declaring the
-  same surface (intent 2s old) + `e433ac17` (S056 reskin, ~2h stale, parked)
+  same surface (intent 2s old) + `e433ac17` ([[S056_e433ac17_switchboard-osrs-chatbox|S056]] reskin, ~2h stale, parked)
   holding uncommitted `index.html`/`styles.css` reskin hunks.
 - Principal first answered "I own it — take over." Then the *other* terminal
   (driven by the principal there) posted a **SPLIT**: `7c9033f4` owns
@@ -83,7 +83,7 @@ Principal (in dev-brain): *"continue iterating on the chat UI."*
   "turn stopped") → follow-up message returned ALIVE. Stop works once both files
   share a tree.
 - **Commit.** `terminal.js` + dev-docs committed solo with explicit pathspecs
-  (D-024 / `9fc6767` discipline). `server.py` held by `7c9033f4` (lands resume +
+  ([[D-024_parallel_player_coordination|D-024]] / `9fc6767` discipline). `server.py` held by `7c9033f4` (lands resume +
   interrupt alongside on ping). `index.html` + `styles.css` ceded to the
   coordinated client-file commit — exact additive hunks handed off in the comms
   CLOSING.

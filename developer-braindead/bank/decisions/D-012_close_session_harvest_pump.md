@@ -2,7 +2,7 @@
 
 **Context.** Jebrim's first alching pass (2026-05-21, this session) executed correctly and surfaced near-empty surface — empty `drafts/`, empty `keepsake/proposals/`, empty `completed/`, empty `rejected/`. Procedure was right; the procedure assumed a draft pile that didn't exist. Diagnosis: three population pumps run the brain. Pump 1 (per-turn quest-log) works. Pump 3 (per-ritual integrative: alching + bankstanding) works structurally but assumes Pump 2 has run. Pump 2 (per-close harvest) doesn't exist — close-session today reconciles pending actions, persists chat drafts, tightens resume sections, surfaces drafts, commits. It never asks "what did I learn?" So observations generated mid-session die in turn-log narrative or never get captured at all. Pump 2 is the keystone — without it, identity layers and bank both stay empty regardless of how often the principal runs alch.
 
-A secondary problem surfaced once Pump 2's shape was discussed: `bank/` has been "auto-write, freely" per `write-rules.md` while the actual player practice (S001's working agreement) was "draft to chat → principal approves → write." The two patterns were in tension; the harvest pump forced the question.
+A secondary problem surfaced once Pump 2's shape was discussed: `bank/` has been "auto-write, freely" per `write-rules.md` while the actual player practice ([[S001_dev_brain_architecture|S001]]'s working agreement) was "draft to chat → principal approves → write." The two patterns were in tension; the harvest pump forced the question.
 
 **Decision.** Install **observation harvest** as a new step in `gielinor/spellbook/rituals/close-session.md`, before commit. Four-question prompt the agent runs against itself per session close. Drafts go to existing per-layer `drafts/` (or `proposals/` for keepsake) folders. Empty-set is a valid and expected common answer. Cap 1–5 drafts per close, agent judgment, bias to less-is-more.
 
@@ -51,14 +51,14 @@ The discipline guard against drift: drafts must be **observation-backed** (per `
 - **Cross-player niksis8 reconciliation.** Bankstanding-side problem; wait for Zezima activity to expose what the actual contradictions look like.
 - **Bank-draft naming convention.** D-NNN-style stable IDs? Date prefix? Topic-slug folder structure? Settle at first harvest, not in this decision.
 - **"Fresh turns" threshold.** Definitive operationalization (last close timestamp? last `## Turn log` entry? trailing N turns?) decided at first implementation.
-- **Multiple active in-progress quests.** Jebrim currently has S001 (paused) + S002 (active) + S012 (this session, design). Harvest skims which? Likely "the ones touched this session" by `mtime`. Defer until it bites.
-- **Stale-intent eviction at close.** Adjacent concern from D-010 — close-session could clear `.claude/intent/*.txt`. Decide alongside the close-session edits if convenient.
+- **Multiple active in-progress quests.** Jebrim currently has [[S001_dev_brain_architecture|S001]] (paused) + [[S002_dev_brain_runescape_restructure|S002]] (active) + [[S012_braindead_character_and_workshop|S012]] (this session, design). Harvest skims which? Likely "the ones touched this session" by `mtime`. Defer until it bites.
+- **Stale-intent eviction at close.** Adjacent concern from [[D-010_visualizer_intent_narration|D-010]] — close-session could clear `.claude/intent/*.txt`. Decide alongside the close-session edits if convenient.
 
-**Session ref.** [[S013_close_session_harvest_pump]] (in progress, dev-brain side; named at close per `_about.md` convention). The gielinor-side activity this session (Jebrim alching + the design discussion that produced D-012) lives under gielinor's own counter, which is at S012 this session. The two brains keep independent SNNN counters per the brain-root rule.
+**Session ref.** [[S013_close_session_harvest_pump]] (in progress, dev-brain side; named at close per `_about.md` convention). The gielinor-side activity this session (Jebrim alching + the design discussion that produced D-012) lives under gielinor's own counter, which is at [[S012_braindead_character_and_workshop|S012]] this session. The two brains keep independent SNNN counters per the brain-root rule.
 
 **Related.**
 
 - Pump definition + frame: chat content this session.
 - Pattern this extends: `gielinor/meta/drafts-mechanics.md` (observation-rule, surface discipline), `gielinor/meta/write-rules.md` (layer table).
 - Adjacent rituals: `gielinor/spellbook/rituals/close-session.md`, `alching.md`, `bankstanding.md`.
-- Meta-observation: the first alch finding the empty room is itself the observation that justified the pump. Pattern-of-incident similar to S010's live-vs-replay miss ([[I-002]] cluster) — *the procedure was right; the procedure assumed a state that didn't exist.*
+- Meta-observation: the first alch finding the empty room is itself the observation that justified the pump. Pattern-of-incident similar to [[S010_visualizer_live_mode_v0|S010]]'s live-vs-replay miss ([[I-002]] cluster) — *the procedure was right; the procedure assumed a state that didn't exist.*

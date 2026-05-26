@@ -1,6 +1,6 @@
 # D-012 implementation spec — main-brain edits queued
 
-**Status.** Spec written 2026-05-21 in dev brain. **Applied in S013** this session — see `developer-braindead/respawn.md` post-S013 for the application record.
+**Status.** Spec written 2026-05-21 in dev brain. **Applied in [[S013_close_session_harvest_pump|S013]]** this session — see `developer-braindead/respawn.md` post-S013 for the application record.
 
 **Companion.** [[D-012_close_session_harvest_pump]] for the design rationale. This file is just the concrete diffs.
 

@@ -1,6 +1,6 @@
 # Grounding before advice
 
-**Observation (S045, 2026-05-22).** Session opened with principal addressing me as Jebrim. I went straight into diagnosing the broken chart and recommending fixes for three turns before doing any of the per-player loads from `spellbook/rituals/respawn.md` — never read keepsake, persona, or recent quest-log. The advice was directionally fine (the bugs were real; the recommendations roughly correct) but it was unanchored. The shipping-agent's location, the existing `how_to.md` chart-hygiene rules, and the fact that `_report_style.py` already implemented most of what I was proposing — all of it sat in my own keepsake unread.
+**Observation ([[S045_91ee1383_shipping-agent-chart-system-fixes|S045]], 2026-05-22).** Session opened with principal addressing me as Jebrim. I went straight into diagnosing the broken chart and recommending fixes for three turns before doing any of the per-player loads from `spellbook/rituals/respawn.md` — never read keepsake, persona, or recent quest-log. The advice was directionally fine (the bugs were real; the recommendations roughly correct) but it was unanchored. The shipping-agent's location, the existing `how_to.md` chart-hygiene rules, and the fact that `_report_style.py` already implemented most of what I was proposing — all of it sat in my own keepsake unread.
 
 Principal caught it twice: *"are you jebrim?"* (after I claimed to be without grounding), then *"why dont you know where shipping agent lives"* (after I named "find the shipping agent" as step 1 of the plan — when its location is a pinned keepsake item). Cost: three turns of work that had to be re-anchored.
 
@@ -16,4 +16,4 @@ Before giving substantive analytical advice in a player session, read **at minim
 
 ## Anchor
 
-S045, turns 1–5 — pre-grounding advice + principal correction at turns 5 and 6.
+[[S045_91ee1383_shipping-agent-chart-system-fixes|S045]], turns 1–5 — pre-grounding advice + principal correction at turns 5 and 6.

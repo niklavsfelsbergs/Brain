@@ -14,7 +14,7 @@ The architectural lines exist to prevent the agent from drifting identity or des
 
 ## What triggered it
 
-S021 alching, 2026-05-21. After approving the EU Tender 2026 keepsake pin, the principal was told "pending user action: append the pin text to `current.md`." Principal: *"hmm, no, you are allowed to write there with my permission."*
+[[S021_2026-05-21_alching-and-rule-fix|S021]] alching, 2026-05-21. After approving the EU Tender 2026 keepsake pin, the principal was told "pending user action: append the pin text to `current.md`." Principal: *"hmm, no, you are allowed to write there with my permission."*
 
 The rule was applied immediately to the pin append, then surfaced as a rulebook clarification request.
 

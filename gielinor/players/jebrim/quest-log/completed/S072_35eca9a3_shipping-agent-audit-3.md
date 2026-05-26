@@ -1,6 +1,6 @@
-# S072 — Shipping-agent audit-3 (pre-demo, 2nd full pass after S054 audit-2)
+# S072 — Shipping-agent audit-3 (pre-demo, 2nd full pass after [[S054_50b00902_shipping-agent-audit-2|S054]] audit-2)
 
-**Opened:** 2026-05-25 ~21:28. Principal cue (after S071 drift test): "one last thing before the demo — let's do an audit: contradictions, files too long which need splitting, hygiene, etc. We did a similar audit once."
+**Opened:** 2026-05-25 ~21:28. Principal cue (after [[S071_35eca9a3_shipping-agent-drift-test-10q|S071]] drift test): "one last thing before the demo — let's do an audit: contradictions, files too long which need splitting, hygiene, etc. We did a similar audit once."
 **Mode:** READ-ONLY. 4 background auditor dwarves over disjoint subtrees (DA how_to.md / DB reference / DC skills / DD cross-cutting+harness). Grounded on audit-2 findings (`shipping-agent/workbench/audits/2026-05-23-audit-2/findings.md`) → flagged only NEW + REGRESSED. NO shipping-agent edits (how_to.md frozen/held @a43c1779, pre-2026-05-26 demo).
 **Demo:** 2026-05-26. Verdict: zero demo-blockers; accumulated hygiene debt, mostly post-demo.
 
@@ -38,11 +38,11 @@
 
 ## Now-vs-demo cut
 - **SAFE-NOW (no frozen-how_to touch):** C3, H1, H2, H3, H4, H5, H6, H9(data/, README hedge).
-- **POST-DEMO (touches how_to / needs lockstep):** C1, C2, L1, L2, H7, H8, DA5, DB7-consolidation. Batch with drift-test D1/D2 + held S070 menu edits + held dimension-scan rule.
+- **POST-DEMO (touches how_to / needs lockstep):** C1, C2, L1, L2, H7, H8, DA5, DB7-consolidation. Batch with drift-test D1/D2 + held [[S070_a43c1779_shipping-agent-mode2-trigger-and-menu-rendering|S070]] menu edits + held dimension-scan rule.
 
 ## Next concrete step
 - Principal decision on now-vs-post-demo fix scope (asked via menu). NO edits until go.
-- On approval of post-demo batch: one maintainer session does C1/C2 + the DA6 split + L2 renumber + H7/H8 + reconcile with the held S070/dimension-scan as ONE coherent "lean + don't-guess" pass.
+- On approval of post-demo batch: one maintainer session does C1/C2 + the DA6 split + L2 renumber + H7/H8 + reconcile with the held [[S070_a43c1779_shipping-agent-mode2-trigger-and-menu-rendering|S070]]/dimension-scan as ONE coherent "lean + don't-guess" pass.
 - Offer to colocate a findings.md in `shipping-agent/workbench/audits/2026-05-25-audit-3/` (matches audit-2), if principal wants it in-repo (workbench is gitignored — not a rulebook touch).
 - Harvest audit to bank note + comms CLOSING after the decision.
 
@@ -57,12 +57,12 @@
 **Re-test: 6 embodied probes vs the EDITED rulebook, all PASS, every number ground-truthed, zero regressions.**
 - RT1 (split/save) — saved a chart correctly WITHOUT loading the moved file (§7/§8 stayed always-loaded). **Split preserved save-behavior.**
 - RT2 (volume scope) — still fires rule-12 menu on unstated "we" (276K/474K/197K reconciled). C1 didn't break scope.
-- RT3 (NOVEL which-cut, FedEx/US, no scar) — sliced weight-bands, **reversed the premise** (UPS carries 1,045 US parcels vs FedEx 18,270, FedEx = heavy tail), recommended don't-switch. **D2 proven GENERATIVE — closes the S071 D2 reference-primed caveat.**
+- RT3 (NOVEL which-cut, FedEx/US, no scar) — sliced weight-bands, **reversed the premise** (UPS carries 1,045 US parcels vs FedEx 18,270, FedEx = heavy tail), recommended don't-switch. **D2 proven GENERATIVE — closes the [[S071_35eca9a3_shipping-agent-drift-test-10q|S071]] D2 reference-primed caveat.**
 - RT4 (bucket-first) — bucket split first; discount-collapse story; per-source falsification. Intact.
 - RT5 (savings gate) — reload-gate→bucket-first→dimension-gate (89% fit)→lane cut (narrowed to Germany ~€590K), led with moves, no unearned confidence. Intact + applies which-cut to its own lever.
 - RT6 (scope/Mode-2) — scope menu + reload gate + May lag handled; bucket-split held as follow-up. Intact.
 
-**Col count 65 CONFIRMED** (information_schema) → resolves the open H3 from the S071 note.
+**Col count 65 CONFIRMED** (information_schema) → resolves the open H3 from the [[S071_35eca9a3_shipping-agent-drift-test-10q|S071]] note.
 **Deferred post-demo (low-value/higher-churn):** full 35/36 renumber (banner suffices), aggressive 30-34→pointer collapse + rule 2/12 prose trims, DB7 triple-NULL-fact consolidation.
 
 **PENDING:** push to picanova (origin 3 behind at e6be3da; my 3 commits local-only) — awaiting principal go (outward-facing; demo-source question). Then bank-note harvest + comms CLOSING + brain commit (principal-gated).

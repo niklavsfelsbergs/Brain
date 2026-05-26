@@ -1,6 +1,6 @@
 # Drafts: lead with example, stay short, give opinion
 
-**Anchor:** S029 alching. Four consecutive principal reactions:
+**Anchor:** [[S029_2026-05-22_shipping-agent-vocab-harvest|S029]] alching. Four consecutive principal reactions:
 1. *"I don't get it"* (item 2 — abstract-first opening).
 2. *"It's a huge block of text"* (item 3 — tighter but still ~40 lines).
 3. *"Always give your opinion if it should be approved or rejected and why"* (item 5 — I presented the tight version without my recommendation).

@@ -1,11 +1,11 @@
 # temp%-tracking ↔ missing orderitems — DQ investigation
 
-**Opened:** 2026-05-22 (S031, post /clear after S030 alching).
+**Opened:** 2026-05-22 (S031, post /clear after [[S030_2026-05-22_dashboard-gold-cutover|S030]] alching).
 **Status:** in-progress.
 **Type:** investigation (DQ correlation; cross-source, cross-carrier).
-**Origin:** S030 T14 — flagged in `inventory/shipping-agent-personal-folders-resume.md` § Open threads.
+**Origin:** [[S030_2026-05-22_dashboard-gold-cutover|S030]] T14 — flagged in `inventory/shipping-agent-personal-folders-resume.md` § Open threads.
 
-## The brief (carried over from S030 T14)
+## The brief (carried over from [[S030_2026-05-22_dashboard-gold-cutover|S030]] T14)
 
 A parallel shipping-agent session surfaced: `shipping_mart.fact_shipments` rows with `trackingnumber LIKE 'temp%'` show ~25% missing orderitems vs ~0.08% on real tracking. Cross-carrier, varies by source — Picturator `temp*` ~26–30%; PicaAPI `temp*` 40–69% (worst: PicaAPI × MAERSK at 68.8%).
 
@@ -344,6 +344,6 @@ Plus the side-fix to consider per T14 note: a `tracking_is_temp` boolean on ship
 
 ## Related
 
-- S030 T14 note: `gielinor/players/jebrim/quest-log/in-progress/OPEN_2026-05-22_shipping-agent-personal-folders.md` § T14.
+- [[S030_2026-05-22_dashboard-gold-cutover|S030]] T14 note: `gielinor/players/jebrim/quest-log/in-progress/OPEN_2026-05-22_shipping-agent-personal-folders.md` § T14.
 - Inventory resume open thread: `gielinor/players/jebrim/inventory/shipping-agent-personal-folders-resume.md` § Open threads § 🔬 Investigation.
 - Shipping-agent docs read this session: `bi-analytics-main/NFE/projects/3_shipping_data_mart/shipping-agent/reference/tables.md`, `skills/query-patterns.md`.

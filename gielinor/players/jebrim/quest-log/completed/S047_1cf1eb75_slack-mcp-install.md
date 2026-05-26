@@ -1,12 +1,12 @@
 # S047 — Slack MCP install (TCG corp)
 
-**Session:** S047 (born in same Claude Code session as S040, sid8 `1cf1eb75`)
+**Session:** S047 (born in same Claude Code session as [[S040_1cf1eb75_outlook-mcp-research|S040]], sid8 `1cf1eb75`)
 **Player:** Jebrim
 **Date opened:** 2026-05-23
 
 ## Ask
 
-Principal (in middle of S040 Outlook MCP parking): *"Hey Jebrim, youre smart, help me implement the slack mcp"*. Then *"walk me through step by step"*.
+Principal (in middle of [[S040_1cf1eb75_outlook-mcp-research|S040]] Outlook MCP parking): *"Hey Jebrim, youre smart, help me implement the slack mcp"*. Then *"walk me through step by step"*.
 
 Scope confirmed via 3-q batch:
 - **Workspace:** TCG corporate (`thecustomizationgroup.slack.com`, team `T02MRFLS3`).
@@ -19,7 +19,7 @@ Cookie-auth install (no bot install, no admin involvement). Drop server entry in
 
 ## Turns
 
-- **T1 (2026-05-23).** Pre-install scoping: read jebrim's keepsake + last-alched + comms; checked brain/.mcp.json gitignore status (root .mcp.json gitignored; gielinor/.mcp.json tracked but placeholder). Posted comms UPDATE on jebrim-1cf1eb75 noting Slack as sibling scope to S040. Batched 3 unblocking questions.
+- **T1 (2026-05-23).** Pre-install scoping: read jebrim's keepsake + last-alched + comms; checked brain/.mcp.json gitignore status (root .mcp.json gitignored; gielinor/.mcp.json tracked but placeholder). Posted comms UPDATE on jebrim-1cf1eb75 noting Slack as sibling scope to [[S040_1cf1eb75_outlook-mcp-research|S040]]. Batched 3 unblocking questions.
 - **T2.** Wrote .mcp.json `slack` entry with placeholder tokens + `SLACK_MCP_ADD_MESSAGE_TOOL=""` (posting off). Verified install path against korotovsky README + auth-setup + config-usage docs via WebFetch — pulled real npx invocation + env-var names + extraction snippet rather than relying on recall.
 - **T3.** Step 1 (Node ≥18 verified) → Step 2 (xoxc extraction). Principal hit wrong page: `/ssb/redirect` is the desktop-app launcher, not the workspace client; `localConfig_v2` only exists on `app.slack.com/client/T.../C...`. Redirected via the "use Slack in your browser" link visible on the redirect page. Also clarified: Edge doesn't need `allow pasting` ceremony (Chrome's quirk).
 - **T4.** Step 3 xoxd extraction (cookie `d` from Application tab). Step 4 paste into .mcp.json. Principal pasted tokens directly in chat — flagged the leak (transcript persists; rotate after install verifies). Step 5 restart Claude Code: MCP connect timed out at 30s.
@@ -27,7 +27,7 @@ Cookie-auth install (no bot install, no admin involvement). Drop server entry in
 - **T6.** Root cause: Edge cookie value showed URL-encoded form (`%2F`, `%2B`). Slack `d` cookie is base64-style session blob with literal `/` and `+`; server wants raw, not percent-encoded. Decoded xoxd and pasted decoded form in .mcp.json. Re-ran manual server: **authenticated as `niklavs.felsbergs` @ The Customization Group, 2439 users + 175 channels cached**. Ctrl+C, restart Claude Code, `/mcp` showed `slack: connected`.
 - **T7.** Principal cued behavioral rule: *"whenever we send slack messages... LEts ack like me okay?"* Recognized as sticky cross-session rule, not one-off. Captured to memory (NOT to gielinor's lorebook — light-touch, no draft ceremony needed): `feedback-slack-posts-in-niklavs-voice` (voice cues from this session's transcript, draft-and-confirm-before-send discipline) + `reference-slack-mcp-tcg` (install state + gotchas inventory). MEMORY.md index updated.
 - **T8.** Comms UPDATE on jebrim-1cf1eb75 announcing Slack live + voice rule.
-- **T9.** Brief pivot back to Outlook MCP recall (S040 re-engagement; logged in S040 entry T8). User parked again on portal.azure.com sign-in confusion.
+- **T9.** Brief pivot back to Outlook MCP recall ([[S040_1cf1eb75_outlook-mcp-research|S040]] re-engagement; logged in [[S040_1cf1eb75_outlook-mcp-research|S040]] entry T8). User parked again on portal.azure.com sign-in confusion.
 - **T10.** Principal cued wrap. Close ritual begins.
 
 ## Decisions

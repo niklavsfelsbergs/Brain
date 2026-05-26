@@ -15,7 +15,7 @@ Consequences, all explained by the one throw:
 - terminal renders (`open()` at line 76 succeeds) but no keystroke reaches the PTY → **can't send messages**;
 - the throw bubbles out of the constructor, so every `resumeTerm()` on reopen failed → **the 3 owned sessions "disappeared"** from the board.
 
-The principal never saw it because the paste handler rode **uncommitted** on top of committed S069 — it was added after S069 closed.
+The principal never saw it because the paste handler rode **uncommitted** on top of committed [[S069_c3f2e3f3_terminal-scale-fix-and-brain-presentation|S069]] — it was added after [[S069_c3f2e3f3_terminal-scale-fix-and-brain-presentation|S069]] closed.
 
 **Fix.** One-word rename: `attachCustomKeyHandler` → `attachCustomKeyEventHandler`. The handler signature `(e: KeyboardEvent) => boolean` already matched the correct API. Owned-session ids persist in `localStorage` (`cockpit-owned-terms`) and are only dropped on explicit release/close, so a failed resume did not lose them — reopen resumes from disk.
 
@@ -29,13 +29,13 @@ The principal never saw it because the paste handler rode **uncommitted** on top
 
 ## Committed
 
-`a072ce5` SOLO with explicit pathspecs (D-024): `cockpit/web/term.js` + quest-log + comms. The fix lands on top of the sibling's **`9fe6f2b`** ("cockpit: fix paste in WebView2 terminal via server-side clipboard bridge"), which had committed both `backend.py` (the `/api/clipboard` bridge) **and** the broken `term.js` paste handler — that commit is what took the cockpit down. By the time I staged, `backend.py` was already clean (sibling-committed), so my commit carried only the corrected `term.js` (rename + scroll fix + the S069-ceded markup `fontSize:18` / `.term-frame`/`.term-host` div, which pairs with `styles.css` from S069's `c3f2e3f3`).
+`a072ce5` SOLO with explicit pathspecs ([[D-024_parallel_player_coordination|D-024]]): `cockpit/web/term.js` + quest-log + comms. The fix lands on top of the sibling's **`9fe6f2b`** ("cockpit: fix paste in WebView2 terminal via server-side clipboard bridge"), which had committed both `backend.py` (the `/api/clipboard` bridge) **and** the broken `term.js` paste handler — that commit is what took the cockpit down. By the time I staged, `backend.py` was already clean (sibling-committed), so my commit carried only the corrected `term.js` (rename + scroll fix + the S069-ceded markup `fontSize:18` / `.term-frame`/`.term-host` div, which pairs with `styles.css` from [[S069_c3f2e3f3_terminal-scale-fix-and-brain-presentation|S069]]'s `c3f2e3f3`).
 
-**Left uncommitted (separate sibling WIP, not mine):** `cockpit/web/main.js` (feed-state board merge), `cockpit/web/console.js` (read-only console scroll tweak), `cockpit/_probe_ask.py` (S065 cruft), and the gielinor/ + visualizer-mirror files.
+**Left uncommitted (separate sibling WIP, not mine):** `cockpit/web/main.js` (feed-state board merge), `cockpit/web/console.js` (read-only console scroll tweak), `cockpit/_probe_ask.py` ([[S065_bfa95764_cockpit-askuserquestion-hang-fix|S065]] cruft), and the gielinor/ + visualizer-mirror files.
 
 ## Resolution
 
-Both fixes confirmed and committed. Principal turned the laptop off overnight, so the 3 sessions' processes were dead on relaunch — but the cockpit's owned-id list (localStorage, persistent WebView2 profile per S066) + claude's on-disk transcripts meant `claude --resume` brought all 3 back once the crash no longer threw. Principal confirmed: **"yeah they're back"** (crash fix) and **"I think we're good"** (scroll fix — soft confirm after live use). Launched the cockpit for the principal via `wscript Switchboard.vbs` (the `!` prefix only works at the Claude Code prompt, not raw PowerShell — clarified).
+Both fixes confirmed and committed. Principal turned the laptop off overnight, so the 3 sessions' processes were dead on relaunch — but the cockpit's owned-id list (localStorage, persistent WebView2 profile per [[S066_7f5db8c5_cockpit-sweep|S066]]) + claude's on-disk transcripts meant `claude --resume` brought all 3 back once the crash no longer threw. Principal confirmed: **"yeah they're back"** (crash fix) and **"I think we're good"** (scroll fix — soft confirm after live use). Launched the cockpit for the principal via `wscript Switchboard.vbs` (the `!` prefix only works at the Claude Code prompt, not raw PowerShell — clarified).
 
 Commits: **a072ce5** (crash rename + first scroll attempt), **c0f15d5** (research + verify-TODO docs), and the close commit (scroll v2 `term.js` + this quest-log + respawn + comms).
 
@@ -43,4 +43,4 @@ Commits: **a072ce5** (crash rename + first scroll attempt), **c0f15d5** (researc
 
 - Soft-confirm caveat: if scroll-lock recurs under heavier load, next lever is buffering Claude's synchronized-output frames (`ESC[?2026h/l`) and flushing atomically — copilot-cli #1805 "Layer 3".
 - Scroll fix targets the **embedded PTY terminal**; the **read-only Console peek** (`console.js`) is a sibling's surface — revisit if its scroll misbehaves.
-- Cockpit polish backlog (S066/S068) still stands: board-merge confirm, place→close→reopen persistence cycle, `/rename` best-effort, offline-vendor Preact.
+- Cockpit polish backlog ([[S066_7f5db8c5_cockpit-sweep|S066]]/[[S068_89f41770_reflection_cockpit_parking_and_lessons|S068]]) still stands: board-merge confirm, place→close→reopen persistence cycle, `/rename` best-effort, offline-vendor Preact.

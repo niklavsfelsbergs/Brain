@@ -22,7 +22,7 @@ Three root causes, all in `status-sidecar.py`:
    `LIVE_SESSION_SEC` liveness constant existed but wasn't applied to manifest
    inclusion.
 2. **Stuck WORKING / Pending.** Reader decays only `waiting → idle`, never
-   `working` (S043 killed working-decay because a real 17-min turn looks
+   `working` ([[S043_switchboard_state_visibility|S043]] killed working-decay because a real 17-min turn looks
    identical on the wire). `Pending...` = actor unresolved; for dead rows the
    intent files were GC'd so the actor was lost forever.
 3. **Thin rows.** Only the `subtitle` line, which flip-flops intent/action and
@@ -101,4 +101,4 @@ constant, clears all four zombies.
   than the "awaiting crew — D1 D2" subtitle; the AWAITING CREW chip still carries
   the state. Acceptable per "action line = action"; refine if it reads worse live.
 - Commit held pending principal call (always-ask boundary). Contested client
-  hunks ride uncommitted in the shared tree per D-024.
+  hunks ride uncommitted in the shared tree per [[D-024_parallel_player_coordination|D-024]].

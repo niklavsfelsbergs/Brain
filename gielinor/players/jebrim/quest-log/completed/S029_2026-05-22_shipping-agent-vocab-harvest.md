@@ -9,7 +9,7 @@
 
 ## Turn log
 
-- **T1.** Confirmed prior harvest scope (S027 cost-vocab, S026 nextjs-vocab). Identified fresh ground: carrier/lane/corridor language, source-system + production-site + pipeline slang, operations/incoterms/customs/returns/acronyms.
+- **T1.** Confirmed prior harvest scope (S027 cost-vocab, [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] nextjs-vocab). Identified fresh ground: carrier/lane/corridor language, source-system + production-site + pipeline slang, operations/incoterms/customs/returns/acronyms.
 - **T2.** Spawned 3 Explore dwarves in parallel — D1 carrier vocab, D2 source-system / production-site / pipeline slang, D3 ops / incoterms / customs / returns / acronyms. All returned with anchored vocab lists.
 - **T3.** Niklavs added `shipping_topics/` to scope. Spawned D4 — Explore dwarf walking `bi-analytics-main/NFE/shipping_topics/` (~41 topic folders, sampled 6–10 deeply) plus `workbench/shipping_topics/` for topics not in NFE. Returned with corporate-identity vocab (TCG, MD, OML, AHS, FXEHD/FXESPPS, FIF Report, Manual Bill, tassenlibling, Rossmann, account 650116, etc.) and business framings.
 - **T4.** Summarized to top-10 trip-ups. Niklavs refined:

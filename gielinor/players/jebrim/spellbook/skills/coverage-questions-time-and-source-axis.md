@@ -1,6 +1,6 @@
 # Skill — coverage questions get a time slice and a source axis
 
-**Captured:** 2026-05-21 (S023, shipping mart coverage audit).
+**Captured:** 2026-05-21 ([[S023_2026-05-21_shipping-mart-coverage-audit|S023]], shipping mart coverage audit).
 
 ## The rule
 
@@ -20,7 +20,7 @@ A coverage % without the source axis also blends mid-build sources (where 0% rev
 
 ## The anchor
 
-Founding observation (S023, 2026-05-21): another agent (`shipping-agent` TTYD instance) saw "Wolfen→DHL = €0" on a uk.photo.gifts probe and concluded "Wolfen's carrier-cost wiring is still being wired up." A month-by-month read of ORWO DHL across the mart showed 97-99% coverage Nov 2025 → Apr 2026, with the €0 readings concentrated in the current in-flight month (invoice lag) and a fixed Nov-Dec 2025 UPS defect. The actual mart-wide structural hole was a different one entirely (ORWO POST, 568K parcels, no bulk-bill source) — invisible from a shop-scoped query that didn't sweep the source axis.
+Founding observation ([[S023_2026-05-21_shipping-mart-coverage-audit|S023]], 2026-05-21): another agent (`shipping-agent` TTYD instance) saw "Wolfen→DHL = €0" on a uk.photo.gifts probe and concluded "Wolfen's carrier-cost wiring is still being wired up." A month-by-month read of ORWO DHL across the mart showed 97-99% coverage Nov 2025 → Apr 2026, with the €0 readings concentrated in the current in-flight month (invoice lag) and a fixed Nov-Dec 2025 UPS defect. The actual mart-wide structural hole was a different one entirely (ORWO POST, 568K parcels, no bulk-bill source) — invisible from a shop-scoped query that didn't sweep the source axis.
 
 The rule generalizes: **shop-scoped numbers are never mart facts**, and **a NULL rate is never a finding** until time + source localize the cause.
 

@@ -1,6 +1,6 @@
 # D-023 — 2026-05-22 — Close the promote/consult loop
 
-**Context.** S038 opened with the principal's frame: *"we are underutilizing a lot of things in the brain."* Jebrim's pre-flip diagnosis named five symptoms (drafts piling up, identity layers empty, 11-deep in-progress quest backlog, Guthix barely visited, bank capture post-hoc). A four-dwarf recon (D1 drafts inventory; D2 in-progress audit; D3 ritual-vs-evidence; D4 Guthix usage trace) sharpened the picture.
+**Context.** [[S038_brain_underutilization_diagnosis|S038]] opened with the principal's frame: *"we are underutilizing a lot of things in the brain."* Jebrim's pre-flip diagnosis named five symptoms (drafts piling up, identity layers empty, 11-deep in-progress quest backlog, Guthix barely visited, bank capture post-hoc). A four-dwarf recon (D1 drafts inventory; D2 in-progress audit; D3 ritual-vs-evidence; D4 Guthix usage trace) sharpened the picture.
 
 The load-bearing finding came from D3: **promoted knowledge wasn't loading at respawn.** 12 confirmed Jebrim entries existed on disk under `examine/confirmed/`. Respawn step 6.e read only `current.md`, which was empty. The promotion gate had been running (sporadically); the load surface was the bug. Even when promotion succeeded, the entry was invisible next session.
 
@@ -14,7 +14,7 @@ The frame collapsed: the brain's **write paths were exercised**; the **promote**
 
 **1. Respawn reads every `.md` in `confirmed/`, not just `current.md`.** Steps 4, 5, 6.e, 6.f in `gielinor/spellbook/rituals/respawn.md`. `current.md` becomes optional — an executive summary alongside atomic entries, not the load surface. **Generalizable design pattern: when a discipline rule requires manual aggregation that nobody runs, the right fix is usually to remove the aggregation requirement, not to add a ritual that does it.** The aggregation step rotted because no ritual owned it; removing the step removes the rot.
 
-**2. Cleanup pass.** 5 stale-done Jebrim quests (S023, S024, S026 + 3 dwarves, S030_g1 gnome, OPEN_shipping-agent-personal-folders) walked to `completed/`. Two missing inventory resume files (S031, S032) generated post-hoc. Two orphan in-progress quest-log files (S031, S034_g2) that had lived untracked for sessions caught up. 3 ready drafts promoted (2 examine + 1 skill). Jebrim's `in-progress/` 18 → 10; identity layer 0 → 14 loading entries.
+**2. Cleanup pass.** 5 stale-done Jebrim quests ([[S023_visualizer_ticker_and_cross_session_attribution|S023]], [[S024_visualizer_aliveness_pass_1_3|S024]], [[S026_d018_shipped_visualizer_audit_prep|S026]] + 3 dwarves, S030_g1 gnome, OPEN_shipping-agent-personal-folders) walked to `completed/`. Two missing inventory resume files ([[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]], [[S032_terminal_switchboard_phases_1_and_2|S032]]) generated post-hoc. Two orphan in-progress quest-log files ([[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]], S034_g2) that had lived untracked for sessions caught up. 3 ready drafts promoted (2 examine + 1 skill). Jebrim's `in-progress/` 18 → 10; identity layer 0 → 14 loading entries.
 
 ### Habit-shaping (Phase 2)
 
@@ -22,7 +22,7 @@ The frame collapsed: the brain's **write paths were exercised**; the **promote**
 
 **4. Close-session step 4 agent-initiative scan for stale-done quests.** Agent walks every in-flight quest at close (not just session-touched ones), looks for "Pending external actions: None pending" + last turn shipping language + inventory resume done status. Proposes batch list; principal approves per-line. Boundary explicit: propose only, never auto-complete.
 
-**5. Close-session step 8 orphan-quest-log catch.** Added a second pre-commit check: `git status --short` on quest-log paths, grep `??`-prefix, surface untracked quest narratives as part of commit scope. Born of today's S031/S034_g2 discovery.
+**5. Close-session step 8 orphan-quest-log catch.** Added a second pre-commit check: `git status --short` on quest-log paths, grep `??`-prefix, surface untracked quest narratives as part of commit scope. Born of today's [[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]]/S034_g2 discovery.
 
 **6. Guthix routing heuristic in `meta/communication-protocol.md`.** New section before "Intent narration": when an incoming message reads system-scope rather than player-domain, agent surfaces one line suggesting flip to Guthix consultation. Trigger patterns and don't-fire-on cases explicit; scope limited to player + unscoped modes. Same shape as the existing wrong-instance check. **The heuristic was born of this conversation mis-routing itself** — the principal asked Jebrim *"we are underutilizing a lot of things in the brain"*, which is exactly the system-scope question Guthix's consultation mode exists for. Pre-S038 Guthix invocation ratio: 1.9% (1 bankstanding ever, 0 consultations, 0 `Hey Guthix` invocations in any quest-log). Architecture correct, operator adoption zero.
 
@@ -41,8 +41,8 @@ The frame collapsed: the brain's **write paths were exercised**; the **promote**
 - `gielinor/spellbook/rituals/respawn.md` — steps 4, 5, 6.e, 6.f rewritten to read folder instead of single file.
 - `gielinor/players/jebrim/quest-log/` — 8 files moved from `in-progress/` to `completed/`.
 - `gielinor/players/jebrim/examine/drafts/` and `spellbook/drafts/skills/` — 3 drafts promoted (2 examine + 1 skill).
-- `gielinor/players/jebrim/inventory/` — 2 new resume files (S031, S032).
-- `gielinor/players/jebrim/quest-log/in-progress/` — 1 new OPEN frame (the Jebrim-side hand-off of the underutilization frame before dev-brain flip; archived at S038 close).
+- `gielinor/players/jebrim/inventory/` — 2 new resume files ([[S031_visualizer_world_scale_layout_and_bubble_redesign|S031]], [[S032_terminal_switchboard_phases_1_and_2|S032]]).
+- `gielinor/players/jebrim/quest-log/in-progress/` — 1 new OPEN frame (the Jebrim-side hand-off of the underutilization frame before dev-brain flip; archived at [[S038_brain_underutilization_diagnosis|S038]] close).
 - `developer-braindead/quest-log/in-progress/` — `S038_brain_underutilization_diagnosis.md` (this session's run-log).
 - 2 orphan untracked quest-log files (`S031_*`, `S034_g2_*`) staged for the first time.
 
@@ -73,5 +73,5 @@ The frame collapsed: the brain's **write paths were exercised**; the **promote**
 - [[D-022_guthix_consultation_mode]] Guthix consultation mode — defines the actor whose adoption this decision aims to surface.
 - `gielinor/spellbook/rituals/drafts-triage.md` — the ritual `/drafts` runs.
 - `gielinor/spellbook/skills/2026-05-22-elicitation-with-default-surfaced.md` — promoted this session; informs the `/drafts` verdict-collection shape.
-- `gielinor/players/jebrim/quest-log/in-progress/OPEN_2026-05-22_brain-underutilization-frame.md` — the Jebrim-side hand-off frame (archived at S038 close).
-- `developer-braindead/quest-log/S038_brain_underutilization_diagnosis.md` — the session's full run-log (walks to `completed/` at S038 close).
+- `gielinor/players/jebrim/quest-log/in-progress/OPEN_2026-05-22_brain-underutilization-frame.md` — the Jebrim-side hand-off frame (archived at [[S038_brain_underutilization_diagnosis|S038]] close).
+- `developer-braindead/quest-log/S038_brain_underutilization_diagnosis.md` — the session's full run-log (walks to `completed/` at [[S038_brain_underutilization_diagnosis|S038]] close).

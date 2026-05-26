@@ -2,7 +2,7 @@
 
 **Session:** 1ce9fc1f · **Player:** Jebrim · **Opened+closed:** 2026-05-26
 
-Continuation of the OOM-hardening thread from [[S069_006248ef_pipeline-oom-hardening]] — but a **distinct incident**: different connection, different failure mode, different runtime, and this one shipped to **production main** (S069 was branch-local only).
+Continuation of the OOM-hardening thread from [[S069_006248ef_pipeline-oom-hardening]] — but a **distinct incident**: different connection, different failure mode, different runtime, and this one shipped to **production main** ([[S069_006248ef_pipeline-oom-hardening|S069]] was branch-local only).
 
 Repo: out-of-tree `Documents/GitHub/bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py`. Three local clones are **git worktrees** of one repo (`picanova/bi-analytics`).
 
@@ -18,7 +18,7 @@ _duckdb.OutOfMemoryException: failed to offload data block of size 256.0 KiB
 
 ## Root cause
 
-**Not a RAM OOM — a disk-spill OOM.** The `_write_daily_product_summary` DuckDB connection sets `memory_limit='2GB'` (this cap predates S069; S069 only added `preserve_insertion_order=false` here). At doubled mart volume (this run pulled **13.2M shipments**; df_sum ~18M rows), the 2GB cap forced the UNNEST + 9-dim GROUP BY to spill heavily. But `temp_directory` = `DATA/_duckdb_tmp` rides the **same near-full 20Gi pod volume** (raw.parquet + processed monthlies + the just-written `_dailyprod_input.parquet`), leaving only ~2.3 GiB free. DuckDB's `max_temp_directory_size` defaults to free disk = 2.3 GiB → OOM on spill, not RAM.
+**Not a RAM OOM — a disk-spill OOM.** The `_write_daily_product_summary` DuckDB connection sets `memory_limit='2GB'` (this cap predates [[S069_006248ef_pipeline-oom-hardening|S069]]; [[S069_006248ef_pipeline-oom-hardening|S069]] only added `preserve_insertion_order=false` here). At doubled mart volume (this run pulled **13.2M shipments**; df_sum ~18M rows), the 2GB cap forced the UNNEST + 9-dim GROUP BY to spill heavily. But `temp_directory` = `DATA/_duckdb_tmp` rides the **same near-full 20Gi pod volume** (raw.parquet + processed monthlies + the just-written `_dailyprod_input.parquet`), leaving only ~2.3 GiB free. DuckDB's `max_temp_directory_size` defaults to free disk = 2.3 GiB → OOM on spill, not RAM.
 
 The deployed pod has a **20Gi memory limit** but DuckDB was told to use 2GB — forcing spill onto a constrained disk while 16+ GB of RAM sat idle. The S069-era 2GB cap (sound for avoiding a RAM fight with resident df_sum) over-corrected once volume grew: it relocated the OOM from RAM to disk.
 

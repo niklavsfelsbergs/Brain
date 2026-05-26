@@ -1,6 +1,6 @@
 # Reprompting skill — iteration + shipping-agent port + load-on-cue hook
 
-**Opened/closed:** 2026-05-22 (S036, single-session continuation of S035).
+**Opened/closed:** 2026-05-22 (S036, single-session continuation of [[S035_2026-05-22_reprompting-skill|S035]]).
 **Status:** completed.
 **Type:** procedural — skill iteration + cross-repo port.
 **Deliverables:**
@@ -45,4 +45,4 @@ Post-S035 live test: a separate shipping-agent session triggered with *"rephrase
 
 ## Carry-forward flags
 
-- **S031 inventory resume still missing** — same flag as S035. Cleanup belongs to a fresh Jebrim session that opens S031 with the findings in head.
+- **[[S031_2026-05-22_temp-tracking-missing-orderitems|S031]] inventory resume still missing** — same flag as [[S035_2026-05-22_reprompting-skill|S035]]. Cleanup belongs to a fresh Jebrim session that opens [[S031_2026-05-22_temp-tracking-missing-orderitems|S031]] with the findings in head.

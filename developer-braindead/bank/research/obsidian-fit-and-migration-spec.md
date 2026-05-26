@@ -50,7 +50,7 @@ Add `aliases: ["D-027"]` to each file; keep `[[D-027]]` links as-is.
 
 ### Sub-knob: display alias
 - `[[D-027_inward_outward_build_imbalance]]` — bare. Renders verbose *in prose* ("see D-027_inward_outward_build_imbalance for…").
-- `[[D-027_inward_outward_build_imbalance|D-027]]` — keeps prose reading "D-027", at the cost of the most verbose raw form.
+- `[[D-027_inward_outward_build_imbalance|D-027]]` — keeps prose reading "[[D-027_inward_outward_build_imbalance|D-027]]", at the cost of the most verbose raw form.
 - **Lean:** bare stems for standalone refs; the script *can* preserve a `|D-027` display where the link sits inline in prose, but that's a nicety, not load-bearing. Decide during dry-run review.
 
 ## The algorithm
@@ -60,7 +60,7 @@ Add `aliases: ["D-027"]` to each file; keep `[[D-027]]` links as-is.
    - **Exact-stem match** → already resolves, leave.
    - **1:1 ID-prefix** → rewrite to the full stem (Option A) / ensure alias exists (Option B).
    - **Convention group** (ID-prefix → many files) → resolve to the **main entry**:
-     - *Quests:* the file whose stem matches `S\d+_(\d{4}-\d{2}-\d{2}|[0-9a-f]{8})_…` and is **not** a `_[dpgf]\d+` sub-entry and **not** `-resume`. If **>1 main** exists → real dupe → **flag for human** (this cleanly isolates S038/S060/S086).
+     - *Quests:* the file whose stem matches `S\d+_(\d{4}-\d{2}-\d{2}|[0-9a-f]{8})_…` and is **not** a `_[dpgf]\d+` sub-entry and **not** `-resume`. If **>1 main** exists → real dupe → **flag for human** (this cleanly isolates [[S038_brain_underutilization_diagnosis|S038]]/[[S060_brain_self_audit_and_plan_reconciliation|S060]]/[[S086_e668ec7e_brain-technical-docs|S086]]).
      - *Decisions:* the file under canonical `bank/decisions/` wins; `main-brain-construction/` + `drafts/` copies → flag.
    - **Cross-brain / code-ref / placeholder / dangling** → leave; list in the report.
 3. **Dry-run report first** — counts per bucket, a unified-diff preview of proposed link rewrites, and an explicit "needs human" list (the ~6 known-ambiguous items). **Nothing is written in dry-run.**
@@ -72,7 +72,7 @@ Filenames (→ hooks/cockpit safe), code-file `[[ ]]` refs, placeholder tokens, 
 ## Pilot
 
 Smallest proof that lights up a real vault:
-1. **dev-brain `D-` decisions only**, Option A, dry-run → review the diff + the D-001/002/012 legacy question.
+1. **dev-brain `D-` decisions only**, Option A, dry-run → review the diff + the [[D-001_two_brain_split|D-001]]/002/012 legacy question.
 2. Apply on a branch; open `developer-braindead/` as an Obsidian vault.
 3. Confirm: the decision graph wires up, backlinks populate (`D-027`'s backlinks now list every file that referenced it), unresolved count drops to the known-flagged set.
 4. Decide from there whether to extend to dev-brain quests, then to `gielinor/`.
@@ -89,8 +89,8 @@ A `D-NNN` decision can formalize the chosen mechanism + this convention once the
 ## Status — 2026-05-26 ([[S098_b53fca39_obsidian_fit_and_dlink_migration]])
 
 - **Mechanism DECIDED:** Option A (full-stem, no plugin). [[D-004_stable_ids]] **amended** to match (stable-ID core kept; "short-ID-alone is canonical" clause retired; original preserved).
-- **Pilot DONE:** dev-brain `D-` decision links migrated — **341 `[[D-NNN]]`→full-stem across 97 files** (link-text only; no file renames → hook/cockpit filename parsing untouched). Auto for 27 1:1 IDs + D-012; D-001/D-002 split by the "main brain" qualifier (the `bank/main-brain-construction/` mirror overloads those IDs); code-fenced + convention-doc illustrative occurrences excluded/hand-edited (`bank/_about.md`, `spellbook/entry-formats.md`, D-004/D-006 real-refs).
-- **QUESTS DONE ([[S099_acf8fc80_obsidian_quest_link_migration]], 2026-05-26):** dev-brain quest (`S-`) links migrated — **357 rewrites across 87 files** (327 clean `[[SNNN]]`→main-entry + 30 per-occurrence dupe disambiguations). The `SNNN_dN/_pN/_gN` run-logs fold to the main entry; the 3 real dupes (S038/S060/S086) were resolved **per-occurrence by the authors' own context tags** (principal-signed-off), not renumbered — no file renames. S049 was a 4th ambiguous group but moot (0 inbound links). Script saved + generalized over ID prefix (reusable for the gielinor pass): `bank/research/obsidian-link-migrate.py`.
-- **VERIFIED IN OBSIDIAN ([[S099_acf8fc80_obsidian_quest_link_migration]], 2026-05-26):** opened `developer-braindead/` as a vault (per-brain topology, the decided model) — the decision + session graph wired into **one connected web** with hubs at the most-referenced files (D-027/plan/respawn/build-lessons); only the expected orphans remain (code-refs, placeholders, no-link files). Closes the §O.2 + §O.3 verify gate.
-- **NEXT:** (1) extend to **gielinor/** (§O.4 — its own vault, the larger surface; reuse the script, `--vault gielinor/`). Expect more dupes there (per-player `SNNN` numbering may collide across players) — dry-run will surface them. (2) two fuzzy D-001 calls (`plan.md:29`, `S003:13`) left as-set — both resolve. (3) cross-brain ~4% refs decision. Roadmap: [[plan]] §O.
+- **Pilot DONE:** dev-brain `D-` decision links migrated — **341 `[[D-NNN]]`→full-stem across 97 files** (link-text only; no file renames → hook/cockpit filename parsing untouched). Auto for 27 1:1 IDs + [[D-012_close_session_harvest_pump|D-012]]; [[D-001_two_brain_split|D-001]]/[[D-002_folder_name|D-002]] split by the "main brain" qualifier (the `bank/main-brain-construction/` mirror overloads those IDs); code-fenced + convention-doc illustrative occurrences excluded/hand-edited (`bank/_about.md`, `spellbook/entry-formats.md`, [[D-004_stable_ids|D-004]]/[[D-006_dev_brain_restructure|D-006]] real-refs).
+- **QUESTS DONE ([[S099_acf8fc80_obsidian_quest_link_migration]], 2026-05-26):** dev-brain quest (`S-`) links migrated — **357 rewrites across 87 files** (327 clean `[[SNNN]]`→main-entry + 30 per-occurrence dupe disambiguations). The `SNNN_dN/_pN/_gN` run-logs fold to the main entry; the 3 real dupes ([[S038_brain_underutilization_diagnosis|S038]]/[[S060_brain_self_audit_and_plan_reconciliation|S060]]/[[S086_e668ec7e_brain-technical-docs|S086]]) were resolved **per-occurrence by the authors' own context tags** (principal-signed-off), not renumbered — no file renames. [[S049_17e701eb_visualizer_state_aware_motion_and_action_line|S049]] was a 4th ambiguous group but moot (0 inbound links). Script saved + generalized over ID prefix (reusable for the gielinor pass): `bank/research/obsidian-link-migrate.py`.
+- **VERIFIED IN OBSIDIAN ([[S099_acf8fc80_obsidian_quest_link_migration]], 2026-05-26):** opened `developer-braindead/` as a vault (per-brain topology, the decided model) — the decision + session graph wired into **one connected web** with hubs at the most-referenced files ([[D-027_inward_outward_build_imbalance|D-027]]/plan/respawn/build-lessons); only the expected orphans remain (code-refs, placeholders, no-link files). Closes the §O.2 + §O.3 verify gate.
+- **NEXT:** (1) extend to **gielinor/** (§O.4 — its own vault, the larger surface; reuse the script, `--vault gielinor/`). Expect more dupes there (per-player `SNNN` numbering may collide across players) — dry-run will surface them. (2) two fuzzy [[D-001_two_brain_split|D-001]] calls (`plan.md:29`, `S003:13`) left as-set — both resolve. (3) cross-brain ~4% refs decision. Roadmap: [[plan]] §O.
 - **Lesson:** the migration script must exclude the docs that *describe* the convention — it clobbered this spec's own illustrative examples on the first run (fixed). Link-text rewrite ≠ file rename.

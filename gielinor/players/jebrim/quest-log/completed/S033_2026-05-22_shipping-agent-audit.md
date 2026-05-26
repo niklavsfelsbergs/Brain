@@ -10,7 +10,7 @@
 
 General audit of the `shipping-agent/` package at `Documents/GitHub/shipping-agent/`. Goal: find what would put the agent off course, what's friction, what's bloat, what won't perform well in real use. Read-only by mandate — agent runs in another window; no doc edits during the audit. Two-pass method per `inventory/shipping-agent-audit-resume.md`.
 
-Triggered partly by the S032 caveat harvest (exposed doc structure) and partly by an observed hallucination — running agent freehand-generated stale pre-cutover language despite clean gold-explicit docs.
+Triggered partly by the [[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] caveat harvest (exposed doc structure) and partly by an observed hallucination — running agent freehand-generated stale pre-cutover language despite clean gold-explicit docs.
 
 ## Turn-by-turn
 

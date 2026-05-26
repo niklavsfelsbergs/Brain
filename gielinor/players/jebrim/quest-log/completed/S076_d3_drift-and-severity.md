@@ -4,7 +4,7 @@
 **System:** `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py` (branch `shipping-mart-cutover`).
 **Verified against:** `data/issues.parquet` (191 issues), `data/deviations.parquet`. Empirical claims in the brief all reproduced.
 **Scope:** A = drift monitor (`_drift_monitor`, L3149); B = severity calibration across all alert types (`_severity`, L1845 + all call sites).
-**Out of scope / not re-flagged:** S055 fixes (bucket invariant, per-costed avg, shift canonicalization, rate_spike merged-island dedup, `settled` resolution for cost types, drift partial-month skip, volume_anomaly vol-floor exemption).
+**Out of scope / not re-flagged:** [[S055_9837afe8_shipping-costs-dashboard-cutover-review|S055]] fixes (bucket invariant, per-costed avg, shift canonicalization, rate_spike merged-island dedup, `settled` resolution for cost types, drift partial-month skip, volume_anomaly vol-floor exemption).
 
 ---
 

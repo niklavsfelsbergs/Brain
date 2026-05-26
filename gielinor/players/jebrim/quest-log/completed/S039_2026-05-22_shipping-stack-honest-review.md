@@ -18,16 +18,16 @@ Cutover branch verified: 20 commits ahead of main; pipeline.py, audit.py, backte
 
 Verdict: solid move, direction right, execution ahead of typical 3-week pace, but five perimeter items between here and shipping confidence. Full response in chat. Bullet shape:
 
-**Strengths.** Single source of truth across mart/dashboard/agent. Schema perimeter enforced at credential layer (`ship_mart_ro`). Cost-basis vocab is hard-won (invoiced / final / estimated, denominator matching, % invoiced reported). Convergence between dashboard and agent intentional, not accidental (S026 confirmed positions). Cutover verified by numbers, not "compiles" (Smoke 4 parity check €6.95 / 209,874).
+**Strengths.** Single source of truth across mart/dashboard/agent. Schema perimeter enforced at credential layer (`ship_mart_ro`). Cost-basis vocab is hard-won (invoiced / final / estimated, denominator matching, % invoiced reported). Convergence between dashboard and agent intentional, not accidental ([[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] confirmed positions). Cutover verified by numbers, not "compiles" (Smoke 4 parity check €6.95 / 209,874).
 
 **Weaknesses (load-bearing).**
 1. No contract test between mart and dashboard — vocab can drift silently.
 2. `audit.py` + `backtest.py` pre-cutover, will fail against current outputs — safety harness down.
 3. Cutover branch not merged; AWS lockstep work pending; rollback plan thin.
-4. Upstream sick (S031 bugs #1+#2) — agent answers rest on stale bronze until @lukasz.sendecki + @pranav.gupta respond.
-5. Dashboard's structural-coverage-hole reporting is wrong (Niklavs confirmed S026 T4).
+4. Upstream sick ([[S031_2026-05-22_temp-tracking-missing-orderitems|S031]] bugs #1+#2) — agent answers rest on stale bronze until @lukasz.sendecki + @pranav.gupta respond.
+5. Dashboard's structural-coverage-hole reporting is wrong (Niklavs confirmed [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]] T4).
 6. Multi-user story unproven; one person built it, one person re-runs the smoke.
-7. Agent boot-story drift (S032 hallucination: described mart with stale silver-era language).
+7. Agent boot-story drift ([[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] hallucination: described mart with stale silver-era language).
 
 Five recommended next moves in chat response.
 
@@ -59,7 +59,7 @@ The T3 correction was about rubric (portfolio frame > clean-runway frame). T4 is
 
 48-hour ledger (skim of what S001-S038 produced):
 - Brain machinery: full `meta/` rulebook, six architectural hooks, players/deities namespaces, ritual set (respawn, alching, bankstanding, drafts-triage, close-session), visualizer + intent protocol, decision log
-- Jebrim sessions: 11 in 48h, several multi-dwarf (S034: 15 dwarves; S031: investigation + dwarves)
+- Jebrim sessions: 11 in 48h, several multi-dwarf ([[S034_2026-05-22_eu-tender-logic-review|S034]]: 15 dwarves; [[S031_2026-05-22_temp-tracking-missing-orderitems|S031]]: investigation + dwarves)
 - Shipping stack: 20+ commits across bi-analytics + bi-etl + brain + shipping-agent. Gold cutover. Agent rulebook 0 → 29 rules. 13 examine/confirmed atomic entries. 3 niksis8_character/confirmed entries.
 
 **The honest reframe.** "Shockingly mature for three weeks" was wrong twice: wrong on weeks (it was days), wrong on tone (no baseline pre-dates the system; this is the baseline).

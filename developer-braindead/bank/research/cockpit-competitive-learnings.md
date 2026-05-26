@@ -11,7 +11,7 @@ Strategic frame: the generic fleet view is now commodity Anthropic will maintain
 ## The four real steals
 
 **1. Git worktree isolation — for *construction* sessions only.** (Conductor / Vibe Kanban / Agent Teams)
-Each agent gets its own worktree + branch; no filesystem collisions. This directly kills the documented [[D-024_parallel_player_coordination]] shared-tree tax — "ceded the client files to the sibling's commit," uncommitted hunks riding the shared tree, S057→S067 hand-offs via `comms/active.md`, SNNN renumbering races. **Precise cut:** worktree-isolate **dev-brain construction sessions** (Braindead siblings editing `cockpit/` + hooks — that's where ~all collisions are); keep the **shared tree for brain-content sessions** (players in separate namespaces rarely collide, and the shared tree is load-bearing for the one-world COMMS model). Highest-leverage, lowest-risk.
+Each agent gets its own worktree + branch; no filesystem collisions. This directly kills the documented [[D-024_parallel_player_coordination]] shared-tree tax — "ceded the client files to the sibling's commit," uncommitted hunks riding the shared tree, [[S057_switchboard_awaiting_crew_state|S057]]→[[S067_5294143e_cockpit-terminal-interior-and-header-align|S067]] hand-offs via `comms/active.md`, SNNN renumbering races. **Precise cut:** worktree-isolate **dev-brain construction sessions** (Braindead siblings editing `cockpit/` + hooks — that's where ~all collisions are); keep the **shared tree for brain-content sessions** (players in separate namespaces rarely collide, and the shared tree is load-bearing for the one-world COMMS model). Highest-leverage, lowest-risk.
 
 **2. In-cockpit diff review.** (Conductor / Vibe Kanban)
 Review an agent's diff inline — click a line, comment, agent iterates — before push. We have read-only transcript peek but no diff surface, and every session ends in a commit-on-ask. A review mode on the third column = approve changes from the bridge instead of dropping to `git`. High fit; our flow already gates commits on principal approval.
@@ -29,7 +29,7 @@ Cards = *queued tasks* carrying acceptance criteria + architectural constraints,
 
 ## Billing trap
 
-Conductor/Vibe Kanban lean on **background** agents (`claude --bg`, headless workspaces). Post-2026-06-15 that's the **metered** path — headless `-p` / Agent SDK draws the capped API-credit pool, not the subscription. If we add background dispatch, keep it a **background interactive PTY** session (subscription), not headless. Same constraint that drove S066's PTY pivot.
+Conductor/Vibe Kanban lean on **background** agents (`claude --bg`, headless workspaces). Post-2026-06-15 that's the **metered** path — headless `-p` / Agent SDK draws the capped API-credit pool, not the subscription. If we add background dispatch, keep it a **background interactive PTY** session (subscription), not headless. Same constraint that drove [[S066_7f5db8c5_cockpit-sweep|S066]]'s PTY pivot.
 
 ## Suggested sequence (if/when built)
 

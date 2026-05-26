@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-22
 **Player:** Jebrim
-**Anchor:** S033 shipping-agent audit — `S033_2026-05-22_shipping-agent-audit.md` + the four dwarf logs `S033_d1_shims-and-import.md`, `S033_d2_harness-and-scatter.md`, `S033_d3_restamp.md`, `S033_d4_doc-sweep.md`.
+**Anchor:** [[S033_2026-05-22_shipping-agent-audit|S033]] shipping-agent audit — `S033_2026-05-22_shipping-agent-audit.md` + the four dwarf logs `S033_d1_shims-and-import.md`, `S033_d2_harness-and-scatter.md`, `S033_d3_restamp.md`, `S033_d4_doc-sweep.md`.
 
 ## The pattern
 
@@ -16,7 +16,7 @@ A reusable shape for audit-then-fix work on a single package or repo where the a
 
 ## The load-bearing detail — file-ownership map
 
-The parallel-safety guarantee is "exactly one writer per file." Spawn briefing names it explicitly. Anchor (verbatim from S033 spawn turn):
+The parallel-safety guarantee is "exactly one writer per file." Spawn briefing names it explicitly. Anchor (verbatim from [[S033_2026-05-22_shipping-agent-audit|S033]] spawn turn):
 
 > *"D1 owns shims, D2 owns harness scripts + scatter files, D3 owns coverage-audit + sources.md maturity table, D4 owns the rest"*
 
@@ -30,7 +30,7 @@ When two clusters both want to touch the same file (e.g., D2 and D4 both wanting
 
 ## Why this beats serial principal-edits
 
-- Parallelism: 4 dwarves return in roughly the time of one. S033's 4-dwarf wave finished in one turn-pair.
+- Parallelism: 4 dwarves return in roughly the time of one. [[S033_2026-05-22_shipping-agent-audit|S033]]'s 4-dwarf wave finished in one turn-pair.
 - Verification isolation: each dwarf's report is scoped to its lane, easier to spot a missed fix than re-reading a long serial diff.
 - Failure containment: if D2 returns with a surprise, D1/D3/D4 still landed clean.
 
@@ -42,4 +42,4 @@ When two clusters both want to touch the same file (e.g., D2 and D4 both wanting
 
 ## Why this is the second-time pattern
 
-S032 used the recon-spawn variant (parallel reads → principal synthesis, no apply). S033 is the apply-fix variant. Different terminal step (commits land vs report), same parallelization mechanic. Worth promoting from skill-draft to skill once a third invocation lands.
+[[S032_2026-05-22_bi-etl-shipping-mart-harvest|S032]] used the recon-spawn variant (parallel reads → principal synthesis, no apply). [[S033_2026-05-22_shipping-agent-audit|S033]] is the apply-fix variant. Different terminal step (commits land vs report), same parallelization mechanic. Worth promoting from skill-draft to skill once a third invocation lands.

@@ -16,7 +16,7 @@ answer either — the cockpit console showed a question with no way to respond.
 - esm.sh reachable (HTTP 200), backend serving :8770 (200), all `web/*.js` pass
   `node --check` → **not** a blank-render / dead-server / CDN problem.
 - `chat.ndjson` showed both braindead sessions emit `needs_you` (the
-  status-sidecar's AskUserQuestion PreToolUse signal, S053) then sit at
+  status-sidecar's AskUserQuestion PreToolUse signal, [[S053_c082b489_switchboard_visual_ux_overhaul|S053]]) then sit at
   `waiting_for_user` — the wedge signature.
 - **Probe** (`_probe_ask.py`, mimics `backend.chat_handler`): forced an
   `AskUserQuestion`, then sent a `tool_result` over stdin. The CLI had **already

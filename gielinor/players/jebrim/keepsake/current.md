@@ -28,15 +28,15 @@ Cutover from `enterprise_silver.*` landed 2026-05-22 — old silver facts are **
 
 ## EU Tender 2026 — active
 
-Pinned 2026-05-21 (S021). Source: `archive/proposals/2026-05-21_eu-tender-2026.md`.
+Pinned 2026-05-21 ([[S021_2026-05-21_alching-and-rule-fix|S021]]). Source: `archive/proposals/2026-05-21_eu-tender-2026.md`.
 
 Quantitative review of 2026 EU shipping carrier tenders for TCG-Picanova. Target: 4–6 parcel + 1 freight, cost-only scoring. Phase 2 in flight; **DPD PL walkthrough is the next concrete step.** Decisions locked 2026-05-12 (cost-only, hard cap 6, lane diagnostic + portfolio scoring). New offers landing live (DPD PL + FedEx arrived 2026-05-20). Full detail in `bank/notes/projects/eu_tender_2026.md`.
 
 *Rotate out when tender decisions are signed and carriers contracted, OR project pauses > 1 month with no active work, OR pin grows stale relative to current state.*
 
-## EU Tender 2026 — bottom-line assessment from S034
+## EU Tender 2026 — bottom-line assessment from [[S034_2026-05-22_eu-tender-logic-review|S034]]
 
-Pinned 2026-05-22 (S034). Surface to principal at every Jebrim respawn until v2 report ships OR pin grows stale. Source: `archive/proposals/2026-05-22-eu-tender-bottom-line.md`.
+Pinned 2026-05-22 ([[S034_2026-05-22_eu-tender-logic-review|S034]]). Surface to principal at every Jebrim respawn until v2 report ships OR pin grows stale. Source: `archive/proposals/2026-05-22-eu-tender-bottom-line.md`.
 
 **The project is on a credible path to a defensible decision IF three things land before signing:**
 
@@ -46,6 +46,6 @@ Pinned 2026-05-22 (S034). Surface to principal at every Jebrim respawn until v2 
 
 **Biggest risk:** provisional numbers getting locked. The 2026-05-14 placeholder-vs-real fuel collapse (EUR 230k → 18k headline) is the cautionary precedent — cite explicitly in v2 methodology.
 
-**The principal should read the full assessment** — chat transcript at end of S034, or reconstruct from `quest-log/in-progress/S034_2026-05-22_eu-tender-logic-review.md` + the 15 dwarf children in `completed/`.
+**The principal should read the full assessment** — chat transcript at end of [[S034_2026-05-22_eu-tender-logic-review|S034]], or reconstruct from `quest-log/in-progress/S034_2026-05-22_eu-tender-logic-review.md` + the 15 dwarf children in `completed/`.
 
 *Rotate out when v2 report ships AND the three conditions have landed, OR the project pauses > 1 month with no active work, OR the pin grows stale relative to current state.*

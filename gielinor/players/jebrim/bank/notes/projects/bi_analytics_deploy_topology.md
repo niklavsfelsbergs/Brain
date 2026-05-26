@@ -1,6 +1,6 @@
 # bi-analytics deploy topology — push to main → ECR :latest rebuild
 
-Source: discovered S097 (2026-05-26) shipping the SCM daily_product OOM fix.
+Source: discovered [[S097_1ce9fc1f_scm-daily-product-temp-spill-oom|S097]] (2026-05-26) shipping the SCM daily_product OOM fix.
 
 The `shipping_costs_monitoring_nextjs` DAG runs the ECR image `123038732324.dkr.ecr.eu-central-1.amazonaws.com/shipping_costs_monitoring:latest` via `KubernetesPodOperator` in namespace `pcs-dashboard`. **CI rebuilds `:latest` on push to `main`** of `github.com/picanova/bi-analytics`. (Principal confirmed: "it builds from pushing to main.")
 
@@ -11,9 +11,9 @@ The `shipping_costs_monitoring_nextjs` DAG runs the ECR image `123038732324.dkr.
 
 Because they share one `.git`, a branch can only be checked out in one worktree at a time (`git checkout main` from the cutover worktree fails: "already used by worktree").
 
-**Verify the deployed code matches a ref** by comparing the crash-traceback line numbers to `git grep -n <pattern> origin/<ref> -- <file>`. S097: traceback `con.execute` at L2448 matched `origin/main` exactly → confirmed main = deployed.
+**Verify the deployed code matches a ref** by comparing the crash-traceback line numbers to `git grep -n <pattern> origin/<ref> -- <file>`. [[S097_1ce9fc1f_scm-daily-product-temp-spill-oom|S097]]: traceback `con.execute` at L2448 matched `origin/main` exactly → confirmed main = deployed.
 
-**Safe deploy pattern when `main` worktree is dirty** (used S097):
+**Safe deploy pattern when `main` worktree is dirty** (used [[S097_1ce9fc1f_scm-daily-product-temp-spill-oom|S097]]):
 1. Commit fix on `shipping-mart-cutover`.
 2. `git worktree add --detach /tmp/deploy-tmp origin/main`
 3. In it: `git merge shipping-mart-cutover --no-edit` → verify scope with `git diff --stat origin/main HEAD`.

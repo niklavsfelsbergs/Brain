@@ -1,6 +1,6 @@
 # D-016 — 2026-05-21 — Gnomes — system-namespace sub-agent for closing, alching, and drafts-triage
 
-**Context.** [[S018_jebrim_layer_utilization_audit]] surfaced two pressures that point at the same shape of sub-agent. (1) The session-close ritual is mechanical, multi-step, and runs in every session — perfect work for delegation, but [[D-012_close_session_harvest_pump]]'s harvest-pump architecture has been the principal doing it personally. (2) Per-player alching, especially first-time runs on long-lived players (Jebrim, 16+ turns of S014 to walk), is a 20+ turn slog of read-and-propose work that doesn't need principal introspection — it needs a checklist runner. Niklavs cued at S018 post-close: *"we should define a subagent specifically for closing sessions and organizing, we could call them gnomes."*
+**Context.** [[S018_jebrim_layer_utilization_audit]] surfaced two pressures that point at the same shape of sub-agent. (1) The session-close ritual is mechanical, multi-step, and runs in every session — perfect work for delegation, but [[D-012_close_session_harvest_pump]]'s harvest-pump architecture has been the principal doing it personally. (2) Per-player alching, especially first-time runs on long-lived players (Jebrim, 16+ turns of [[S014_visualizer_polish_and_aesthetics_pass|S014]] to walk), is a 20+ turn slog of read-and-propose work that doesn't need principal introspection — it needs a checklist runner. Niklavs cued at [[S018_jebrim_layer_utilization_audit|S018]] post-close: *"we should define a subagent specifically for closing sessions and organizing, we could call them gnomes."*
 
 Dwarves already exist ([[D-006_dev_brain_restructure]] modes axis, dwarf-write-boundary hook) but they're scoped wrong for this work. A dwarf is **functional, task-local** — it executes a narrow query and returns. The rituals here are **structural, repository-wide** — walk many layers, propose many writes, hold a checklist across many turns. Dwarves also can't write to drafts/proposals (deliberate, per `meta/modes.md`) — exactly the surface this work needs.
 
@@ -108,7 +108,7 @@ When the heuristic does not fire, the principal runs the ritual personally — k
 ## Supersedes / superseded by
 
 - Extends [[D-012_close_session_harvest_pump]] (close-session harvest-pump) — gnomes are the *runners* of the harvest pump when it's heavy. The pump itself is unchanged.
-- Extends [[D-015_jebrim_layer_audit_outcomes]] (Jebrim layer audit) — the alching procedure D-015 patched now has a designated runner for first-time / heavy passes.
+- Extends [[D-015_jebrim_layer_audit_outcomes]] (Jebrim layer audit) — the alching procedure [[D-015_jebrim_layer_audit_outcomes|D-015]] patched now has a designated runner for first-time / heavy passes.
 - Extends `meta/modes.md` principal/dwarf axis to principal/dwarf/gnome. No supersession — both prior roles still operate as before.
 
 ## Addendum — 2026-05-21 ([[S020_gnomes_ratification_and_visualizer]] ratification pass)

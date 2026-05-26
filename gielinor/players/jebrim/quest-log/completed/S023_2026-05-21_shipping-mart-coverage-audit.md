@@ -23,7 +23,7 @@
 
 ### T1 — respawn + framing (2026-05-21)
 
-- Respawned cleanly. Three in-flight quests on disk (S001 paused, S002 multi-thread, S015 dogfood pending). Principal chose fresh investigation, not resume.
+- Respawned cleanly. Three in-flight quests on disk ([[S001_2026-05-20_repo-orientation|S001]] paused, [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] multi-thread, [[S015_2026-05-21_ttyd-review-and-dry-run|S015]] dogfood pending). Principal chose fresh investigation, not resume.
 - Loaded shipping-agent `how_to.md` to refresh schema. Key constraint surfaced: cost reads must use `fact_shipment_cost_summary.total_eur`, not `fact_shipments.final_shipping_cost_eur` (V0 says fact-side cost cols are NULL outside Phase 5 cycle).
 - Quest log opened, tasks created.
 
@@ -53,7 +53,7 @@ Per source × carrier (rows ≥1K):
 - **Picturator ASENDIA = 0% on 5.8K** (separate from ASENDIA USA, which is 97.1% on 70K).
 - **Picturator DHL/UPS** = 87.6% / 87.4%. The other agent's "86% of UPS missing carrier invoices" does **not** hold mart-wide.
 
-ORWO `destination_country` is **100% blank** on every row in this window — confirming the S002 thread "destination_country wiring problem". Country slice on ORWO is impossible until that lands.
+ORWO `destination_country` is **100% blank** on every row in this window — confirming the [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] thread "destination_country wiring problem". Country slice on ORWO is impossible until that lands.
 
 ### T3a — Picturator (unresolved) extkey decomposition
 
@@ -109,7 +109,7 @@ Verdict on the other agent's claim:
 **Country dimension:**
 
 - Available on Picturator + PicaAPI (Germany / UK / US / France / Sweden / etc. resolve cleanly).
-- **Unavailable on ORWO** — `destination_country` is 100% blank. S002 thread is still open on this; until it lands, no country slice on ORWO is possible.
+- **Unavailable on ORWO** — `destination_country` is 100% blank. [[S002_2026-05-20_shipping-data-mart-v1-gap-analysis|S002]] thread is still open on this; until it lands, no country slice on ORWO is possible.
 
 ## Bank-note candidates (drafts post-quest)
 
@@ -151,7 +151,7 @@ No keepsake proposal earned this session. Existing pin (`Shipping Data Mart — 
 
 Inventory resume tightened to `inventory/S023-shipping-mart-coverage-audit-resume.md` — frames the umbrella iteration thread with six options for next session.
 
-S023 quest **stays in-progress** as the umbrella thread for continued shipping-agent iteration. Audit phase shipped; backlog of four cost-coverage holes + how_to follow-ups + S015 dogfood + reference build-out remains.
+S023 quest **stays in-progress** as the umbrella thread for continued shipping-agent iteration. Audit phase shipped; backlog of four cost-coverage holes + how_to follow-ups + [[S015_2026-05-21_ttyd-review-and-dry-run|S015]] dogfood + reference build-out remains.
 
 ## Pending external actions
 

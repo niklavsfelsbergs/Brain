@@ -10,7 +10,7 @@ Harvest learnings from the full FedEx/counterfactual shipping-agent transcript (
 - Started unscoped; principal shared the agent's April-2026 YoY summary. Clarified intent (not data insight, not agent-design lessons — "what can we *teach* the agent").
 - First "full session" paste was the same summary again — flagged; did a read-off-the-output critique vs existing taught rules.
 - Got the actual full transcript. Activated Jebrim; ground in prior shipping-agent learnings (quality-assessment bank note, cost vocabulary, keepsake, harvest-exhaustive examine).
-- Exhaustive harvest: 4 wins (S059/S060 fixes generalizing) + 3 misses. Principal narrowed to the headline: **the agent never reached for the charge-bucket breakdown.**
+- Exhaustive harvest: 4 wins ([[S059_9369b3f2_shipping-agent-limit-testing|S059]]/[[S060_7cd31d19_shipping-agent-training-campaign|S060]] fixes generalizing) + 3 misses. Principal narrowed to the headline: **the agent never reached for the charge-bucket breakdown.**
 - Implemented bucket-first: how_to.md rule 4 extension + rule 11 pointer (out-of-tree picanova/shipping-agent). Brain quality-assessment note appended with wins + the two secondary candidates (M2 basis-switch, M3 YoY maturity).
 
 ## Decisions

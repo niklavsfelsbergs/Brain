@@ -777,3 +777,21 @@
   Targets: cockpit/web/term.js (add ws.onopen authoritative resync + coalesce outgoing resize frames) + cockpit/ptybridge.py (gated setwinsize diag log, S093-rename-diag pattern — strip the always-on logger once confirmed). NO backend.py logic change, NO hooks, NO gielinor writes.
   Steering clear of: gielinor/, .claude/hooks/ (preserved contracts), shipping-agent/ + any cross-brain jebrim sessions.
   No live Braindead siblings (no braindead-*.txt intent <10min; S093 CLOSING'd).
+
+[2026-05-25 22:18] braindead-c0143b9f OPEN
+  Entered mid-conversation via "lets develop gielinor". Principal handed 5 cockpit-transcript readability fixes: (1) tool rows too dominant (full boxes crowd prose), (2) prose should read primary / tools as low-contrast support, (3) repeated copy buttons = noise (hover-reveal or icon-only), (4) transcript top controls tiny vs the rest of the UI, (5) composer competes with reading in transcript mode (dim it).
+  Targets: cockpit/web/transcript.js (CopyBtn → icon-only/hover), cockpit/web/styles.css (tool-row de-chrome + copy-btn reveal + tv-bar zoom-up + composer dim in reading mode), cockpit/web/main.js (add `reading` class to .term-col when transcript view is active). All scoped to .transcript-view / .term-col.reading so the board/feed/peek keep the OSRS chrome. No hooks, no backend logic.
+  Steering clear of: gielinor/ (no main-brain writes), .claude/hooks/ (preserved contracts), cockpit/backend.py + ptybridge.py (live PTY engine), shipping-agent/ + cross-brain jebrim sessions.
+  Stale-OPEN note: braindead-0798100e OPEN'd 17:46 on PTY-garble fixes (term.js + ptybridge.py) with no CLOSING + no live intent file (~4.5h) — candidate for ABANDONED synthesis, not synthesizing (principal call). No surface overlap with my transcript CSS/JS.
+  No live Braindead siblings (no braindead-*.txt intent files; guthix-e2565eb2 + two cross-brain jebrim sessions only).
+
+[2026-05-26 09:33] braindead-64acd968 OPEN
+  Entered mid-conversation via "lets develop gielinor" — a Jebrim session pivoted to dev-brain to debug "the cockpit won't open: the terminal opens, the cockpit window itself does not." No live Braindead siblings (no braindead-*.txt intent files; no python/pythonw/msedgewebview2 procs; nothing on :8770).
+  Target: cockpit/ launch path — app.py / pywebview window-never-paints. Surfaces in play: cockpit/app.py, cockpit/.webview/ profile (stale-lock suspect; EBWebView touched 09:14 today, then no live proc), and the uncommitted cockpit/web/ WIP (main.js/styles.css/transcript.js).
+  Steering clear of: gielinor/ writes (beyond the Jebrim hand-off stub for this mode switch), .claude/hooks/, switchboard/state-*, cockpit/backend.py + ptybridge.py unless the trace points there.
+  Stale-OPEN note: braindead-c0143b9f OPEN'd 2026-05-25 22:18 (S093-follow transcript readability) with no CLOSING and no live intent file — its WIP is exactly the uncommitted cockpit/web/ changes in my tree. Candidate for ABANDONED synthesis; not synthesizing (principal call).
+  Open to handoff: respawn.md carries — §C shipping-mart pilot (the load-bearing outward build), worktree isolation (D-030), neuron-overlay v0. Not this session.
+
+[2026-05-26 09:40] braindead-64acd968 CLOSING
+  Completed: S094 — cockpit no-open fixed. Hung at webview.start() (no window, no traceback); cleared stacked cockpit/.venv pythons + my leftover backend.py probes + freed :8770 -> clean launch paints. Principal-VERIFIED "works." NO cockpit code changed (runtime state, not a regression). Mechanism inferred (persistent .webview profile lock-contention across stacked instances), not stack-traced.
+  Leaving open: cockpit single-instance guard + stale-profile-lock recovery (respawn next-step #4 -- this fragility DID recur/annoy); the uncommitted cockpit/web/ WIP in-tree is c0143b9f's abandoned S093-follow, NOT touched; all prior respawn carries unchanged (sC pilot, worktree isolation, neuron-overlay).

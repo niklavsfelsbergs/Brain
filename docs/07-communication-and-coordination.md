@@ -32,6 +32,24 @@ the action would say the same thing twice, collapse.
 in the preamble. The exception: a threshold *recommendation* (e.g. "alching is overdue")
 surfaces as one line after the Plan.
 
+## Task-list discipline
+
+Multi-step work gets **decomposed into a tracked list** rather than charged head-first — the
+sequential sibling of the dwarf-spawn heuristic (that one fans work out in *parallel*; this
+one orders *one* actor's steps). Make a list when the task is multi-step **and** spans more
+than one file or turn, contains an irreversible/outward action, or has order-dependent
+steps; skip it for single-action asks and pure reflection. The tiebreaker: *would a dropped
+or out-of-order step be expensive here?*
+
+The decomposition surfaces in or just after the **Plan** line so the principal can correct
+the *steps* before commitment — the preamble's "wrong restatement is cheap" logic one level
+finer. There are two homes: the **harness task list** (live, ephemeral) for every
+list-worthy task, plus a durable **`inventory/` mirror** in the resume file when the work
+spans turns/sessions or touches an irreversible action — that mirror is the crash-recovery
+signal. Don't recite the full list back every turn; the harness list carries status, the
+intent line narrates the active step. Authoritative:
+[`task-lists.md`](../gielinor/meta/task-lists.md); founding decision [D-031].
+
 ## Two routing safety checks
 
 Both are one-line offers after the Plan, never silent switches:
@@ -130,6 +148,14 @@ surface it; the principal decides.
 > ground-truth signal than intent-file mtime is available — the cockpit's
 > `~/.claude/status/<sid8>.json` `state` field — prefer it: before touching a file another
 > session is editing, check whether their state is `busy`.
+
+**Isolating parallel edits.** Coordination via `comms/active.md` prevents *most* collisions,
+but two sessions interactively editing the *same* file is unworkable with the current
+toolchain (Edit-against-a-moving-file retry-hell). The decided fix ([D-030], build-deferred)
+is **git worktrees** — *isolate what you EDIT, share what you COORDINATE THROUGH*: fan-out
+sub-agents can take `isolation:"worktree"` today at zero cost; the larger build (a hook-path
+audit so worktree sessions stay visible to the board, shared comms/intent across worktrees,
+and a merge convention) is pending.
 
 ---
 

@@ -17,7 +17,11 @@
     font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
-  .layout { display:grid; grid-template-columns:280px 1fr; min-height:100vh; }
+  .layout {
+    display:grid;
+    grid-template-columns:280px minmax(0, 1fr);
+    min-height:100vh;
+  }
   /* Sidebar */
   nav {
     position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
@@ -33,7 +37,12 @@
   nav a:hover { background:rgba(214,178,74,.08); }
   nav a.active { background:rgba(214,178,74,.13); border-left-color:var(--gold); color:var(--gold); }
   /* Content */
-  main { padding:48px 56px 120px; max-width:920px; }
+  main {
+    width:100%;
+    max-width:920px;
+    margin:0 auto;
+    padding:48px 56px 120px;
+  }
   .doc-page { padding-bottom:40px; margin-bottom:40px; border-bottom:1px dashed var(--line); }
   .doc-page:last-child { border-bottom:none; }
   h1,h2,h3,h4 { line-height:1.25; font-weight:650; scroll-margin-top:24px; }
@@ -1238,6 +1247,21 @@ the action would say the same thing twice, collapse.</p>
 <p><strong>Internal rituals stay silent.</strong> Respawn, mini-respawn, and threshold checks don't appear
 in the preamble. The exception: a threshold <em>recommendation</em> (e.g. "alching is overdue")
 surfaces as one line after the Plan.</p>
+<h2 id="task-list-discipline">Task-list discipline</h2>
+<p>Multi-step work gets <strong>decomposed into a tracked list</strong> rather than charged head-first — the
+sequential sibling of the dwarf-spawn heuristic (that one fans work out in <em>parallel</em>; this
+one orders <em>one</em> actor's steps). Make a list when the task is multi-step <strong>and</strong> spans more
+than one file or turn, contains an irreversible/outward action, or has order-dependent
+steps; skip it for single-action asks and pure reflection. The tiebreaker: <em>would a dropped
+or out-of-order step be expensive here?</em></p>
+<p>The decomposition surfaces in or just after the <strong>Plan</strong> line so the principal can correct
+the <em>steps</em> before commitment — the preamble's "wrong restatement is cheap" logic one level
+finer. There are two homes: the <strong>harness task list</strong> (live, ephemeral) for every
+list-worthy task, plus a durable <strong><code>inventory/</code> mirror</strong> in the resume file when the work
+spans turns/sessions or touches an irreversible action — that mirror is the crash-recovery
+signal. Don't recite the full list back every turn; the harness list carries status, the
+intent line narrates the active step. Authoritative:
+<a href="../gielinor/meta/task-lists.md"><code>task-lists.md</code></a>; founding decision [D-031].</p>
 <h2 id="two-routing-safety-checks">Two routing safety checks</h2>
 <p>Both are one-line offers after the Plan, never silent switches:</p>
 <ul>
@@ -1350,6 +1374,13 @@ ground-truth signal than intent-file mtime is available — the cockpit's
 <code>~/.claude/status/&lt;sid8&gt;.json</code> <code>state</code> field — prefer it: before touching a file another
 session is editing, check whether their state is <code>busy</code>.</p>
 </blockquote>
+<p><strong>Isolating parallel edits.</strong> Coordination via <code>comms/active.md</code> prevents <em>most</em> collisions,
+but two sessions interactively editing the <em>same</em> file is unworkable with the current
+toolchain (Edit-against-a-moving-file retry-hell). The decided fix ([D-030], build-deferred)
+is <strong>git worktrees</strong> — <em>isolate what you EDIT, share what you COORDINATE THROUGH</em>: fan-out
+sub-agents can take <code>isolation:"worktree"</code> today at zero cost; the larger build (a hook-path
+audit so worktree sessions stay visible to the board, shared comms/intent across worktrees,
+and a merge convention) is pending.</p>
 <hr />
 <p>Next: <strong><a href="#page-08-enforcement-and-hooks">08 — Enforcement &amp; hooks</a></strong> — the gates beneath all
 of this.</p>
@@ -1573,10 +1604,15 @@ model (<a href="../cockpit/backend.py"><code>build_session_model()</code></a>), 
   <code>your_move</code> (the two "ball in your court" states that drive the attention count and
   pings), <code>busy</code>, <code>idle</code>, <code>done</code>, <code>ended</code> — with flavour (alching / crew / wrapped-up)
   riding as tags. (<a href="../cockpit/web/board.js"><code>web/board.js</code></a>)</li>
-<li><strong>Session console</strong> (centre) — drive a cockpit-launched session live (prompt / stream /
-  Stop / release). VS Code-hosted sessions appear as a read-only peek.
+<li><strong>Session console</strong> (centre) — drive a cockpit-launched session live over the terminal
+  (prompt / stream / Stop / release), with a <strong>fixed compose-bar</strong> below the PTY so you can
+  scroll history while typing, and a <strong>terminal ⇄ transcript toggle</strong>: the transcript
+  renders the same session's <code>/history</code> as clean, selectable DOM (markdown + collapsible
+  tool cards and per-turn / per-tool-output / copy-all buttons) so copied text isn't sheared
+  by the xterm grid — the PTY stays the engine underneath, the transcript is a read/copy
+  skin. VS Code-hosted sessions appear as a read-only peek.
   (<a href="../cockpit/web/console.js"><code>web/console.js</code></a>, <a href="../cockpit/web/term.js"><code>web/term.js</code></a>,
-  <a href="../cockpit/web/fleet.js"><code>web/fleet.js</code></a>)</li>
+  <a href="../cockpit/web/transcript.js"><code>web/transcript.js</code></a>, <a href="../cockpit/web/fleet.js"><code>web/fleet.js</code></a>)</li>
 <li><strong>Activity feed</strong> (right) — lifecycle checkpoints and comms across the fleet; raw actions
   off by default; click an item to jump to its session. (<a href="../cockpit/web/feed.js"><code>web/feed.js</code></a>)</li>
 </ul>
@@ -1826,7 +1862,7 @@ disagree, the source wins.</strong></p>
 </tr>
 <tr>
 <td><a href="#page-07-communication-and-coordination">07 — Communication</a></td>
-<td><a href="../gielinor/meta/communication-protocol.md"><code>communication-protocol.md</code></a>, <a href="../gielinor/comms/_about.md"><code>comms/_about.md</code></a></td>
+<td><a href="../gielinor/meta/communication-protocol.md"><code>communication-protocol.md</code></a>, <a href="../gielinor/meta/task-lists.md"><code>task-lists.md</code></a>, <a href="../gielinor/comms/_about.md"><code>comms/_about.md</code></a></td>
 </tr>
 <tr>
 <td><a href="#page-08-enforcement-and-hooks">08 — Enforcement &amp; hooks</a></td>
@@ -1849,9 +1885,10 @@ or <code>bank/decisions/</code> and <code>quest-log/</code> (dev brain):</p>
 <li><strong>D-016</strong> gnomes · <strong>D-017</strong> explicit-permission writes · <strong>D-018</strong> per-session intent
   files · <strong>D-021</strong> penguins · <strong>D-024</strong> parallel-session coordination · <strong>D-025</strong>
   multiple-choice-with-recommendation · <strong>D-026</strong> switchboard promotion · <strong>D-027</strong>
-  inward/outward build gap · <strong>D-028</strong> the cockpit rebuild · <strong>D-029</strong> two-axis state vocab.</li>
+  inward/outward build gap · <strong>D-028</strong> the cockpit rebuild · <strong>D-029</strong> two-axis state vocab ·
+  <strong>D-030</strong> worktree isolation for parallel sessions · <strong>D-031</strong> task-list discipline.</li>
 <li><strong>S038</strong> Guthix routing · <strong>S058</strong> in-voice intent · <strong>S082</strong> mandatory-OPEN · <strong>S085</strong>
-  enforcement-wiring + cockpit security hardening.</li>
+  enforcement-wiring + cockpit security hardening · <strong>S090</strong> task-list discipline.</li>
 </ul>
 <hr />
 <p>← Back to the <strong><a href="#page-readme">index</a></strong>.</p>

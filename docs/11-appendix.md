@@ -56,7 +56,7 @@ disagree, the source wins.**
 | [04 — Write discipline](04-write-discipline.md) | [`write-rules.md`](../gielinor/meta/write-rules.md), [`drafts-mechanics.md`](../gielinor/meta/drafts-mechanics.md), [`archive-discipline.md`](../gielinor/meta/archive-discipline.md), [`layer-routing.md`](../gielinor/meta/layer-routing.md) |
 | [05 — Actors & modes](05-actors-and-modes.md) | [`modes.md`](../gielinor/meta/modes.md), [`guthix.md`](../gielinor/meta/guthix.md), [`gielinor/CLAUDE.md`](../gielinor/CLAUDE.md), persona files |
 | [06 — Rituals](06-rituals.md) | [`spellbook/rituals/*.md`](../gielinor/spellbook/rituals/), [`death-and-spawn.md`](../gielinor/meta/death-and-spawn.md) |
-| [07 — Communication](07-communication-and-coordination.md) | [`communication-protocol.md`](../gielinor/meta/communication-protocol.md), [`comms/_about.md`](../gielinor/comms/_about.md) |
+| [07 — Communication](07-communication-and-coordination.md) | [`communication-protocol.md`](../gielinor/meta/communication-protocol.md), [`task-lists.md`](../gielinor/meta/task-lists.md), [`comms/_about.md`](../gielinor/comms/_about.md) |
 | [08 — Enforcement & hooks](08-enforcement-and-hooks.md) | [`gielinor/.claude/hooks/`](../gielinor/.claude/hooks/), [`developer-braindead/.claude/hooks/`](../developer-braindead/.claude/hooks/), the `settings.json` files |
 | [09 — The cockpit](09-cockpit.md) | [`cockpit/_about.md`](../cockpit/_about.md), `cockpit/backend.py`, `cockpit/ptybridge.py` |
 | [10 — The dev brain](10-dev-brain.md) | [`developer-braindead/_about.md`](../developer-braindead/_about.md), [`developer-braindead/CLAUDE.md`](../developer-braindead/CLAUDE.md), [`respawn.md`](../developer-braindead/respawn.md) |
@@ -69,9 +69,10 @@ or `bank/decisions/` and `quest-log/` (dev brain):
 - **D-016** gnomes · **D-017** explicit-permission writes · **D-018** per-session intent
   files · **D-021** penguins · **D-024** parallel-session coordination · **D-025**
   multiple-choice-with-recommendation · **D-026** switchboard promotion · **D-027**
-  inward/outward build gap · **D-028** the cockpit rebuild · **D-029** two-axis state vocab.
+  inward/outward build gap · **D-028** the cockpit rebuild · **D-029** two-axis state vocab ·
+  **D-030** worktree isolation for parallel sessions · **D-031** task-list discipline.
 - **S038** Guthix routing · **S058** in-voice intent · **S082** mandatory-OPEN · **S085**
-  enforcement-wiring + cockpit security hardening.
+  enforcement-wiring + cockpit security hardening · **S090** task-list discipline.
 
 ---
 

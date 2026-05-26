@@ -120,7 +120,11 @@ TEMPLATE = """<!doctype html>
     font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }}
-  .layout {{ display:grid; grid-template-columns:280px 1fr; min-height:100vh; }}
+  .layout {{
+    display:grid;
+    grid-template-columns:280px minmax(0, 1fr);
+    min-height:100vh;
+  }}
   /* Sidebar */
   nav {{
     position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
@@ -136,7 +140,12 @@ TEMPLATE = """<!doctype html>
   nav a:hover {{ background:rgba(214,178,74,.08); }}
   nav a.active {{ background:rgba(214,178,74,.13); border-left-color:var(--gold); color:var(--gold); }}
   /* Content */
-  main {{ padding:48px 56px 120px; max-width:920px; }}
+  main {{
+    width:100%;
+    max-width:920px;
+    margin:0 auto;
+    padding:48px 56px 120px;
+  }}
   .doc-page {{ padding-bottom:40px; margin-bottom:40px; border-bottom:1px dashed var(--line); }}
   .doc-page:last-child {{ border-bottom:none; }}
   h1,h2,h3,h4 {{ line-height:1.25; font-weight:650; scroll-margin-top:24px; }}

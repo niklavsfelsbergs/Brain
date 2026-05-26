@@ -28,10 +28,15 @@ model ([`build_session_model()`](../cockpit/backend.py)), not three independent 
   `your_move` (the two "ball in your court" states that drive the attention count and
   pings), `busy`, `idle`, `done`, `ended` — with flavour (alching / crew / wrapped-up)
   riding as tags. ([`web/board.js`](../cockpit/web/board.js))
-- **Session console** (centre) — drive a cockpit-launched session live (prompt / stream /
-  Stop / release). VS Code-hosted sessions appear as a read-only peek.
+- **Session console** (centre) — drive a cockpit-launched session live over the terminal
+  (prompt / stream / Stop / release), with a **fixed compose-bar** below the PTY so you can
+  scroll history while typing, and a **terminal ⇄ transcript toggle**: the transcript
+  renders the same session's `/history` as clean, selectable DOM (markdown + collapsible
+  tool cards and per-turn / per-tool-output / copy-all buttons) so copied text isn't sheared
+  by the xterm grid — the PTY stays the engine underneath, the transcript is a read/copy
+  skin. VS Code-hosted sessions appear as a read-only peek.
   ([`web/console.js`](../cockpit/web/console.js), [`web/term.js`](../cockpit/web/term.js),
-  [`web/fleet.js`](../cockpit/web/fleet.js))
+  [`web/transcript.js`](../cockpit/web/transcript.js), [`web/fleet.js`](../cockpit/web/fleet.js))
 - **Activity feed** (right) — lifecycle checkpoints and comms across the fleet; raw actions
   off by default; click an item to jump to its session. ([`web/feed.js`](../cockpit/web/feed.js))
 

@@ -110,6 +110,8 @@ For each quest that fires this signal, propose to principal: *"S023 reads comple
 
 **Boundary.** Propose only. The agent never auto-completes a quest. Principal approval per-line, every time.
 
+**Default is move, not defer ([[D-026]]).** A quest that reads complete-ready is graduated in *this* close — the one that finishes it — not punted with "propose →completed/ next session." The cross-session deferral is exactly what let Jebrim's `in-progress/` reach 15 twice (B-004, B-007): the proposal kept getting written into the CLOSING instead of resolved. Surface complete-ready quests for approval *now*; absent a positive reason to carry one forward (genuine ambiguity, or a named open dependency), move it. "Leaving open: propose →completed/ next session" is no longer an acceptable CLOSING line — either it's open with a stated reason, or it graduates this session. Note the failure mode this guards (per the same round's probe-design lesson): the stale-done scan above already *existed* and still didn't fire reliably — the lever is making "move" the default action, not adding more words.
+
 ### 5. Inventory hygiene
 
 The player's `inventory/` is volatile by design — but as of 2026-05-21 it's also the **primary resume surface**. The hygiene rule splits accordingly:

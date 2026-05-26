@@ -55,6 +55,10 @@ desktop.ini
 *.swp
 *~
 
+# Obsidian vault config (per-brain vaults, S099) — local-only navigation lens, not brain content
+.obsidian/
+**/.obsidian/
+
 # Secrets
 .env
 .env.*

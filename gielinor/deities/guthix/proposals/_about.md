@@ -69,7 +69,10 @@ proposals/
   _about.md
   2026-05-22-example-proposal.md   # active draft
   rejected/                          # mirrors active proposals — rejections preserved
+  archive/                           # landed proposals — approved + implemented, moved here for record
 ```
+
+A proposal whose change has been **landed and implemented** moves to `archive/<slug>.md` (parallel to `rejected/`) — it's done, not refused, but no longer an active draft. Bankstanding does this housekeeping once it confirms the change is in force.
 
 ## Related
 

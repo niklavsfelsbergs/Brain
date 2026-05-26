@@ -15,3 +15,7 @@ The miss isn't tone. The miss is *vantage point*. I was talking as if I was outs
 **Adjacent.** Related to [[2026-05-21-cross-project-read-context-as-advantage]] — same axis: forgetting that the reviewer's standpoint is itself a system feature, not a neutral position. There the lesson was "cross-project read is an advantage to lean into"; here it's "the reviewer being inside the system is a fact to acknowledge."
 
 **Promotion gate.** Wait for a second occurrence before promoting. The pattern is "Jebrim reviews something built fast and reaches for a comparative baseline that pre-dates the system" — second occurrence could be reviewing another player's output, another quest's deliverable, or a future bankstanding pass. If reproduced, promote.
+
+---
+
+**REJECTED — B-008 (2026-05-26), principal-approved.** Held four rounds (B-004→B-007), the self-imposed 2nd-occurrence gate never met (S061–S098 were execution/deploy/audits, none a comparative-baseline review). The "2-day-old system" framing has aged out (brain is 6 days old now), and the transferable kernel ("don't anchor on baselines that pre-date the system; the reviewer is part of what's reviewed") is partly absorbed by the global G1 grounding note + the inherited-confidence notes. Per its own DECISION FLAG (B-007 last-alched): a draft that never meets its gate is clutter → reject, not promote. Kept here as rejection pattern-data, not destroyed. Reopen only if the exact pattern reproduces.

@@ -27,8 +27,9 @@ a renovated 1910 Centrs flat explicitly registered as a share, asking €1,860/m
 Key framing: the discount **is the risk price, not a gift** — buying at the going share price means
 you're *not* over-compensated for the risk, and your upside is **capped** vs titled stock (which
 appreciates to full market). It can wash if you bought low and hold; it bites if you overpay or need
-a fast sale. Pool is still **predominantly cash** — no evidence bank/Altum lending on multi-apartment
-shares widened in 2025–26.
+a fast sale. The pool was *thought* **predominantly cash** — but see the **financing correction
+below** (added S095): in functioning, managed, actively-traded buildings banks demonstrably lend on
+individual shares.
 
 **The added-floor trap (new due-diligence item).** If a building had floor area added (a *virsstāva
 / jumta izbūve*), per VZD that **recalculates every co-owner's domājamās daļas**, and per **CL 1068**
@@ -42,6 +43,17 @@ a problem." The market reality: Tier-1 banks resist bare multi-apartment shares;
 financing is *pusmāja*-shaped (2–3 co-owners), not an 80-unit building. Get a **signed bank offer
 for the specific share** before emotional commitment — a lender's real yes is also the one validation
 that doesn't come from someone selling you the flat.
+
+**CORRECTION (2026-05-26, S095 — Ģertrūdes 113 folio + lived-experience re-test).** The "Tier-1 banks
+resist / Altum *pusmāja*-only / predominantly cash" picture above is **miscalibrated to *unsorted /
+dysfunctional* shares.** In a functioning, managed, actively-traded building, banks lend on individual
+shares routinely: Ģertrūdes 113 carried **five** bank share-*hipotēkas* within ~18 months (Luminor
+fl.76 2025, SEB fl.27 Feb-2026, Swedbank fl.25 Jan/Feb-2026, BigBank fl.40 Mar-2026, Citadele fl.86
+Apr-2026), Altum's own pages cover co-owned *unsplit* multi-apartment buildings, and a loud
+complaints-forum has **zero** "bank refused my share" posts. The **signed-offer-for-the-specific-share
+step still stands** as personal due diligence — a registered *hipotēka* proves *a* bank lent, not the
+LTV or haircut for *your* share. Net: building-level base rate is "financeable," not "cash-only."
+See [[2026-05-26-gertrudes113-folio-5262-gate2-closed]].
 
 **Anchors.** S066 (2026-05-25), Ģertrūdes 113 deep-dive. Research:
 `research/2026-05-25-gertrudes113-{SYNTHESIS-verdict,building-ownership,price-resale,location}.md`.

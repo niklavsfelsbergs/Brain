@@ -42,6 +42,8 @@ Body is indented 2 spaces, free markdown, multi-line OK.
 3. **Before touching a quest-log or inventory file whose suffix doesn't match own sid8.** Per the inventory-recovery rule in `respawn.md`.
 4. **When the principal asks something that reads as another player's domain.** Pair with the content-based wrong-instance check in `meta/communication-protocol.md`.
 
+**Read the tail, and mind which end.** The newest entries are at the *bottom* (append-only); sibling detection needs only the recent tail, not the whole log. A bare `Read` of `active.md` returns it from the *top* (oldest first) and truncates at ~one page — so the live tail is off the end of what you get. Seek to EOF to read it: `Read` with a large `offset`, or grep the last entry headers (`grep -n '^\[' active.md | tail`). Rotation (below) bounds how far the tail can drift off the page.
+
 Polling every turn is overkill. These trigger points cover the actual risks.
 
 ## Liveness — sidecar-driven, not mtime-driven
@@ -73,7 +75,9 @@ If observable garbling shows up routinely, add a file lock around append. Defer 
 
 ## Rotation
 
-Manual for now. When the file gets unwieldy (call it ~500 entries), move the bulk to `comms/archive/active-YYYY-MM-DD.md` and leave the most recent 50 in `active.md`. Don't delete.
+Manual for now. **Rotate on token/line weight, not a fixed entry count** — when `active.md` passes roughly **300 lines / ~30k tokens** (about one Read-page of dense entries). Move the bulk to `comms/archive/active-YYYY-MM-DD.md`, leave the most recent ~50 entries in `active.md`, don't delete (the archive mirrors the channel's history per `archive-discipline.md`).
+
+Token weight, not entry count, is what makes a respawn read expensive — the dev-brain twin's first rotation (2026-05-27) fired at ~100k tokens / ~179 entries, far under the old "~500 entries" trigger that never would have caught it. Even a freshly rotated file can exceed a single un-offset `Read`, so this pairs with the seek-to-EOF discipline in *Read cadence* above. This file's first rotation also ran 2026-05-27 (`archive/active-2026-05-27.md`) — at ~400 lines / 110 entries, over the new threshold.
 
 ## What lives here vs. elsewhere
 

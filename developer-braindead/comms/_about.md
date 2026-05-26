@@ -34,6 +34,8 @@ Body is indented 2 spaces, free markdown, multi-line OK.
 2. **Before any `gielinor/` edit.** The collision surface. Cheap re-read; might surface a sibling who picked it up since respawn.
 3. **When stuck.** A sibling may have relevant in-flight reasoning worth pinging.
 
+**Read the tail, and mind which end.** The newest entries are at the *bottom* (append-only); respawn needs only the last ~20. A bare `Read` of `active.md` returns it from the *top* (oldest first) and truncates at ~one page — so the live tail is off the end of what you get. Seek to EOF to read it: `Read` with a large `offset`, or grep the last entry headers (`grep -n '^\[' active.md | tail`). Rotation (below) bounds how far the tail can drift off the page.
+
 Polling every turn is overkill. These three trigger points cover the actual risks.
 
 ## Write discipline
@@ -55,7 +57,9 @@ If observable garbling shows up routinely, add a file lock around append. Defer 
 
 ## Rotation
 
-Manual for now. When the file gets unwieldy (call it ~500 entries), move the bulk to `comms/archive/active-YYYY-MM-DD.md` and leave the most recent 50 in `active.md`. Don't delete.
+Manual for now. **Rotate on token/line weight, not a fixed entry count** — when `active.md` passes roughly **300 lines / ~30k tokens** (about one Read-page of dense entries). Move the bulk to `comms/archive/active-YYYY-MM-DD.md`, leave the most recent ~50 entries in `active.md`, don't delete (the archive mirrors the channel's history per `archive-discipline.md`).
+
+Token weight, not entry count, is what makes a respawn read expensive: the first rotation (2026-05-27 → `archive/active-2026-05-27.md`) fired at **976 lines / ~100k tokens but only ~179 entries** — the old "~500 entries" trigger would never have caught it, and the bloat went read every session. Even a freshly rotated file can exceed a single un-offset `Read`, so this pairs with the seek-to-EOF discipline in *Read cadence* above — rotation bounds total growth; the EOF seek gets the tail.
 
 ## What lives here vs. elsewhere
 

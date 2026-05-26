@@ -57,7 +57,7 @@ Principal cued alching after the S023 close commit, walked the surface, then par
 | # | File | Recommended action |
 |---|---|---|
 | 1 | `examine/drafts/2026-05-21-defensive-rules-need-counter-pressure-rules.md` (S022, untriaged) | **Reject + re-route to** `spellbook/drafts/skills/balance-defensive-with-counter-pressure-rules.md` — content is procedural methodology, not self-observation; parallels `investigate-before-specialize`. |
-| 2 | `examine/drafts/2026-05-21-cross-project-read-context-as-advantage.md` (S023) | **Approve into `examine/confirmed/`** — but tighten to "claim + anchor + rule" per [[D-017]] feedback rule. Current draft is ~600 words; confirmed wants ~150. |
+| 2 | `examine/drafts/2026-05-21-cross-project-read-context-as-advantage.md` (S023) | **Approve into `examine/confirmed/`** — but tighten to "claim + anchor + rule" per [[D-017_user-only-with-explicit-permission]] feedback rule. Current draft is ~600 words; confirmed wants ~150. |
 | 3 | `niksis8_character/drafts/2026-05-21-niklavs-verifies-agent-claims-by-cross-checking.md` (S023) | **Reject** with re-route note — universal Niklavs observation (would hold for any player), belongs in global `niksis8/drafts/`. Consistent with the two S021 rejections. |
 | 4 | `bank/drafts/notes/projects/shipping_mart_coverage_audit_2026-05-21.md` (S023) | **Promote** to `bank/notes/projects/`. No contradictions with existing notes. |
 | 5 | *(new draft to write)* `examine/drafts/2026-05-21-niksis8-character-drafts-tend-to-be-universal.md` | **Write the meta-discipline draft** — three niksis8_character rejections in 12 hours, all same reason. Rule: "before drafting niksis8_character, ask would this be true for any player Niklavs interacts with?" |

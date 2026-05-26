@@ -1,6 +1,6 @@
 # SCM nextjs pipeline — DuckDB has two OOM modes (RAM vs temp-spill)
 
-Source: `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py`. Harvested S097 (2026-05-26); ties to [[S069]].
+Source: `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py`. Harvested S097 (2026-05-26); ties to [[S069_006248ef_pipeline-oom-hardening]].
 
 The pipeline uses two `duckdb.connect(":memory:")` COPY-to-parquet blocks for the heavy joins/aggregations Polars segfaults on:
 - **`pull_raw` ~L501** — full-refresh hash join. `memory_limit='4GB'`.

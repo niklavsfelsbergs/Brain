@@ -15,7 +15,7 @@
 ## Steps 1–7 — global tending
 
 - **1 (inbox):** empty (only `_about.md`). No-op.
-- **2 (global identity drafts):** `examine/drafts`, `niksis8/drafts`, `keepsake/proposals` empty. One lorebook draft → **promoted to [[D-025]]** (offer multiple-choice with a recommendation and why). Exercised in this very pass.
+- **2 (global identity drafts):** `examine/drafts`, `niksis8/drafts`, `keepsake/proposals` empty. One lorebook draft → **promoted to [[D-025_offer-multiple-choice-with-recommendation]]** (offer multiple-choice with a recommendation and why). Exercised in this very pass.
 - **3 (cross-player synthesis):** **dormant (N=1)** — 5th consecutive no-op. Zezima still has zero atomic confirmed entries (one property-domain `niksis8_character` entry); Jebrim is the sole operational player. The standing proposal `proposals/2026-05-23-synthesis-dormant-at-n1.md` (the dormancy-gate edit) remains **open** — flagged again, not re-proposed.
 - **4 (size budgets):** global `examine/current.md` empty, `niksis8/current.md` one line, `keepsake/current.md` empty. All far under budget. No rotations.
 - **5 (rejected patterns):** all global `rejected/` folders empty. No miscalibration signal.
@@ -25,7 +25,7 @@
 ## Outputs
 
 - Phase 0: 1 examine promotion (Jebrim), `last-alched.md` updated.
-- [[D-025]] promoted to `lorebook/confirmed/`.
+- [[D-025_offer-multiple-choice-with-recommendation]] promoted to `lorebook/confirmed/`.
 - Godly proposal `proposals/2026-05-24-multiple-choice-with-recommendation-in-comms-protocol.md` — wire D-025 into `meta/communication-protocol.md` (user-only file; awaits principal).
 - Bank draft `bank/drafts/notes/2026-05-24-substrate-portability-claude-bound-vs-portable.md` — the Codex-consultation portability map; seeds the unwritten `ascension.md`.
 

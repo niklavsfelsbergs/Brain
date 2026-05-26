@@ -1,8 +1,8 @@
 # `comms/` — gielinor coordination channel
 
-Where parallel player + deity sessions coordinate so they don't trample each other's work. Per [[D-024]] (dev brain).
+Where parallel player + deity sessions coordinate so they don't trample each other's work. Per [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] (dev brain).
 
-The collision surface is the **disk-side** of running parallel sessions. The visualizer + per-session intent files ([[D-018]] dev brain) handle the screen-side; this layer handles the file-system side:
+The collision surface is the **disk-side** of running parallel sessions. The visualizer + per-session intent files ([[D-018_close-session-ritual-adoption]] dev brain) handle the screen-side; this layer handles the file-system side:
 
 - `inventory/<topic>__<sid8>.md` collisions across two Jebrim sessions on the same topic.
 - `quest-log/in-progress/SNNN_<sid8>_<slug>.md` SNNN-allocation races.
@@ -31,7 +31,7 @@ Where `<actor>` is `jebrim`, `zezima`, `guthix`, or a future-roster player name,
 | `→ @<target-id>` | Ad-hoc dialogue addressed to a specific sibling | Free-form; expect a reply or an action |
 | `UPDATE` | Targets shifted materially mid-session | Same shape as `OPEN`, only the changed lines need to appear |
 | `CLOSING` | Session-close, before commit | `Completed:`, `Leaving open:` lines |
-| `ABANDONED` | (Synthesized at respawn by the next session) when a prior OPEN has no CLOSING and the [[D-020]] status sidecar shows the session as `ended` or stale (`last_event_ts > 5min`) | One-line: "synthesized — no closing entry, sidecar state <state> since <time>" |
+| `ABANDONED` | (Synthesized at respawn by the next session) when a prior OPEN has no CLOSING and the [[D-020_layer-routing-and-resume-via-inventory]] status sidecar shows the session as `ended` or stale (`last_event_ts > 5min`) | One-line: "synthesized — no closing entry, sidecar state <state> since <time>" |
 
 Body is indented 2 spaces, free markdown, multi-line OK.
 
@@ -46,7 +46,7 @@ Polling every turn is overkill. These trigger points cover the actual risks.
 
 ## Liveness — sidecar-driven, not mtime-driven
 
-Sibling detection reads `~/.claude/status/<sid8>.json` (the [[D-020]] dev-brain decision):
+Sibling detection reads `~/.claude/status/<sid8>.json` (the [[D-020_layer-routing-and-resume-via-inventory]] dev-brain decision):
 
 ```
 state ≠ ended AND last_event_ts < 5min AND actor in {jebrim, zezima, guthix, ...}
@@ -94,10 +94,10 @@ The visualizer's COMMS panel polls this file in live mode and renders entries as
 
 ## Related
 
-- [[D-024]] (dev brain) — founding decision; full design including suffix rules, sidecar liveness, inventory recovery.
-- [[D-017]] (dev brain) — parallel player instances (the parent scaffolding).
-- [[D-019]] (dev brain) — dev-to-dev mirror; this is its player-side twin.
-- [[D-020]] (dev brain) — status sidecar; the liveness source.
+- [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] (dev brain) — founding decision; full design including suffix rules, sidecar liveness, inventory recovery.
+- [[D-017_user-only-with-explicit-permission]] (dev brain) — parallel player instances (the parent scaffolding).
+- [[D-019_harvest-pump-installation]] (dev brain) — dev-to-dev mirror; this is its player-side twin.
+- [[D-020_layer-routing-and-resume-via-inventory]] (dev brain) — status sidecar; the liveness source.
 - `spellbook/rituals/respawn.md` — sibling-detection + comms-read + OPEN-entry + inventory-recovery rule.
 - `spellbook/rituals/close-session.md` — CLOSING-entry step.
 - `meta/communication-protocol.md` §"Wrong-instance check" — the content-based sibling check this layer complements.

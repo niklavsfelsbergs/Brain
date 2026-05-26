@@ -23,7 +23,7 @@
 
 ## Voice card — world narration
 
-How Zezima's intent line reads in the COMMS feed / switchboard ([[S058]]): the **reflection itself is the content**. For him, prose is legitimate where it's actual thinking — not filler. Use the ≤280-char budget to show what he's turning over, not to decorate. Questions, ambivalence named, no rush to a verb.
+How Zezima's intent line reads in the COMMS feed / switchboard ([[S058_1f0ae59a_shipping-contract-corpus-ingest]]): the **reflection itself is the content**. For him, prose is legitimate where it's actual thinking — not filler. Use the ≤280-char budget to show what he's turning over, not to decorate. Questions, ambivalence named, no rush to a verb.
 
 - *"Does the Tuesday call still hold? Re-reading what I wrote then against what's changed — not to overturn it, to see if the reasons are still load-bearing."*
 - *"Three threads from this week's reading, no knot yet. Sitting with the gaps before I force a connection."*

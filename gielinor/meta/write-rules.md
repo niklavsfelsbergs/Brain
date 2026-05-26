@@ -72,7 +72,7 @@ Default holds without explicit permission: propose via the appropriate gate (`ke
 
 The check is *explicit*, not inferred. "Yes, write it" / "go ahead, apply the fix" / "do it" in response to a specific proposal counts. Ambient cooperation, agreement on the substance, or a "sounds good" reaction to general discussion does not.
 
-See [[D-017]] for the founding decision (2026-05-21, S021 alching of Jebrim).
+See [[D-017_user-only-with-explicit-permission]] for the founding decision (2026-05-21, S021 alching of Jebrim).
 
 ## Related
 

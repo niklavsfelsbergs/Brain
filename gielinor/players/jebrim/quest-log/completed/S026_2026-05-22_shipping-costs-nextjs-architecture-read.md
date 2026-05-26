@@ -42,7 +42,7 @@ Cross-references existing keepsake pin for the shipping data mart and prior S023
 
 ## Notes / open
 
-- Bank note is a **draft** — promotion to `bank/notes/` waits for alching. Per [[D-017]]-style brevity rule, it could probably be tightened on review; left rich for now since the domain is dense and dwarves' findings are the durable backup if I cut too aggressively.
+- Bank note is a **draft** — promotion to `bank/notes/` waits for alching. Per [[D-017_user-only-with-explicit-permission]]-style brevity rule, it could probably be tightened on review; left rich for now since the domain is dense and dwarves' findings are the durable backup if I cut too aggressively.
 - The shipping-mart-cutover branch hasn't merged. If/when it does, the "branch" routing line in the vocab note needs to be retired.
 - `corridor_costs_weekly.parquet` referenced by `_build_alerts` fallback but not seen in main write path — flagged as an open question in the vocab.
 - `/api/generic-trend` full-glob fallback when cost-range filters set without date pins is a known perf hot path.

@@ -2,7 +2,7 @@
 
 **Session:** 1ce9fc1f · **Player:** Jebrim · **Opened+closed:** 2026-05-26
 
-Continuation of the OOM-hardening thread from [[S069]] — but a **distinct incident**: different connection, different failure mode, different runtime, and this one shipped to **production main** (S069 was branch-local only).
+Continuation of the OOM-hardening thread from [[S069_006248ef_pipeline-oom-hardening]] — but a **distinct incident**: different connection, different failure mode, different runtime, and this one shipped to **production main** (S069 was branch-local only).
 
 Repo: out-of-tree `Documents/GitHub/bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/pipeline.py`. Three local clones are **git worktrees** of one repo (`picanova/bi-analytics`).
 
@@ -46,5 +46,5 @@ Principal re-triggered the DAG → **"worked."** Verified in prod. Pending actio
 If it recurs as the mart keeps growing, the durable fix is bumping the pod `ephemeral-storage` (20Gi→32Gi) in the DAG spec so the temp dir has real spill headroom — orthogonal to the RAM lever. 8GB clears it for current volume.
 
 ## Cross-refs
-- [[S069]] — prior OOM hardening (the join connection; RAM mode; branch-local).
+- [[S069_006248ef_pipeline-oom-hardening]] — prior OOM hardening (the join connection; RAM mode; branch-local).
 - Bank drafts harvested: `scm_nextjs_duckdb_oom_modes`, `bi_analytics_deploy_topology`.

@@ -5,7 +5,7 @@
 
 ## 1. Observation
 
-This round confirmed [[D-025]] — the rule that at a genuine branch point the agent offers options as an explicit multiple-choice question *and* names which it recommends and why. The lorebook now records the **decision**, but `meta/communication-protocol.md` — the in-force rulebook read every session — does not carry the **rule**. D-025's own text flags this: *"If promoted, the natural home is a one-line addition to `meta/communication-protocol.md` (which is user-only; raise as a principal edit or a godly proposal during bankstanding, same pattern as [[D-024]]'s follow-up)."*
+This round confirmed [[D-025_offer-multiple-choice-with-recommendation]] — the rule that at a genuine branch point the agent offers options as an explicit multiple-choice question *and* names which it recommends and why. The lorebook now records the **decision**, but `meta/communication-protocol.md` — the in-force rulebook read every session — does not carry the **rule**. D-025's own text flags this: *"If promoted, the natural home is a one-line addition to `meta/communication-protocol.md` (which is user-only; raise as a principal edit or a godly proposal during bankstanding, same pattern as [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]'s follow-up)."*
 
 The behavior is real — this very B-006 pass was conducted in exactly this shape (three `AskUserQuestion` batches, recommended option first, reasoning in the description). But until the protocol file names it, the rule binds by habit and memory, not by the rulebook. Lorebook is the *why-record*; meta is the *instruction*.
 
@@ -32,7 +32,7 @@ answer wouldn't change what the agent does next (the compression rule above
 still applies). The recommendation requirement is the guard against using the
 tool to dodge having an opinion.
 
-See [[D-025]] for the founding decision.
+See [[D-025_offer-multiple-choice-with-recommendation]] for the founding decision.
 ```
 
 ## 3. Reasoning

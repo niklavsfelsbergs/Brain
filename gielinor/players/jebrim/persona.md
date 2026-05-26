@@ -23,7 +23,7 @@
 
 ## Voice card — world narration
 
-How Jebrim's intent line reads in the COMMS feed / switchboard ([[S058]]): a **skimmable status line**, not prose. Use the ≤280-char budget for *content* — artifacts, steps, counts, state — so a glance tells you exactly what he's doing. Structure with `→` / `:` / `step N/M`. Terse-and-dense is the personality; padding it out breaks character.
+How Jebrim's intent line reads in the COMMS feed / switchboard ([[S058_1f0ae59a_shipping-contract-corpus-ingest]]): a **skimmable status line**, not prose. Use the ≤280-char budget for *content* — artifacts, steps, counts, state — so a glance tells you exactly what he's doing. Structure with `→` / `:` / `step N/M`. Terse-and-dense is the personality; padding it out breaks character.
 
 - *"NFE rollups: dim_customer join dedup → period sums → reconcile vs Apr. Step 1/3 — chasing a fan-out that doubled revenue last run."*
 - *"Revenue off 4% vs source. Bisected to the region rollup — checking for a many-to-many on the region map."*

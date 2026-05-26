@@ -43,25 +43,25 @@ The load order below front-loads only the durable, in-force, identity-shaped mat
 
    g. Check `players/<name>/quest-log/in-progress/`. If any file is present, the player has in-flight quests. Run the **reconciliation prompt** (below) before accepting new input.
 
-   h. **Sibling detection + comms read.** Per [[D-024]] (dev brain). Two ground-truth sources, both required:
+   h. **Sibling detection + comms read.** Per [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] (dev brain). Two ground-truth sources, both required:
 
       - **Sidecar manifest** at `~/.claude/status/*.json`. Filter for `state ≠ ended AND last_event_ts < 5 minutes AND actor ∈ {jebrim, zezima, guthix, …}`. Each match is a confirmed-live sibling session — own `sid8` excluded.
       - **`gielinor/comms/active.md`**. Read the tail. Cross-reference each live `sid8` from the sidecar against the log: any live id with an `OPEN` (or `UPDATE`) but no matching `CLOSING` is in-flight; any id with a stale `OPEN` and no recent sidecar entry is a candidate for `ABANDONED` synthesis (surface, don't auto-synthesize).
 
       Surface to the principal before posting OPEN if anything looks ambiguous — three fresh respawns within seconds can all see "no siblings" before any posts.
 
-   i. **Read `players/<name>/inventory/*__<sid8>.md` and `*-resume.md`** — the resume foreground. Per [[D-024]]:
+   i. **Read `players/<name>/inventory/*__<sid8>.md` and `*-resume.md`** — the resume foreground. Per [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]:
 
       - **Prefer `<topic>__<own-sid8>.md` if present** — this session's own prior inventory state. Read it directly.
       - **Otherwise list all `<topic>__<sid8>.md` files** for matching topics. Cross-reference each `sid8` against the comms log + sidecar manifest from step h:
         - Clean `CLOSING` in comms + sidecar `ended` → recoverable; safe to read and adopt.
         - No `CLOSING` and sidecar shows session ended/stale → crashed; surface the candidate for the principal to authorize adoption.
         - Live sibling per step h → **don't touch** their inventory. The other session owns it.
-      - **Legacy unsuffixed `<topic>-resume.md` files** (pre-[[D-024]]) are treated as own-session state: read directly. The next close-session pass writes the suffixed form going forward.
+      - **Legacy unsuffixed `<topic>-resume.md` files** (pre-[[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]) are treated as own-session state: read directly. The next close-session pass writes the suffixed form going forward.
 
       Each file carries the `Where we are` / `Next concrete step` / `Files to read first` state populated by close-session step 3. **This is what the reconciliation prompt surfaces** — not the quest-log file's body, which is the turn-by-turn history. If inventory has no resume files but `quest-log/in-progress/` is non-empty, surface the gap (close-session step 3 didn't populate inventory) and read the quest log directly as a fallback. Note the gap for the next close-session pass.
 
-   j. **Post `OPEN` entry to `gielinor/comms/active.md`.** Per [[D-024]] and `comms/_about.md`. Header `[YYYY-MM-DD HH:MM] <player>-<sid8> OPEN` (use Guthix in consultation/bankstanding mode). Body lines as needed:
+   j. **Post `OPEN` entry to `gielinor/comms/active.md`.** Per [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] and `comms/_about.md`. Header `[YYYY-MM-DD HH:MM] <player>-<sid8> OPEN` (use Guthix in consultation/bankstanding mode). Body lines as needed:
 
       - `Targets:` — what this session intends to work on, named by inventory topic or quest slug.
       - `Steering clear of:` — surfaces other live siblings have claimed (from step h's read) or shared globals this session won't touch.

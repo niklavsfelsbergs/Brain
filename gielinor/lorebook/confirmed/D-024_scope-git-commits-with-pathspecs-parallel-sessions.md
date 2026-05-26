@@ -2,7 +2,7 @@
 
 **Type:** operating rule (git hygiene under parallel sessions). Drafted 2026-05-23, S055 close. Confirmed 2026-05-24 (B-005 bankstanding).
 
-**Claim.** In the shared brain working tree, a bare `git commit` (no pathspec) commits the **entire staged index** — including files that a *concurrent* session has staged but not yet committed. With multiple Claude terminals live (the norm now — see [[D-017]], [[D-018]], [[D-024]]), this silently sweeps another actor's work into your commit.
+**Claim.** In the shared brain working tree, a bare `git commit` (no pathspec) commits the **entire staged index** — including files that a *concurrent* session has staged but not yet committed. With multiple Claude terminals live (the norm now — see [[D-017_user-only-with-explicit-permission]], [[D-018_close-session-ritual-adoption]], [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]), this silently sweeps another actor's work into your commit.
 
 **Anchor (verbatim sequence).** 2026-05-23, S055 Jebrim alching close. I ran `git add <jebrim paths>` then `git commit` (bare). My pre-commit check was `git diff --cached --name-status -- gielinor/players/jebrim/` — **filtered to jebrim/**, so it showed only my files and looked clean. But the concurrent Zezima S056 session had already `git mv`-staged three of its own alching promotions (`zezima/bank/notes/latvia-property/*`, `zezima/niksis8_character/confirmed/2026-05-23-home-decisions-gut-fit-veto.md`). The bare commit (`1d582c6`) took the whole index → those three Zezima files landed under a "Jebrim alching" message. No data loss; wrong attribution; not cleanly reversible while the other session is live (rewriting shared `main` history under a parallel session is riskier than the mislabel).
 

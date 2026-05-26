@@ -27,8 +27,8 @@ Each session that runs close-session gets a sequential ID: `S001`, `S002`, etc. 
 
 **Apply SNNN:**
 
-- A quest file that has **never been closed before** gets its SNNN prepended now (this is its birth-session ID). Filename: `S{NNN}_{sid8}_{slug}.md` per [[D-024]] (dev brain) — the `sid8` (first 8 chars of `CLAUDE_CODE_SESSION_ID`) disambiguates parallel-session SNNN-allocation races. Two sessions racing to S044 both succeed with different sid8 suffixes; SNNN drifts from unique-key to approximate-temporal-ordering, which is acceptable.
-- A quest file already carrying an SNNN keeps it. The SNNN identifies birth, not last touch. **Legacy filenames** (`S{NNN}_{YYYY-MM-DD}_{slug}.md` from before [[D-024]]) keep their existing shape — no renaming pass.
+- A quest file that has **never been closed before** gets its SNNN prepended now (this is its birth-session ID). Filename: `S{NNN}_{sid8}_{slug}.md` per [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] (dev brain) — the `sid8` (first 8 chars of `CLAUDE_CODE_SESSION_ID`) disambiguates parallel-session SNNN-allocation races. Two sessions racing to S044 both succeed with different sid8 suffixes; SNNN drifts from unique-key to approximate-temporal-ordering, which is acceptable.
+- A quest file already carrying an SNNN keeps it. The SNNN identifies birth, not last touch. **Legacy filenames** (`S{NNN}_{YYYY-MM-DD}_{slug}.md` from before [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]) keep their existing shape — no renaming pass.
 - Files moved to `completed/` keep their birth-SNNN prefix.
 
 ## Steps
@@ -72,7 +72,7 @@ This closes the "chat-only state is volatile" gap. Drafts that exist only in con
 
 ### 3. Write resume state to `inventory/<quest-slug>-resume__<sid8>.md`
 
-**Per `gielinor/meta/layer-routing.md`, resume state lives in inventory, not in the quest log.** For each in-progress quest this player owns, write (or overwrite) `players/<active>/inventory/<quest-slug>-resume__<sid8>.md` (where `<sid8>` is the first 8 chars of `CLAUDE_CODE_SESSION_ID`, per [[D-024]] dev brain) with the next-session prompt:
+**Per `gielinor/meta/layer-routing.md`, resume state lives in inventory, not in the quest log.** For each in-progress quest this player owns, write (or overwrite) `players/<active>/inventory/<quest-slug>-resume__<sid8>.md` (where `<sid8>` is the first 8 chars of `CLAUDE_CODE_SESSION_ID`, per [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] dev brain) with the next-session prompt:
 
 - **Status:** explicit (`in-progress` or `done`).
 - **Where we are:** one sentence on current state.
@@ -86,7 +86,7 @@ These sections are what `respawn.md`'s reconciliation prompt reads to surface th
 
 **Migration note (sessions opened before 2026-05-21).** Existing in-progress quest files may carry the resume sections at the top. On the first close-session pass after 2026-05-21, lift those sections into a new `inventory/<quest-slug>-resume__<sid8>.md` file, then trim them from the quest log. One-time per quest.
 
-**Migration note (sessions opened before [[D-024]], 2026-05-22).** Pre-existing `inventory/<quest-slug>-resume.md` files (no sid8 suffix) stay readable — respawn step 6.i treats them as own-session state. On the next close-session for that quest, write the suffixed shape `<quest-slug>-resume__<sid8>.md`; the unsuffixed predecessor can be moved to `inventory/archive/` once the suffixed version is the live resume surface.
+**Migration note (sessions opened before [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]], 2026-05-22).** Pre-existing `inventory/<quest-slug>-resume.md` files (no sid8 suffix) stay readable — respawn step 6.i treats them as own-session state. On the next close-session for that quest, write the suffixed shape `<quest-slug>-resume__<sid8>.md`; the unsuffixed predecessor can be moved to `inventory/archive/` once the suffixed version is the live resume surface.
 
 ### 4. Decide: continue or complete the **quest** (not the session)
 
@@ -110,7 +110,7 @@ For each quest that fires this signal, propose to principal: *"S023 reads comple
 
 **Boundary.** Propose only. The agent never auto-completes a quest. Principal approval per-line, every time.
 
-**Default is move, not defer ([[D-026]]).** A quest that reads complete-ready is graduated in *this* close — the one that finishes it — not punted with "propose →completed/ next session." The cross-session deferral is exactly what let Jebrim's `in-progress/` reach 15 twice (B-004, B-007): the proposal kept getting written into the CLOSING instead of resolved. Surface complete-ready quests for approval *now*; absent a positive reason to carry one forward (genuine ambiguity, or a named open dependency), move it. "Leaving open: propose →completed/ next session" is no longer an acceptable CLOSING line — either it's open with a stated reason, or it graduates this session. Note the failure mode this guards (per the same round's probe-design lesson): the stale-done scan above already *existed* and still didn't fire reliably — the lever is making "move" the default action, not adding more words.
+**Default is move, not defer ([[D-026_graduate-complete-ready-quests-in-session]]).** A quest that reads complete-ready is graduated in *this* close — the one that finishes it — not punted with "propose →completed/ next session." The cross-session deferral is exactly what let Jebrim's `in-progress/` reach 15 twice (B-004, B-007): the proposal kept getting written into the CLOSING instead of resolved. Surface complete-ready quests for approval *now*; absent a positive reason to carry one forward (genuine ambiguity, or a named open dependency), move it. "Leaving open: propose →completed/ next session" is no longer an acceptable CLOSING line — either it's open with a stated reason, or it graduates this session. Note the failure mode this guards (per the same round's probe-design lesson): the stale-done scan above already *existed* and still didn't fire reliably — the lever is making "move" the default action, not adding more words.
 
 ### 5. Inventory hygiene
 
@@ -159,7 +159,7 @@ This is an additional surface event beyond what `meta/drafts-mechanics.md` alrea
 
 ### 8. Post `CLOSING` to `gielinor/comms/active.md`
 
-Per [[D-024]] (dev brain) and `comms/_about.md`. For each player who posted an `OPEN` (or `UPDATE`) earlier this session and has not yet posted a `CLOSING`, append now — one entry per actor identity that opened. Skip for Guthix consultation sessions that didn't open (consultation default is chat-only, no comms post). Header:
+Per [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] (dev brain) and `comms/_about.md`. For each player who posted an `OPEN` (or `UPDATE`) earlier this session and has not yet posted a `CLOSING`, append now — one entry per actor identity that opened. Skip for Guthix consultation sessions that didn't open (consultation default is chat-only, no comms post). Header:
 
 ```
 [YYYY-MM-DD HH:MM] <actor>-<sid8> CLOSING
@@ -180,7 +180,7 @@ Always commit at session close (unless the working tree is genuinely clean — i
 
 **Pre-commit soft-block.** Before staging, run two checks:
 
-1. **Missing inventory resume files.** For each player with files in `quest-log/in-progress/`, confirm a matching `inventory/<quest-slug>-resume__<sid8>.md` (or legacy `inventory/<quest-slug>-resume.md` for pre-[[D-024]] quests) exists and is non-empty. If any quest is missing its resume file, **do not auto-commit** — surface the gap, ask the principal whether to (a) write the missing resume file before commit, (b) commit anyway and flag it as deliberate, or (c) abandon the quest into `quest-log/archive/in-progress/`. This is the inventory-empty enforcement clause; it's a proposal-not-a-block (principal can override).
+1. **Missing inventory resume files.** For each player with files in `quest-log/in-progress/`, confirm a matching `inventory/<quest-slug>-resume__<sid8>.md` (or legacy `inventory/<quest-slug>-resume.md` for pre-[[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] quests) exists and is non-empty. If any quest is missing its resume file, **do not auto-commit** — surface the gap, ask the principal whether to (a) write the missing resume file before commit, (b) commit anyway and flag it as deliberate, or (c) abandon the quest into `quest-log/archive/in-progress/`. This is the inventory-empty enforcement clause; it's a proposal-not-a-block (principal can override).
 2. **Orphan untracked quest-log files.** Run `git status --short gielinor/players/*/quest-log/ developer-braindead/quest-log/` and grep for lines starting with `??`. Untracked quest-log files are usually quest narratives written in prior sessions that close-session's `git add` missed — their content is already authoritative on disk but not versioned. **Surface these as part of this commit's scope** unless the principal explicitly excludes one. Born 2026-05-22 (S038) after a `git status` audit revealed `S031_*` and `S034_g2_*` had lived untracked for sessions.
 
 - **Stage scoped.** Prefer `git add gielinor/players/<name>/quest-log/ ...specific paths` over `git add -A`. Verify with `git status` before committing.

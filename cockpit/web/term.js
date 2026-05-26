@@ -103,6 +103,11 @@ class TermConn {
     this.id = null; // sid8, announced by the server
     this.sessionId = null;
     this.seed = opts.seed || null;
+    // submitSeed false: type the seed into the prompt WITHOUT a trailing CR, so
+    // the user continues from a prewritten address (place modal). Default true
+    // preserves the old "seed = whole first message, auto-sent" behavior.
+    this.submitSeed = opts.submitSeed !== false;
+    this.placedName = ""; // user-chosen name from the place modal; applied on connect
     this.resumeId = opts.resumeId || null; // uuid to reattach to (persistence)
     this.drive = true;
     // Restore the auto-label on resume so a reopened "Jebrim" session keeps its
@@ -559,6 +564,10 @@ class TermConn {
         bySid8.set(f.sid8, this);
         addOwned(f.sessionId); // remember it so a reopened cockpit can resume it
         if (this.label) saveTermLabel(f.sessionId, this.label); // keep the auto-name across resume (S095)
+        // A name typed in the place modal becomes the board row name (same store
+        // as /rename), now that the sid8 is known. Don't clobber a rename that
+        // already landed under this sid8.
+        if (this.placedName && !nameFor(f.sid8)) setName(f.sid8, this.placedName);
         if (this.seed) {
           this._seedSoon(this.seed);
           this.seed = null;
@@ -568,11 +577,16 @@ class TermConn {
     ws.onclose = () => this.term.write("\r\n\x1b[2m[session ended]\x1b[0m\r\n");
   }
 
-  // The claude TUI needs a beat to paint before it accepts input. Type the
-  // composed first message, then Enter. Heuristic delay — if it misses, the
-  // line is sitting in the prompt and the user just presses Enter.
+  // The claude TUI needs a beat to paint before it accepts input. Type the seed,
+  // then (if submitSeed) Enter. Heuristic delay — if it misses, the line is
+  // sitting in the prompt and the user just presses Enter. With submitSeed false
+  // (place modal) the seed is a prewritten address the user continues from, so no
+  // CR — and no fast-input/CR-fold risk, since there's no trailing CR to fold.
   _seedSoon(text) {
-    setTimeout(() => this._send({ type: "input", data: text + "\r" }), 3000);
+    setTimeout(
+      () => this._send({ type: "input", data: this.submitSeed ? text + "\r" : text }),
+      3000,
+    );
   }
 
   // ── [term-diag] S081/S083 — fit/scroll geometry, the instrument for the
@@ -736,10 +750,11 @@ class TermConn {
   }
 }
 
-// Start a fresh interactive-claude terminal; `seed` is the composed first
-// message (e.g. "Hey Jebrim, …"), auto-typed once the TUI is up.
-export function openTerm(seed) {
-  return new TermConn({ seed: seed || null });
+// Start a fresh interactive-claude terminal. `seed` is auto-typed once the TUI
+// is up. opts.submit (default true) auto-sends it; submit:false prewrites it as
+// an address the user continues from (place modal — e.g. "Hey Jebrim, ").
+export function openTerm(seed, opts = {}) {
+  return new TermConn({ seed: seed || null, submitSeed: opts.submit !== false });
 }
 
 // Reattach to a saved session by uuid (claude --resume). No seed — it continues

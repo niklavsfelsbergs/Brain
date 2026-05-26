@@ -628,40 +628,46 @@ html, body {
   box-shadow: 0 20px 60px -20px #000;
 }
 .modal-title { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
-.actor-pick { display: flex; gap: 6px; flex-wrap: wrap; }
-.actor-opt {
-  background: var(--panel-2);
-  border: 1px solid var(--line);
+.place-name { display: flex; flex-direction: column; gap: 5px; }
+.place-name-tag {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--ink-dim);
-  border-radius: 7px;
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
 }
-.actor-opt.on { border-color: var(--working); color: var(--ink); }
-.place-prompt {
-  resize: vertical;
-  min-height: 84px;
+.place-name-tag .dim { color: var(--ink-faint); }
+.place-name input {
   background: var(--bg);
   color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   font: inherit;
   font-size: 13.5px;
 }
-.place-prompt:focus { outline: none; border-color: var(--ink-faint); }
-.modal-preview {
-  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-  font-size: 12px;
-  color: var(--ink);
-  background: var(--bg);
+.place-name input:focus { outline: none; border-color: var(--ink-faint); }
+.place-hint { font-size: 12px; color: var(--ink-faint); }
+.actor-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.actor-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  background: var(--panel-2);
   border: 1px solid var(--line);
+  color: var(--ink-dim);
   border-radius: 8px;
-  padding: 8px 11px;
-  word-break: break-word;
+  padding: 9px 12px;
+  cursor: pointer;
+  text-align: left;
 }
-.modal-preview .dim { color: var(--ink-faint); }
+.actor-opt .actor-label { font-size: 13.5px; color: var(--ink); font-weight: 600; }
+.actor-opt .actor-addr {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+.actor-opt.plain .actor-label { color: var(--ink-dim); font-weight: 500; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .modal-actions button {
   border-radius: 8px;

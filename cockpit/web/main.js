@@ -130,46 +130,42 @@ function Resizer({ side, onResized }) {
   ></div>`;
 }
 
+// Pick a name (optional), then click an actor to open it. No message box: the
+// click places the session immediately and the actor's address ("Hey Jebrim, ")
+// is prewritten into the PTY prompt — unsubmitted — so you just keep typing.
 function PlaceModal({ onPlace, onClose }) {
-  const [actor, setActor] = useState(null); // null = plain chat, no player address
-  const [prompt, setPrompt] = useState("");
-  const submit = () => {
-    const p = prompt.trim();
-    if (p) onPlace(actor, actor ? actor.addr + p : p);
-  };
+  const [sessName, setSessName] = useState("");
+  const place = (actor) => onPlace(actor, actor ? actor.addr : "", sessName.trim());
   return html`
     <div class="modal-backdrop" onClick=${onClose}>
       <div class="modal" onClick=${(e) => e.stopPropagation()}>
         <div class="modal-title">place a session</div>
+        <label class="place-name">
+          <span class="place-name-tag">name <span class="dim">· optional</span></span>
+          <input
+            type="text"
+            value=${sessName}
+            onInput=${(e) => setSessName(e.target.value)}
+            placeholder="name this session…"
+            autofocus
+          />
+        </label>
+        <div class="place-hint">pick who to open — the address is prewritten in the terminal, you just continue typing.</div>
         <div class="actor-pick">
           ${ACTORS.map(
             (a) =>
-              html`<button
-                class=${"actor-opt" + (actor && a.key === actor.key ? " on" : "")}
-                onClick=${() => setActor(actor && a.key === actor.key ? null : a)}
-              >
-                ${a.label}
+              html`<button class="actor-opt" title=${"opens with: " + a.addr} onClick=${() => place(a)}>
+                <span class="actor-label">${a.label}</span>
+                <span class="actor-addr">${a.addr.trim()}</span>
               </button>`
           )}
+          <button class="actor-opt plain" title="plain chat — no address prewritten" onClick=${() => place(null)}>
+            <span class="actor-label">plain chat</span>
+            <span class="actor-addr">no actor</span>
+          </button>
         </div>
-        <textarea
-          class="place-prompt"
-          value=${prompt}
-          onInput=${(e) => setPrompt(e.target.value)}
-          placeholder=${(actor ? "first message to " + actor.label : "message — plain chat, no player") + "…"}
-          onKeyDown=${(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-        ></textarea>
-        <div class="modal-preview">${actor ? actor.addr : ""}<span class="dim">${
-          prompt || (actor ? "…" : "plain chat — no player selected")
-        }</span></div>
         <div class="modal-actions">
           <button class="ghost" onClick=${onClose}>cancel</button>
-          <button class="primary" onClick=${submit}>place</button>
         </div>
       </div>
     </div>
@@ -459,9 +455,12 @@ function App() {
       body: JSON.stringify({ sid8, name }),
     }).catch(() => {});
   };
-  const doPlace = (actor, seed) => {
-    const c = openTerm(seed); // S066 B: real interactive claude in a PTY (on-subscription)
-    c.label = actor ? actor.label : "chat";
+  const doPlace = (actor, seed, name) => {
+    // submit:false — the address (seed) is prewritten into the prompt unsubmitted,
+    // so the user continues typing rather than firing a bare "Hey Jebrim,".
+    const c = openTerm(seed, { submit: false }); // S066 B: real interactive claude in a PTY (on-subscription)
+    c.label = name || (actor ? actor.label : "chat");
+    c.placedName = name || ""; // a user-chosen name becomes the board row name once the sid8 lands
     setSel(c);
     setShowPlace(false);
   };

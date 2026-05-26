@@ -42,3 +42,15 @@ Scoped by pathspec to the 18 migrated gielinor files + this session's dev-brain 
 - §O.5 already answered (18 cross-brain refs leave dangling per per-brain-vault model). After the eyeball, §O closes.
 - Strategic next step UNCHANGED — §C shipping-mart pilot ([[D-027_inward_outward_build_imbalance]]).
 - respawn.md trim still badly overdue (acf8fc80 noted ~11 blocks) — candidate for this session's close (near-no-parallel now).
+
+## Post-apply: Obsidian eyeball + the sparse-graph finding (→ §O.6)
+
+Principal opened `gielinor/` as an Obsidian vault and asked "should there be so few connections?" — the graph showed ~350 nodes, the vast majority isolated dots, two-three small clusters.
+
+Measured it: **350 `.md` files, only 84 (24%) carry any `[[link]]` → 266 (76%) isolated.** NOT a migration miss (every resolvable ID-link resolves, 0 remaining; the migration only had 43 ID-links to fix in the whole vault vs the dev-brain's ~700). gielinor is sparse because it's a cognitive system of mostly *atomic* notes, where the dev-brain is a construction log that cross-references densely by nature.
+
+Principal directed: investigate Jebrim's layer — standalone, or would backlinks make sense? **Verdict: not standalone.** Every `examine/confirmed` entry opens with `**Observation (SNNN, date)**` and closes with a `## Anchor SNNN` line; `bank/notes` carry `Source: SNNN`. Those are textbook backlinks to the source quest, written as plain text and never wrapped. Confirmed three resolve to real Jebrim quests (grounding-before-advice→S045, check-own-bank→S076 demo-deck, bi_analytics_deploy→S097). Jebrim isolated-but-anchored: ~13 examine + ~6 bank ≈ 20 latent backlinks; `inventory` (32 isolated) is volatile→skip; `quest-log/completed` (80 isolated) is outbound→defer.
+
+**Decision (principal): commit the current state + hand the broad enrichment to a fresh session.** Captured as `plan.md` **§O.6** (scope, tooling note — a new anchor→link script mode, the migrator only rewrites already-bracketed links — and the per-player `SNNN` dupe caveat). §O.4 marked verified-in-Obsidian. §O.6 is inward (serves §N GraphRAG) and explicitly does not displace the §C outward pilot.
+
+This session closes here; §O.6 is the next session's task.

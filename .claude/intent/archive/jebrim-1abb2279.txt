@@ -1,0 +1,1 @@
+Shipping-agent demo deck: scoping the outline. ~8 slides — what it is / problem it kills / live plain-English Q&A / the 3 answer modes / guardrails (read-only + scope) / charts+reports / known coverage / setup as the closer. Awaiting principal on audience depth + deck format before drafting.

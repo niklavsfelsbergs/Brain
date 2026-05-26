@@ -83,8 +83,10 @@ Faithful to [[D-027_inward_outward_build_imbalance]]: this is bounded, reversibl
 - IDs unique **within** each brain (the parallel-session SNNN slips are the only thing to prevent).
 - Stop wiki-linking code files (`[[backend.py]]`).
 - Sub-entry `SNNN_dN/_pN/_gN` sharing the session ID is **intentional** — documented here so a future reader (or the migration script) treats `[[SNNN]]`-resolving-to-many as by-design.
+- **Author new cross-refs full-stem** (`[[D-NNN_slug|D-NNN]]`), all prefixes — the migration only fixed the *existing* corpus; new bare-ID links re-introduce phantoms.
+- **Wrap each entry's source anchor as a link** (`**Source:** [[SNNN_…|SNNN]]`, `## Anchor [[SNNN_…|SNNN]]`), never plain text — the plain-text anchor was the root cause of gielinor's 76%-isolated graph (the §O.6 finding), since nearly every note carried its origin unlinked.
 
-A `D-NNN` decision can formalize the chosen mechanism + this convention once the mechanism is picked.
+A `D-NNN` decision can formalize the chosen mechanism + this convention once the mechanism is picked. **Done:** [[D-004_stable_ids]] amended (mechanism + going-forward authoring clause); the going-forward conventions landed in both vaults' rulebooks as plan **§O.9** (2026-05-27) — `gielinor/meta/write-rules.md`, the dev-brain `_about.md` / `CLAUDE.md` / `spellbook/entry-formats.md`.
 
 ## Status — 2026-05-26 ([[S098_b53fca39_obsidian_fit_and_dlink_migration]])
 

@@ -1,0 +1,1 @@
+Found the textbox-stuck bug from the term-fit trace: NOT over-fit (every sample had a row of slack). It's the open-while-hidden path — selecting a row while the transcript view is up mounts the terminal display:none (frameH=0), so the open pin loop bails; the single re-show pin then races the layout. Fixed: a multi-frame reshow() fit+pin on the view-flip. Board b90.9.

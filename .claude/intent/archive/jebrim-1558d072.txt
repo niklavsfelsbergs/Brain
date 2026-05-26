@@ -1,0 +1,1 @@
+DPD PL dispatch build from scratch. User picked 14/17 (dropped liability, suspended-dest, contract-dates — correct). Triaging 4 sub-EUR-25k surcharge-detail Qs (#7 non-sortable, #8 non-standard, #9 POD, #10 weighing) for bundle-vs-drop. KEEPs are the big levers: zone fee 3.04M, exceed-tech 1-1.5M, line-haul 0.74M, CH opt2 471k.

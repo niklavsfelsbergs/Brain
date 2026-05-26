@@ -1,0 +1,1 @@
+S106 wrapped — committed 5cd2f97 (audit + D8 fix: 3 agent configs at brain root). CLOSING posted; comms/respawn left for 7c91117c to carry. Verification + the two gielinor doc fixes handed off. active-mode stays dev-brain (sibling live). Workshop lights left on.

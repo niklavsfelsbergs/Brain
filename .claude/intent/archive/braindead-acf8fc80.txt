@@ -1,0 +1,1 @@
+Gielinor §O.4 dry-run's done — small and clean: 42 rewrites / 17 files, no dupe calls (the 3 collisions have 0 inbound), 18 cross-brain refs correctly left dangling. But Guthix is LIVE in gielinor right now, and the apply hits meta/lorebook/players/rituals — exactly his bankstanding surface. Not applying into a live main brain. Recommending we defer the apply to a quiet moment.

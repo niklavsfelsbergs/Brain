@@ -23,7 +23,7 @@ Structured around RuneScape-themed cognitive layers for coherence with the main 
 - **Entry point.** `respawn.md` at root. Read first.
 - **Per-entry files** inside `bank/` and `examine/`. Each entry has a stable short ID ([[D-NNN]], [[A-NNN]], [[Q-NNN]], [[R-NNN]], [[I-NNN]]) — IDs never reused, filename adds descriptive suffix (e.g., `D-001_two_brain_split.md`). See [[D-004_stable_ids]].
 - **Quest log files** named `SNNN_descriptive_name.md`, named at session close (you can't title a quest before completing it). See `spellbook/session-close.md`.
-- **Wiki-links** `[[ID]]` for cross-references. Load-bearing across docs.
+- **Wiki-links** for cross-references, load-bearing across docs. Use the **full filename stem** with an optional `|ID` display alias (`[[D-001_two_brain_split|D-001]]`), not the bare `[[ID]]` — per the [[D-004_stable_ids]] amendment, so links resolve in Obsidian / any markdown tool. The ID prefix stays the stable anchor. Applies to **new** entries too, not just the one-time migration; see `spellbook/entry-formats.md`.
 - **Plan is single-file** at `bank/plan.md` — one mission, one living plan, iterated.
 - **Nothing destroyed.** Superseded entries move to the layer's `archive/`. Decisions are marked `**Status.** superseded by [[D-NNN]].` Pattern from main brain.
 - **`drafts/`** inside `bank/` holds Niklavs's half-formed sketches before promotion. No layer-wide `drafts/` + `confirmed/` split — that's a main-brain concept for agent-generated content awaiting approval, which doesn't apply here.

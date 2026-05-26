@@ -1,0 +1,1 @@
+import webview is fine — hang is inside webview.start() specifically, and no cockpit-owned webview2 spawns. Found leftover backend.py probes (mine) squatting :8770 + a hung app.py. Clearing all cockpit-venv pythons for a clean slate, freeing :8770, then retrying the normal icon launch before theorizing further.

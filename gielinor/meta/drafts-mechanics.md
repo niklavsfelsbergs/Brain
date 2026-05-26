@@ -26,6 +26,8 @@ Specificity is what makes self-knowledge actionable. A draft that doesn't cite a
 
 The same rule applies to `niksis8/` drafts about the user. Not "Niklavs prefers tight responses" with no anchor — instead, "Niklavs corrected three responses in S007 for being too long; preference is short responses, tolerate length only when the underlying task is long." Memory beats inference.
 
+**Write the anchor as a link.** When the observation cites a session, the `**Source:**` / `## Anchor` line is a full-stem wiki-link to that quest (`## Anchor [[SNNN_<sid8>_<slug>|SNNN]]`), not plain text — see *Link & anchor conventions* in `write-rules.md`. A bare `SNNN` is an invisible backlink; the linked form is what makes the draft, once confirmed, show up in the source quest's backlinks.
+
 ## When the agent drafts vs lets it pass
 
 Deferred to real use. The exact threshold ("when should I bother writing this down") will emerge from seeing what drafts get approved and what gets rejected. Early-phase bias: **draft when in doubt.** A rejection is cheap; a missed observation is invisible.

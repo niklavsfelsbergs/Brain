@@ -23,3 +23,13 @@ The link-form clause is updated for tool-resolvability (Obsidian + any markdown 
 - The stable ID (`D-004`) remains the **leading anchor** of every link and filename, never reused. Traceability — this decision's core purpose — is unchanged.
 - The original *"the short ID alone remains the canonical reference"* rule (above) is **retired**: the descriptive suffix becomes load-bearing inside links. Accepted because slug-renames of stable historical entries are rare and mechanically recoverable (find-replace by the `[[D-NNN` prefix).
 - Migration is a one-time **link-text** rewrite — no file renames, so hook/cockpit filename parsing is untouched. Spec + rationale: `bank/research/obsidian-fit-and-migration-spec.md`. First pass (2026-05-26): dev-brain `D-` decision links. Original D-004 text preserved above.
+
+### Going-forward authoring (added 2026-05-27, plan §O.9)
+
+The amendment is not only a migration rule — it governs how **new** entries are written, or the migrated corpus re-rots one note at a time.
+
+- **Author every cross-reference full-stem** with the `|ID` alias, across all prefixes (`D-` / `S-` / `Q-` / `A-` / `I-` / `R-` / `B-` / `G-`) — not just the kind migrated so far.
+- **Wrap each entry's source anchor as a link.** `**Source:** [[SNNN_…|SNNN]]`, `## Anchor [[SNNN_…|SNNN]]`, `**Session ref.** [[SNNN_…|SNNN]]` — never plain text. Plain-text anchors are why the gielinor graph was 76% isolated before §O.6; the linked anchor is the backlink that wires a note to its source quest.
+- **Gielinor mirrors this rule** in `gielinor/meta/write-rules.md` (*Link & anchor conventions*) — gielinor doesn't read the dev brain, so the rule is stated in both vaults.
+
+The §O.2–§O.6 migrations fixed the existing corpus; this clause keeps it fixed.

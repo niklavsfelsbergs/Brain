@@ -1,0 +1,1 @@
+Test run 1 failed: image missing python `duckdb` (full-pull DuckDB join, pipeline L496) — latent since S069, never hit in-cluster till now. Fixed: added duckdb to Dockerfile, pushed main eed2ef8, CICD rebuilding (polling past 0608a755). Re-trigger after build → full-pull verifies fix + seeds raw.parquet → incremental thereafter. Didn't seed (let full-pull prove the fix).

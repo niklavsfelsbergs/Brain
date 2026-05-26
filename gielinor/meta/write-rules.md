@@ -74,6 +74,17 @@ The check is *explicit*, not inferred. "Yes, write it" / "go ahead, apply the fi
 
 See [[D-017_user-only-with-explicit-permission]] for the founding decision (2026-05-21, S021 alching of Jebrim).
 
+## Link & anchor conventions (Obsidian-resolvable)
+
+Every cross-reference is a **full-stem wiki-link**, and every **source anchor is a link** — so each new entry is born connected to the graph instead of being wired in by a later migration. Stock Obsidian (and any plain-markdown tool) resolves `[[links]]` by *exact filename*: a bare `[[D-NNN]]`-style link is phantom, while the full stem resolves. (Founding decision: the `D-004` stable-IDs amendment in the dev brain, 2026-05-26; the one-time corpus migration ran as plan §O.2–§O.6.)
+
+- **Full filename stem, ID prefix leading.** Write `[[D-NNN_descriptive-slug|D-NNN]]` — the prefix stays the stable anchor, the `|ID` display alias keeps prose terse, and the slug is load-bearing inside the link. A bare stem without the alias is fine for standalone refs.
+- **All ID kinds**, not just the one you cite most: lorebook decisions (`D-`), sessions (`S-`), bankstanding / Guthix (`B-`, `G-`), and any other prefixed ID.
+- **The source anchor is a link — this is the line that bit us.** When an entry records its origin — `## Anchor SNNN`, `**Source:** SNNN`, `**Observation (SNNN, date)**` — wrap the ID as a full-stem link to the source quest, e.g. `## Anchor [[SNNN_<sid8>_<slug>|SNNN]]`. A plain-text anchor is an invisible backlink: the §O.6 enrichment pass found gielinor's graph **76% isolated** precisely because nearly every note carried its anchor as plain text. Born-linked notes never accrue that debt.
+- **Don't wiki-link code files or paths.** `[[backend.py]]`, `[[sql/x.sql]]` are not note links — leave them as plain text or code spans.
+
+This is authoring discipline, not a hook — the one-time Obsidian migrations only fixed the *existing* corpus. See `layer-routing.md` for which layer an entry lands in and `drafts-mechanics.md` for the observation rule the anchor pairs with.
+
 ## Related
 
 - `layer-routing.md` for *which* layer a given piece of content belongs in.

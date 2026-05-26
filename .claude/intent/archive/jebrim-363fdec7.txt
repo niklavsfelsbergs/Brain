@@ -1,0 +1,1 @@
+Pushed reference/tables.md dimension catalogue to picanova (cd0b0e3, tables.md only). how_to.md left as S070's held dirty work. Picanova now has my reference fixes but not S070's menu fixes — flagging the clean-pull-vs-working-copy consistency for the demo. how_to.md rule still held (reconcile w/ S070's Mode-2 as one posture post-demo). Brain uncommitted.

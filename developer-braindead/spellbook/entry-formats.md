@@ -13,7 +13,7 @@
 | `I-NNN` | `examine/` (identity) | [[I-001]] |
 | `SNNN` | `quest-log/` | [[S001_dev_brain_architecture]], [[S002_dev_brain_runescape_restructure]] |
 
-Numbers never reused. References use the **full filename stem** (`[[D-001_two_brain_split]]`) with the ID prefix as the stable anchor — per the [[D-004_stable_ids]] amendment (2026-05-26). *Decisions migrated 2026-05-26; A/Q/R/I/S links still use the bare ID pending their own pass.*
+Numbers never reused. References use the **full filename stem** with an optional `|ID` display alias (`[[D-001_two_brain_split|D-001]]`) and the ID prefix as the stable anchor — per the [[D-004_stable_ids]] amendment (2026-05-26). This holds for **every** prefix going forward; the bare `[[D-NNN]]` / `[[SNNN]]` shown in the templates below are placeholders standing in for that full-stem link, not the literal form to write. *Migration status: `D-` / `S-` links rewritten (plan §O.2/§O.3); `Q-` / `A-` / `I-` / `R-` back-references are a pending top-up (§O.7) — but author all new links full-stem regardless of prefix.*
 
 ## Decision — `bank/decisions/D-NNN_descriptive_name.md`
 

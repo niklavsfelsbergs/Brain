@@ -1,0 +1,1 @@
+S073 local recon done: deploy = MANUAL docker build→ECR :latest + S3 data sync (no CICD anywhere in repo); dashboard pod pulls S3 on startup. Q1/Q2/Q5 answered. Wrinkle: data/raw_cache/* split files are pre-cutover (Apr 14) — sync_to_s3.sh stale, would poison next --refresh. Fixing creds, then live ECR/S3 probe.

@@ -1,0 +1,1 @@
+Patching the 4 doc gaps the audit found. Page 07 first: a task-list-discipline section (meta/task-lists.md + D-031) wired after the preamble, plus a worktree-isolation note (D-030) into parallel-coordination. Then 09 gets the transcript+compose surfaces, 11's index gets the missing source row + decision refs, regen the HTML. Read-only on cockpit — f9310a45's live there.

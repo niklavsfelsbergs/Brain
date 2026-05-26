@@ -1,0 +1,1 @@
+Ideas parked. The whole gap survey + the §P roadmap stub sit in bank/research/2026-05-26-agentic-os-gap-survey.md — durable, paste-ready. Not bolting §P into plan.md while acf8fc80 holds an entangled commit on it with 4 siblings live. Handed §P off; principal returns to it later.

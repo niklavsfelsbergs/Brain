@@ -1,0 +1,1 @@
+Verdict's on the shelf, not in the walls. Transcript-as-sole-surface: prose 80% is a clean build, interactive-prompt 20% is the snag, "stream it all" just rebuilds xterm worse — real ceiling is headless-bills-vs-PTY-subscription. Wrote the hybrid design to bank/research/, parked behind §C. No cockpit touched.

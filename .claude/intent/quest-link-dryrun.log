@@ -1,0 +1,637 @@
+# Obsidian link migration — DRY-RUN
+# vault: C:\Users\niklavs.felsbergs\Documents\GitHub\brain\developer-braindead
+# prefix filter: S
+
+## SUMMARY
+  rewrites proposed : 327  (74 distinct IDs, 87 files)
+  already resolves  : 367 full-stem links left as-is
+  FLAGGED (dupes)   : 4 IDs, 30 link occurrences NOT rewritten
+  dangling          : 17 IDs, 81 occurrences (no file; left)
+  convention-doc hits: 3 (REVIEW manually)
+
+## FLAGGED — real dupes / ambiguous, NOT rewritten (human call)
+  [[S038]]  (multi-main, 11 link occurrences) candidates:
+      - S038_brain_underutilization_diagnosis
+      - S038_vscode_claude_focus_extension
+  [[S049]]  (multi-main, 0 link occurrences) candidates:
+      - S049_17e701eb_map-fixes
+      - S049_17e701eb_visualizer_state_aware_motion_and_action_line
+  [[S060]]  (multi-main, 12 link occurrences) candidates:
+      - S060_3b367751_chat-thinking-cancel-polish
+      - S060_7c9033f4_chat-persistence-rename-takeover
+      - S060_ac10ec71_switchboard-embedded-chat
+      - S060_brain_self_audit_and_plan_reconciliation
+  [[S086]]  (multi-main, 7 link occurrences) candidates:
+      - S086_86020a52_cockpit-terminal-compose-bar
+      - S086_e668ec7e_brain-technical-docs
+
+## sole-sub groups (no main entry; resolved to the only file)
+  [[S017]] -> S017_d014_chat_panel_implementation
+  [[S026]] -> S026_d018_shipped_visualizer_audit_prep
+  [[S044]] -> S044_d024_scaffold_and_comms_chatbox
+  [[S081]] -> S081_p1_terminal-prompt-below-fold
+
+## CONVENTION-DOC rewrites (review — may be illustrative examples)
+  bank/research/obsidian-fit-and-migration-spec.md:89  [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+  spellbook/entry-formats.md:14  [[S001]] -> [[S001_dev_brain_architecture]]
+  spellbook/entry-formats.md:14  [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+
+## dangling bare-ID links (no matching file; left as-is)
+  [[A-001]]  x8
+  [[A-002]]  x3
+  [[A-003]]  x3
+  [[D-001]]  x1
+  [[I-001]]  x9
+  [[I-002]]  x7
+  [[I-003]]  x2
+  [[Q-001]]  x10
+  [[Q-002]]  x4
+  [[Q-003]]  x5
+  [[Q-004]]  x5
+  [[Q-005]]  x1
+  [[Q-006]]  x5
+  [[Q-007]]  x8
+  [[Q-008]]  x5
+  [[R-001]]  x3
+  [[R-002]]  x2
+
+## PER-ID rewrite targets
+  [[S001]] x 28  ->  [[S001_dev_brain_architecture]]
+  [[S002]] x 17  ->  [[S002_dev_brain_runescape_restructure]]
+  [[S003]] x 27  ->  [[S003_main_brain_phase_1_scaffold]]
+  [[S004]] x  7  ->  [[S004_main_brain_corrections_post_s003]]
+  [[S005]] x  1  ->  [[S005_alching_preamble_protocol_brain_routers]]
+  [[S006]] x  2  ->  [[S006_handoff_precondition_and_dwarf_spawning]]
+  [[S007]] x  3  ->  [[S007_bankstanding_phase_0_alching]]
+  [[S008]] x 10  ->  [[S008_iso_visualizer_v0]]
+  [[S009]] x  5  ->  [[S009_visualizer_six_deltas_and_frame]]
+  [[S010]] x  4  ->  [[S010_visualizer_live_mode_v0]]
+  [[S011]] x  3  ->  [[S011_visualizer_intent_narration]]
+  [[S012]] x  1  ->  [[S012_braindead_character_and_workshop]]
+  [[S013]] x  2  ->  [[S013_close_session_harvest_pump]]
+  [[S014]] x  9  ->  [[S014_visualizer_polish_and_aesthetics_pass]]
+  [[S015]] x  3  ->  [[S015_dwarf_attribution_via_agent_id]]
+  [[S016]] x  2  ->  [[S016_visualizer_chat_panel_design]]
+  [[S017]] x  6  ->  [[S017_d014_chat_panel_implementation]]
+  [[S018]] x  6  ->  [[S018_jebrim_layer_utilization_audit]]
+  [[S019]] x  3  ->  [[S019_gnomes_subagent_implementation]]
+  [[S020]] x  6  ->  [[S020_gnomes_ratification_and_visualizer]]
+  [[S021]] x  2  ->  [[S021_visualizer_audit]]
+  [[S022]] x 10  ->  [[S022_visualizer_audit_fixes]]
+  [[S023]] x  8  ->  [[S023_visualizer_ticker_and_cross_session_attribution]]
+  [[S024]] x  8  ->  [[S024_visualizer_aliveness_pass_1_3]]
+  [[S025]] x  3  ->  [[S025_parallel_player_instances]]
+  [[S026]] x  1  ->  [[S026_d018_shipped_visualizer_audit_prep]]
+  [[S027]] x  4  ->  [[S027_visualizer_audit]]
+  [[S028]] x  4  ->  [[S028_subtask_channel_and_guthix]]
+  [[S029]] x  7  ->  [[S029_parallel_braindead_and_comms_channel]]
+  [[S030]] x  4  ->  [[S030_penguins_subagent_and_research_folder]]
+  [[S031]] x  5  ->  [[S031_visualizer_world_scale_layout_and_bubble_redesign]]
+  [[S032]] x  6  ->  [[S032_terminal_switchboard_phases_1_and_2]]
+  [[S033]] x  1  ->  [[S033_visualizer_audit_live_mode_and_hooks]]
+  [[S034]] x  5  ->  [[S034_guthix_consultation_mode]]
+  [[S037]] x  5  ->  [[S037_terminal_switchboard_phase_3_click_to_focus]]
+  [[S039]] x  1  ->  [[S039_switchboard_zombie_gc_and_instance_reclaim]]
+  [[S040]] x  1  ->  [[S040_ideas_folder_at_brain_root]]
+  [[S042]] x  1  ->  [[S042_visualizer_character_audit]]
+  [[S047]] x  1  ->  [[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance]]
+  [[S051]] x  1  ->  [[S051_8bf3fdb7_visualizer_tree_and_bubble_scale]]
+  [[S052]] x  5  ->  [[S052_98d4ec5e_switchboard-rebuild]]
+  [[S056]] x  1  ->  [[S056_e433ac17_switchboard-osrs-chatbox]]
+  [[S057]] x  1  ->  [[S057_switchboard_awaiting_crew_state]]
+  [[S058]] x  1  ->  [[S058_world_personality_in_voice_narration]]
+  [[S062]] x  1  ->  [[S062_switchboard_lifecycle_feed_persistent_server_peek]]
+  [[S064]] x  6  ->  [[S064_78824901_switchboard-cockpit-rebuild]]
+  [[S065]] x  4  ->  [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]
+  [[S066]] x  6  ->  [[S066_7f5db8c5_cockpit-sweep]]
+  [[S067]] x  1  ->  [[S067_5294143e_cockpit-terminal-interior-and-header-align]]
+  [[S068]] x  1  ->  [[S068_89f41770_reflection_cockpit_parking_and_lessons]]
+  [[S071]] x  2  ->  [[S071_e11aff01_neuron-overlay-design]]
+  [[S072]] x  1  ->  [[S072_dbd41cc0_cockpit-fluid-ui]]
+  [[S073]] x  1  ->  [[S073_d82c4fbc_terminal-scroll-root-fix]]
+  [[S074]] x  4  ->  [[S074_cockpit_switchboard_status_fixes]]
+  [[S075]] x  1  ->  [[S075_d27b2fe0_agent-prose-into-feed]]
+  [[S076]] x  1  ->  [[S076_322cb5c3_cockpit-vscode-rename-and-focus]]
+  [[S077]] x  1  ->  [[S077_e0f2af5d_cockpit-swarm-verification]]
+  [[S079]] x  1  ->  [[S079_e7008a60_cockpit-header-bar-overhaul]]
+  [[S082]] x  1  ->  [[S082_open_on_entry_discipline]]
+  [[S083]] x  9  ->  [[S083_d71c4ab3_cockpit-full-audit]]
+  [[S084]] x  3  ->  [[S084_454e276c_cockpit-switchbar-selection-and-nav]]
+  [[S085]] x  3  ->  [[S085_5f93bb32_cockpit-pty-auth-and-md-xss]]
+  [[S087]] x  3  ->  [[S087_23dcc534_cockpit-ctrl-c-copy]]
+  [[S088]] x  1  ->  [[S088_f731b4e8_worktree-isolation-for-parallel-sessions]]
+  [[S089]] x  1  ->  [[S089_35b35dc5_cockpit-duplicate-row-session-rotation]]
+  [[S090]] x  2  ->  [[S090_task_list_discipline]]
+  [[S091]] x  1  ->  [[S091_remove_leftover_windows_toast_notifier]]
+  [[S092]] x  7  ->  [[S092_327b1216_cockpit_transcript_and_rename_persistence]]
+  [[S093]] x  7  ->  [[S093_f3239bdc_transcript-readability-and-term-fit]]
+  [[S094]] x  4  ->  [[S094_cockpit_noopen_stale_process_cleanup]]
+  [[S095]] x  8  ->  [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+  [[S096]] x  1  ->  [[S096_docs_freshness_audit_and_patch]]
+  [[S097]] x  4  ->  [[S097_b3c2b8dd_rag_research_and_obsidian_interlink]]
+  [[S098]] x 10  ->  [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+
+## DETAIL — every proposed rewrite (file:line)
+
+  bank/assumptions/A-001_phase_1_substrate.md
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/assumptions/A-002_markdown_wikilinks.md
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/assumptions/A-003_hitl_pluggable_gates.md
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/build-lessons.md
+    L30: [[S034]] -> [[S034_guthix_consultation_mode]]
+    L46: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+    L48: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+    L50: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+    L52: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+    L54: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+    L56: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+    L78: [[S037]] -> [[S037_terminal_switchboard_phase_3_click_to_focus]]
+    L80: [[S037]] -> [[S037_terminal_switchboard_phase_3_click_to_focus]]
+    L82: [[S037]] -> [[S037_terminal_switchboard_phase_3_click_to_focus]]
+    L84: [[S037]] -> [[S037_terminal_switchboard_phase_3_click_to_focus]]
+    L86: [[S034]] -> [[S034_guthix_consultation_mode]]
+    L88: [[S034]] -> [[S034_guthix_consultation_mode]]
+    L90: [[S034]] -> [[S034_guthix_consultation_mode]]
+    L92: [[S034]] -> [[S034_guthix_consultation_mode]]
+    L94: [[S032]] -> [[S032_terminal_switchboard_phases_1_and_2]]
+    L96: [[S032]] -> [[S032_terminal_switchboard_phases_1_and_2]]
+    L98: [[S032]] -> [[S032_terminal_switchboard_phases_1_and_2]]
+    L100: [[S032]] -> [[S032_terminal_switchboard_phases_1_and_2]]
+    L102: [[S032]] -> [[S032_terminal_switchboard_phases_1_and_2]]
+    L104: [[S031]] -> [[S031_visualizer_world_scale_layout_and_bubble_redesign]]
+    L106: [[S031]] -> [[S031_visualizer_world_scale_layout_and_bubble_redesign]]
+    L108: [[S031]] -> [[S031_visualizer_world_scale_layout_and_bubble_redesign]]
+    L110: [[S031]] -> [[S031_visualizer_world_scale_layout_and_bubble_redesign]]
+    L112: [[S031]] -> [[S031_visualizer_world_scale_layout_and_bubble_redesign]]
+    L114: [[S030]] -> [[S030_penguins_subagent_and_research_folder]]
+    L116: [[S030]] -> [[S030_penguins_subagent_and_research_folder]]
+    L118: [[S030]] -> [[S030_penguins_subagent_and_research_folder]]
+    L120: [[S030]] -> [[S030_penguins_subagent_and_research_folder]]
+    L122: [[S029]] -> [[S029_parallel_braindead_and_comms_channel]]
+    L124: [[S029]] -> [[S029_parallel_braindead_and_comms_channel]]
+    L126: [[S029]] -> [[S029_parallel_braindead_and_comms_channel]]
+    L128: [[S029]] -> [[S029_parallel_braindead_and_comms_channel]]
+    L130: [[S028]] -> [[S028_subtask_channel_and_guthix]]
+    L132: [[S028]] -> [[S028_subtask_channel_and_guthix]]
+    L134: [[S028]] -> [[S028_subtask_channel_and_guthix]]
+    L136: [[S027]] -> [[S027_visualizer_audit]]
+    L138: [[S027]] -> [[S027_visualizer_audit]]
+    L140: [[S023]] -> [[S023_visualizer_ticker_and_cross_session_attribution]]
+    L142: [[S023]] -> [[S023_visualizer_ticker_and_cross_session_attribution]]
+    L144: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L146: [[S021]] -> [[S021_visualizer_audit]]
+    L148: [[S021]] -> [[S021_visualizer_audit]]
+    L150: [[S020]] -> [[S020_gnomes_ratification_and_visualizer]]
+    L152: [[S020]] -> [[S020_gnomes_ratification_and_visualizer]]
+    L154: [[S019]] -> [[S019_gnomes_subagent_implementation]]
+    L156: [[S019]] -> [[S019_gnomes_subagent_implementation]]
+    L158: [[S018]] -> [[S018_jebrim_layer_utilization_audit]]
+    L160: [[S018]] -> [[S018_jebrim_layer_utilization_audit]]
+    L162: [[S017]] -> [[S017_d014_chat_panel_implementation]]
+    L164: [[S017]] -> [[S017_d014_chat_panel_implementation]]
+    L166: [[S017]] -> [[S017_d014_chat_panel_implementation]]
+    L168: [[S016]] -> [[S016_visualizer_chat_panel_design]]
+    L170: [[S015]] -> [[S015_dwarf_attribution_via_agent_id]]
+    L172: [[S015]] -> [[S015_dwarf_attribution_via_agent_id]]
+    L174: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+    L176: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+    L178: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+    L180: [[S013]] -> [[S013_close_session_harvest_pump]]
+    L182: [[S010]] -> [[S010_visualizer_live_mode_v0]]
+    L184: [[S009]] -> [[S009_visualizer_six_deltas_and_frame]]
+    L186: [[S008]] -> [[S008_iso_visualizer_v0]]
+    L188: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L188: [[S007]] -> [[S007_bankstanding_phase_0_alching]]
+    L190: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+    L192: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+    L194: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+    L196: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+    L198: [[S084]] -> [[S084_454e276c_cockpit-switchbar-selection-and-nav]]
+    L200: [[S085]] -> [[S085_5f93bb32_cockpit-pty-auth-and-md-xss]]
+    L200: [[S020]] -> [[S020_gnomes_ratification_and_visualizer]]
+    L200: [[S015]] -> [[S015_dwarf_attribution_via_agent_id]]
+    L202: [[S085]] -> [[S085_5f93bb32_cockpit-pty-auth-and-md-xss]]
+    L206: [[S087]] -> [[S087_23dcc534_cockpit-ctrl-c-copy]]
+    L208: [[S092]] -> [[S092_327b1216_cockpit_transcript_and_rename_persistence]]
+    L208: [[S017]] -> [[S017_d014_chat_panel_implementation]]
+    L210: [[S092]] -> [[S092_327b1216_cockpit_transcript_and_rename_persistence]]
+    L212: [[S092]] -> [[S092_327b1216_cockpit_transcript_and_rename_persistence]]
+    L212: [[S039]] -> [[S039_switchboard_zombie_gc_and_instance_reclaim]]
+    L212: [[S084]] -> [[S084_454e276c_cockpit-switchbar-selection-and-nav]]
+    L212: [[S093]] -> [[S093_f3239bdc_transcript-readability-and-term-fit]]
+    L214: [[S092]] -> [[S092_327b1216_cockpit_transcript_and_rename_persistence]]
+    L214: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+    L218: [[S093]] -> [[S093_f3239bdc_transcript-readability-and-term-fit]]
+    L218: [[S092]] -> [[S092_327b1216_cockpit_transcript_and_rename_persistence]]
+    L218: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+    L220: [[S094]] -> [[S094_cockpit_noopen_stale_process_cleanup]]
+    L222: [[S094]] -> [[S094_cockpit_noopen_stale_process_cleanup]]
+    L222: [[S066]] -> [[S066_7f5db8c5_cockpit-sweep]]
+    L224: [[S097]] -> [[S097_b3c2b8dd_rag_research_and_obsidian_interlink]]
+    L226: [[S095]] -> [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+    L226: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+    L226: [[S093]] -> [[S093_f3239bdc_transcript-readability-and-term-fit]]
+    L228: [[S095]] -> [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+
+  bank/decisions/D-001_two_brain_split.md
+    L17: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/decisions/D-002_folder_name.md
+    L11: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/decisions/D-003_initial_file_set.md
+    L3: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L12: [[S001]] -> [[S001_dev_brain_architecture]]
+    L17: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/decisions/D-004_stable_ids.md
+    L15: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/decisions/D-005_session_start_protocol.md
+    L13: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/decisions/D-006_dev_brain_restructure.md
+    L39: [[S001]] -> [[S001_dev_brain_architecture]]
+    L40: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L41: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L43: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+
+  bank/decisions/D-007_main_brain_phase_1_scaffold_landed.md
+    L3: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L27: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+
+  bank/decisions/D-008_iso_replay_v0_over_three_js.md
+    L21: [[S008]] -> [[S008_iso_visualizer_v0]]
+
+  bank/decisions/D-009_visualizer_live_mode_v0.md
+    L3: [[S008]] -> [[S008_iso_visualizer_v0]]
+    L3: [[S009]] -> [[S009_visualizer_six_deltas_and_frame]]
+    L24: [[S009]] -> [[S009_visualizer_six_deltas_and_frame]]
+    L42: [[S010]] -> [[S010_visualizer_live_mode_v0]]
+
+  bank/decisions/D-010_visualizer_intent_narration.md
+    L3: [[S010]] -> [[S010_visualizer_live_mode_v0]]
+    L45: [[S011]] -> [[S011_visualizer_intent_narration]]
+
+  bank/decisions/D-012_close_session_harvest_pump.md
+    L57: [[S013]] -> [[S013_close_session_harvest_pump]]
+
+  bank/decisions/D-013_braindead_character_and_workshop.md
+    L3: [[S011]] -> [[S011_visualizer_intent_narration]]
+    L41: [[S012]] -> [[S012_braindead_character_and_workshop]]
+
+  bank/decisions/D-014_visualizer_chat_panel.md
+    L79: [[S016]] -> [[S016_visualizer_chat_panel_design]]
+
+  bank/decisions/D-015_jebrim_layer_audit_outcomes.md
+    L3: [[S017]] -> [[S017_d014_chat_panel_implementation]]
+    L3: [[S018]] -> [[S018_jebrim_layer_utilization_audit]]
+    L53: [[S018]] -> [[S018_jebrim_layer_utilization_audit]]
+
+  bank/decisions/D-016_gnomes_subagent.md
+    L3: [[S018]] -> [[S018_jebrim_layer_utilization_audit]]
+    L114: [[S020]] -> [[S020_gnomes_ratification_and_visualizer]]
+    L124: [[S019]] -> [[S019_gnomes_subagent_implementation]]
+    L125: [[S020]] -> [[S020_gnomes_ratification_and_visualizer]]
+
+  bank/decisions/D-017_parallel_player_instances.md
+    L5: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+    L5: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L5: [[S023]] -> [[S023_visualizer_ticker_and_cross_session_attribution]]
+    L5: [[S024]] -> [[S024_visualizer_aliveness_pass_1_3]]
+    L66: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+    L66: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L66: [[S023]] -> [[S023_visualizer_ticker_and_cross_session_attribution]]
+    L66: [[S024]] -> [[S024_visualizer_aliveness_pass_1_3]]
+
+  bank/decisions/D-018_parallel_session_substrate_isolation.md
+    L5: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+    L6: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L7: [[S023]] -> [[S023_visualizer_ticker_and_cross_session_attribution]]
+    L8: [[S024]] -> [[S024_visualizer_aliveness_pass_1_3]]
+    L9: [[S025]] -> [[S025_parallel_player_instances]]
+    L95: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+    L95: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L95: [[S023]] -> [[S023_visualizer_ticker_and_cross_session_attribution]]
+    L95: [[S024]] -> [[S024_visualizer_aliveness_pass_1_3]]
+    L95: [[S025]] -> [[S025_parallel_player_instances]]
+
+  bank/decisions/D-019_parallel_braindead_and_comms_channel.md
+    L132: [[S028]] -> [[S028_subtask_channel_and_guthix]]
+
+  bank/decisions/D-025_visualizer_character_audit_findings.md
+    L101: [[S033]] -> [[S033_visualizer_audit_live_mode_and_hooks]]
+    L102: [[S027]] -> [[S027_visualizer_audit]]
+    L107: [[S052]] -> [[S052_98d4ec5e_switchboard-rebuild]]
+
+  bank/decisions/D-026_switchboard_promotion.md
+    L5: [[S047]] -> [[S047_a110d573_visualizer-cluster-stack-and-helmet-clearance]]
+    L5: [[S051]] -> [[S051_8bf3fdb7_visualizer_tree_and_bubble_scale]]
+    L50: [[S052]] -> [[S052_98d4ec5e_switchboard-rebuild]]
+
+  bank/decisions/D-027_inward_outward_build_imbalance.md
+    L5: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L12: [[S040]] -> [[S040_ideas_folder_at_brain_root]]
+
+  bank/decisions/D-030_worktree_isolation_for_parallel_sessions.md
+    L36: [[S052]] -> [[S052_98d4ec5e_switchboard-rebuild]]
+
+  bank/main-brain-construction/D-001_phase-1-scaffold.md
+    L68: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+
+  bank/main-brain-construction/D-002_player_invocation_by_address.md
+    L79: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+
+  bank/main-brain-construction/patch-notes.md
+    L42: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+
+  bank/open-questions/Q-001_retrieval_mechanism.md
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/open-questions/Q-002_async_gates.md
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/open-questions/Q-003_personalities_loadable.md
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/open-questions/Q-004_principal_self_split.md
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/open-questions/Q-005_capabilities_in_main_brain.md
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/open-questions/Q-006_main_brain_load.md
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/open-questions/Q-007_gielinor_visualizer.md
+    L3: [[S008]] -> [[S008_iso_visualizer_v0]]
+    L62: [[S006]] -> [[S006_handoff_precondition_and_dwarf_spawning]]
+    L62: [[S007]] -> [[S007_bankstanding_phase_0_alching]]
+
+  bank/open-questions/Q-008_visualizer_aliveness.md
+    L3: [[S024]] -> [[S024_visualizer_aliveness_pass_1_3]]
+    L15: [[S008]] -> [[S008_iso_visualizer_v0]]
+    L47: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L53: [[S024]] -> [[S024_visualizer_aliveness_pass_1_3]]
+    L64: [[S024]] -> [[S024_visualizer_aliveness_pass_1_3]]
+
+  bank/plan.md
+    L7: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L13: [[S001]] -> [[S001_dev_brain_architecture]]
+    L13: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L15: [[S001]] -> [[S001_dev_brain_architecture]]
+    L17: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L18: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L22: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L24: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L26: [[S001]] -> [[S001_dev_brain_architecture]]
+    L27: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L28: [[S001]] -> [[S001_dev_brain_architecture]]
+    L35: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L45: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L97: [[S056]] -> [[S056_e433ac17_switchboard-osrs-chatbox]]
+    L143: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+    L148: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+
+  bank/research/2026-05-26-rag-for-the-brain.md
+    L3: [[S097]] -> [[S097_b3c2b8dd_rag_research_and_obsidian_interlink]]
+
+  bank/research/obsidian-fit-and-migration-spec.md
+    L89: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]  <CONV>
+
+  bank/research/visualizer-audit-S026-prep.md
+    L3: [[S025]] -> [[S025_parallel_player_instances]]
+
+  bank/risks/R-001_export_discipline.md
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  bank/risks/R-002_memory_layers_drift.md
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+    L7: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+
+  CLAUDE.md
+    L23: [[S058]] -> [[S058_world_personality_in_voice_narration]]
+
+  comms/active.md
+    L16: [[S029]] -> [[S029_parallel_braindead_and_comms_channel]]
+
+  examine/I-001_match_register_to_principal.md
+    L3: [[S001]] -> [[S001_dev_brain_architecture]]
+    L3: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+
+  examine/I-002_render_before_shipping_ui.md
+    L3: [[S008]] -> [[S008_iso_visualizer_v0]]
+    L7: [[S008]] -> [[S008_iso_visualizer_v0]]
+
+  examine/I-003_rebuild_from_concepts_after_trajectory_changes.md
+    L3: [[S068]] -> [[S068_89f41770_reflection_cockpit_parking_and_lessons]]
+    L7: [[S064]] -> [[S064_78824901_switchboard-cockpit-rebuild]]
+    L14: [[S064]] -> [[S064_78824901_switchboard-cockpit-rebuild]]
+
+  experiments/visualizer/state-comms-braindead.md
+    L16: [[S029]] -> [[S029_parallel_braindead_and_comms_channel]]
+
+  player/working-agreements.md
+    L9: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  quest-log/in-progress/S037_terminal_switchboard_phase_3_click_to_focus.md
+    L41: [[S032]] -> [[S032_terminal_switchboard_phases_1_and_2]]
+
+  quest-log/in-progress/S066_7f5db8c5_cockpit-sweep.md
+    L4: [[S065]] -> [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]
+    L15: [[S064]] -> [[S064_78824901_switchboard-cockpit-rebuild]]
+    L24: [[S065]] -> [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]
+    L30: [[S064]] -> [[S064_78824901_switchboard-cockpit-rebuild]]
+    L53: [[S065]] -> [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]
+    L68: [[S065]] -> [[S065_bfa95764_cockpit-askuserquestion-hang-fix]]
+
+  quest-log/in-progress/S067_5294143e_cockpit-terminal-interior-and-header-align.md
+    L5: [[S067]] -> [[S067_5294143e_cockpit-terminal-interior-and-header-align]]
+    L7: [[S066]] -> [[S066_7f5db8c5_cockpit-sweep]]
+    L22: [[S066]] -> [[S066_7f5db8c5_cockpit-sweep]]
+
+  quest-log/in-progress/S088_f731b4e8_worktree-isolation-for-parallel-sessions.md
+    L8: [[S052]] -> [[S052_98d4ec5e_switchboard-rebuild]]
+
+  quest-log/S001_dev_brain_architecture.md
+    L7: [[S001]] -> [[S001_dev_brain_architecture]]
+    L9: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+
+  quest-log/S002_dev_brain_runescape_restructure.md
+    L4: [[S001]] -> [[S001_dev_brain_architecture]]
+
+  quest-log/S003_main_brain_phase_1_scaffold.md
+    L21: [[S001]] -> [[S001_dev_brain_architecture]]
+    L21: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L21: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L21: [[S002]] -> [[S002_dev_brain_runescape_restructure]]
+    L21: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+
+  quest-log/S004_main_brain_corrections_post_s003.md
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L9: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L13: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L13: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L19: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L21: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+
+  quest-log/S005_alching_preamble_protocol_brain_routers.md
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L3: [[S004]] -> [[S004_main_brain_corrections_post_s003]]
+    L3: [[S004]] -> [[S004_main_brain_corrections_post_s003]]
+    L3: [[S004]] -> [[S004_main_brain_corrections_post_s003]]
+    L13: [[S004]] -> [[S004_main_brain_corrections_post_s003]]
+    L17: [[S004]] -> [[S004_main_brain_corrections_post_s003]]
+    L17: [[S004]] -> [[S004_main_brain_corrections_post_s003]]
+
+  quest-log/S006_handoff_precondition_and_dwarf_spawning.md
+    L19: [[S004]] -> [[S004_main_brain_corrections_post_s003]]
+    L19: [[S005]] -> [[S005_alching_preamble_protocol_brain_routers]]
+
+  quest-log/S007_bankstanding_phase_0_alching.md
+    L3: [[S006]] -> [[S006_handoff_precondition_and_dwarf_spawning]]
+
+  quest-log/S008_iso_visualizer_v0.md
+    L3: [[S007]] -> [[S007_bankstanding_phase_0_alching]]
+
+  quest-log/S009_visualizer_six_deltas_and_frame.md
+    L3: [[S008]] -> [[S008_iso_visualizer_v0]]
+    L3: [[S008]] -> [[S008_iso_visualizer_v0]]
+
+  quest-log/S010_visualizer_live_mode_v0.md
+    L3: [[S009]] -> [[S009_visualizer_six_deltas_and_frame]]
+
+  quest-log/S011_visualizer_intent_narration.md
+    L3: [[S010]] -> [[S010_visualizer_live_mode_v0]]
+
+  quest-log/S012_braindead_character_and_workshop.md
+    L3: [[S011]] -> [[S011_visualizer_intent_narration]]
+    L7: [[S008]] -> [[S008_iso_visualizer_v0]]
+    L7: [[S009]] -> [[S009_visualizer_six_deltas_and_frame]]
+
+  quest-log/S015_dwarf_attribution_via_agent_id.md
+    L3: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+
+  quest-log/S017_d014_chat_panel_implementation.md
+    L14: [[S017]] -> [[S017_d014_chat_panel_implementation]]
+
+  quest-log/S018_jebrim_layer_utilization_audit.md
+    L170: [[S018]] -> [[S018_jebrim_layer_utilization_audit]]
+
+  quest-log/S022_visualizer_audit_fixes.md
+    L7: [[S020]] -> [[S020_gnomes_ratification_and_visualizer]]
+
+  quest-log/S023_visualizer_ticker_and_cross_session_attribution.md
+    L3: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L4: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L7: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L7: [[S023]] -> [[S023_visualizer_ticker_and_cross_session_attribution]]
+
+  quest-log/S025_parallel_player_instances.md
+    L9: [[S024]] -> [[S024_visualizer_aliveness_pass_1_3]]
+
+  quest-log/S027_visualizer_audit.md
+    L7: [[S026]] -> [[S026_d018_shipped_visualizer_audit_prep]]
+
+  quest-log/S028_subtask_channel_and_guthix.md
+    L26: [[S014]] -> [[S014_visualizer_polish_and_aesthetics_pass]]
+    L26: [[S022]] -> [[S022_visualizer_audit_fixes]]
+    L26: [[S023]] -> [[S023_visualizer_ticker_and_cross_session_attribution]]
+    L26: [[S027]] -> [[S027_visualizer_audit]]
+
+  quest-log/S038_vscode_claude_focus_extension.md
+    L7: [[S037]] -> [[S037_terminal_switchboard_phase_3_click_to_focus]]
+
+  quest-log/S039_switchboard_zombie_gc_and_instance_reclaim.md
+    L23: [[S029]] -> [[S029_parallel_braindead_and_comms_channel]]
+
+  quest-log/S046_visualizer_png_sprite_migration_and_world_reskin.md
+    L8: [[S042]] -> [[S042_visualizer_character_audit]]
+
+  quest-log/S058_world_personality_in_voice_narration.md
+    L3: [[S057]] -> [[S057_switchboard_awaiting_crew_state]]
+
+  quest-log/S060_brain_self_audit_and_plan_reconciliation.md
+    L3: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L5: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+    L7: [[S003]] -> [[S003_main_brain_phase_1_scaffold]]
+
+  quest-log/S063_switchboard_feed_liveness_and_cache_fix.md
+    L6: [[S062]] -> [[S062_switchboard_lifecycle_feed_persistent_server_peek]]
+
+  quest-log/S074_cockpit_switchboard_status_fixes.md
+    L6: [[S066]] -> [[S066_7f5db8c5_cockpit-sweep]]
+
+  quest-log/S091_remove_leftover_windows_toast_notifier.md
+    L3: [[S091]] -> [[S091_remove_leftover_windows_toast_notifier]]
+
+  quest-log/S094_cockpit_noopen_stale_process_cleanup.md
+    L3: [[S074]] -> [[S074_cockpit_switchboard_status_fixes]]
+    L4: [[S093]] -> [[S093_f3239bdc_transcript-readability-and-term-fit]]
+    L5: [[S066]] -> [[S066_7f5db8c5_cockpit-sweep]]
+    L10: [[S074]] -> [[S074_cockpit_switchboard_status_fixes]]
+
+  quest-log/S096_docs_freshness_audit_and_patch.md
+    L4: [[S090]] -> [[S090_task_list_discipline]]
+    L4: [[S087]] -> [[S087_23dcc534_cockpit-ctrl-c-copy]]
+    L4: [[S095]] -> [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+    L6: [[S095]] -> [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+
+  respawn.md
+    L11: [[S098]] -> [[S098_b53fca39_obsidian_fit_and_dlink_migration]]
+    L11: [[S095]] -> [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+    L11: [[S097]] -> [[S097_b3c2b8dd_rag_research_and_obsidian_interlink]]
+    L13: [[S095]] -> [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+    L15: [[S097]] -> [[S097_b3c2b8dd_rag_research_and_obsidian_interlink]]
+    L15: [[S095]] -> [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+    L17: [[S096]] -> [[S096_docs_freshness_audit_and_patch]]
+    L17: [[S095]] -> [[S095_f9310a45_cockpit-transcript-full-width-speech-bubble]]
+    L19: [[S094]] -> [[S094_cockpit_noopen_stale_process_cleanup]]
+    L19: [[S093]] -> [[S093_f3239bdc_transcript-readability-and-term-fit]]
+    L19: [[S066]] -> [[S066_7f5db8c5_cockpit-sweep]]
+    L19: [[S074]] -> [[S074_cockpit_switchboard_status_fixes]]
+    L21: [[S093]] -> [[S093_f3239bdc_transcript-readability-and-term-fit]]
+    L21: [[S093]] -> [[S093_f3239bdc_transcript-readability-and-term-fit]]
+    L23: [[S092]] -> [[S092_327b1216_cockpit_transcript_and_rename_persistence]]
+    L23: [[S092]] -> [[S092_327b1216_cockpit_transcript_and_rename_persistence]]
+    L25: [[S090]] -> [[S090_task_list_discipline]]
+    L25: [[S089]] -> [[S089_35b35dc5_cockpit-duplicate-row-session-rotation]]
+    L25: [[S088]] -> [[S088_f731b4e8_worktree-isolation-for-parallel-sessions]]
+    L25: [[S087]] -> [[S087_23dcc534_cockpit-ctrl-c-copy]]
+    L25: [[S085]] -> [[S085_5f93bb32_cockpit-pty-auth-and-md-xss]]
+    L25: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+    L25: [[S084]] -> [[S084_454e276c_cockpit-switchbar-selection-and-nav]]
+    L25: [[S082]] -> [[S082_open_on_entry_discipline]]
+    L25: [[S079]] -> [[S079_e7008a60_cockpit-header-bar-overhaul]]
+    L25: [[S077]] -> [[S077_e0f2af5d_cockpit-swarm-verification]]
+    L25: [[S076]] -> [[S076_322cb5c3_cockpit-vscode-rename-and-focus]]
+    L25: [[S073]] -> [[S073_d82c4fbc_terminal-scroll-root-fix]]
+    L25: [[S074]] -> [[S074_cockpit_switchboard_status_fixes]]
+    L25: [[S075]] -> [[S075_d27b2fe0_agent-prose-into-feed]]
+    L25: [[S072]] -> [[S072_dbd41cc0_cockpit-fluid-ui]]
+    L25: [[S071]] -> [[S071_e11aff01_neuron-overlay-design]]
+    L25: [[S064]] -> [[S064_78824901_switchboard-cockpit-rebuild]]
+    L29: [[S064]] -> [[S064_78824901_switchboard-cockpit-rebuild]]
+    L44: [[S052]] -> [[S052_98d4ec5e_switchboard-rebuild]]
+    L45: [[S071]] -> [[S071_e11aff01_neuron-overlay-design]]
+    L46: [[S094]] -> [[S094_cockpit_noopen_stale_process_cleanup]]
+
+  spellbook/entry-formats.md
+    L14: [[S001]] -> [[S001_dev_brain_architecture]]  <CONV>
+    L14: [[S002]] -> [[S002_dev_brain_runescape_restructure]]  <CONV>
+
+  spellbook/session-close.md
+    L17: [[S083]] -> [[S083_d71c4ab3_cockpit-full-audit]]
+
+# DRY-RUN — nothing written. Re-run with --apply to write.

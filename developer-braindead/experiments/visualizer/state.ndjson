@@ -5915,3 +5915,35 @@
 {"wallTime": "2026-05-25T12:44:31.313+00:00", "source": "git", "type": "commit", "msg": "bf0c767 · S093 (r4): resolve rename-on-restart — instrument + resume-anchor carry", "cls": "commit"}
 {"wallTime": "2026-05-25T14:28:59.442+00:00", "source": "git", "type": "commit", "msg": "33727dd · S067: shipping-agent bucket-first rule + harvest writeup", "cls": "commit"}
 {"wallTime": "2026-05-25T14:39:00.346+00:00", "source": "git", "type": "commit", "msg": "825f03e · S066: Riga apartment (Gertrudes 113) reopened, passed + harvest", "cls": "commit"}
+{"wallTime": "2026-05-25T18:07:16.082+00:00", "source": "git", "type": "commit", "msg": "16da44b · Wrap: S070 shipping-agent menu fix records + pending brain state", "cls": "commit"}
+{"wallTime": "2026-05-25T18:56:57.006+00:00", "source": "git", "type": "commit", "msg": "3c1ffd5 · S071+S072: shipping-agent drift test + pre-demo audit-3 (fixes shipped to picanova)", "cls": "commit"}
+{"wallTime": "2026-05-25T19:30:54.045+00:00", "source": "git", "type": "commit", "msg": "6a74507 · S069: pipeline DuckDB OOM fix verified + S073 AWS-swap hand-off", "cls": "commit"}
+{"wallTime": "2026-05-25T19:40:13.592+00:00", "source": "git", "type": "commit", "msg": "9ae0550 · B-007 bankstanding: first cross-player synthesis (N=2) + Phase 0 tail", "cls": "commit"}
+{"wallTime": "2026-05-25T19:59:16.673+00:00", "source": "git", "type": "commit", "msg": "5e1f51e · B-007 follow-up: canonicalize D-026 (graduate complete-ready quests in-session)", "cls": "commit"}
+{"wallTime": "2026-05-26T06:47:21.768+00:00", "source": "git", "type": "commit", "msg": "0a57003 · D-026 follow-up: close-session graduates complete-ready quests in-session", "cls": "commit"}
+{"wallTime": "2026-05-26T06:52:13.158+00:00", "source": "git", "type": "commit", "msg": "fef0a68 · S094: cockpit no-open fix — clear stacked pythons + free :8770", "cls": "commit"}
+{"wallTime": "2026-05-26T12:41:29.028+00:00", "source": "git", "type": "commit", "msg": "e2d464d · S076: shipping-agent demo deck (built, brain-docs theme)", "cls": "commit"}
+{"wallTime": "2026-05-26T12:41:58.028+00:00", "source": "git", "type": "commit", "msg": "be72e6f · S077: ship SCM dashboard AWS swap + ORWO default + refresh/duckdb fixes", "cls": "commit"}
+{"wallTime": "2026-05-26T12:56:46.104+00:00", "source": "git", "type": "commit", "msg": "8c37415 · S078: EU tender — DPD PL Round 1 carrier dispatch built", "cls": "commit"}
+{"wallTime": "2026-05-26T15:27:07.801+00:00", "source": "git", "type": "commit", "msg": "87549a5 · S095: Gertrudes 113 flat 41 deliberation - research + close", "cls": "commit"}
+{"wallTime": "2026-05-26T15:52:50.072+00:00", "source": "git", "type": "commit", "msg": "1775fa8 · S096: docs/ freshness audit — patch 4 post-S086 gaps", "cls": "commit"}
+{"wallTime": "2026-05-26T16:59:17.794+00:00", "source": "git", "type": "commit", "msg": "19f7570 · S097: SCM daily_product temp-spill OOM — fix shipped to prod main", "cls": "commit"}
+{"wallTime": "2026-05-26T17:37:41.046+00:00", "source": "git", "type": "commit", "msg": "8b168e0 · S097: RAG research + parked plan, interlinked with the Obsidian session", "cls": "commit"}
+{"wallTime": "2026-05-26T18:18:14.428+00:00", "source": "git", "type": "commit", "msg": "49e1e6f · S095: cockpit transcript redesign + compose/name/fit fixes", "cls": "commit"}
+{"wallTime": "2026-05-26T18:19:50.419+00:00", "source": "git", "type": "commit", "msg": "7aa1cfc · S098: Obsidian fit research + dev-brain D-link full-stem migration", "cls": "commit"}
+{"wallTime": "2026-05-26T18:46:46.233+00:00", "source": "git", "type": "commit", "msg": "4714846 · S101: transcript-as-sole-comms-surface feasibility (research-only)", "cls": "commit"}
+{"wallTime": "2026-05-26T18:56:43.377+00:00", "source": "git", "type": "commit", "msg": "7b110b2 · S099: Obsidian §O.3 — dev-brain quest-link full-stem migration", "cls": "commit"}
+{"wallTime": "2026-05-26T18:59:27.222+00:00", "source": "git", "type": "commit", "msg": "0cc4f09 · S102: agentic-OS gap survey — useful capabilities the brain isn't using", "cls": "commit"}
+{"wallTime": "2026-05-26T19:02:47.432+00:00", "source": "git", "type": "commit", "msg": "c63e87b · S103: Slack MCP check + Niklavs communication-style profile (parked)", "cls": "commit"}
+{"wallTime": "2026-05-26T19:17:41.784+00:00", "source": "git", "type": "commit", "msg": "068ce38 · S098: SCM alerts ORWO/TCG split — shipped + deployed", "cls": "commit"}
+{"wallTime": "2026-05-26T19:17:55.954+00:00", "source": "git", "type": "commit", "msg": "637b8cb · S099: Obsidian verify (dev-brain) + gielinor §O.4 dry-run + close", "cls": "commit"}
+{"wallTime": "2026-05-26T19:37:40.054+00:00", "source": "git", "type": "commit", "msg": "79359db · B-008: eighth bankstanding — alch both players, G2 to global, grounding-trigger proposal", "cls": "commit"}
+{"wallTime": "2026-05-26T19:47:49.808+00:00", "source": "git", "type": "commit", "msg": "482fce2 · S104: Obsidian §O.4 — gielinor full-stem link migration applied + respawn trim", "cls": "commit"}
+{"wallTime": "2026-05-26T19:59:48.175+00:00", "source": "git", "type": "commit", "msg": "4b6cee1 · S104: Obsidian §O.4 verified in vault + §O.6 backlink-enrichment hand-off", "cls": "commit"}
+{"wallTime": "2026-05-26T20:18:05.104+00:00", "source": "git", "type": "commit", "msg": "5cd2f97 · S106: \"is the system eating itself?\" audit + D8 enforcement-gap fix", "cls": "commit"}
+{"wallTime": "2026-05-26T20:47:58.894+00:00", "source": "git", "type": "commit", "msg": "5174201 · S105: Obsidian §O.6 — full prose-ref backlink wrap across both brains", "cls": "commit"}
+{"wallTime": "2026-05-26T21:05:04.468+00:00", "source": "git", "type": "commit", "msg": "143c3a0 · S105: §O.6 follow-up — link quest sub-logs to their parent session", "cls": "commit"}
+{"wallTime": "2026-05-26T21:15:59.126+00:00", "source": "git", "type": "commit", "msg": "5162591 · S105: §O.6 close — graph verified (74% connected) + §O.8 deferral logged", "cls": "commit"}
+{"wallTime": "2026-05-26T21:20:29.030+00:00", "source": "git", "type": "commit", "msg": "ba22ad7 · S108: cockpit place-session — name field + click-to-open prewrite", "cls": "commit"}
+{"wallTime": "2026-05-26T21:21:03.376+00:00", "source": "git", "type": "commit", "msg": "2ac4761 · comms: commit the dev rotation archive (completes truncation from 5162591)", "cls": "commit"}
+{"wallTime": "2026-05-26T21:24:04.888+00:00", "source": "git", "type": "commit", "msg": "52fbd71 · S107: comms/active.md rotation + read-discipline fix", "cls": "commit"}

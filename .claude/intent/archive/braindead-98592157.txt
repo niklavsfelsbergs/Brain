@@ -1,0 +1,1 @@
+Place-modal rebuilt: name slot on top, message box and place button torn out, six actor cards that open on click. Seed now types the address with no carriage return — load-bearing change in term.js. node --check + 47/47 backend green. Runtime unverified, needs a relaunch eyeball.

@@ -1,0 +1,1 @@
+SCM ORWO/TCG split — MERGED to origin/main (3535229, --no-ff from detached origin/main; merge = exactly the 5 files, 0 conflicts). CICD building :latest. Remaining cluster-gated ops: DAG re-run (regenerates entity-tagged parquets, OOM-watch) → serving pod restart. Ordering hazard: run DAG before/with pod restart or the ORWO/TCG toggle 500s on the old no-entity parquets.

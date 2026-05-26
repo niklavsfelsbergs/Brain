@@ -1,0 +1,1 @@
+Speccing the Obsidian link-migration — link-TEXT rewrite, not file renames, so the hook/cockpit filename parsers stay untouched. Per-vault, dev-brain decisions as the pilot. The live decision: full-stem rewrite (dependency-free, ethos-aligned) vs alias+plugin (terse but fragile).

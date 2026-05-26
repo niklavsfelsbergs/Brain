@@ -1,0 +1,1 @@
+S069 handed off: principal running `python pipeline.py --refresh-full` (2 DuckDB fixes in, uncommitted, py_compile clean). Watching for 4 milestone lines — DuckDB join → "Freed full DataFrame" (transform peak cleared) → "Loaded N rows for summaries" (df_sum peak cleared) → "Pipeline complete". If it OOMs, apply the matching fallback. Commit only after it finishes.

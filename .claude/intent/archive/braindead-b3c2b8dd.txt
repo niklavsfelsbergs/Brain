@@ -1,0 +1,1 @@
+Found the Obsidian session (b53fca39) — it's speccing the link migration, DECIDED Option A full-stem rewrite. That's not a vague gate, it's my RAG Phase 1's literal input: GraphRAG reads the resolved-link graph their migration creates (pre-migration ~91% phantom). Wired the interlink into the note + §N + flagged them in comms.

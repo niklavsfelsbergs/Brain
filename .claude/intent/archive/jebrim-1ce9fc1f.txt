@@ -1,0 +1,1 @@
+SCM DAG OOM: not RAM — DuckDB hit 2.3GiB temp-spill cap in _write_daily_product_summary. S069 capped memory_limit=2GB to dodge a RAM OOM, forced spill onto a near-full 20Gi disk. Fix: raise memory_limit, pod has 20Gi RAM unused.

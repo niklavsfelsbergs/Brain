@@ -1,10 +1,10 @@
 # S095 — Ģertrūdes 113 (flat 41) buy deliberation [in-progress]
 
 **Player:** Zezima. **Session:** S095 (sid8 `f60153e0`), 2026-05-26.
-**Quest:** Niklavs reconsidering buying **Ģertrūdes iela 113, flat 41** (€120k, ~58 m², renovated pre-war, held as a *domājamā daļa*). Continues S056 (generic *domājamās-daļas* base) and S066 (this flat's first deep-dive, which closed at "principal PASSED"). Re-opened live this session.
+**Quest:** Niklavs reconsidering buying **Ģertrūdes iela 113, flat 41** (€120k, ~58 m², renovated pre-war, held as a *domājamā daļa*). Continues [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] (generic *domājamās-daļas* base) and [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] (this flat's first deep-dive, which closed at "principal PASSED"). Re-opened live this session.
 
 ## What happened (narrative)
-- Niklavs uploaded the **Zemesgrāmata folio Nr. 5262** (`docs/Nodalijums_01000320073.pdf`) and asked what's in it. Read it. *(Process note: I read it cold rather than recognising it as Gate 2 from the S066 verdict — see examine draft this session.)*
+- Niklavs uploaded the **Zemesgrāmata folio Nr. 5262** (`docs/Nodalijums_01000320073.pdf`) and asked what's in it. Read it. *(Process note: I read it cold rather than recognising it as Gate 2 from the [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] verdict — see examine draft this session.)*
 - Walked the folio: property is one undivided *kopīpašums* in ideal shares (not titled); flat 41 = **Līga Putniņa's 83/7000 share since 2017**, clean bar an ordinary SEB mortgage. **Gate 2 closed clean** — registered *lietošanas kārtība*, attic shares recalculated/recorded, no arrest or other liens on 41.
 - Built internal building €/m² comps from the folio's own sales: realised ceiling ~€1,890/m²; €120k ask = €2,073/m² (building record *at ask*).
 - New facts from principal: a **€114k competing offer**; the flat is **fully furnished** (premium appliances + custom joinery).
@@ -29,3 +29,13 @@ None pending.
 
 ## Pending drafts
 None chat-only — all written to disk (surfaced for triage in this session's CLOSING).
+
+## Update 2026-05-26 (S083, sid8 `83fe33b3`) — DECISION: NO-BUY
+- Niklavs returned and stated plainly: **decided not to buy** Ģertrūdes 113 flat 41.
+- Decision lands *after* every researchable gate had cleared (title, financing-corrected, price-fair, lived-experience) — so the "no" came from the non-researchable residual, not the analysis. Which kind of "no" (genuine values-no vs the [[2026-05-26-finds-a-fault-in-every-flat]] reflex) is the open question I'm putting to him before recording it durably.
+- Housekeeping deferred to that answer: retire the keepsake pin proposal (was "pin until resolved, then archive"), move this quest to `completed/`, and decide whether the no-buy warrants a niksis8_character note (reflex confirmed) or just closes the loop (genuine no).
+
+### Reason (same turn): the AREA — "ugly and feels a bit hoboish"
+- The no is about the **neighbourhood feel**, not the flat. Reads as a **genuine values-no**, not the fault-finding reflex: "how the area feels to come home to" is daily lived texture, not an abstract nitpick. Honoured.
+- Key recalibration: the area (Avoti, far-east Ģertrūdes) was knowable from day one — it's *why the flat was discounted*. Second flat in the lineage where he's pulled in by the discount, does deep work, then bounces off the thing that created the discount. → New niksis8_character draft: `2026-05-26-area-feel-is-top-rank-criterion.md` (area-feel as front-rank filter, above price; start search from area, then flat).
+- Decision now resolved with a stable reason. Quest ready to close at session-end; keepsake proposal can move to rejected/archive at triage (never pinned to current.md, so nothing to un-pin).

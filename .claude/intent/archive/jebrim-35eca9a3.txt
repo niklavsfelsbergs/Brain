@@ -1,0 +1,1 @@
+S072 audit-3 fixes shipped (4 commits e6be3da→f02c6e0) + re-test PASS 6/6, zero regressions. Two risky changes validated: the how_to split (528→410) preserved save-behavior, and the dimension-scan rule fired GENERATIVELY on a novel FedEx/US anomaly (no scar) — closes the S071 D2 caveat. Origin 3 behind; awaiting principal go on the push to picanova.

@@ -1,0 +1,123 @@
+# Obsidian link migration — DRY-RUN
+# vault: C:\Users\niklavs.felsbergs\Documents\GitHub\brain\gielinor
+# prefix filter: (none)
+
+## SUMMARY
+  rewrites proposed : 42  (9 distinct IDs, 17 files)
+  already resolves  : 84 full-stem links left as-is
+  FLAGGED (dupes)   : 3 IDs, 0 link occurrences NOT rewritten
+  dangling          : 6 IDs, 18 occurrences (no file; left)
+  convention-doc hits: 0 (REVIEW manually)
+
+## FLAGGED — real dupes / ambiguous, NOT rewritten (human call)
+  [[S014]]  (multi-main, 0 link occurrences) candidates:
+      - S014_2026-05-21_shipping-data-mart-ttyd-howto
+      - S014_a_scaffold
+  [[S062]]  (multi-main, 0 link occurrences) candidates:
+      - S062_249eb38a_shipping-agent-citation-leak-test
+      - S062_7f1aecf4_shipping-agent-euro-precision-and-build-report
+  [[S076]]  (multi-main, 0 link occurrences) candidates:
+      - S076_1abb2279_shipping-agent-demo-deck
+      - S076_949a59cf_scm-alert-engine-audit
+
+## sole-sub groups (no main entry; resolved to the only file)
+  [[D-020]] -> D-020_layer-routing-and-resume-via-inventory
+
+## dangling bare-ID links (no matching file; left as-is)
+  [[D-012]]  x11
+  [[D-015]]  x1
+  [[D-016]]  x3
+  [[I-003]]  x1
+  [[S018]]  x1
+  [[S083]]  x1
+
+## PER-ID rewrite targets
+  [[D-017]] x  5  ->  [[D-017_user-only-with-explicit-permission]]
+  [[D-018]] x  3  ->  [[D-018_close-session-ritual-adoption]]
+  [[D-019]] x  1  ->  [[D-019_harvest-pump-installation]]
+  [[D-020]] x  3  ->  [[D-020_layer-routing-and-resume-via-inventory]]
+  [[D-024]] x 18  ->  [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+  [[D-025]] x  4  ->  [[D-025_offer-multiple-choice-with-recommendation]]
+  [[D-026]] x  1  ->  [[D-026_graduate-complete-ready-quests-in-session]]
+  [[S058]] x  4  ->  [[S058_1f0ae59a_shipping-contract-corpus-ingest]]
+  [[S069]] x  3  ->  [[S069_006248ef_pipeline-oom-hardening]]
+
+## DETAIL — every proposed rewrite (file:line)
+
+  comms/_about.md
+    L3: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L5: [[D-018]] -> [[D-018_close-session-ritual-adoption]]
+    L34: [[D-020]] -> [[D-020_layer-routing-and-resume-via-inventory]]
+    L49: [[D-020]] -> [[D-020_layer-routing-and-resume-via-inventory]]
+    L97: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L98: [[D-017]] -> [[D-017_user-only-with-explicit-permission]]
+    L99: [[D-019]] -> [[D-019_harvest-pump-installation]]
+    L100: [[D-020]] -> [[D-020_layer-routing-and-resume-via-inventory]]
+
+  deities/guthix/proposals/2026-05-24-multiple-choice-with-recommendation-in-comms-protocol.md
+    L8: [[D-025]] -> [[D-025_offer-multiple-choice-with-recommendation]]
+    L8: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+
+  deities/guthix/quest-log/completed/B-006_2026-05-24_sixth-bankstanding.md
+    L18: [[D-025]] -> [[D-025_offer-multiple-choice-with-recommendation]]
+    L28: [[D-025]] -> [[D-025_offer-multiple-choice-with-recommendation]]
+
+  lorebook/confirmed/D-024_scope-git-commits-with-pathspecs-parallel-sessions.md
+    L5: [[D-017]] -> [[D-017_user-only-with-explicit-permission]]
+    L5: [[D-018]] -> [[D-018_close-session-ritual-adoption]]
+    L5: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+
+  lorebook/confirmed/D-025_offer-multiple-choice-with-recommendation.md
+    L13: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+
+  meta/communication-protocol.md
+    L124: [[D-025]] -> [[D-025_offer-multiple-choice-with-recommendation]]
+    L128: [[D-018]] -> [[D-018_close-session-ritual-adoption]]
+    L131: [[S058]] -> [[S058_1f0ae59a_shipping-contract-corpus-ingest]]
+
+  meta/guthix.md
+    L13: [[S058]] -> [[S058_1f0ae59a_shipping-contract-corpus-ingest]]
+
+  meta/layer-routing.md
+    L11: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L13: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L14: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+
+  meta/write-rules.md
+    L75: [[D-017]] -> [[D-017_user-only-with-explicit-permission]]
+
+  players/jebrim/bank/drafts/notes/projects/scm_nextjs_duckdb_oom_modes.md
+    L3: [[S069]] -> [[S069_006248ef_pipeline-oom-hardening]]
+
+  players/jebrim/inventory/S023-shipping-mart-coverage-audit-resume.md
+    L60: [[D-017]] -> [[D-017_user-only-with-explicit-permission]]
+
+  players/jebrim/persona.md
+    L26: [[S058]] -> [[S058_1f0ae59a_shipping-contract-corpus-ingest]]
+
+  players/jebrim/quest-log/completed/S026_2026-05-22_shipping-costs-nextjs-architecture-read.md
+    L45: [[D-017]] -> [[D-017_user-only-with-explicit-permission]]
+
+  players/jebrim/quest-log/completed/S097_1ce9fc1f_scm-daily-product-temp-spill-oom.md
+    L5: [[S069]] -> [[S069_006248ef_pipeline-oom-hardening]]
+    L49: [[S069]] -> [[S069_006248ef_pipeline-oom-hardening]]
+
+  players/zezima/persona.md
+    L26: [[S058]] -> [[S058_1f0ae59a_shipping-contract-corpus-ingest]]
+
+  spellbook/rituals/close-session.md
+    L30: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L31: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L75: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L89: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L113: [[D-026]] -> [[D-026_graduate-complete-ready-quests-in-session]]
+    L162: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L183: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+
+  spellbook/rituals/respawn.md
+    L46: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L53: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L60: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+    L64: [[D-024]] -> [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]
+
+# DRY-RUN — nothing written. Re-run with --apply to write.

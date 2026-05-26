@@ -1,0 +1,1 @@
+S076 deploy in motion: merged cutover→origin/main (9d5985a, clean, my 2 commits) → CICD building :latest; deleted raw_cache/raw.parquet (versioned → recoverable) so the next DAG run full-pulls on the new image. Left to principal/dcf97c7a: wait for CICD → trigger DAG → watch OOM → restart serving pod.

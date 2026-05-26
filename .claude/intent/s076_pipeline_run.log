@@ -1,0 +1,829 @@
+============================================================
+Shipping Costs Monitoring -- Pipeline (cache)
+============================================================
+Using cached data from C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics\NFE\dashboards\shipping_costs_monitoring_nextjs\data
+Loaded 13,221,259 rows (36/36 cols)
+  C1 reconcile: absorbed 236,999.95 EUR of unbucketed real cost into bkt_unclassified across 82,264 invoiced rows (missing/partial cost-summary decomposition)
+Transformed: 13,181,832 rows | real cost: 12,082,241 (91.7%) | routing cost: 12,757,376 (96.8%)
+Processed: 13,181,832 rows written (29 monthly partitions)
+Freed full DataFrame -- reloading subsets from processed/*.parquet
+Weekly slice: 4,968,212 rows (order_date <= 2026-05-24)
+Framework: 4,968,212 -> 4,968,212 rows (last 6 months from 2025-11-01)
+Trends_weekly: 10715 rows
+Deviations: 192 corridors, 3015 package rows, 2601 trend rows
+Frozen baseline overrides: 11 cost, 1 carrier, 0 routing, 2 product
+
+--- Computing framework (latest weekly: 2026-05-18) ---
+Corridor costs: 125 corridors, 997 package rows
+Layer 2 (weekly): current=2026-05-18, baseline=[datetime.date(2026, 5, 11), datetime.date(2026, 5, 4), datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13)], share_ref=[datetime.date(2026, 5, 11), datetime.date(2026, 5, 4), datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13)]
+  638 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1042 shifts, 111 confirmed
+Product shifts (weekly): current=2026-05-18, baseline=[datetime.date(2026, 5, 11), datetime.date(2026, 5, 4), datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  441 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 926 shifts, 155 confirmed
+  358 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 721 shifts, 147 confirmed
+  246 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 417 shifts, 75 confirmed
+  463 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1159 shifts, 236 confirmed
+Product shifts total: 3223 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-05-18, baseline=[datetime.date(2026, 5, 11), datetime.date(2026, 5, 4), datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13)]
+  13 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 108 shifts, 33 confirmed
+Carrier shifts: 108 rows
+Corridor changes: 0 new, 70 vanished
+Creep: 0 corridors with gradual drift
+Creep: 0 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 0 new, 70 vanished
+Creep: 0 corridors with gradual drift
+Creep: 0 corridors with gradual drift
+Volume anomalies: 0 corridors
+Computing 23 historical periods...
+Corridor costs: 135 corridors, 1060 package rows
+Layer 2 (weekly): current=2026-05-11, baseline=[datetime.date(2026, 5, 4), datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6)], share_ref=[datetime.date(2026, 5, 4), datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6)]
+  674 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1161 shifts, 105 confirmed
+Product shifts (weekly): current=2026-05-11, baseline=[datetime.date(2026, 5, 4), datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  474 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1078 shifts, 148 confirmed
+  372 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 820 shifts, 123 confirmed
+  243 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 478 shifts, 83 confirmed
+  494 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1321 shifts, 200 confirmed
+Product shifts total: 3697 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-05-11, baseline=[datetime.date(2026, 5, 4), datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6)]
+  15 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 118 shifts, 32 confirmed
+Carrier shifts: 118 rows
+Corridor changes: 1 new, 62 vanished
+Creep: 0 corridors with gradual drift
+Creep: 0 corridors with gradual drift
+Volume anomalies: 2 corridors
+Corridor changes: 1 new, 62 vanished
+Creep: 0 corridors with gradual drift
+Creep: 0 corridors with gradual drift
+Volume anomalies: 2 corridors
+Corridor costs: 141 corridors, 1090 package rows
+Layer 2 (weekly): current=2026-05-04, baseline=[datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30)], share_ref=[datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30)]
+  704 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1200 shifts, 110 confirmed
+Product shifts (weekly): current=2026-05-04, baseline=[datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  510 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1070 shifts, 163 confirmed
+  383 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 793 shifts, 148 confirmed
+  269 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 490 shifts, 84 confirmed
+  524 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1292 shifts, 222 confirmed
+Product shifts total: 3645 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-05-04, baseline=[datetime.date(2026, 4, 27), datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30)]
+  16 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 129 shifts, 36 confirmed
+Carrier shifts: 129 rows
+Corridor changes: 0 new, 56 vanished
+Creep: 1 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 0 new, 56 vanished
+Creep: 1 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 131 corridors, 1056 package rows
+Layer 2 (weekly): current=2026-04-27, baseline=[datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23)], share_ref=[datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23)]
+  665 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1135 shifts, 133 confirmed
+Product shifts (weekly): current=2026-04-27, baseline=[datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  458 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1022 shifts, 191 confirmed
+  376 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 784 shifts, 131 confirmed
+  272 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 533 shifts, 82 confirmed
+  484 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1265 shifts, 233 confirmed
+Product shifts total: 3604 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-04-27, baseline=[datetime.date(2026, 4, 20), datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23)]
+  13 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 125 shifts, 36 confirmed
+Carrier shifts: 125 rows
+Corridor changes: 0 new, 65 vanished
+Creep: 2 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 0 new, 65 vanished
+Creep: 2 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 125 corridors, 1050 package rows
+Layer 2 (weekly): current=2026-04-20, baseline=[datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16)], share_ref=[datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16)]
+  644 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1117 shifts, 126 confirmed
+Product shifts (weekly): current=2026-04-20, baseline=[datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  438 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1004 shifts, 165 confirmed
+  364 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 751 shifts, 152 confirmed
+  237 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 444 shifts, 82 confirmed
+  445 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1206 shifts, 231 confirmed
+Product shifts total: 3405 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-04-20, baseline=[datetime.date(2026, 4, 13), datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16)]
+  12 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 118 shifts, 32 confirmed
+Carrier shifts: 118 rows
+Corridor changes: 6 new, 60 vanished
+Creep: 1 corridors with gradual drift
+Creep: 4 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 6 new, 60 vanished
+Creep: 1 corridors with gradual drift
+Creep: 4 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 128 corridors, 1065 package rows
+Layer 2 (weekly): current=2026-04-13, baseline=[datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9)], share_ref=[datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9)]
+  657 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1157 shifts, 125 confirmed
+Product shifts (weekly): current=2026-04-13, baseline=[datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  438 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1023 shifts, 162 confirmed
+  341 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 712 shifts, 147 confirmed
+  241 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 442 shifts, 79 confirmed
+  453 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1212 shifts, 231 confirmed
+Product shifts total: 3389 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-04-13, baseline=[datetime.date(2026, 4, 6), datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9)]
+  13 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 118 shifts, 33 confirmed
+Carrier shifts: 118 rows
+Corridor changes: 0 new, 61 vanished
+Creep: 2 corridors with gradual drift
+Creep: 1 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 0 new, 61 vanished
+Creep: 2 corridors with gradual drift
+Creep: 1 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 131 corridors, 1050 package rows
+Layer 2 (weekly): current=2026-04-06, baseline=[datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2)], share_ref=[datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2)]
+  628 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1125 shifts, 129 confirmed
+Product shifts (weekly): current=2026-04-06, baseline=[datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  425 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1015 shifts, 192 confirmed
+  330 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 724 shifts, 167 confirmed
+  217 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 442 shifts, 84 confirmed
+  441 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1215 shifts, 263 confirmed
+Product shifts total: 3396 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-04-06, baseline=[datetime.date(2026, 3, 30), datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2)]
+  16 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 127 shifts, 33 confirmed
+Carrier shifts: 127 rows
+Corridor changes: 0 new, 58 vanished
+Creep: 0 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor changes: 0 new, 58 vanished
+Creep: 0 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor costs: 128 corridors, 1069 package rows
+Layer 2 (weekly): current=2026-03-30, baseline=[datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23)], share_ref=[datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23)]
+  640 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1198 shifts, 131 confirmed
+Product shifts (weekly): current=2026-03-30, baseline=[datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  436 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1051 shifts, 200 confirmed
+  336 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 724 shifts, 147 confirmed
+  215 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 427 shifts, 95 confirmed
+  450 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1242 shifts, 270 confirmed
+Product shifts total: 3444 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-03-30, baseline=[datetime.date(2026, 3, 23), datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23)]
+  14 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 124 shifts, 30 confirmed
+Carrier shifts: 124 rows
+Corridor changes: 0 new, 74 vanished
+Creep: 5 corridors with gradual drift
+Creep: 5 corridors with gradual drift
+Volume anomalies: 2 corridors
+Corridor changes: 0 new, 74 vanished
+Creep: 5 corridors with gradual drift
+Creep: 5 corridors with gradual drift
+Volume anomalies: 2 corridors
+Corridor costs: 132 corridors, 1096 package rows
+Layer 2 (weekly): current=2026-03-23, baseline=[datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16)], share_ref=[datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16)]
+  653 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1200 shifts, 124 confirmed
+Product shifts (weekly): current=2026-03-23, baseline=[datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  439 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1048 shifts, 195 confirmed
+  345 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 731 shifts, 156 confirmed
+  225 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 417 shifts, 71 confirmed
+  464 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1228 shifts, 261 confirmed
+Product shifts total: 3424 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-03-23, baseline=[datetime.date(2026, 3, 16), datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16)]
+  16 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 125 shifts, 33 confirmed
+Carrier shifts: 125 rows
+Corridor changes: 0 new, 66 vanished
+Creep: 2 corridors with gradual drift
+Creep: 1 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor changes: 0 new, 66 vanished
+Creep: 2 corridors with gradual drift
+Creep: 1 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor costs: 129 corridors, 1102 package rows
+Layer 2 (weekly): current=2026-03-16, baseline=[datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9)], share_ref=[datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9)]
+  638 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1171 shifts, 125 confirmed
+Product shifts (weekly): current=2026-03-16, baseline=[datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  419 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1023 shifts, 199 confirmed
+  331 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 710 shifts, 169 confirmed
+  209 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 399 shifts, 63 confirmed
+  432 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1212 shifts, 286 confirmed
+Product shifts total: 3344 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-03-16, baseline=[datetime.date(2026, 3, 9), datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9)]
+  11 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 118 shifts, 33 confirmed
+Carrier shifts: 118 rows
+Corridor changes: 0 new, 80 vanished
+Creep: 3 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor changes: 0 new, 80 vanished
+Creep: 3 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor costs: 138 corridors, 1133 package rows
+Layer 2 (weekly): current=2026-03-09, baseline=[datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2)], share_ref=[datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2)]
+  652 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1226 shifts, 153 confirmed
+Product shifts (weekly): current=2026-03-09, baseline=[datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  439 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1104 shifts, 223 confirmed
+  339 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 778 shifts, 173 confirmed
+  239 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 454 shifts, 69 confirmed
+  445 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1284 shifts, 297 confirmed
+Product shifts total: 3620 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-03-09, baseline=[datetime.date(2026, 3, 2), datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2)]
+  16 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 130 shifts, 30 confirmed
+Carrier shifts: 130 rows
+Corridor changes: 0 new, 73 vanished
+Creep: 3 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor changes: 0 new, 73 vanished
+Creep: 3 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor costs: 137 corridors, 1096 package rows
+Layer 2 (weekly): current=2026-03-02, baseline=[datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26)], share_ref=[datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26)]
+  612 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1167 shifts, 163 confirmed
+Product shifts (weekly): current=2026-03-02, baseline=[datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  412 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1046 shifts, 226 confirmed
+  324 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 743 shifts, 155 confirmed
+  240 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 461 shifts, 63 confirmed
+  422 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1271 shifts, 284 confirmed
+Product shifts total: 3521 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-03-02, baseline=[datetime.date(2026, 2, 23), datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26)]
+  13 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 126 shifts, 32 confirmed
+Carrier shifts: 126 rows
+Corridor changes: 0 new, 78 vanished
+Creep: 0 corridors with gradual drift
+Creep: 1 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor changes: 0 new, 78 vanished
+Creep: 0 corridors with gradual drift
+Creep: 1 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor costs: 145 corridors, 1118 package rows
+Layer 2 (weekly): current=2026-02-23, baseline=[datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19)], share_ref=[datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19)]
+  632 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1198 shifts, 143 confirmed
+Product shifts (weekly): current=2026-02-23, baseline=[datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  418 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1058 shifts, 212 confirmed
+  344 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 750 shifts, 140 confirmed
+  231 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 438 shifts, 57 confirmed
+  420 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1267 shifts, 260 confirmed
+Product shifts total: 3513 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-02-23, baseline=[datetime.date(2026, 2, 16), datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19)]
+  11 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 141 shifts, 32 confirmed
+Carrier shifts: 141 rows
+Corridor changes: 1 new, 58 vanished
+Creep: 0 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 1 new, 58 vanished
+Creep: 0 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 132 corridors, 1128 package rows
+Layer 2 (weekly): current=2026-02-16, baseline=[datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12)], share_ref=[datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12)]
+  635 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1183 shifts, 152 confirmed
+Product shifts (weekly): current=2026-02-16, baseline=[datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  452 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1062 shifts, 202 confirmed
+  329 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 740 shifts, 144 confirmed
+  258 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 423 shifts, 70 confirmed
+  452 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1266 shifts, 258 confirmed
+Product shifts total: 3491 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-02-16, baseline=[datetime.date(2026, 2, 9), datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12)]
+  9 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 129 shifts, 37 confirmed
+Carrier shifts: 129 rows
+Corridor changes: 0 new, 71 vanished
+Creep: 2 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 0 new, 71 vanished
+Creep: 2 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 139 corridors, 1182 package rows
+Layer 2 (weekly): current=2026-02-09, baseline=[datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5)], share_ref=[datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5)]
+  669 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1266 shifts, 169 confirmed
+Product shifts (weekly): current=2026-02-09, baseline=[datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  452 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1111 shifts, 188 confirmed
+  366 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 802 shifts, 157 confirmed
+  274 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 473 shifts, 66 confirmed
+  452 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1327 shifts, 264 confirmed
+Product shifts total: 3713 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-02-09, baseline=[datetime.date(2026, 2, 2), datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5)]
+  13 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 134 shifts, 33 confirmed
+Carrier shifts: 134 rows
+Corridor changes: 0 new, 65 vanished
+Creep: 3 corridors with gradual drift
+Creep: 4 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 0 new, 65 vanished
+Creep: 3 corridors with gradual drift
+Creep: 4 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 146 corridors, 1250 package rows
+Layer 2 (weekly): current=2026-02-02, baseline=[datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29)], share_ref=[datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29)]
+  717 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1374 shifts, 191 confirmed
+Product shifts (weekly): current=2026-02-02, baseline=[datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  485 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1131 shifts, 230 confirmed
+  392 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 842 shifts, 184 confirmed
+  300 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 507 shifts, 82 confirmed
+  488 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1348 shifts, 321 confirmed
+Product shifts total: 3828 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-02-02, baseline=[datetime.date(2026, 1, 26), datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29)]
+  14 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 137 shifts, 38 confirmed
+Carrier shifts: 137 rows
+Corridor changes: 0 new, 61 vanished
+Creep: 1 corridors with gradual drift
+Creep: 4 corridors with gradual drift
+Volume anomalies: 2 corridors
+Corridor changes: 0 new, 61 vanished
+Creep: 1 corridors with gradual drift
+Creep: 4 corridors with gradual drift
+Volume anomalies: 2 corridors
+Corridor costs: 141 corridors, 1226 package rows
+Layer 2 (weekly): current=2026-01-26, baseline=[datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22)], share_ref=[datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22)]
+  676 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1312 shifts, 176 confirmed
+Product shifts (weekly): current=2026-01-26, baseline=[datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  470 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1106 shifts, 216 confirmed
+  370 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 779 shifts, 146 confirmed
+  264 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 456 shifts, 76 confirmed
+  478 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1304 shifts, 273 confirmed
+Product shifts total: 3645 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-01-26, baseline=[datetime.date(2026, 1, 19), datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22)]
+  12 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 133 shifts, 35 confirmed
+Carrier shifts: 133 rows
+Corridor changes: 0 new, 74 vanished
+Creep: 4 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor changes: 0 new, 74 vanished
+Creep: 4 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor costs: 138 corridors, 1208 package rows
+Layer 2 (weekly): current=2026-01-19, baseline=[datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15)], share_ref=[datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15)]
+  618 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1260 shifts, 194 confirmed
+Product shifts (weekly): current=2026-01-19, baseline=[datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  422 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1079 shifts, 245 confirmed
+  354 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 747 shifts, 189 confirmed
+  222 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 383 shifts, 100 confirmed
+  414 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1276 shifts, 339 confirmed
+Product shifts total: 3485 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-01-19, baseline=[datetime.date(2026, 1, 12), datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15)]
+  11 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 125 shifts, 32 confirmed
+Carrier shifts: 125 rows
+Corridor changes: 0 new, 96 vanished
+Creep: 3 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 0 new, 96 vanished
+Creep: 3 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 150 corridors, 1268 package rows
+Layer 2 (weekly): current=2026-01-12, baseline=[datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8)], share_ref=[datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8)]
+  611 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1315 shifts, 210 confirmed
+Product shifts (weekly): current=2026-01-12, baseline=[datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  387 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1078 shifts, 310 confirmed
+  310 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 717 shifts, 259 confirmed
+  213 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 379 shifts, 143 confirmed
+  369 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1244 shifts, 404 confirmed
+Product shifts total: 3418 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-01-12, baseline=[datetime.date(2026, 1, 5), datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8)]
+  11 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 137 shifts, 49 confirmed
+Carrier shifts: 137 rows
+Corridor changes: 0 new, 95 vanished
+Creep: 1 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor changes: 0 new, 95 vanished
+Creep: 1 corridors with gradual drift
+Creep: 2 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor costs: 150 corridors, 1297 package rows
+Layer 2 (weekly): current=2026-01-05, baseline=[datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1)], share_ref=[datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1)]
+  610 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1371 shifts, 243 confirmed
+Product shifts (weekly): current=2026-01-05, baseline=[datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  381 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1161 shifts, 325 confirmed
+  310 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 769 shifts, 240 confirmed
+  215 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 402 shifts, 129 confirmed
+  357 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1364 shifts, 425 confirmed
+Product shifts total: 3696 rows across 4 basket sizes
+Carrier shifts (weekly): current=2026-01-05, baseline=[datetime.date(2025, 12, 29), datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1)]
+  12 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 141 shifts, 55 confirmed
+Carrier shifts: 141 rows
+Corridor changes: 3 new, 96 vanished
+Creep: 2 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 3 new, 96 vanished
+Creep: 2 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 150 corridors, 1293 package rows
+Layer 2 (weekly): current=2025-12-29, baseline=[datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24)], share_ref=[datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24)]
+  586 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1313 shifts, 227 confirmed
+Product shifts (weekly): current=2025-12-29, baseline=[datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  351 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1094 shifts, 290 confirmed
+  310 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 797 shifts, 264 confirmed
+  225 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 414 shifts, 137 confirmed
+  339 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1325 shifts, 402 confirmed
+Product shifts total: 3630 rows across 4 basket sizes
+Carrier shifts (weekly): current=2025-12-29, baseline=[datetime.date(2025, 12, 22), datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24)]
+  7 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 135 shifts, 56 confirmed
+Carrier shifts: 135 rows
+Corridor changes: 0 new, 101 vanished
+Creep: 0 corridors with gradual drift
+Creep: 1 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor changes: 0 new, 101 vanished
+Creep: 0 corridors with gradual drift
+Creep: 1 corridors with gradual drift
+Volume anomalies: 0 corridors
+Corridor costs: 153 corridors, 1270 package rows
+Layer 2 (weekly): current=2025-12-22, baseline=[datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17)], share_ref=[datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17)]
+  548 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1256 shifts, 222 confirmed
+Product shifts (weekly): current=2025-12-22, baseline=[datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  329 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1075 shifts, 277 confirmed
+  294 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 743 shifts, 226 confirmed
+  189 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 390 shifts, 118 confirmed
+  314 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1262 shifts, 361 confirmed
+Product shifts total: 3470 rows across 4 basket sizes
+Carrier shifts (weekly): current=2025-12-22, baseline=[datetime.date(2025, 12, 15), datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17)]
+  7 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 138 shifts, 49 confirmed
+Carrier shifts: 138 rows
+Corridor changes: 0 new, 99 vanished
+Creep: 1 corridors with gradual drift
+Creep: 4 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor changes: 0 new, 99 vanished
+Creep: 1 corridors with gradual drift
+Creep: 4 corridors with gradual drift
+Volume anomalies: 1 corridors
+Corridor costs: 172 corridors, 1480 package rows
+Layer 2 (weekly): current=2025-12-15, baseline=[datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17), datetime.date(2025, 11, 10)], share_ref=[datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17), datetime.date(2025, 11, 10)]
+  739 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1568 shifts, 181 confirmed
+Product shifts (weekly): current=2025-12-15, baseline=[datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17), datetime.date(2025, 11, 10)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  475 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1389 shifts, 238 confirmed
+  424 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 1112 shifts, 178 confirmed
+  380 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 789 shifts, 137 confirmed
+  459 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1682 shifts, 355 confirmed
+Product shifts total: 4972 rows across 4 basket sizes
+Carrier shifts (weekly): current=2025-12-15, baseline=[datetime.date(2025, 12, 8), datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17), datetime.date(2025, 11, 10)]
+  13 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 161 shifts, 40 confirmed
+Carrier shifts: 161 rows
+Corridor changes: 0 new, 91 vanished
+Creep: 0 corridors with gradual drift
+Creep: 0 corridors with gradual drift
+Volume anomalies: 4 corridors
+Corridor changes: 0 new, 91 vanished
+Creep: 0 corridors with gradual drift
+Creep: 0 corridors with gradual drift
+Volume anomalies: 4 corridors
+Corridor costs: 179 corridors, 1587 package rows
+Layer 2 (weekly): current=2025-12-08, baseline=[datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17), datetime.date(2025, 11, 10), datetime.date(2025, 11, 3)], share_ref=[datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17), datetime.date(2025, 11, 10), datetime.date(2025, 11, 3)]
+  841 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Layer 2 (weekly): 1776 shifts, 175 confirmed
+Product shifts (weekly): current=2025-12-08, baseline=[datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17), datetime.date(2025, 11, 10), datetime.date(2025, 11, 3)]
+  Exploded: 4,968,212 -> 3,463,830 rows (85 unique products)
+  546 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=1): 1527 shifts, 257 confirmed
+  494 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=2): 1220 shifts, 145 confirmed
+  416 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=3+): 902 shifts, 84 confirmed
+  531 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Product shifts (basket=all): 1847 shifts, 334 confirmed
+Product shifts total: 5496 rows across 4 basket sizes
+Carrier shifts (weekly): current=2025-12-08, baseline=[datetime.date(2025, 12, 1), datetime.date(2025, 11, 24), datetime.date(2025, 11, 17), datetime.date(2025, 11, 10), datetime.date(2025, 11, 3)]
+  16 corridors with avg baseline vol < 30/week (flagged)
+  YoY reference: not enough data (0 rows)
+  Carrier shifts (weekly): 180 shifts, 41 confirmed
+Carrier shifts: 180 rows
+Corridor changes: 1 new, 72 vanished
+Creep: 3 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 14 corridors
+Corridor changes: 1 new, 72 vanished
+Creep: 3 corridors with gradual drift
+Creep: 3 corridors with gradual drift
+Volume anomalies: 14 corridors
+Alerts: 3346 total (1918 early_warning, 1428 confirmed, 24 periods)
+  Issues: skipped 30 alerts with null country/provider
+Drift monitor: 6 corridors with slow drift
+Suppression: 17 carrier_shift issues suppressed by routing_shift children
+Suppression: 5 creep issues suppressed by rate_spike on same corridor
+Dropped 61 vanished corridors with zero cost impact
+Dropped 433 issues below thresholds (500 EUR cost / 1000 EUR drift / 1000 EUR/wk shift / 100 avg ship/wk vol)
+Merged 8 active issue groups (16 duplicates removed)
+Issues: 195 total (50 active, 145 resolved, 5 suppressed)
+Meta written: 46 countries, 77 providers, 145 products, 6419 SKUs, date_bounds=2024-01-01..2026-05-25
+Loaded 13,181,832 rows x 24 cols for summaries
+Daily summary (Tier 1): 1,345,989 rows
+Daily product summary (Tier 1b): 2,909,609 rows
+Deviations summary: 525,286 rows
+Outlier thresholds: 78 providers
+Filter combos: 149,381 rows
+Meta updated: 16 sites, 1131 shops, 4 sources
+
+Pipeline complete in 165.8s
+Output files in C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics\NFE\dashboards\shipping_costs_monitoring_nextjs\data

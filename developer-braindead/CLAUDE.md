@@ -49,7 +49,7 @@ See `_about.md` for the layer table, ID format, wiki-link rules, and the never-d
 
 - Entry IDs (`D-NNN`, `A-NNN`, `Q-NNN`, `R-NNN`, `I-NNN`) are stable; filenames add a descriptive suffix.
 - Quest log files named `SNNN_descriptive_name.md`, titled at session close.
-- Wiki-links `[[ID]]` are load-bearing across docs.
+- Wiki-links are load-bearing across docs; use the **full filename stem** with an optional `|ID` alias (`[[D-001_two_brain_split|D-001]]`), not the bare `[[ID]]` — per the [[D-004_stable_ids]] amendment (resolves in Obsidian). Author new links this way, not just the migrated ones.
 - `bank/plan.md` is the single-file living plan for the mission.
 
 ## Related

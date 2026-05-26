@@ -1,0 +1,1 @@
+SCM ORWO/TCG split — plan done. Traced pipeline.py: entity injection = FRAMEWORK_COLS+order_source, corridor_trends_weekly artifact, _issue_key/dedup/suppression, frozen-baseline keys. Recommend Option B (per-entity detection loop, engine as black box) over re-keying internals. ~2 days e2e. OOM-watch flagged. NO edits. S098 logged.

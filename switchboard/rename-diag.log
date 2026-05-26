@@ -8,3 +8,29 @@
 {"ts": 1779712840.436, "event": "announce", "resuming": false, "session_id": "e2362ea0-fee0-48b9-884f-3b1391814a6f", "sid8": "e2362ea0"}
 {"ts": 1779717356.955, "event": "announce", "resuming": false, "session_id": "6ccc2220-e71a-4f51-a6e3-ee236386bcf7", "sid8": "6ccc2220"}
 {"ts": 1779719484.366, "event": "announce", "resuming": false, "session_id": "0798100e-a713-415b-91c3-70e35c529a38", "sid8": "0798100e"}
+{"ts": 1779812457.615, "event": "announce", "resuming": true, "session_id": "f9310a45-36b7-40a8-a64b-385ace4e1af4", "sid8": "f9310a45", "anchor_sid8": "f9310a45"}
+{"ts": 1779812457.635, "event": "announce", "resuming": true, "session_id": "1ce9fc1f-a26b-4eac-be7b-75a40bcd666d", "sid8": "1ce9fc1f", "anchor_sid8": "1ce9fc1f"}
+{"ts": 1779813032.013, "event": "announce", "resuming": true, "session_id": "f9310a45-36b7-40a8-a64b-385ace4e1af4", "sid8": "f9310a45", "anchor_sid8": "f9310a45"}
+{"ts": 1779813032.033, "event": "announce", "resuming": true, "session_id": "1ce9fc1f-a26b-4eac-be7b-75a40bcd666d", "sid8": "1ce9fc1f", "anchor_sid8": "1ce9fc1f"}
+{"ts": 1779813207.845, "event": "announce", "resuming": false, "session_id": "b53fca39-bf48-4638-acc8-32f4161c6dea", "sid8": "b53fca39", "anchor_sid8": "b53fca39"}
+{"ts": 1779813239.176, "event": "announce", "resuming": false, "session_id": "b3c2b8dd-f39e-494e-bce7-11d74f55ab1f", "sid8": "b3c2b8dd", "anchor_sid8": "b3c2b8dd"}
+{"ts": 1779815737.606, "event": "announce", "resuming": false, "session_id": "4041e159-75ff-4f75-9332-8393bfb9f774", "sid8": "4041e159", "anchor_sid8": "4041e159"}
+{"ts": 1779817785.516, "event": "announce", "resuming": true, "session_id": "f9310a45-36b7-40a8-a64b-385ace4e1af4", "sid8": "f9310a45", "anchor_sid8": "f9310a45"}
+{"ts": 1779817785.536, "event": "announce", "resuming": true, "session_id": "b53fca39-bf48-4638-acc8-32f4161c6dea", "sid8": "b53fca39", "anchor_sid8": "b53fca39"}
+{"ts": 1779817785.553, "event": "announce", "resuming": true, "session_id": "4041e159-75ff-4f75-9332-8393bfb9f774", "sid8": "4041e159", "anchor_sid8": "4041e159"}
+{"ts": 1779818771.959, "event": "announce", "resuming": true, "session_id": "f9310a45-36b7-40a8-a64b-385ace4e1af4", "sid8": "f9310a45", "anchor_sid8": "f9310a45"}
+{"ts": 1779818772.018, "event": "announce", "resuming": true, "session_id": "b53fca39-bf48-4638-acc8-32f4161c6dea", "sid8": "b53fca39", "anchor_sid8": "b53fca39"}
+{"ts": 1779818772.038, "event": "announce", "resuming": true, "session_id": "4041e159-75ff-4f75-9332-8393bfb9f774", "sid8": "4041e159", "anchor_sid8": "4041e159"}
+{"ts": 1779819836.624, "event": "rotate", "prev": "b53fca39", "cur": "acf8fc80", "anchor_sid8": "b53fca39", "carry_prev": "no-label", "carry_anchor": "skip-eq"}
+{"ts": 1779820196.528, "event": "announce", "resuming": false, "session_id": "3b333c4d-afb7-4ce7-8d59-757ca9ffb5b2", "sid8": "3b333c4d", "anchor_sid8": "3b333c4d"}
+{"ts": 1779820308.935, "event": "announce", "resuming": false, "session_id": "83fe33b3-ff43-42ae-b7b5-5c29d25341f3", "sid8": "83fe33b3", "anchor_sid8": "83fe33b3"}
+{"ts": 1779820584.175, "event": "announce", "resuming": false, "session_id": "be7867be-afb0-4ef2-802c-cbe1b3dbb7bd", "sid8": "be7867be", "anchor_sid8": "be7867be"}
+{"ts": 1779820789.444, "event": "announce", "resuming": false, "session_id": "98592157-2e7b-4e3a-9334-8377288bdc06", "sid8": "98592157", "anchor_sid8": "98592157"}
+{"ts": 1779821180.892, "event": "announce", "resuming": false, "session_id": "5a457944-aa07-4dc7-a99d-6e8c388cdae1", "sid8": "5a457944", "anchor_sid8": "5a457944"}
+{"ts": 1779822290.75, "event": "announce", "resuming": false, "session_id": "df87219c-6005-4cb3-bb9a-e8583c9a6692", "sid8": "df87219c", "anchor_sid8": "df87219c"}
+{"ts": 1779823145.312, "event": "rotate", "prev": "acf8fc80", "cur": "78e596a8", "anchor_sid8": "b53fca39", "carry_prev": "no-label", "carry_anchor": "no-label"}
+{"ts": 1779824684.802, "event": "announce", "resuming": false, "session_id": "cf03bfe1-184b-45e6-9786-2422b3806062", "sid8": "cf03bfe1", "anchor_sid8": "cf03bfe1"}
+{"ts": 1779825632.843, "event": "rotate", "prev": "78e596a8", "cur": "7c91117c", "anchor_sid8": "b53fca39", "carry_prev": "no-label", "carry_anchor": "no-label"}
+{"ts": 1779828010.853, "event": "announce", "resuming": false, "session_id": "3a599ead-c7a9-4866-8ca7-2ee1de8e4dfc", "sid8": "3a599ead", "anchor_sid8": "3a599ead"}
+{"ts": 1779829464.225, "event": "announce", "resuming": false, "session_id": "f4aadfed-d496-49e3-b6cb-1ad0fb5c29b4", "sid8": "f4aadfed", "anchor_sid8": "f4aadfed"}
+{"ts": 1779830706.012, "event": "announce", "resuming": false, "session_id": "144c0ca2-b6db-42d2-997c-b663058203a3", "sid8": "144c0ca2", "anchor_sid8": "144c0ca2"}

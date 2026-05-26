@@ -48,7 +48,7 @@ This is **deferred design exploration**, not committed work. The audit fixes fro
 
 When picked up: start with idle sprite breath (#1). It's the smallest possible change, the easiest to verify, and it tells you whether the GPU cost across all the additive layers is going to be a concern.
 
-Related: audit finding I15 (per-building character) in `bank/research/visualizer-audit-S021.md`; [[D-014]] (chat panel + intent bubbles — already adds some motion); [[Q-007]] (the visualizer's founding question).
+Related: audit finding I15 (per-building character) in `bank/research/visualizer-audit-S021.md`; [[D-014_visualizer_chat_panel]] (chat panel + intent bubbles — already adds some motion); [[Q-007]] (the visualizer's founding question).
 
 ## Update — [[S024]] (2026-05-22)
 

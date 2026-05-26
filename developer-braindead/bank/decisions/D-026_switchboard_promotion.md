@@ -1,8 +1,8 @@
 # D-026 — 2026-05-23 — Switchboard promotion: kill the map, move to brain root
 
-**Context.** [[D-009]] launched the visualizer as a live-mode self-observation surface — an isometric map showing Braindead at his workshop, Jebrim at the desk, Guthix wherever he descended, sprites walking between buildings as the hook stream ticked. The map carried character; the switchboard ([[D-020]] Phase 2) and the COMMS chat panel ([[D-014]] / S044 wiring) layered on top as auxiliary views.
+**Context.** [[D-009_visualizer_live_mode_v0]] launched the visualizer as a live-mode self-observation surface — an isometric map showing Braindead at his workshop, Jebrim at the desk, Guthix wherever he descended, sprites walking between buildings as the hook stream ticked. The map carried character; the switchboard ([[D-020_terminal_switchboard]] Phase 2) and the COMMS chat panel ([[D-014_visualizer_chat_panel]] / S044 wiring) layered on top as auxiliary views.
 
-By [[S047]]–[[S051]] the load balance had inverted. The switchboard rows were where the operator actually looked: *which terminal is waiting for me, what is it doing, click to focus.* The chat panel surfaced the action stream. The map was a charming aesthetic floating above two views that were doing the real work — with every session also paying the cost of map bugs (sprite anchor drift [[D-025]] #2, parallel-Braindead spawn races S047/S048, despawn timeout closures S050, tree/bubble scale knobs S051). Six recent sessions in a row touched the map; four of them were debugging it.
+By [[S047]]–[[S051]] the load balance had inverted. The switchboard rows were where the operator actually looked: *which terminal is waiting for me, what is it doing, click to focus.* The chat panel surfaced the action stream. The map was a charming aesthetic floating above two views that were doing the real work — with every session also paying the cost of map bugs (sprite anchor drift [[D-025_visualizer_character_audit_findings]] #2, parallel-Braindead spawn races S047/S048, despawn timeout closures S050, tree/bubble scale knobs S051). Six recent sessions in a row touched the map; four of them were debugging it.
 
 Principal called it: *"fighting with the animation but it doesn't matter — switchboard most useful, chat secondary, kill the map, give it a dedicated space, split into files."*
 
@@ -18,7 +18,7 @@ Three commits this session land it:
 
 ## Why brain root, not gielinor or dev-brain
 
-The switchboard observes **both brains**. Player sessions (Jebrim, Zezima — gielinor namespace), Braindead sessions (dev-brain namespace), Guthix (system-scope deity), Wisp (unscoped). One surface, all actors. The original location at `developer-braindead/experiments/` was a dev-brain artifact by accident of birth — it shipped with [[D-009]] when the dev brain was the only brain that needed observation. The other brain showed up later.
+The switchboard observes **both brains**. Player sessions (Jebrim, Zezima — gielinor namespace), Braindead sessions (dev-brain namespace), Guthix (system-scope deity), Wisp (unscoped). One surface, all actors. The original location at `developer-braindead/experiments/` was a dev-brain artifact by accident of birth — it shipped with [[D-009_visualizer_live_mode_v0]] when the dev brain was the only brain that needed observation. The other brain showed up later.
 
 Hosting it under `gielinor/` would be similarly wrong (Braindead is not a gielinor actor). Hosting under `developer-braindead/` made the wrong rule visible — the dev brain's `_about.md` says it's a construction notebook, not a runtime surface, and the visualizer was always the awkward exception. Brain root resolves the asymmetry: a runtime surface that watches both brains belongs above both, not inside one.
 
@@ -41,10 +41,10 @@ The "experiments/" prefix also stopped reading honestly the moment the switchboa
 
 ## Related
 
-- [[D-009]] — visualizer live mode v0; the surface this decision retires the map half of.
-- [[D-010]] — visualizer intent narration; consumed by both the chat panel and the switchboard subtitle.
-- [[D-014]] — visualizer chat panel; absorbed into the new shape.
-- [[D-020]] — terminal switchboard origin; the pane that earned the name.
-- [[D-024]] — parallel coordination; comms mirror destinations follow the new path.
-- [[D-025]] — visualizer character audit; map-targeted carry-forwards now obsolete.
+- [[D-009_visualizer_live_mode_v0]] — visualizer live mode v0; the surface this decision retires the map half of.
+- [[D-010_visualizer_intent_narration]] — visualizer intent narration; consumed by both the chat panel and the switchboard subtitle.
+- [[D-014_visualizer_chat_panel]] — visualizer chat panel; absorbed into the new shape.
+- [[D-020_terminal_switchboard]] — terminal switchboard origin; the pane that earned the name.
+- [[D-024_parallel_player_coordination]] — parallel coordination; comms mirror destinations follow the new path.
+- [[D-025_visualizer_character_audit_findings]] — visualizer character audit; map-targeted carry-forwards now obsolete.
 - [[S052]] — quest-log entry capturing the construction.

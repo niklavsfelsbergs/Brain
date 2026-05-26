@@ -16,7 +16,7 @@
 5. **Harvest learnings + audit memory pointers.** Two durability tasks at every close:
    - **Learnings (always scan).** Skim the session for the highest-signal moments — *where the principal corrected me or pushed back, where something I shipped proved wrong or got reverted, or where a non-obvious failure mode / insight surfaced.* Distill each into a carried lesson in `bank/build-lessons.md` (the `From [[SNNN]]: **…**` format), citing the specific moment that produced it (observation-backed, not aspirational). If the lesson generalizes beyond this repo — a working-style or judgment lesson, not a cockpit-specific detail — **also** write it to the cross-conversation memory at `~/.claude/projects/.../memory/` per that system's protocol (one fact per file, update `MEMORY.md`). A routine build session may yield nothing — but **a session that contained a correction, a reverted change, or a misjudgment the principal caught MUST produce a captured learning.** This is not optional and not subject to "bias to less." (This step exists because [[S083]] shipped a regression — a heuristic with a known-but-unverified false-trip — that the principal caught in his *live* environment, then asked "did you learn from this?" That class of scenario is precisely what must be harvested, every time.)
    - **Pointers.** If dev-brain structure changed (new files, renames, layer changes), update `~/.claude/projects/.../memory/` so the cross-conversation memory still points correctly. Risk tracked in [[R-002]].
-6. **Post the `CLOSING` entry to `comms/active.md`.** Per [[D-019]] — every dev-brain session that posted an `OPEN` must post a matching `CLOSING` before commit, so the next session's sibling-detection can correctly recognize this one as done. Format:
+6. **Post the `CLOSING` entry to `comms/active.md`.** Per [[D-019_parallel_braindead_and_comms_channel]] — every dev-brain session that posted an `OPEN` must post a matching `CLOSING` before commit, so the next session's sibling-detection can correctly recognize this one as done. Format:
 
    ```
    [YYYY-MM-DD HH:MM] braindead-<sid8> CLOSING
@@ -43,6 +43,6 @@
 ## Notes
 
 - Quest naming is the step most likely to be skipped. Don't. The name is what makes the session findable months later.
-- The "what crossed into main brain" check is load-bearing for [[D-001]] / [[R-001]]. Even `none` must be stated explicitly.
+- The "what crossed into main brain" check is load-bearing for [[D-001_two_brain_split]] / [[R-001]]. Even `none` must be stated explicitly.
 - If the session was unusually long or branchy, consider splitting into multiple SNNN entries. Rare; default to one.
 - The commit is the **last writing step** for a reason: every other artifact (quest log, respawn, plan, memory) needs to be on disk before the commit captures them. If a later thought surfaces, write a *new* commit — don't amend.

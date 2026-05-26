@@ -64,6 +64,6 @@ An instance despawns when **either**:
 ## Related
 
 - [[S014]], [[S022]], [[S023]], [[S024]] — parallel-session attribution incidents.
-- [[D-014]] visualizer chat panel — provides the COMMS surface this decision modifies.
-- [[D-016]] gnomes — precedent for system-namespace sub-agents with their own numbering.
+- [[D-014_visualizer_chat_panel]] visualizer chat panel — provides the COMMS surface this decision modifies.
+- [[D-016_gnomes_subagent]] gnomes — precedent for system-namespace sub-agents with their own numbering.
 - `Q-008` — visualizer aliveness, current parking lot for visual-layer work.

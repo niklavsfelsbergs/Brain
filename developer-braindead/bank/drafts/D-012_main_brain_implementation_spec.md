@@ -2,7 +2,7 @@
 
 **Status.** Spec written 2026-05-21 in dev brain. **Applied in S013** this session — see `developer-braindead/respawn.md` post-S013 for the application record.
 
-**Companion.** [[D-012]] for the design rationale. This file is just the concrete diffs.
+**Companion.** [[D-012_close_session_harvest_pump]] for the design rationale. This file is just the concrete diffs.
 
 **Order matters.** Apply edits 1–6 in sequence. Edits 5–6 (scaffolds + lorebook draft) can land in the same commit as edit 1 (write-rules flip) or follow it; the harvest pump (edits 2–3) is functionally inert until at least edit 1 + per-player scaffolds (edit 5) exist.
 

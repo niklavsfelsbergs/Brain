@@ -16,7 +16,7 @@ Scoped via two-question elicitation:
 
 ### 1. `gielinor/comms/` scaffolded
 
-- `gielinor/comms/_about.md` — protocol spec. Mirrors `developer-braindead/comms/_about.md` shape; adapted for multi-actor scope (Jebrim, Zezima, Guthix, future-roster). Calls out the collision surfaces: per-player `inventory/<topic>__<sid8>.md`, `quest-log/in-progress/SNNN_<sid8>_<slug>.md`, global drafts, `players/inbox/`. Liveness signal is the [[D-020]] status sidecar, not intent-file mtime. Entry kinds same as dev-brain: `OPEN` / `→ @target` / `UPDATE` / `CLOSING` / `ABANDONED`. New section: *"Visualizer rendering"* — names the COMMS-panel render contract.
+- `gielinor/comms/_about.md` — protocol spec. Mirrors `developer-braindead/comms/_about.md` shape; adapted for multi-actor scope (Jebrim, Zezima, Guthix, future-roster). Calls out the collision surfaces: per-player `inventory/<topic>__<sid8>.md`, `quest-log/in-progress/SNNN_<sid8>_<slug>.md`, global drafts, `players/inbox/`. Liveness signal is the [[D-020_terminal_switchboard]] status sidecar, not intent-file mtime. Entry kinds same as dev-brain: `OPEN` / `→ @target` / `UPDATE` / `CLOSING` / `ABANDONED`. New section: *"Visualizer rendering"* — names the COMMS-panel render contract.
 - `gielinor/comms/active.md` — header + a `SCAFFOLD` marker from this session. First real `OPEN` lands at the next gielinor respawn under the updated ritual.
 
 ### 2. `gielinor/spellbook/rituals/respawn.md` updated per D-024

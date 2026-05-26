@@ -1,12 +1,12 @@
 # S041 — 2026-05-22 — Parallel player coordination design (D-024)
 
-> Short dev-brain session. Principal asked whether anything enforces parallel player sessions not stepping over each other. Walked the existing guards ([[D-017]] / [[D-018]] / [[D-019]] / [[D-020]]), identified the disk-side gaps D-019 explicitly punted, drafted [[D-024]] as a design proposal. No scaffolding, no hook changes, no visualizer changes — design doc only.
+> Short dev-brain session. Principal asked whether anything enforces parallel player sessions not stepping over each other. Walked the existing guards ([[D-017_parallel_player_instances]] / [[D-018_parallel_session_substrate_isolation]] / [[D-019_parallel_braindead_and_comms_channel]] / [[D-020_terminal_switchboard]]), identified the disk-side gaps D-019 explicitly punted, drafted [[D-024_parallel_player_coordination]] as a design proposal. No scaffolding, no hook changes, no visualizer changes — design doc only.
 
 ## What landed
 
 - `developer-braindead/bank/decisions/D-024_parallel_player_coordination.md` — the decision draft.
   - Shared `gielinor/comms/active.md` (one file, all players + Guthix), same protocol as the dev-brain comms.
-  - Liveness via the [[D-020]] status sidecar (`state ≠ ended AND last_event_ts < 5min`), not intent-file mtime — strictly stronger per S032 carry-forward.
+  - Liveness via the [[D-020_terminal_switchboard]] status sidecar (`state ≠ ended AND last_event_ts < 5min`), not intent-file mtime — strictly stronger per S032 carry-forward.
   - Session-suffix only true state files: `inventory/<topic>__<sid8>.md` and `quest-log/in-progress/SNNN_<sid8>_<slug>.md`. Drafts stay plain.
   - Respawn rule for inventory recovery: own sid8 first, else surface live-sibling candidates to principal.
   - Tolerated: SNNN race window, draft filename collisions. Deferred: cross-brain (player ↔ Braindead) coordination — same posture D-019 took.

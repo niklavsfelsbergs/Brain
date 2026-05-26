@@ -1,6 +1,6 @@
 # S030 — 2026-05-22 — Penguins: research-operative sub-agent + research/ folder
 
-The brain gained a third sub-agent role. Where dwarves dig in the repo and gnomes tend the brain, **penguins** go beyond Gielinor's gates — external research via `WebSearch` / `WebFetch`, outputs anchored in a new per-player `research/` layer that is distinct from the bank. The trichotomy closes a hole in the model: there was no shape for outward-facing work, and no place for source material that doesn't belong in `bank/notes/` directly. See [[D-021]] for the full design.
+The brain gained a third sub-agent role. Where dwarves dig in the repo and gnomes tend the brain, **penguins** go beyond Gielinor's gates — external research via `WebSearch` / `WebFetch`, outputs anchored in a new per-player `research/` layer that is distinct from the bank. The trichotomy closes a hole in the model: there was no shape for outward-facing work, and no place for source material that doesn't belong in `bank/notes/` directly. See [[D-021_penguins_research_subagent]] for the full design.
 
 ## How it came up
 
@@ -70,7 +70,7 @@ The principal said *"do it all at once"* after the five-chunk sequencing questio
 - `bank/decisions/D-021_penguins_research_subagent.md` (new).
 - `quest-log/S030_penguins_subagent_and_research_folder.md` (this file).
 - `.claude/hooks/emit-event.py` — ROLE_CONFIG entry; spawn-kind + attribute generalization; predictive-comment refresh.
-- `experiments/visualizer/index.html` — extensive (iceberg, penguin sprite, full wiring; see Chunk E in [[D-021]] for the surface list).
+- `experiments/visualizer/index.html` — extensive (iceberg, penguin sprite, full wiring; see Chunk E in [[D-021_penguins_research_subagent]] for the surface list).
 - `respawn.md` — next concrete step + carry-over rewritten.
 
 ## Next session

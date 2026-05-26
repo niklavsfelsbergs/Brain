@@ -138,5 +138,5 @@ Stretch (defer to S029+ if S028 doesn't reach it):
 - [[gielinor/meta/communication-protocol.md]] — the agent-authored intent contract. Unchanged by this work.
 - [[Q-008]] — visualizer aliveness picks. This work is the most-targeted aliveness fix to date.
 - [[visualizer-audit-S026-prep]] — I12 (action target prettification) is the foundation for the synthesis layer.
-- [[D-014]] — narrate/action events + COMMS chat panel; subtask is a natural extension of the channel taxonomy.
-- [[D-018]] — per-session substrate isolation. Subtask state in the hook is per-actor not per-session; should still work cleanly under parallel sessions, but worth double-checking during the live test.
+- [[D-014_visualizer_chat_panel]] — narrate/action events + COMMS chat panel; subtask is a natural extension of the channel taxonomy.
+- [[D-018_parallel_session_substrate_isolation]] — per-session substrate isolation. Subtask state in the hook is per-actor not per-session; should still work cleanly under parallel sessions, but worth double-checking during the live test.

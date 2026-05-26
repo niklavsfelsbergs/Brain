@@ -1,6 +1,6 @@
 # D-019 — 2026-05-22 — Parallel Braindead instances + dev-to-dev comms channel
 
-**Context.** [[D-017]] introduced parallel player instances (per-session sprites with tint differentiation, instance-1 reserved for the first session, despawn on 5-min idle). It explicitly deferred Braindead: *"Wisp and Braindead are conceptually single-actor (system voice / construction crew). Treating them as instance-1 only is fine for now; revisit if two dev-brain sessions ever run in parallel."*
+**Context.** [[D-017_parallel_player_instances]] introduced parallel player instances (per-session sprites with tint differentiation, instance-1 reserved for the first session, despawn on 5-min idle). It explicitly deferred Braindead: *"Wisp and Braindead are conceptually single-actor (system voice / construction crew). Treating them as instance-1 only is fine for now; revisit if two dev-brain sessions ever run in parallel."*
 
 That moment arrived. Niklavs wants to run multiple dev-brain sessions in parallel — different construction tasks (one on the visualizer, one on hook docs, one on a meta-rewrite) progressing independently. Two missing pieces:
 
@@ -127,7 +127,7 @@ If garbling becomes routine, revisit with a file lock — but defer.
 
 ## Related
 
-- [[D-017]] — parent decision; this extends its scaffolding to Braindead and adds the comms layer it didn't include.
-- [[D-018]] — parallel-session substrate isolation; the disk-fallback work that made per-session intent files load-bearing for Braindead.
+- [[D-017_parallel_player_instances]] — parent decision; this extends its scaffolding to Braindead and adds the comms layer it didn't include.
+- [[D-018_parallel_session_substrate_isolation]] — parallel-session substrate isolation; the disk-fallback work that made per-session intent files load-bearing for Braindead.
 - [[S028]] — shipped the suffix-strip fix that made `braindead-<sid8>.txt` route correctly; that fix is the substrate D-019 builds on.
 - `gielinor/meta/modes.md` — no change. Instance is a hook/visualizer concern, not a cognitive-mode concern. Braindead is still one actor with one voice; instances are a parallelism mechanic.

@@ -1,10 +1,10 @@
 # D-014 — 2026-05-21 — Visualizer chat panel with longer intents, narration channel, and action events
 
-**Context.** [[D-010]] gave each actor a speech bubble fed by `.claude/intent/<actor>.txt`, but the bubble is the *only* surface for "what the agent is doing." Bubbles clear on building change and are capped at ~60 chars; mid-session the map can look static even when work is happening, and there's no log of what just happened. Niklavs asked for a RuneScape-style chatbox below the map — each actor narrating their work line by line, with history kept — so he can stay in the loop without staring at the sprite.
+**Context.** [[D-010_visualizer_intent_narration]] gave each actor a speech bubble fed by `.claude/intent/<actor>.txt`, but the bubble is the *only* surface for "what the agent is doing." Bubbles clear on building change and are capped at ~60 chars; mid-session the map can look static even when work is happening, and there's no log of what just happened. Niklavs asked for a RuneScape-style chatbox below the map — each actor narrating their work line by line, with history kept — so he can stay in the loop without staring at the sprite.
 
 **Decision.** Add a chat panel below the map fed by three streams:
 
-1. **Intent (extended).** Same `intent/<actor>.txt` contract as [[D-010]], but the cap rises from ~60 to **~100 chars**, with bubbles allowed to wrap to two lines (text centered). Bubble and chat read the *same* string — no second sidecar.
+1. **Intent (extended).** Same `intent/<actor>.txt` contract as [[D-010_visualizer_intent_narration]], but the cap rises from ~60 to **~100 chars**, with bubbles allowed to wrap to two lines (text centered). Bubble and chat read the *same* string — no second sidecar.
 2. **Narration (new authored channel).** A global system-voice channel for broader-scope commentary the actor doesn't speak in their own voice — *"Bankstanding phase 0 begins"*, *"Session S016 opens"*. Single global sidecar `.claude/narration.txt`, overwrite semantics (the file holds the most recent narration line, the chat keeps history). Cap ~200 chars.
 3. **Action (new mechanical event).** A new `action` event emitted by the hook on selected tool calls — Edit, Write, Bash, Grep, Glob. Read is **skipped** by default (too noisy; sprite moves already show building shifts). Schema: `{type: "action", actor, verb, target, wallTime, source: "hook"}`.
 

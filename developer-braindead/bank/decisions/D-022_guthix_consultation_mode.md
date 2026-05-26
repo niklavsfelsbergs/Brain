@@ -1,6 +1,6 @@
 # D-022 — 2026-05-22 — Guthix consultation mode (general-question deity)
 
-**Context.** Guthix has been a ritual-only voice since [[D-016]]-adjacent S028 work (subtask channel + Guthix landing) and the meta/guthix.md shipped soon after. He existed *only* during bankstanding — the ritual was his entire purpose. Anything outside that shape was refused with a redirect.
+**Context.** Guthix has been a ritual-only voice since [[D-016_gnomes_subagent]]-adjacent S028 work (subtask channel + Guthix landing) and the meta/guthix.md shipped soon after. He existed *only* during bankstanding — the ritual was his entire purpose. Anything outside that shape was refused with a redirect.
 
 The friction surfaced in S034: Niklavs wanted a place to go for *general overall questions* about the brain — *"what do I have on X across the brain?"*, *"is anything in lorebook contradicting itself?"*, *"help me think about this design"*. The actor for those questions was undefined. Wisp (unscoped mode) was the default fallback, but wisp has no curation lens, no system-aware framing, no continuity. The principal's mental model — *"the brain's caretaker should be the actor I ask about the brain"* — didn't match the architecture.
 
@@ -68,10 +68,10 @@ Three reasons:
 
 ## Related
 
-- [[D-013]] — Braindead character and workshop (the original "non-player actor" pattern Guthix followed).
-- [[D-016]] — Gnomes sub-agent (precedent for splitting roles by function).
-- [[D-018]] — Per-session intent files (the substrate consultation reuses).
-- [[D-019]] — Parallel Braindead + comms channel (precedent for two actors sharing infrastructure with different roles).
-- [[D-021]] — Penguins research sub-agent (the "outward-facing" role; Guthix consultation is the "inward-facing across the whole brain" complement).
+- [[D-013_braindead_character_and_workshop]] — Braindead character and workshop (the original "non-player actor" pattern Guthix followed).
+- [[D-016_gnomes_subagent]] — Gnomes sub-agent (precedent for splitting roles by function).
+- [[D-018_parallel_session_substrate_isolation]] — Per-session intent files (the substrate consultation reuses).
+- [[D-019_parallel_braindead_and_comms_channel]] — Parallel Braindead + comms channel (precedent for two actors sharing infrastructure with different roles).
+- [[D-021_penguins_research_subagent]] — Penguins research sub-agent (the "outward-facing" role; Guthix consultation is the "inward-facing across the whole brain" complement).
 - `gielinor/meta/guthix.md` — the load-bearing spec post-S034.
 - `gielinor/meta/modes.md` — the five-modes definition.

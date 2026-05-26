@@ -6,12 +6,12 @@
 
 ## Steps
 
-1. **Confirm brain.** Ask which brain we're working on (`developer-braindead/` vs `vault/`) unless the user has already stated it. Per [[D-005]].
+1. **Confirm brain.** Ask which brain we're working on (`developer-braindead/` vs `vault/`) unless the user has already stated it. Per [[D-005_session_start_protocol]].
 2. **Read `respawn.md`.** It's the entry point — current state, what's open, next concrete step.
 3. **Read the latest quest-log entry** (`quest-log/SNNN_*.md`, highest NNN). This is the most recent narrative; tells you *how* we got here, not just *where* we are.
 4. **Read referenced files only as cited.** Don't pre-load `bank/` — it's reference material, fetched on demand.
 5. **Write the visualizer marker.** Set `brain/.claude/active-mode.txt` to `dev-brain` so the hook spawns Braindead in the visualizer. Skip silently if the file already says `dev-brain`. (Visualizer concern only — not architecturally enforced.)
-6. **Detect live Braindead siblings.** Per [[D-019]] — parallel dev sessions need to know about each other before picking work.
+6. **Detect live Braindead siblings.** Per [[D-019_parallel_braindead_and_comms_channel]] — parallel dev sessions need to know about each other before picking work.
    - List intent files matching `brain/.claude/intent/braindead-*.txt` whose mtime is within the last 5 minutes. Exclude your own (`braindead-<sid8>.txt` where `<sid8>` is the first 8 chars of `CLAUDE_CODE_SESSION_ID`).
    - Read `comms/active.md`. Scan the last ~20 entries for any sibling id from the previous step lacking a `CLOSING` entry — that's a confirmed-live sibling.
    - Also flag any `OPEN` entry whose author's intent file is stale (mtime > 5min) and has no `CLOSING`. Surface these as candidates for `ABANDONED` synthesis.

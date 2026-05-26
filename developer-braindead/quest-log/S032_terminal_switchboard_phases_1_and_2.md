@@ -4,7 +4,7 @@ A new instrumentation layer for parallel-session operation. Principal addressed 
 
 ## What shipped
 
-- **[[D-020]]** — full design captured: state machine (`working` / `waiting_for_user` / `idle` / `ended`), reader-derives-idle rationale, user-global file path at `~/.claude/status/<sid8>.json`, sidecar hook decoupled from `emit-event.py` for failure isolation, three-phase build order (sidecar → sidebar → click-to-focus), VS Code substrate constraints flagged, scope deferrals (sub-agent entries, click-to-focus, cross-machine).
+- **[[D-020_terminal_switchboard]]** — full design captured: state machine (`working` / `waiting_for_user` / `idle` / `ended`), reader-derives-idle rationale, user-global file path at `~/.claude/status/<sid8>.json`, sidecar hook decoupled from `emit-event.py` for failure isolation, three-phase build order (sidecar → sidebar → click-to-focus), VS Code substrate constraints flagged, scope deferrals (sub-agent entries, click-to-focus, cross-machine).
 
 - **Phase 1 — status sidecar.** `developer-braindead/.claude/hooks/status-sidecar.py` (new). Maps the four turn-bracketing events to states, writes atomic per-session JSON to `~/.claude/status/<sid8>.json`, includes a 24h sweeper that moves stale files to `~/.claude/status/archive/`. Actor detection by intent-file lookup; host detection from env (`vscode` via `TERM_PROGRAM` / `VSCODE_PID`, `windows-terminal` via `WT_SESSION`). All errors swallowed to stderr; never breaks a tool call. Validated live across 6 concurrent sessions — all three states caught in the wild on first run, including a real `waiting_for_user` Jebrim parked on a question for the principal.
 

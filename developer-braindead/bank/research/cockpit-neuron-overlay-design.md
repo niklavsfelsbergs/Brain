@@ -116,5 +116,5 @@ The zoom rework touches the exact layout the overlay sits over, and `main.js`/`s
 ## Related
 
 - `cockpit-competitive-learnings.md` — the cockpit's product context (this is a "we lead on" differentiator: nobody renders consolidation).
-- [[D-027]] — the operability-vs-observability critique. This is observability; honest framing = a Sunday build, not ahead of the shipping-mart pilot (`gielinor`-side `plan.md` §C).
-- [[D-028]] — the cockpit spec this extends.
+- [[D-027_inward_outward_build_imbalance]] — the operability-vs-observability critique. This is observability; honest framing = a Sunday build, not ahead of the shipping-mart pilot (`gielinor`-side `plan.md` §C).
+- [[D-028_switchboard_cockpit_rebuild]] — the cockpit spec this extends.

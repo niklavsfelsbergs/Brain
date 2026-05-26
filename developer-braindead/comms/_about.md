@@ -1,6 +1,6 @@
 # `comms/` — dev-to-dev channel
 
-Where parallel Braindead instances coordinate so they don't trample each other's work. Per [[D-019]].
+Where parallel Braindead instances coordinate so they don't trample each other's work. Per [[D-019_parallel_braindead_and_comms_channel]].
 
 The collision surface that motivates this layer is `gielinor/` writes — two Braindeads editing the same main-brain file in the same window produces merge pain that no visualizer tint prevents. Dev-brain files are mostly safe (per-session quest-log, naturally namespaced), but main-brain shared files (`meta/`, `spellbook/rituals/`, `CLAUDE.md`) are not.
 
@@ -71,7 +71,7 @@ The comms channel is **operational** — what's in flight, who's where. Anything
 
 ## Related
 
-- [[D-019]] — founding decision; full design including hook + visualizer changes.
-- [[D-017]] — parallel player instances (the parent scaffolding).
+- [[D-019_parallel_braindead_and_comms_channel]] — founding decision; full design including hook + visualizer changes.
+- [[D-017_parallel_player_instances]] — parallel player instances (the parent scaffolding).
 - `spellbook/respawn-ritual.md` — sibling-detection + comms-read steps.
 - `spellbook/session-close.md` — CLOSING-entry step.

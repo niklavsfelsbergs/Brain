@@ -69,8 +69,8 @@ The frame collapsed: the brain's **write paths were exercised**; the **promote**
 
 ## Related
 
-- [[D-017]] parallel player instances — the substrate this work assumes.
-- [[D-022]] Guthix consultation mode — defines the actor whose adoption this decision aims to surface.
+- [[D-017_parallel_player_instances]] parallel player instances — the substrate this work assumes.
+- [[D-022_guthix_consultation_mode]] Guthix consultation mode — defines the actor whose adoption this decision aims to surface.
 - `gielinor/spellbook/rituals/drafts-triage.md` — the ritual `/drafts` runs.
 - `gielinor/spellbook/skills/2026-05-22-elicitation-with-default-surfaced.md` — promoted this session; informs the `/drafts` verdict-collection shape.
 - `gielinor/players/jebrim/quest-log/in-progress/OPEN_2026-05-22_brain-underutilization-frame.md` — the Jebrim-side hand-off frame (archived at S038 close).

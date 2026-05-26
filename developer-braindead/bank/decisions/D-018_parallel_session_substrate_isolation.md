@@ -12,7 +12,7 @@ Each got a local band-aid. The band-aids stack but don't address the underlying 
 
 **The mismatch.** The brain is implicitly designed as a single-writer filesystem. The cognitive model — "one agent, one body, one brain" — assumes a coherent writer across every layer (`bank/`, `drafts/`, `keepsake/current.md`, state files, the git working tree). Claude Code's process model permits **N sessions on the same working directory concurrently**. The implementation has multi-writer access to a single-writer-designed substrate. Every shared mutable file is a latent race.
 
-[[D-017]] addressed *attribution* — the visualizer now renders parallel sessions as distinct tinted sprites. It did not address *isolation* — two Jebrims still share `state-actors.json`, still share `keepsake/current.md`, still share the git index. Labels made the symptoms legible; they didn't change the substrate.
+[[D-017_parallel_player_instances]] addressed *attribution* — the visualizer now renders parallel sessions as distinct tinted sprites. It did not address *isolation* — two Jebrims still share `state-actors.json`, still share `keepsake/current.md`, still share the git index. Labels made the symptoms legible; they didn't change the substrate.
 
 ## Decision
 
@@ -91,7 +91,7 @@ This decision is "failing" when:
 
 ## Related
 
-- [[D-017]] — parallel player instances at the visualizer layer (attribution).
+- [[D-017_parallel_player_instances]] — parallel player instances at the visualizer layer (attribution).
 - [[S014]], [[S022]], [[S023]], [[S024]], [[S025]] — the five-incident pattern that motivated this.
 - Global `CLAUDE.md` user-rules — existing "no `git add -A`" warning; D-018 broadens its rationale.
 - `gielinor/meta/write-rules.md` — the per-layer write discipline; D-018 layers concurrency considerations atop it.

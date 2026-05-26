@@ -30,7 +30,7 @@ Live manifest at session time: `dbd41cc0` (braindead·2) is WORKING on cockpit z
 3. Coordinate the mount line via `comms/active.md` before editing `main.js`.
 4. v1 (consolidation: synapses hardening on draft→confirmed) is a later pass — needs the consolidation watcher.
 
-Not the load-bearing next step for the brain overall — that's still the parked shipping-mart pilot (gielinor `plan.md` §C, per [[D-027]]). This is the Sunday build.
+Not the load-bearing next step for the brain overall — that's still the parked shipping-mart pilot (gielinor `plan.md` §C, per [[D-027_inward_outward_build_imbalance]]). This is the Sunday build.
 
 ## Not committed
 

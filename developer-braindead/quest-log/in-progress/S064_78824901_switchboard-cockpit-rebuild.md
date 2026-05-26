@@ -9,12 +9,12 @@ Opened with the strategic question: redefine + rebuild the switchboard from scra
 
 ## The arc
 
-1. **Diagnosed the disease, not the bugs.** ~18 of the last ~25 dev sessions touched the switchboard. Root cause = no fixed definition → three uncoordinated products in one trenchcoat (monitor / feed / driver) with three drifting data paths. Matches [[D-027]]'s inward/outward imbalance.
+1. **Diagnosed the disease, not the bugs.** ~18 of the last ~25 dev sessions touched the switchboard. Root cause = no fixed definition → three uncoordinated products in one trenchcoat (monitor / feed / driver) with three drifting data paths. Matches [[D-027_inward_outward_build_imbalance]]'s inward/outward imbalance.
 2. **Refused to run ahead.** Principal called it out — I was reasoning about the *existing* structure, not their *end goal*. Pivoted to elicitation (watchtower-vs-cockpit strawman).
 3. **Definition (principal's words):** a **standalone fleet cockpit** — *the* place to run ~10 parallel sessions from; see every state at once, watch the work flow, drive any in-app, place/release the fleet. VS Code → engine room. The name was literally right; we'd built the wallboard, never the operator's console.
 4. **Foundation locked** (decisions ratified one at a time): hooks PRESERVED as contracts; stack = Python + `pywebview` single process + Preact/htm frontend; clean-modern aesthetic; all §1–§5 product defaults (bypassPermissions, place=actor+brain+prompt, place/re-task/release, VS Code rows = read-only peek, nested subagents, both brains one board, lifecycle feed w/ actions-off default, pulse+sound attention, window state, console rendering carryover).
 5. **Coordination:** found a live sibling **braindead-3d2dc4b1 (S063)** on the incremental-patch path (cache-bust, rename COMMS). Surfaced it; principal chose **greenfield + keep old board live**. Flagged the sibling off the doomed polish in comms.
-6. **Spec on disk:** [[D-028]] captures definition + foundation + the one-model-three-views discipline + preserved-contract schemas + the 5 build phases + locked decisions.
+6. **Spec on disk:** [[D-028_switchboard_cockpit_rebuild]] captures definition + foundation + the one-model-three-views discipline + preserved-contract schemas + the 5 build phases + locked decisions.
 
 ## Phase 1 — built this session (greenfield `cockpit/`)
 

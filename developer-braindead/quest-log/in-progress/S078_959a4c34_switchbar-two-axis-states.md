@@ -7,7 +7,7 @@
 
 Explain the switchbar statuses and when each triggers — "I think it needs some iteration." Walked the full pipeline (status-sidecar.py → manifest → backend → board.js), surfaced the seams, principal chose to **rethink the whole set**. Adopted a two-axis reframe, locked the spec, built it.
 
-## The decision — [[D-029]]
+## The decision — [[D-029_switchbar_two_axis_states]]
 
 The one `state` enum was doing two jobs: ball-holder state AND activity flavor. The precedence ladder in the sidecar (`alching only over working`, `wrapped_up holds across…`) was the symptom. Split into:
 

@@ -7,7 +7,7 @@ status: confirmed
 
 # D-002 — Player invocation by address
 
-**Date.** 2026-05-20 (same day as founding; supersedes the prompt-based player selection in [[D-001]]'s respawn step 2). **Status.** confirmed.
+**Date.** 2026-05-20 (same day as founding; supersedes the prompt-based player selection in [[D-001_phase-1-scaffold]]'s respawn step 2). **Status.** confirmed.
 
 ## Question
 
@@ -38,7 +38,7 @@ The address sets the principal. A message like `Hey Zezima, ask Jebrim to look u
 
 ## Alternatives considered
 
-- **Preemptive "which player?" prompt at session start.** ([[D-001]]'s original step 2.) Rejected. Forces an extra turn before real work begins. The address pattern is just as explicit and saves the round-trip.
+- **Preemptive "which player?" prompt at session start.** ([[D-001_phase-1-scaffold]]'s original step 2.) Rejected. Forces an extra turn before real work begins. The address pattern is just as explicit and saves the round-trip.
 - **Sidecar command (e.g., `/player jebrim`).** Rejected. Less natural than addressing the player directly. The slash-command surface is reserved for principal-mode actions on the brain itself.
 - **Implicit player inference from task content.** Rejected. Too easy to mis-route. The principal naming the player is the simplest, least-error-prone signal.
 - **Fuzzy match on names.** Rejected. A typo silently switching players is worse than the typo being ignored. Strict matching means a mistake stays in the current player — recoverable by re-addressing.
@@ -72,7 +72,7 @@ The sticky behavior matches how the principal actually works: most sessions are 
 - `CLAUDE.md` (*Player invocation by address*).
 - `spellbook/rituals/respawn.md` (step 2 and mini-respawn section).
 - `meta/modes.md` (dwarf invocation; principal/dwarf orthogonality is unchanged).
-- [[D-001]] — the founding scaffold; this decision refines its respawn step 2.
+- [[D-001_phase-1-scaffold]] — the founding scaffold; this decision refines its respawn step 2.
 
 ## Session ref
 

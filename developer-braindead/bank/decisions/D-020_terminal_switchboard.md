@@ -1,6 +1,6 @@
 # D-020 — 2026-05-22 — Terminal switchboard (per-session status sidecar)
 
-**Context.** With parallel sessions now a routine pattern ([[D-017]] Jebrims, [[D-019]] Braindeads, plus Guthix and Wisp), Niklavs runs five-to-ten Claude Code terminals at a time, each at a different point in its turn cycle. The visualizer answers *"who's where in the brain"* — it does not answer *"which of these terminals is waiting on me right now."*
+**Context.** With parallel sessions now a routine pattern ([[D-017_parallel_player_instances]] Jebrims, [[D-019_parallel_braindead_and_comms_channel]] Braindeads, plus Guthix and Wisp), Niklavs runs five-to-ten Claude Code terminals at a time, each at a different point in its turn cycle. The visualizer answers *"who's where in the brain"* — it does not answer *"which of these terminals is waiting on me right now."*
 
 That second question matters more for routine operation. The cost today is alt-tabbing through every window to check who's idle, who's mid-tool-call, and who's parked on a Stop with a question for the principal. A status sidecar plus an aggregator view collapses the lookup from N tabs to one glance.
 
@@ -100,13 +100,13 @@ This order is deliberate. Phase 1 alone gives a *machine-readable* signal even b
 
 ## Related
 
-- [[D-014]] — visualizer intent-vs-action channels. The status sidecar is a third channel: state-machine signal, not voice and not action.
-- [[D-017]], [[D-019]] — parallel sessions; the existence of multiple concurrent terminals is the problem this decision solves.
-- [[D-018]] — per-session intent files; actor-from-disk detection here reuses that filename convention.
+- [[D-014_visualizer_chat_panel]] — visualizer intent-vs-action channels. The status sidecar is a third channel: state-machine signal, not voice and not action.
+- [[D-017_parallel_player_instances]], [[D-019_parallel_braindead_and_comms_channel]] — parallel sessions; the existence of multiple concurrent terminals is the problem this decision solves.
+- [[D-018_parallel_session_substrate_isolation]] — per-session intent files; actor-from-disk detection here reuses that filename convention.
 - `gielinor/meta/communication-protocol.md` — the intent narration rule; this sidecar reads what intent narration has already written.
 
 ## S052 amendment — 2026-05-23
 
-The manifest mirror moved. `state-switchboard.json` now lives at `switchboard/state-switchboard.json` (was `developer-braindead/experiments/visualizer/state-switchboard.json`) — the surface was promoted to brain root in [[D-026]] when the map collapsed and the switchboard became load-bearing on its own. `status-sidecar.py`'s `VIZ_DIR` constant points at the new location; everything in this doc about the contract, state machine, and write path is unchanged on the *shape* side.
+The manifest mirror moved. `state-switchboard.json` now lives at `switchboard/state-switchboard.json` (was `developer-braindead/experiments/visualizer/state-switchboard.json`) — the surface was promoted to brain root in [[D-026_switchboard_promotion]] when the map collapsed and the switchboard became load-bearing on its own. `status-sidecar.py`'s `VIZ_DIR` constant points at the new location; everything in this doc about the contract, state machine, and write path is unchanged on the *shape* side.
 
 Sibling stream added in the same session: `switchboard/chat.ndjson` — hook-side humanized event log (write/edit/grep/bash/spawn/idle lines) written by `emit-event.py`, consumed by the switchboard's chat panel. Independent of the status sidecar; same atomic-append pattern.

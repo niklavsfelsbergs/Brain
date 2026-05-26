@@ -4,12 +4,12 @@
 
 The load-bearing finding: **the plan stopped tracking reality at [[S003]].** `plan.md` — "the single living plan for the mission" — still referenced S002/S003 while construction had run to ~S055 (gielinor) / S058–S059 (dev). §A and §B (foundation + main-brain architecture) are done and then some. But §C (the pilot — a morning shipping-data routing check, *the agent doing real work on a trigger*), §E (gates), §F (triggers beyond manual), and §G (substrate) — **the entire operational half** — are untouched. Phase 1 was declared "manual invocation only" ([[A-001]]); at S060 the agent is *still* manual-only. No trigger has ever fired; no pilot ever ran.
 
-Meanwhile an enormous, unplanned cognitive architecture was built, and built well: the player roster (Jebrim, Zezima), the ritual system (respawn, close-session, alching, bankstanding, drafts-triage), three sub-agent roles (dwarf, gnome, penguin), Guthix the caretaker deity, hook-enforced write guarantees, and a large observability/coordination layer (visualizer → switchboard, comms / [[D-024]]).
+Meanwhile an enormous, unplanned cognitive architecture was built, and built well: the player roster (Jebrim, Zezima), the ritual system (respawn, close-session, alching, bankstanding, drafts-triage), three sub-agent roles (dwarf, gnome, penguin), Guthix the caretaker deity, hook-enforced write guarantees, and a large observability/coordination layer (visualizer → switchboard, comms / [[D-024_parallel_player_coordination]]).
 
 The evidence sharpens *where* the effort went and *what went cold*:
 
 - **Effort imbalance.** ~52% of recent commits build the observability scaffolding (visualizer / switchboard / hooks — the mirror the brain watches itself in); ~28% is actual player work. Dev-brain sessions S032–S059 are nearly continuous switchboard polish.
-- **Cold-but-shipped capabilities.** Guthix *consultation* mode: zero on-disk runs ever (no `G-NNN` files) despite [[D-023]] shipping a routing heuristic to make it reachable. `brain/ideas/`: zero ideas captured since it shipped ([[S040]]). Standalone `/drafts`: never run independently. Guthix's bank: 0 notes after four bankstanding passes.
+- **Cold-but-shipped capabilities.** Guthix *consultation* mode: zero on-disk runs ever (no `G-NNN` files) despite [[D-023_close_the_promote_consult_loop]] shipping a routing heuristic to make it reachable. `brain/ideas/`: zero ideas captured since it shipped ([[S040]]). Standalone `/drafts`: never run independently. Guthix's bank: 0 notes after four bankstanding passes.
 - **Deterioration signals.** `plan.md` frozen at S003 (the strongest). `respawn.md` bloated to ~338 lines / 10 "Last updated" stanzas with stale carries (e.g. "first live gnome spawn" still listed pending though gnomes ran in S021/S030/S034). Bankstanding outrunning its fuel (B-003 light, B-004 abandoned no-op).
 
 The unifying read: **the brain has optimized inward — better self-model, better self-observation, better coordination between sessions the operator starts by hand — and never turned outward to act on its own.** The cold capabilities, the effort imbalance, and the abandoned §C–§G are the same gap wearing different clothes. The brain got smart; it never got hands.
@@ -41,5 +41,5 @@ The unifying read: **the brain has optimized inward — better self-model, bette
 
 **Related.**
 - `bank/plan.md` — reconciled this session; §C is the target.
-- [[D-023]] close the promote/consult loop — the prior "underutilization" course-correction. This decision is its operational sequel: D-023 fixed the *inward* promote/consult leak; this names the *outward* gap.
+- [[D-023_close_the_promote_consult_loop]] close the promote/consult loop — the prior "underutilization" course-correction. This decision is its operational sequel: D-023 fixed the *inward* promote/consult leak; this names the *outward* gap.
 - [[A-001]] manual-invocation-only Phase 1 — the assumption this decision proposes to finally retire.

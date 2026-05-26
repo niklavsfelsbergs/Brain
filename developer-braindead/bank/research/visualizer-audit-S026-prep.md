@@ -1,6 +1,6 @@
 # Visualizer audit S026 — prep
 
-> **Why this file exists.** [[S025]] closed by shipping [[D-017]] (parallel-player sprite tinting) and [[D-018]] chunks 1–3 (per-session substrate isolation in the hook + per-session intent filenames). The next session audits the **visualizer SPA** — `developer-braindead/experiments/visualizer/index.html` (3249 lines) — to fix what's clearly broken and lift the obvious wins. This file is the primer: how the renderer works today, where the bugs are, where the improvements live. Cite line numbers so the audit session goes straight to the lines.
+> **Why this file exists.** [[S025]] closed by shipping [[D-017_parallel_player_instances]] (parallel-player sprite tinting) and [[D-018_parallel_session_substrate_isolation]] chunks 1–3 (per-session substrate isolation in the hook + per-session intent filenames). The next session audits the **visualizer SPA** — `developer-braindead/experiments/visualizer/index.html` (3249 lines) — to fix what's clearly broken and lift the obvious wins. This file is the primer: how the renderer works today, where the bugs are, where the improvements live. Cite line numbers so the audit session goes straight to the lines.
 >
 > **Recon basis.** Three Explore dwarves (D1 architecture, D2 event dispatch + state, D3 CSS/UX) walked the file in this session. Their findings are merged and de-duped below. Filtered out: findings already closed by D-017/D-018, design choices that read as bugs but aren't (e.g., scrub-back snaps rather than reverse-animates — intentional).
 >
@@ -192,8 +192,8 @@ Lower-priority items (B4, B6–B8, I3–I10) batch into a polish pass after the 
 
 ## Related
 
-- [[D-014]] — narrate/action events + COMMS chat panel.
-- [[D-017]] — parallel player instances (sprite tinting + per-instance bubbles + per-instance event routing).
-- [[D-018]] — per-session substrate isolation (state-actors / state-dwarves / state-gnomes re-key + per-session intent filenames).
+- [[D-014_visualizer_chat_panel]] — narrate/action events + COMMS chat panel.
+- [[D-017_parallel_player_instances]] — parallel player instances (sprite tinting + per-instance bubbles + per-instance event routing).
+- [[D-018_parallel_session_substrate_isolation]] — per-session substrate isolation (state-actors / state-dwarves / state-gnomes re-key + per-session intent filenames).
 - [[Q-008]] — visualizer aliveness picks (deferred wanderers + trail echoes).
 - [[bank/research/visualizer-audit-S021.md]] — prior audit; C1 (color taxonomy) and C2 (Braindead COMMS) are still open here as I1 and B3.

@@ -11,8 +11,8 @@ Honest audit of the parallel-coordination machinery:
 | Mechanism | Gate or discipline? | Covers |
 |---|---|---|
 | `comms/active.md` OPEN/CLOSING/`→ @`/UPDATE | **Discipline** (markdown) | Announcing territory, asking before touching. Leaks ~70% — the recurring *"did not post an OPEN"* note across the channel is the evidence. |
-| Status sidecar `~/.claude/status/<sid8>.json` ([[D-020]]) | **Real data, advisory** | Liveness (working / your_move / ended). You *read* it to decide to back off; nothing *blocks* on it (S042 used it to pivot off a hot file). |
-| Session-suffix filenames `__<sid8>`, `SNNN_<sid8>_` ([[D-024]]) | **Real mechanism** | Clobber-proofs **own-file** surfaces only — inventory, in-progress quest-log. Each session gets its own file. |
+| Status sidecar `~/.claude/status/<sid8>.json` ([[D-020_terminal_switchboard]]) | **Real data, advisory** | Liveness (working / your_move / ended). You *read* it to decide to back off; nothing *blocks* on it (S042 used it to pivot off a hot file). |
+| Session-suffix filenames `__<sid8>`, `SNNN_<sid8>_` ([[D-024_parallel_player_coordination]]) | **Real mechanism** | Clobber-proofs **own-file** surfaces only — inventory, in-progress quest-log. Each session gets its own file. |
 | The six boundary hooks (deletes, confirmed, dwarf/gnome/penguin, sub-spawn) | **Real gates** | Write *surface* and *destruction*. **None addresses cross-session collision.** |
 
 So collision-avoidance is almost entirely discipline plus one advisory signal. The one hard mechanism (suffixing) only covers surfaces where a session writes *its own* file. The genuinely hard case — **two sessions editing the same shared file** (`gielinor/meta/`, `CLAUDE.md`, `cockpit/web/switchboard.js`, `styles.css`, hooks) — has **no gate at all**, and the build log documents it as unworkable:
@@ -20,7 +20,7 @@ So collision-avoidance is almost entirely discipline plus one advisory signal. T
 - **S042 / cbbf8de8:** three Edit attempts against `index.html` failed back-to-back as a sibling wrote between Read and Edit. Recorded lesson: *"interactive concurrent editing of the same file is unworkable with the current toolchain."*
 - **The workaround that emerged (S057 / S059 / S060):** the session that lands hunks in a shared file can't `git add -p` non-interactively, so it applies its hunks to the shared working tree, *doesn't commit them*, and pastes the exact hunks into comms asking the sibling to carry them in their commit — *"re-land from this entry if a full-file rewrite drops them."* That is two agents hand-signaling across a shared workbench, not a gate.
 
-[[D-024]] explicitly left "hook enforcement" and the same-file race out of scope; this decision picks up that thread.
+[[D-024_parallel_player_coordination]] explicitly left "hook enforcement" and the same-file race out of scope; this decision picks up that thread.
 
 ## Decision — adopt git worktrees, with one split that must hold
 
@@ -47,13 +47,13 @@ Audit targets (the writers): `status-sidecar.py`, `emit-event.py`, `emit-commit-
 - **Comms-sharing mechanism.** Junction/symlink the worktree's `comms/active.md` + `.claude/intent/` back to the main tree, *or* reconfigure the hooks to write absolute main-tree paths. Junction is less invasive but Windows-junction-fragile; hook-config is cleaner but touches every emitter. Undecided.
 - **Cockpit worktree awareness.** Does the cockpit launch PTYs into worktrees, or only ever drive the main tree while sub-agents use worktrees? Likely the latter first.
 - **Merge workflow for markdown.** The brain is mostly append-only/suffixed already, so true conflicts should be rare and concentrated in the shared code/meta files — exactly where git conflict resolution is *wanted*.
-- **Cross-brain.** Still no `comms` bridge between `gielinor/` and `developer-braindead/` ([[D-024]] out-of-scope); worktrees don't change that.
+- **Cross-brain.** Still no `comms` bridge between `gielinor/` and `developer-braindead/` ([[D-024_parallel_player_coordination]] out-of-scope); worktrees don't change that.
 
 ## Related
 
-- [[D-024]] — parallel player coordination (comms + suffix); left the same-file race and hook enforcement out of scope. This is the follow-on.
-- [[D-019]] — parallel Braindead + comms channel; the discipline layer this hardens.
-- [[D-018]] — per-session substrate isolation (intent files, state-actors); the per-sid8 precedent.
-- [[D-020]] — status sidecar; the liveness signal that stays the shared coordination source under worktrees.
-- [[D-027]] / [[D-028]] — the inward-build context; this is more inward infrastructure, justified because it removes a documented, recurring tax on every multi-session build.
+- [[D-024_parallel_player_coordination]] — parallel player coordination (comms + suffix); left the same-file race and hook enforcement out of scope. This is the follow-on.
+- [[D-019_parallel_braindead_and_comms_channel]] — parallel Braindead + comms channel; the discipline layer this hardens.
+- [[D-018_parallel_session_substrate_isolation]] — per-session substrate isolation (intent files, state-actors); the per-sid8 precedent.
+- [[D-020_terminal_switchboard]] — status sidecar; the liveness signal that stays the shared coordination source under worktrees.
+- [[D-027_inward_outward_build_imbalance]] / [[D-028_switchboard_cockpit_rebuild]] — the inward-build context; this is more inward infrastructure, justified because it removes a documented, recurring tax on every multi-session build.
 - `comms/_about.md` — the channel this decision keeps shared rather than isolating.

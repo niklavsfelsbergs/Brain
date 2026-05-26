@@ -4,7 +4,7 @@
 
 ## What landed this session
 
-- **Sidecar registration re-enabled at lower frequency.** [[D-020]] Step 1 decision: `UserPromptSubmit` + `Stop` + `SessionEnd` only (3 fires/turn, well below `emit-event.py`'s baseline). `_comment_status_sidecar` in `brain/.claude/settings.json` rewritten to document the new shape. PreToolUse / PostToolUse intentionally not registered — per-tool-call granularity wasn't load-bearing for the switchboard UX.
+- **Sidecar registration re-enabled at lower frequency.** [[D-020_terminal_switchboard]] Step 1 decision: `UserPromptSubmit` + `Stop` + `SessionEnd` only (3 fires/turn, well below `emit-event.py`'s baseline). `_comment_status_sidecar` in `brain/.claude/settings.json` rewritten to document the new shape. PreToolUse / PostToolUse intentionally not registered — per-tool-call granularity wasn't load-bearing for the switchboard UX.
 
 - **`claude_pid_chain` capture (Phase 3 prep).** `developer-braindead/.claude/hooks/status-sidecar.py` gained a `_ppid_chain()` helper using `CreateToolhelp32Snapshot` via ctypes — walks the process tree from `os.getppid()` up to a depth of 20, returns `[{pid, name}, ...]`. Cached per session on first fire; the snapshot is the most expensive thing the sidecar does. Record now carries both `claude_pid` (chain[0].pid for compat) and `claude_pid_chain`.
 

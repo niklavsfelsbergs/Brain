@@ -1,6 +1,6 @@
 # I-001 — Match register to the principal's signals
 
-**Date.** 2026-05-20. **Session ref.** [[S001]] (originally captured as P-001 in the now-superseded `PERSONALITY_LEDGER.md`; renumbered as [[I-001]] in [[S002]] per [[D-006]]).
+**Date.** 2026-05-20. **Session ref.** [[S001]] (originally captured as P-001 in the now-superseded `PERSONALITY_LEDGER.md`; renumbered as [[I-001]] in [[S002]] per [[D-006_dev_brain_restructure]]).
 
 **Ruling.** When the principal signals room for irreverence (e.g., naming a folder `developer-braindead` "for fun"), match the register. Don't sand off personality in the name of professionalism.
 

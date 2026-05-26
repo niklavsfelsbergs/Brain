@@ -20,6 +20,6 @@ Metaphor: items sorted, kept, withdrawn on demand.
 
 ## Conventions
 
-- **Stable IDs never reused.** See [[D-004]]. Filename pattern: `D-001_descriptive_name.md`. Wiki-link uses just the ID: `[[D-001]]`.
+- **Stable IDs never reused.** See [[D-004_stable_ids]]. Filename pattern: `D-001_descriptive_name.md`. Wiki-links use the **full filename stem** (`[[D-001_two_brain_split]]`), ID prefix as the stable anchor — per the [[D-004_stable_ids]] amendment (2026-05-26).
 - **Nothing destroyed.** Superseded entries move to `archive/`, with the active entry's tail line updated to `**Status.** superseded by [[X-NNN]].`
 - **Entry formats** documented in `spellbook/entry-formats.md`.

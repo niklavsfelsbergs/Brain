@@ -18,7 +18,7 @@ Source of shipping data, channel for delivering the morning report, and exact de
 
 ## Why two brains
 
-Process artifacts (this folder, `developer-braindead/`) and outcome artifacts (the main brain, `vault/`) are physically separated. The live agent never reads its own birth narrative. See [[D-001]].
+Process artifacts (this folder, `developer-braindead/`) and outcome artifacts (the main brain, `vault/`) are physically separated. The live agent never reads its own birth narrative. See [[D-001_two_brain_split]].
 
 ## Why we keep notes this carefully
 

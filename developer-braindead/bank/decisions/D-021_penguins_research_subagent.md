@@ -151,10 +151,10 @@ This decouples source size from bank size — the bank stays browsable, the rese
 
 ## Related
 
-- [[D-016]] — gnomes as the second sub-agent role; the founding move that made "third sub-agent role" thinkable.
-- [[D-017]] — parallel player instances; established the actor-class extension pattern that ROLE_CONFIG generalization rode on.
-- [[D-018]] — per-session intent files; the substrate that lets multi-penguin sessions disambiguate cleanly.
-- [[D-019]] — parallel Braindead + comms channel; established the "extend ROLE_CONFIG when a new actor class lands" muscle memory.
+- [[D-016_gnomes_subagent]] — gnomes as the second sub-agent role; the founding move that made "third sub-agent role" thinkable.
+- [[D-017_parallel_player_instances]] — parallel player instances; established the actor-class extension pattern that ROLE_CONFIG generalization rode on.
+- [[D-018_parallel_session_substrate_isolation]] — per-session intent files; the substrate that lets multi-penguin sessions disambiguate cleanly.
+- [[D-019_parallel_braindead_and_comms_channel]] — parallel Braindead + comms channel; established the "extend ROLE_CONFIG when a new actor class lands" muscle memory.
 - `gielinor/spellbook/skills/research.md` — the methodology penguins (and principals) follow.
 - `gielinor/spellbook/skills/spawning-penguins.md` — the spawn heuristic.
 - `gielinor/.claude/agents/penguin.md` — the agent config.

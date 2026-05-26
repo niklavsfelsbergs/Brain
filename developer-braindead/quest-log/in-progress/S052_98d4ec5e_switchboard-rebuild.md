@@ -1,7 +1,7 @@
 # S052 — 2026-05-23 — Switchboard rebuild (map killed, promoted to brain root)
 
 **Session.** `98d4ec5e` (dev-brain mode, opened via "Lets develop gielinor").
-**Decision.** [[D-026]].
+**Decision.** [[D-026_switchboard_promotion]].
 
 ## Turn-by-turn so far
 

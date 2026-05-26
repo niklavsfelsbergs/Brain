@@ -6,7 +6,7 @@
 
 ## What landed
 
-[[D-022]] — Guthix consultation mode. Doc changes across nine files in `gielinor/`:
+[[D-022_guthix_consultation_mode]] — Guthix consultation mode. Doc changes across nine files in `gielinor/`:
 
 - `meta/guthix.md` — major rewrite. Two residence modes; invocation contract reframed; refusal narrowed to "writing into a player's house."
 - `meta/modes.md` — five session modes (was four). Unscoped narrowed to "no prompt yet"; Consultation block added; consultation→bankstanding flip rule.

@@ -1,6 +1,6 @@
 # Cockpit — competitive learnings & parked backlog
 
-> Parked 2026-05-24 (dev-brain session, sid 89f41770). Principal asked: *"what could we learn from the other solutions that would improve mine?"* then *"park these ideas."* Not committed to build — candidate features for the `cockpit/` line ([[D-028]]), to weigh against the [[D-027]] inward/outward imbalance (don't out-build the commodity fleet board; spend beams on the world layer).
+> Parked 2026-05-24 (dev-brain session, sid 89f41770). Principal asked: *"what could we learn from the other solutions that would improve mine?"* then *"park these ideas."* Not committed to build — candidate features for the `cockpit/` line ([[D-028_switchboard_cockpit_rebuild]]), to weigh against the [[D-027_inward_outward_build_imbalance]] inward/outward imbalance (don't out-build the commodity fleet board; spend beams on the world layer).
 
 ## Context
 
@@ -11,7 +11,7 @@ Strategic frame: the generic fleet view is now commodity Anthropic will maintain
 ## The four real steals
 
 **1. Git worktree isolation — for *construction* sessions only.** (Conductor / Vibe Kanban / Agent Teams)
-Each agent gets its own worktree + branch; no filesystem collisions. This directly kills the documented [[D-024]] shared-tree tax — "ceded the client files to the sibling's commit," uncommitted hunks riding the shared tree, S057→S067 hand-offs via `comms/active.md`, SNNN renumbering races. **Precise cut:** worktree-isolate **dev-brain construction sessions** (Braindead siblings editing `cockpit/` + hooks — that's where ~all collisions are); keep the **shared tree for brain-content sessions** (players in separate namespaces rarely collide, and the shared tree is load-bearing for the one-world COMMS model). Highest-leverage, lowest-risk.
+Each agent gets its own worktree + branch; no filesystem collisions. This directly kills the documented [[D-024_parallel_player_coordination]] shared-tree tax — "ceded the client files to the sibling's commit," uncommitted hunks riding the shared tree, S057→S067 hand-offs via `comms/active.md`, SNNN renumbering races. **Precise cut:** worktree-isolate **dev-brain construction sessions** (Braindead siblings editing `cockpit/` + hooks — that's where ~all collisions are); keep the **shared tree for brain-content sessions** (players in separate namespaces rarely collide, and the shared tree is load-bearing for the one-world COMMS model). Highest-leverage, lowest-risk.
 
 **2. In-cockpit diff review.** (Conductor / Vibe Kanban)
 Review an agent's diff inline — click a line, comment, agent iterates — before push. We have read-only transcript peek but no diff surface, and every session ends in a commit-on-ask. A review mode on the third column = approve changes from the bridge instead of dropping to `git`. High fit; our flow already gates commits on principal approval.
@@ -49,7 +49,7 @@ Conductor/Vibe Kanban lean on **background** agents (`claude --bg`, headless wor
 
 ## Related
 
-- [[D-028]] — cockpit rebuild (the build line these would extend)
-- [[D-027]] — inward/outward build imbalance (the lens: don't out-build the commodity board)
-- [[D-024]] — parallel-session coordination (the shared-tree tax steal #1 targets)
+- [[D-028_switchboard_cockpit_rebuild]] — cockpit rebuild (the build line these would extend)
+- [[D-027_inward_outward_build_imbalance]] — inward/outward build imbalance (the lens: don't out-build the commodity board)
+- [[D-024_parallel_player_coordination]] — parallel-session coordination (the shared-tree tax steal #1 targets)
 - headless billing constraint (2026-06-15 metering) — the trap above

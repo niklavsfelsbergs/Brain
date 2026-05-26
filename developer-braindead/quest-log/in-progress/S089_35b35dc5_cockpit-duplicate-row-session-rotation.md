@@ -40,4 +40,4 @@ Headless (all green):
 
 - The **current** on-screen dupe only clears on relaunch (the running window holds old JS); that terminal will resume the **earlier** conversation (its owned-uuid predates this fix). Rotations self-heal from here on.
 - Cross-link: @f731b4e8's **D-030** (git-worktree isolation) is the parallel-session collision-**gate** track; this S089 is the cockpit display-**attribution** track — same neighborhood, different layer.
-- Strategic next step unchanged — the §C shipping-mart pilot (the outward build) per [[D-027]].
+- Strategic next step unchanged — the §C shipping-mart pilot (the outward build) per [[D-027_inward_outward_build_imbalance]].

@@ -10,7 +10,7 @@ Principal flagged a recurring friction: running two sessions of the same player 
 
 Principal chose three design knobs during the conversation: 5-minute idle OR session-end despawn, tint-based differentiation, both instances active.
 
-## What was decided ([[D-017]])
+## What was decided ([[D-017_parallel_player_instances]])
 
 A new ID layer for the visualizer: each parallel session of a player gets an `instance` number (1, 2, 3 ...) resolved from session_id. Per-instance sprite, per-instance intent file, per-instance bubble, per-instance COMMS prefix. Sub-agents (dwarves, gnomes), wisp, and braindead stay single-instance for now.
 

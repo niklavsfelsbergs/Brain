@@ -2,11 +2,11 @@
 
 The **dev brain**. A working notebook for building the agent. Not a cognitive system — no agent runs cycles over this. Read primarily by Niklavs; occasionally referenced by the main brain on explicit cue.
 
-Distinct from the main brain (`vault/`, TBD). See [[D-001]] for the two-brain split rationale.
+Distinct from the main brain (`vault/`, TBD). See [[D-001_two_brain_split]] for the two-brain split rationale.
 
 ## Layers
 
-Structured around RuneScape-themed cognitive layers for coherence with the main brain — but **stripped down**, because a notebook is not a cognition. See [[D-006]] for the restructure decision and what was cut and why.
+Structured around RuneScape-themed cognitive layers for coherence with the main brain — but **stripped down**, because a notebook is not a cognition. See [[D-006_dev_brain_restructure]] for the restructure decision and what was cut and why.
 
 | Layer | Holds | Metaphor |
 |---|---|---|
@@ -16,12 +16,12 @@ Structured around RuneScape-themed cognitive layers for coherence with the main 
 | `examine/` | Self-model: my (dev-Claude's) evolving postures for this work | The "examine" verb — agent inspecting itself |
 | `player/` | User-model: your preferences and our working agreements | Character info; the principal I work with |
 
-**Cut from main-brain analogue:** `inventory/` (no working memory), `keepsake/` (no runtime priority), `lorebook/` (the whole dev brain *is* the main brain's lorebook). See [[D-006]].
+**Cut from main-brain analogue:** `inventory/` (no working memory), `keepsake/` (no runtime priority), `lorebook/` (the whole dev brain *is* the main brain's lorebook). See [[D-006_dev_brain_restructure]].
 
 ## Conventions
 
 - **Entry point.** `respawn.md` at root. Read first.
-- **Per-entry files** inside `bank/` and `examine/`. Each entry has a stable short ID ([[D-NNN]], [[A-NNN]], [[Q-NNN]], [[R-NNN]], [[I-NNN]]) — IDs never reused, filename adds descriptive suffix (e.g., `D-001_two_brain_split.md`). See [[D-004]].
+- **Per-entry files** inside `bank/` and `examine/`. Each entry has a stable short ID ([[D-NNN]], [[A-NNN]], [[Q-NNN]], [[R-NNN]], [[I-NNN]]) — IDs never reused, filename adds descriptive suffix (e.g., `D-001_two_brain_split.md`). See [[D-004_stable_ids]].
 - **Quest log files** named `SNNN_descriptive_name.md`, named at session close (you can't title a quest before completing it). See `spellbook/session-close.md`.
 - **Wiki-links** `[[ID]]` for cross-references. Load-bearing across docs.
 - **Plan is single-file** at `bank/plan.md` — one mission, one living plan, iterated.

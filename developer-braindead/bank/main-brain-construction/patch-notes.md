@@ -18,13 +18,13 @@ Most-recent entries at the top.
 
 ## 2026-05-20 — Player invocation rule changed to address-based
 
-[[D-002]] landed. Player selection moved from a preemptive "which player?" prompt at session start to **address at message start** (`Hey Zezima, ...`, `Hey Jebrim, ...`, `Hey unscoped, ...`). Sticky after addressing. Strict matching — case-insensitive on name, must be at message start, no fuzzy match.
+[[D-002_player_invocation_by_address]] landed. Player selection moved from a preemptive "which player?" prompt at session start to **address at message start** (`Hey Zezima, ...`, `Hey Jebrim, ...`, `Hey unscoped, ...`). Sticky after addressing. Strict matching — case-insensitive on name, must be at message start, no fuzzy match.
 
 Files changed:
 - `CLAUDE.md` — added section *Player invocation by address*.
 - `spellbook/rituals/respawn.md` — step 2 rewritten; mini-respawn section clarified to trigger on addressing.
 
-Supersedes [[D-001]]'s respawn step 2.
+Supersedes [[D-001_phase-1-scaffold]]'s respawn step 2.
 
 ## 2026-05-20 — Day 0: gielinor scaffolded
 
@@ -37,7 +37,7 @@ The brain was born today. Phase 1 scaffolding landed:
 - Players system (`players/_about.md`, `players/inbox/`) with initial roster: `zezima/` and `jebrim/`. Each player has the full sub-layer template, minimal `_about.md` + `persona.md` + `CLAUDE.md`, and per-layer `_about.md` files.
 - Four hooks in `.claude/hooks/` (portable Python), wired via `.claude/settings.json`.
 - `niksis8/confirmed/current.md` seeded: "My name is Niklavs." All other `current.md` files are empty placeholders with one-line headers.
-- Founding decision [[D-001]] recorded.
+- Founding decision [[D-001_phase-1-scaffold]] recorded.
 
 Build session: see the dev brain's [[S003]] for the narrative.
 

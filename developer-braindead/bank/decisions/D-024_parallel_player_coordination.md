@@ -1,6 +1,6 @@
 # D-024 — 2026-05-22 — Parallel player coordination: shared comms + session-suffixed state
 
-**Context.** [[D-017]] gave parallel player instances per-session sprites and visualizer attribution. [[D-018]] session-keyed intent files and `state-actors.json`. [[D-019]] built a comms channel for parallel Braindead and explicitly punted parallel-player coordination ("future decision") and cross-brain coordination ("current architecture has no answer").
+**Context.** [[D-017_parallel_player_instances]] gave parallel player instances per-session sprites and visualizer attribution. [[D-018_parallel_session_substrate_isolation]] session-keyed intent files and `state-actors.json`. [[D-019_parallel_braindead_and_comms_channel]] built a comms channel for parallel Braindead and explicitly punted parallel-player coordination ("future decision") and cross-brain coordination ("current architecture has no answer").
 
 That future arrived. Niklavs routinely runs parallel player sessions — two Jebrims on different threads, or Jebrim + Zezima side-by-side. Visualizer is fine; the disk isn't:
 
@@ -8,7 +8,7 @@ That future arrived. Niklavs routinely runs parallel player sessions — two Jeb
 2. **Quest-log `SNNN_*.md` allocation race.** SNNN picked by scanning existing files; two sessions starting near-simultaneously can both pick the same N.
 3. **Cross-player wrong-terminal blindness.** The `communication-protocol.md` wrong-instance check is *content-based* (does this ask fit my domain?). It catches the principal mis-addressing one terminal but doesn't catch the agent being unaware a sibling exists.
 4. **Cross-player global-surface collisions** — `players/inbox/`, global `examine/drafts/`, `niksis8/drafts/`, `lorebook/drafts/`. Date-prefix filenames; last-write wins.
-5. **Liveness signal is intent-file mtime.** S032 flagged this as strictly weaker than [[D-020]]'s status sidecar — a session can be alive with a 10-minute-old intent file mid-long-task.
+5. **Liveness signal is intent-file mtime.** S032 flagged this as strictly weaker than [[D-020_terminal_switchboard]]'s status sidecar — a session can be alive with a 10-minute-old intent file mid-long-task.
 
 The light-coordination posture D-017 took for parallel Jebrims ("principal disambiguates by eyeballing the visualizer") doesn't cover the disk hazards. This decision fixes the bulk of them with one new file + one suffix rule + a sidecar swap, parallel to D-019's shape.
 
@@ -28,7 +28,7 @@ Entry kinds: `OPEN` (respawn), `UPDATE` (mid-session pivot), `→ @<actor>-<sid8
 
 Concurrent-write safety inherits from D-019: `open(..., 'a')` is atomic for small writes on Win+POSIX; line-level garbling tolerated, no lockfile.
 
-### 2. Liveness via [[D-020]] status sidecar
+### 2. Liveness via [[D-020_terminal_switchboard]] status sidecar
 
 Sibling detection at respawn reads `~/.claude/status/*.json` for sessions matching:
 
@@ -80,17 +80,17 @@ Suffixing alone doesn't decide which file is canonical. The discipline line does
 - **Comms file growth.** Unbounded append. Inherits D-019's manual-rotation plan; can automate to `comms/archive/active-YYYY-MM-DD.md` later.
 - **Three-fresh-sessions collision.** Three Jebrim respawns within seconds could all see "no siblings" before any posts OPEN. Principal sees three fresh OPENs and brokers. If routine, brief lockfile at respawn-step.
 - **Cross-brain drift.** D-019 §Out-of-scope §4 noted Jebrim+Braindead might "collide on intent." This decision doesn't fix that. Track as a deferred branch; revisit when a real collision happens.
-- **Guthix consultation entries in comms.** Consultation is chat-only by default ([[D-022]]). Should Guthix post OPEN/CLOSING? First cut: yes, lightweight — one line each. Sidecar already tracks his sessions.
+- **Guthix consultation entries in comms.** Consultation is chat-only by default ([[D-022_guthix_consultation_mode]]). Should Guthix post OPEN/CLOSING? First cut: yes, lightweight — one line each. Sidecar already tracks his sessions.
 
 ## Related
 
-- [[D-017]] — parallel player instances; this completes its disk-side gap.
-- [[D-018]] — substrate isolation; per-sid8 intent files are the precedent for per-sid8 inventory + quest-log.
-- [[D-019]] — parallel Braindead + comms; this is its player-side mirror.
-- [[D-020]] — status sidecar; liveness signal source.
-- [[D-022]] — Guthix consultation; in scope as a participant in the global comms file.
+- [[D-017_parallel_player_instances]] — parallel player instances; this completes its disk-side gap.
+- [[D-018_parallel_session_substrate_isolation]] — substrate isolation; per-sid8 intent files are the precedent for per-sid8 inventory + quest-log.
+- [[D-019_parallel_braindead_and_comms_channel]] — parallel Braindead + comms; this is its player-side mirror.
+- [[D-020_terminal_switchboard]] — status sidecar; liveness signal source.
+- [[D-022_guthix_consultation_mode]] — Guthix consultation; in scope as a participant in the global comms file.
 - `gielinor/meta/communication-protocol.md` §"Wrong-instance check" — content-based sibling check; this decision adds the file-system-based one.
 
 ## S052 amendment — 2026-05-23
 
-`status-sidecar.py` still mirrors both `comms/active.md` files into the switchboard dir for browser fetch (the http.server roots there). Mirror filenames unchanged (`state-comms-braindead.md`, `state-comms-gielinor.md`); their destination moved from `developer-braindead/experiments/visualizer/` to `switchboard/` per [[D-026]]. Sandbox shape and concurrent-append discipline above are unchanged.
+`status-sidecar.py` still mirrors both `comms/active.md` files into the switchboard dir for browser fetch (the http.server roots there). Mirror filenames unchanged (`state-comms-braindead.md`, `state-comms-gielinor.md`); their destination moved from `developer-braindead/experiments/visualizer/` to `switchboard/` per [[D-026_switchboard_promotion]]. Sandbox shape and concurrent-append discipline above are unchanged.

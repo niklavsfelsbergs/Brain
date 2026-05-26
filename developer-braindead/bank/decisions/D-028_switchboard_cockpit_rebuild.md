@@ -1,12 +1,12 @@
 # D-028 — 2026-05-23 — Switchboard rebuild: standalone fleet cockpit
 
-**Context.** The switchboard accreted across ~18 of the last ~25 dev sessions (S037, S039, S042–S043, S047–S053, S056–S062). It started as an isometric map ([[D-009]]), shed the map for switchboard+chat panels ([[D-026]]), then grew an embedded agent chat ([[S060]]), a COMMS reskin, and a lifecycle feed — each session bolting a feature onto whichever of three identities felt urgent that day. The result is three uncoordinated products in one trenchcoat:
+**Context.** The switchboard accreted across ~18 of the last ~25 dev sessions (S037, S039, S042–S043, S047–S053, S056–S062). It started as an isometric map ([[D-009_visualizer_live_mode_v0]]), shed the map for switchboard+chat panels ([[D-026_switchboard_promotion]]), then grew an embedded agent chat ([[S060]]), a COMMS reskin, and a lifecycle feed — each session bolting a feature onto whichever of three identities felt urgent that day. The result is three uncoordinated products in one trenchcoat:
 
 1. **Monitor** — which session needs me, what's each doing (the rows + `status-sidecar.py`).
 2. **Feed** — the cross-session narrative (COMMS / `chat.ndjson` / comms mirrors), which shapeshifted three times (coordination channel → action firehose → lifecycle ticker).
 3. **Driver** — prompt agents in-app via headless `claude` (`server.py` `/chat` + `terminal.js`), the most bug-dense and least-eyeballed chunk.
 
-The recurring bugs (server dying, stale-cache "hard-refresh or it's broken," ~1,100 lines of uncommitted parallel-session edits, three-way file-ownership wars) cluster in #2 and #3. The thing the principal actually relies on is #1. This matches [[D-027]]'s finding that the brain over-invested in inward observability scaffolding (~52% of recent commits) at the expense of outward capability — the principal: *"I'm spending time building it when I should be building my agents. But I need this app, it makes everything so much better if it works."*
+The recurring bugs (server dying, stale-cache "hard-refresh or it's broken," ~1,100 lines of uncommitted parallel-session edits, three-way file-ownership wars) cluster in #2 and #3. The thing the principal actually relies on is #1. This matches [[D-027_inward_outward_build_imbalance]]'s finding that the brain over-invested in inward observability scaffolding (~52% of recent commits) at the expense of outward capability — the principal: *"I'm spending time building it when I should be building my agents. But I need this app, it makes everything so much better if it works."*
 
 Root cause is not bad code — it's **no fixed definition**. The fix is to define what it is, then rebuild against that definition.
 
@@ -79,16 +79,16 @@ Each phase is independently useful and committable; no phase depends on a later 
 ## Consequences
 
 - The old `switchboard/` keeps running untouched during the build; sibling session `braindead-3d2dc4b1` (S063) was on the incremental-patch path (cache-bust, rename COMMS) — those follow-ups are moot under the rebuild and were flagged off in comms.
-- Greenfield means no migration churn and no parallel-edit collisions ([[D-024]]) with the live client.
+- Greenfield means no migration churn and no parallel-edit collisions ([[D-024_parallel_player_coordination]]) with the live client.
 - At swap, the old client archives; `path-map.json`/vestigial bits get resolved then.
 
 ## Related
 
-- [[D-009]] — visualizer live-mode origin.
-- [[D-014]] — chat panel (absorbed into the feed + console).
-- [[D-020]] — terminal switchboard (the monitor that earned the name).
-- [[D-024]] — parallel coordination; why greenfield avoids collision.
-- [[D-026]] — switchboard promotion to brain root; the cockpit stays a both-brains surface.
-- [[D-027]] — inward/outward build imbalance; this rebuild is meant to *end* the switchboard's time-sink, not extend it.
+- [[D-009_visualizer_live_mode_v0]] — visualizer live-mode origin.
+- [[D-014_visualizer_chat_panel]] — chat panel (absorbed into the feed + console).
+- [[D-020_terminal_switchboard]] — terminal switchboard (the monitor that earned the name).
+- [[D-024_parallel_player_coordination]] — parallel coordination; why greenfield avoids collision.
+- [[D-026_switchboard_promotion]] — switchboard promotion to brain root; the cockpit stays a both-brains surface.
+- [[D-027_inward_outward_build_imbalance]] — inward/outward build imbalance; this rebuild is meant to *end* the switchboard's time-sink, not extend it.
 - [[S060]] — embedded agent chat; the driver mechanism preserved here.
 - S064 — quest-log entry capturing the rebuild construction.

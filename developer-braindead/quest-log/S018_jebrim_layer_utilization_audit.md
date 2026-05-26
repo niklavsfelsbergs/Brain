@@ -1,12 +1,12 @@
 # S018 — 2026-05-21 — Jebrim layer-utilization audit
 
-- Audited Jebrim's per-player layers against actual work. Eight findings; dominant pattern: `quest-log/in-progress/` was absorbing content that belonged in five other layers (inventory, examine drafts, bank notes, skills, keepsake). Documented in [[D-015]].
-- Five binary questions answered with the principal (quest-vs-session, inventory enforcement, spells/skills collapse, self-observation sweep placement, alching thresholds). All five collapsed into one structural decision — [[D-015]] + gielinor lorebook draft `2026-05-21-layer-routing-and-resume-via-inventory.md`.
+- Audited Jebrim's per-player layers against actual work. Eight findings; dominant pattern: `quest-log/in-progress/` was absorbing content that belonged in five other layers (inventory, examine drafts, bank notes, skills, keepsake). Documented in [[D-015_jebrim_layer_audit_outcomes]].
+- Five binary questions answered with the principal (quest-vs-session, inventory enforcement, spells/skills collapse, self-observation sweep placement, alching thresholds). All five collapsed into one structural decision — [[D-015_jebrim_layer_audit_outcomes]] + gielinor lorebook draft `2026-05-21-layer-routing-and-resume-via-inventory.md`.
 - New meta doc `gielinor/meta/layer-routing.md` codifies the content-shape → layer mapping; `@import`ed from `gielinor/CLAUDE.md`.
 - Three global rituals patched: close-session writes resume state to inventory (not quest-log top), respawn reads from inventory + surfaces alching threshold check, alching gains a self-observation sweep + tightens thresholds + fixes skills-drafts path.
 - Per-player parity: both Jebrim and Zezima `_about.md` files updated for quest-vs-session, inventory-as-resume-surface, bank ≠ methodology, skills drafts-gated. One file move (`bank/drafts/notes/workflow/moving-target-work-decomposition.md` → `spellbook/drafts/skills/moving-target-decomposition.md`).
 
-**Cascade.** New: `S018_jebrim_layer_utilization_audit.md`, [[D-015]]. Modified: `developer-braindead/respawn.md`.
+**Cascade.** New: `S018_jebrim_layer_utilization_audit.md`, [[D-015_jebrim_layer_audit_outcomes]]. Modified: `developer-braindead/respawn.md`.
 **Main-brain changes.** New: `gielinor/meta/layer-routing.md`, `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md`, `gielinor/players/jebrim/keepsake/proposals/2026-05-21_eu-tender-2026.md`, `gielinor/players/jebrim/keepsake/proposals/2026-05-21_shipping-data-mart-ttyd.md`. Modified: `gielinor/CLAUDE.md`, `gielinor/meta/write-rules.md`, both players' `quest-log/_about.md` + `inventory/_about.md` + `bank/_about.md` + `spellbook/_about.md`, all three global rituals (`close-session.md`, `respawn.md`, `alching.md`). Moved: `gielinor/players/jebrim/bank/drafts/notes/workflow/moving-target-work-decomposition.md` → `gielinor/players/jebrim/spellbook/drafts/skills/moving-target-decomposition.md`.
 
 ---
@@ -167,7 +167,7 @@ This is mechanism, not malice. The fix has to make the other layers as cheap to 
   **Pending principal ratification of Phase D before Phase E.** Phase E is lorebook draft + dev-brain D-NNN decision record.
 - **T6 (2026-05-21). Phase E landed.**
   - **E1** `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` written — covers the structural changes, the why, the trigger, full affected-files list, and supersedes/extends [[2026-05-21-harvest-pump-installation]] on the skill-drafts path. Principal approves to canonicalize.
-  - **E2** `developer-braindead/bank/decisions/D-015_jebrim_layer_audit_outcomes.md` written — context, decision (phased), alternatives considered per Q1–Q5, consequences, things explicitly deferred. Anchored to [[S018]] and [[D-012]].
+  - **E2** `developer-braindead/bank/decisions/D-015_jebrim_layer_audit_outcomes.md` written — context, decision (phased), alternatives considered per Q1–Q5, consequences, things explicitly deferred. Anchored to [[S018]] and [[D-012_close_session_harvest_pump]].
   
   **Audit complete.** All five phases shipped. Pending: principal close-session cue → respawn.md update, S018 file finalization, commit.
 

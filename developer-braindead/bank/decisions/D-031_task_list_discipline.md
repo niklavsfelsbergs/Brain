@@ -33,7 +33,7 @@ Adopt a task-list discipline, gated by a complexity threshold and using two comp
 
 ## Why this is inward build, and why it's still justified
 
-Per [[D-027]], the brain has over-built *inward* (observability, cockpit) and under-built outward *hands*; the §C pilot remains the strategic next step. This is more inward work. It's justified anyway: it removes a recurring quality tax on *every* long task in *every* mode (dropped steps, un-correctable plans, crash-fragility), it's doc-only (no maintenance surface), and it directly sharpens the agent's execution discipline — which the outward §C pilot will itself lean on when it runs multi-step briefs. Small, broad, cheap.
+Per [[D-027_inward_outward_build_imbalance]], the brain has over-built *inward* (observability, cockpit) and under-built outward *hands*; the §C pilot remains the strategic next step. This is more inward work. It's justified anyway: it removes a recurring quality tax on *every* long task in *every* mode (dropped steps, un-correctable plans, crash-fragility), it's doc-only (no maintenance surface), and it directly sharpens the agent's execution discipline — which the outward §C pilot will itself lean on when it runs multi-step briefs. Small, broad, cheap.
 
 ## What landed
 
@@ -50,8 +50,8 @@ Per [[D-027]], the brain has over-built *inward* (observability, cockpit) and un
 
 ## Related
 
-- [[D-024]] — parallel coordination; the `__<sid8>` resume-file shape the durable mirror writes into.
-- [[D-025]] — multiple-choice-with-recommendation; the mechanism used to pick this shape with the principal.
-- [[D-027]] — inward/outward imbalance; the context that frames this as justified inward work.
+- [[D-024_parallel_player_coordination]] — parallel coordination; the `__<sid8>` resume-file shape the durable mirror writes into.
+- [[D-025_visualizer_character_audit_findings]] — multiple-choice-with-recommendation; the mechanism used to pick this shape with the principal.
+- [[D-027_inward_outward_build_imbalance]] — inward/outward imbalance; the context that frames this as justified inward work.
 - `gielinor/meta/task-lists.md` — the rule itself.
 - `gielinor/spellbook/skills/spawning-dwarves.md` — the parallel-decomposition sibling whose threshold this mirrors.

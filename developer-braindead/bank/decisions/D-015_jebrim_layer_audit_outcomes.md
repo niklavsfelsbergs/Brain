@@ -45,12 +45,12 @@ The audit scope narrowed at S018 T1 (via principal scoping questions): Jebrim on
 
 ## Supersedes / superseded by
 
-- Supersedes parts of [[D-012]] — specifically, the skill-graduation routing and skill-drafts location. D-012 said skill drafts go to `spellbook/skills/drafts/<slug>.md` with promotion via lorebook drafts. D-015 corrects to `spellbook/drafts/skills/<slug>.md` with alching promotion (per-player, parallel to bank). The Pump 2 / Pump 3 / Pump 1 framing from D-012 is unchanged and stands.
-- Extends [[D-012]] otherwise: same harvest-pump architecture, this entry adds the resume-surface layer to the picture (inventory holds the surface; close-session writes; respawn reads).
+- Supersedes parts of [[D-012_close_session_harvest_pump]] — specifically, the skill-graduation routing and skill-drafts location. D-012 said skill drafts go to `spellbook/skills/drafts/<slug>.md` with promotion via lorebook drafts. D-015 corrects to `spellbook/drafts/skills/<slug>.md` with alching promotion (per-player, parallel to bank). The Pump 2 / Pump 3 / Pump 1 framing from D-012 is unchanged and stands.
+- Extends [[D-012_close_session_harvest_pump]] otherwise: same harvest-pump architecture, this entry adds the resume-surface layer to the picture (inventory holds the surface; close-session writes; respawn reads).
 
 ## Anchor
 
 - [[S018]] in dev brain — the audit session, full turn log + the eight findings.
 - `gielinor/lorebook/drafts/2026-05-21-layer-routing-and-resume-via-inventory.md` — the gielinor-side self-improvement log entry (principal approves to make canonical).
 - `gielinor/meta/layer-routing.md` — the canonical routing table the audit produced.
-- [[D-012]] — the harvest-pump architecture this decision extends.
+- [[D-012_close_session_harvest_pump]] — the harvest-pump architecture this decision extends.

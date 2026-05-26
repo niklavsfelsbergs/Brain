@@ -8,7 +8,7 @@ Episodic memory for the dev brain. One file per session. The chronological recor
 
 **Entry discipline.**
 - 3–5 bullets per session, max. The quest log navigates; state lives in `bank/`, `examine/`, `player/`.
-- Wiki-link references to whatever was created/changed: `[[D-006]]`, `[[I-001]]`, etc.
+- Wiki-link references to whatever was created/changed: `[[D-006_dev_brain_restructure]]`, `[[I-001]]`, etc.
 - Every entry ends with two lines:
   - **Cascade.** listing dev-brain updates landed this session.
   - **Main-brain changes.** listing what (if anything) crossed into `vault/`. Use `none` when nothing crossed.

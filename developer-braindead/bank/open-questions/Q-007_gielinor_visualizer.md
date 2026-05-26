@@ -1,6 +1,6 @@
 # Q-007 — Gielinor real-time visualizer
 
-**Status.** `working` — replay v0 shipped in [[S008]] as iso 2D SVG (see [[D-008]]); live-mode decision landed in [[D-009]] (hooks + NDJSON + polling, scoped to v0). Remaining open thread is execution of D-009 steps 4–6 (read-side hook coverage, dwarves, bootstrap-from-tail) and whether the watchdog fallback for non-Claude writes is worth building.
+**Status.** `working` — replay v0 shipped in [[S008]] as iso 2D SVG (see [[D-008_iso_replay_v0_over_three_js]]); live-mode decision landed in [[D-009_visualizer_live_mode_v0]] (hooks + NDJSON + polling, scoped to v0). Remaining open thread is execution of D-009 steps 4–6 (read-side hook coverage, dwarves, bootstrap-from-tail) and whether the watchdog fallback for non-Claude writes is worth building.
 
 **The question.** Should we build a real-time visualization of the brain operating — a top-down Gielinor map with buildings for each brain layer, players as character sprites, dwarves as smaller sprites — animated live as the agent reads, writes, spawns, and synthesizes?
 

@@ -4,7 +4,7 @@
 
 **Decision.** `developer-braindead/` at the project root. User's call; deliberate irreverence.
 
-**Alternatives considered.** `dev/`, `_dev/`, `meta/`, `build/`. User chose the irreverent one. Personality datapoint promoted to [[I-001]] (originally captured as P-001 before the [[D-006]] restructure).
+**Alternatives considered.** `dev/`, `_dev/`, `meta/`, `build/`. User chose the irreverent one. Personality datapoint promoted to [[I-001]] (originally captured as P-001 before the [[D-006_dev_brain_restructure]] restructure).
 
 **Consequences.** Cosmetic. (And amusing.)
 

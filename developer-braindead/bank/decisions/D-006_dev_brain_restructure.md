@@ -1,8 +1,8 @@
 # D-006 — 2026-05-20 — Restructure dev brain into RuneScape-themed layered folders
 
-**Supersedes.** [[D-003]] (the original flat eight-file set).
+**Supersedes.** [[D-003_initial_file_set]] (the original flat eight-file set).
 
-**Context.** A parallel session designed the main brain's architecture around RuneScape-themed cognitive layers (`bank/`, `quest-log/`, `spellbook/`, `inventory/`, `examine/`, `player/`, `keepsake/`, `lorebook/`). The dev brain's flat file set ([[D-003]]) worked as v0 but shared no vocabulary with the main brain. Restructuring around the same metaphor creates coherence across both surfaces.
+**Context.** A parallel session designed the main brain's architecture around RuneScape-themed cognitive layers (`bank/`, `quest-log/`, `spellbook/`, `inventory/`, `examine/`, `player/`, `keepsake/`, `lorebook/`). The dev brain's flat file set ([[D-003_initial_file_set]]) worked as v0 but shared no vocabulary with the main brain. Restructuring around the same metaphor creates coherence across both surfaces.
 
 **Decision.** Reorganize `developer-braindead/` into layered folders mirroring the main brain — but **stripped down**, because a working notebook is not a cognitive system. Keep only the layers that map naturally to "accumulated dev knowledge"; cut layers that exist for runtime behaviour.
 

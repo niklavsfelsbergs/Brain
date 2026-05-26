@@ -1,7 +1,13 @@
 # S105 — Obsidian §O.6 backlink enrichment (prose-ref wrap, both brains)
 
 **Session:** braindead-7c91117c · 2026-05-26 · dev-brain via "lets develop gielinor" (mid-conversation pivot)
-**Status:** prose pass APPLIED + verified; committing by pathspec at close.
+**Status:** DONE. Two commits — `5174201` (main pass) + `143c3a0` (sublog fix). Graph verified by principal reload.
+
+## Wrap-up addendum (post-CLOSING)
+
+- **Sublog→parent fix (`143c3a0`).** Principal's graph still looked sparse → measured it the way Obsidian computes (resolve every `[[link]]`): 350 nodes, **1207 edges, 74% connected / 26% isolated**. The first "still sparse" screenshot was a **stale cached graph** (Obsidian hadn't re-indexed the 265-file change); after reload it matched. While diagnosing, found sub-logs were isolated because self-skip keys on `id_of(stem)` so a sub-log's parent-session ref looked like a self-ref — fixed so self-skip fires only when `is_main`. De-isolated ~36 gielinor + dev sub-logs (gielinor no-outbound 174→138; dev →5). Minor residual: `S014-D1`-style hyphen-title sub-logs whose only ref is the hyphenated title (the `-` blocks the match) — left.
+- **57 unresolved links audited** — all expected: cross-brain (`D-012`/`D-016`/`S083`, §O.5) + pre-existing hand-authored broken/relative-path `[[links]]`. **Zero broken links from this pass** (resolve-guarded).
+- **§O.8 (semantic/topical cross-linking) CONSIDERED + DEFERRED** (plan.md §O.8). The residual 26%-isolated floor won't shrink via ID-wrapping — it needs *topical* links (note→related note by subject), which have no ID to match → embedding-similarity + HITL approval, a build. Recommendation NOT now: inward (D-027), navigational-polish-not-capability (retrieval uses embeddings without materialized links), week-old corpus. Revisit with §N. **Next move stays §C (outward).**
 
 ## What this was
 

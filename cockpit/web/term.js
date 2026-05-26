@@ -20,6 +20,12 @@ const live = new Map(); // cid  -> TermConn
 const bySid8 = new Map(); // sid8 -> TermConn
 let SEQ = 0;
 
+// Gap between pasting a composed message and sending the submitting CR. Must
+// exceed claude's fast-input/paste-coalesce window so the CR isn't folded into
+// the paste (which would land as a literal newline, not a submit). See
+// submitComposed. ~110ms is imperceptible to the user but clears the window.
+const COMPOSE_SUBMIT_DELAY_MS = 110;
+
 // Terminal font tracks the UI zoom. The .term-host subtree is counter-scaled to
 // net 1.0 (so xterm gets true pixels — see styles.css), which means the global
 // `zoom` does NOT grow the terminal text on its own; we scale xterm's fontSize by
@@ -63,6 +69,33 @@ function removeOwned(uuid) {
   saveOwned(loadOwned().filter((x) => x !== uuid));
 }
 
+// Auto-label persistence (S095). DISTINCT from the manual /rename store (names.js,
+// keyed by sid8). This remembers the label a terminal was PLACED with — the actor
+// name like "Jebrim", or "chat" for a playerless session — keyed by the durable
+// session uuid. Without it, a resumed session loses its auto-name: resumeTerm()
+// starts with an empty label and an idle just-resumed session has no hook actor
+// attribution yet, so the board falls back to the bare "chat". On the board a
+// manual rename still wins (nameFor(sid8) is checked first); this only feeds the
+// auto-name fallback so "Jebrim" survives a restart instead of degrading to "chat".
+const TERM_LABELS = "cockpit-term-labels";
+function loadTermLabel(uuid) {
+  if (!uuid) return "";
+  try {
+    return (JSON.parse(localStorage.getItem(TERM_LABELS) || "{}") || {})[uuid] || "";
+  } catch {
+    return "";
+  }
+}
+function saveTermLabel(uuid, label) {
+  if (!uuid || !label) return;
+  try {
+    const m = JSON.parse(localStorage.getItem(TERM_LABELS) || "{}") || {};
+    if (m[uuid] === label) return;
+    m[uuid] = label;
+    localStorage.setItem(TERM_LABELS, JSON.stringify(m));
+  } catch {}
+}
+
 class TermConn {
   constructor(opts = {}) {
     this.kind = "term"; // lets main.js tell us apart from a SessionConn
@@ -72,7 +105,11 @@ class TermConn {
     this.seed = opts.seed || null;
     this.resumeId = opts.resumeId || null; // uuid to reattach to (persistence)
     this.drive = true;
-    this.label = "";
+    // Restore the auto-label on resume so a reopened "Jebrim" session keeps its
+    // name instead of degrading to "chat" (S095). A manual rename still overrides
+    // this on the board. New sessions start blank; main.js sets the placement
+    // label, which is persisted when the session announces (below).
+    this.label = this.resumeId ? loadTermLabel(this.resumeId) : "";
     this._linebuf = ""; // mirror of the current input line, for /rename interception
     // Output write-batching + "stick to bottom" state. Claude's TUI renders by
     // clear-screen-then-full-rewrite; that burst fires scroll events xterm reads as
@@ -289,15 +326,21 @@ class TermConn {
     this._interruptedAt = 0; // a submit means the session is live again (stop the busy→idle override)
     this._linebuf = "";
     this._follow = true; // jump back to the newest so the message + reply are in view
-    if (t.includes("\n")) {
-      // multi-line: bracketed paste (the proven WebView2 path, bracketed because
-      // claude enables DECSET 2004) inserts the lines into claude's input box
-      // without submitting; the trailing CR then submits the whole block.
-      this.term.paste(t);
+    // Insert the text as a bracketed paste, THEN submit with a separate, delayed
+    // CR. claude enables DECSET 2004, so term.paste wraps the content in
+    // \x1b[200~…\x1b[201~ and claude inserts it into its input box WITHOUT
+    // submitting — single- or multi-line, any content. The bug this fixes: a
+    // text+"\r" burst (or paste+immediate-CR) arrives inside claude's fast-input/
+    // paste-coalesce window, so the trailing CR is folded into the paste and lands
+    // as a LITERAL NEWLINE in the prompt instead of submitting — the "I press
+    // Enter and the text just sits in the terminal" symptom. The delayed, separate
+    // CR clears that window so claude sees a clean Enter. (Same timing family as
+    // the seed first-message send.)
+    this.term.paste(t);
+    setTimeout(() => {
       this._send({ type: "input", data: "\r" });
-    } else {
-      this._send({ type: "input", data: t + "\r" });
-    }
+      this._pinBottom();
+    }, COMPOSE_SUBMIT_DELAY_MS);
     this._pinBottom();
     return true;
   }
@@ -515,6 +558,7 @@ class TermConn {
         this.id = f.sid8;
         bySid8.set(f.sid8, this);
         addOwned(f.sessionId); // remember it so a reopened cockpit can resume it
+        if (this.label) saveTermLabel(f.sessionId, this.label); // keep the auto-name across resume (S095)
         if (this.seed) {
           this._seedSoon(this.seed);
           this.seed = null;
@@ -531,16 +575,22 @@ class TermConn {
     setTimeout(() => this._send({ type: "input", data: text + "\r" }), 3000);
   }
 
-  // ── [term-diag] S081/S083 — OPT-IN diagnostic, silent by default. Run
-  // `window.__TERMDIAG = 1` in DevTools to trace the fit/scroll math live (turn
-  // it off again with `delete window.__TERMDIAG`). Throttled to ~1 log/250ms.
-  // Prints the numbers needed to tell H1 (over-fit) from H2 (_follow desync)
-  // without guessing again — the relaunch-verification instrument for the
-  // prompt-below-fold bug. Two call sites: keydown + the <Term/> open pin loop.
-  _diag(why) {
-    if (!window.__TERMDIAG) return;
+  // ── [term-diag] S081/S083 — fit/scroll geometry, the instrument for the
+  // recurring prompt-below-fold bug. Prints the numbers needed to tell H1
+  // (over-fit: overfit>0, bottom row below the clip) from H2 (scroll-desync:
+  // overfit~0 but viewportY/scrollTop disagree) WITHOUT guessing the fix again.
+  // Two call sites: keydown (throttled) + the <Term/> open pin loop (force=true,
+  // the decisive f1/f8/f40 samples — bypass the throttle so none are dropped).
+  //
+  // Console output stays opt-in (`window.__TERMDIAG = 1` in DevTools). TRANSIENT
+  // ADDITION (issue #2, 2026-05-26): it ALSO posts each line to the backend's
+  // /api/termdiag → switchboard/term-fit-diag.log so a relaunch+open reproduces
+  // the cut-off straight to disk, no DevTools needed. STRIP the disk POST + the
+  // backend route once the bug is fixed (S093 rename-diag / S094 size-diag
+  // precedent — debug-only, always-on while debugging).
+  _diag(why, force = false) {
     const now = Date.now();
-    if (now - (this._diagAt || 0) < 250) return;
+    if (!force && now - (this._diagAt || 0) < 250) return;
     this._diagAt = now;
     try {
       const frame = this.container.closest(".term-frame") || this.container.parentElement;
@@ -551,15 +601,27 @@ class TermConn {
       const overPx = used - (fh - 16); // 16 = .term-host vertical padding
       const b = this.term.buffer.active;
       const vp = this.container.querySelector(".xterm-viewport");
-      console.log(
-        `[term-diag] ${why} cid=${this.cid} frameH=${fh} rows=${rows} cols=${cols} ` +
+      const line =
+        `${why} cid=${this.cid} frameH=${fh} rows=${rows} cols=${cols} ` +
         `cellH=${cell.toFixed(2)} rows*cellH=${used.toFixed(1)} overfit=${overPx.toFixed(1)}px ` +
         `follow=${this._follow} viewportY=${b.viewportY} baseY=${b.baseY} ` +
         `vp.scrollTop=${vp ? vp.scrollTop : "?"} vp.scrollHeight=${vp ? vp.scrollHeight : "?"} ` +
-        `vp.clientHeight=${vp ? vp.clientHeight : "?"}`,
-      );
+        `vp.clientHeight=${vp ? vp.clientHeight : "?"}`;
+      if (window.__TERMDIAG) console.log("[term-diag] " + line);
+      // transient disk sink — OPEN-frame samples only (force), so it doesn't write
+      // on every keystroke; enough to verify the reshow fix. Strip with the backend
+      // route once #2 is confirmed (S095).
+      if (force) {
+        try {
+          fetch("/api/termdiag", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ line }),
+          });
+        } catch {}
+      }
     } catch (e) {
-      console.log("[term-diag] error", e);
+      if (window.__TERMDIAG) console.log("[term-diag] error", e);
     }
   }
 
@@ -597,6 +659,34 @@ class TermConn {
     } catch {}
   }
 
+  // Re-fit + re-pin to bottom across a short multi-frame window when the terminal
+  // becomes VISIBLE again. The <Term> mount pin loop runs once when a row is
+  // selected; if that selection happened while the transcript view was up, the
+  // terminal mounted display:none (0-height frame) so the loop's fitNow bailed and
+  // _pinBottom no-op'd — the terminal never fit/pinned. Flipping back to terminal
+  // then only triggers a SINGLE RO fit+pin, which can land before the layout's
+  // scrollHeight settles, leaving the prompt below the fold until a keystroke (the
+  // "textbox stuck on a session opened from transcript view" trace — term-fit-diag
+  // showed `open … frameH=0`, then recovery only on the next `keydown`; S095).
+  // main.js calls this on the transcript→terminal flip. Mirrors the open pin loop:
+  // skip frames while still hidden, fit the first few visible frames, pin every
+  // visible frame. A wheel-up (_follow=false) ends it so it never fights a reader.
+  reshow() {
+    if (this._reshowRaf) cancelAnimationFrame(this._reshowRaf);
+    this._follow = true;
+    let n = 0, fits = 0;
+    const FRAMES = 40; // ~0.66s @60fps — outlasts the display:none→visible relayout
+    const step = () => {
+      const visible = this.container.clientWidth >= 2 && this.container.clientHeight >= 2;
+      if (visible && this._follow) {
+        if (fits < 6) { this.fitNow(); fits++; } // fit through the early reflow frames
+        this._pinBottom();                        // ydisp → bottom AND native thumb
+      }
+      this._reshowRaf = (this._follow && ++n < FRAMES) ? requestAnimationFrame(step) : 0;
+    };
+    this._reshowRaf = requestAnimationFrame(step);
+  }
+
   // Rendered cell (row) height in px. Prefer xterm's measured render dimensions.
   // Fallback: visible viewport height / visible row count — NOT scrollHeight /
   // buffer.active.length, which divides by the whole 8000-line scrollback (not the
@@ -622,6 +712,10 @@ class TermConn {
     if (this._fitRaf) {
       cancelAnimationFrame(this._fitRaf);
       this._fitRaf = 0;
+    }
+    if (this._reshowRaf) {
+      cancelAnimationFrame(this._reshowRaf);
+      this._reshowRaf = 0;
     }
     if (this._resizeTimer) {
       clearTimeout(this._resizeTimer);
@@ -736,7 +830,7 @@ export function Term({ conn }) {
       if (!conn._follow) { raf = 0; return; } // user scrolled up → leave them there
       if (n < 6) conn.fitNow();               // re-fit through the early reflow frames
       conn._pinBottom();                      // ydisp → bottom AND native thumb, together
-      if (n === 1 || n === 8 || n === 40) conn._diag(`open f${n}`); // [term-diag] opt-in: window.__TERMDIAG
+      if (n === 1 || n === 8 || n === 40) conn._diag(`open f${n}`, true); // [term-diag] → disk (issue #2)
       raf = ++n < PIN_FRAMES ? requestAnimationFrame(pin) : 0;
     };
     conn.fitNow();

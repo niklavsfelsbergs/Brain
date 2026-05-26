@@ -410,6 +410,18 @@ function App() {
     prevWaiting.current = cur;
   }, [sessions, soundOn]);
 
+  // Re-pin the live terminal when the view flips back to it. A row selected while
+  // the transcript view was up mounted display:none (0-height frame), so its
+  // <Term> open pin loop bailed (fitNow guards a 0-box) and never fit/pinned;
+  // without this, flipping to terminal leaves the prompt below the fold until a
+  // keystroke (S095 term-fit-diag: opens logged frameH=0, recovery only on
+  // keydown). reshow() waits out the show, then fits + pins across several frames.
+  useEffect(() => {
+    if (termView === "terminal" && sel && sel.kind === "term" && typeof sel.reshow === "function") {
+      sel.reshow();
+    }
+  }, [termView, sel]);
+
   const toggleSound = () => setSoundOn((v) => { setLsBool("cockpit-sound", !v); return !v; });
   const toggleFeed = () => setFeedOpen((v) => !v);
   const zoomIn = () => setZoom((z) => clampZoom(z + ZSTEP));
@@ -512,7 +524,7 @@ function App() {
         ${!sel
           ? html`<div class="console-empty">select a session, or place a new one</div>`
           : sel.kind === "term"
-          ? html`<div class="term-col" style="display:flex;flex-direction:column;height:100%;">
+          ? html`<div class=${"term-col" + (termView === "transcript" ? " reading" : "")} style="display:flex;flex-direction:column;height:100%;">
               <div class="console-head">
                 <span class="console-title">${title}</span>
                 <span class="console-status">${

@@ -648,6 +648,32 @@ async def api_clipboard_write(request):
     return web.json_response({"ok": bool(ok)}, headers=NO_STORE)
 
 
+# ─── transient terminal-fit diagnostic (issue #2: prompt below fold at open) ──
+# The client (term.js._diag) posts its xterm fit/scroll geometry here so a
+# relaunch + opening a session reproduces the cut-off straight to disk — no
+# DevTools needed. The numbers tell H1 (over-fit: overfit>0) from H2 (scroll-
+# desync: overfit~0 but viewportY/scrollTop disagree); the fix differs per case.
+# STRIP this handler + its route + the term.js POST once the bug is fixed
+# (S094 term-size-diag / S093 rename-diag precedent — debug-only, always-on
+# while debugging). Pairs with ptybridge's server-side term-size-diag.log.
+TERM_FIT_DIAG_PATH = BRAIN_ROOT / "switchboard" / "term-fit-diag.log"
+
+
+async def api_termdiag(request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    line = (body or {}).get("line", "")
+    if line:
+        try:
+            with TERM_FIT_DIAG_PATH.open("a", encoding="utf-8") as f:
+                f.write(f"{time.strftime('%H:%M:%S')} {line}\n")
+        except Exception:
+            pass
+    return web.json_response({"ok": True}, headers=NO_STORE)
+
+
 # ─── static files ───────────────────────────────────────────────────────────
 
 async def static_handler(request):
@@ -679,6 +705,7 @@ def make_app():
     app.router.add_get("/api/feed", api_feed)
     app.router.add_get("/api/clipboard", api_clipboard)
     app.router.add_post("/api/clipboard", api_clipboard_write)
+    app.router.add_post("/api/termdiag", api_termdiag)  # transient (issue #2) — strip when fixed
     from ptybridge import pty_handler  # real interactive claude over a PTY (S066 B)
     app.router.add_get("/pty", pty_handler)
     app.router.add_get("/history", history_handler)

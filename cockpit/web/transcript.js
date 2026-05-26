@@ -76,15 +76,24 @@ function loadScale() {
   return v >= SMIN && v <= SMAX ? v : 1;
 }
 
-function CopyBtn({ get, label = "copy" }) {
-  const [done, setDone] = useState("");
+// Copy control. Icon-only by default (#3) — the per-tool and per-turn copies
+// repeat enough that a text label on each was visual noise; the glyph stays out
+// of the way and reveals on row-hover (CSS). `showText` keeps a labelled button
+// for the single "copy all" in the bar, where one prominent control is fine.
+// The clipboard glyph briefly swaps to a check/cross for feedback either way.
+function CopyBtn({ get, label = "copy", showText = false }) {
+  const [done, setDone] = useState(0); // 0 idle · 1 ok · -1 fail
   const onClick = async (e) => {
     e.stopPropagation();
     const ok = await copyText(get());
-    setDone(ok ? "copied ✓" : "failed");
-    setTimeout(() => setDone(""), 1200);
+    setDone(ok ? 1 : -1);
+    setTimeout(() => setDone(0), 1200);
   };
-  return html`<button class="copy-btn" onClick=${onClick} title="copy clean text">${done || label}</button>`;
+  const glyph = done === 1 ? "✓" : done === -1 ? "✕" : "⧉";
+  const cls = "copy-btn " + (showText ? "has-text" : "icon-only") + (done ? " done" : "");
+  return html`<button class=${cls} onClick=${onClick} title=${label} aria-label=${label}>
+    <span class="copy-ic">${glyph}</span>${showText && html`<span class="copy-lbl">${done === 1 ? "copied" : label}</span>`}
+  </button>`;
 }
 
 function toolSummary(input) {
@@ -159,9 +168,13 @@ function Block({ b, strip }) {
   return null;
 }
 
-// One turn, with a speaker header so the back-and-forth is legible (#2). User
-// turns are a right-aligned column (label over bubble); assistant turns carry
-// the actor name and the copy-turn button on one header row.
+// One turn, with a speaker header so the back-and-forth is legible (#2). Both
+// sides get a speech bubble (principal ask): the user a compact right-aligned
+// bubble, the agent a WIDE left-aligned one — the modern LLM-chat asymmetry
+// (assistant content is rich/long so it gets the width; the user stays small).
+// The agent's label sits above its bubble; the bubble's squared top-left corner
+// reads as the tail pointing up to that label (mirrors the user bubble's
+// squared bottom-right). Prose + tool rows all nest inside the bubble.
 function Turn({ turn, strip, who }) {
   if (turn.role === "user")
     return html`<div class="t-user tv-turn-u">
@@ -176,7 +189,9 @@ function Turn({ turn, strip, who }) {
       <span class="tv-speaker">${who}</span>
       <${CopyBtn} get=${() => turnText(turn, strip)} label="copy turn" />
     </div>
-    ${(turn.blocks || []).map((b, i) => html`<${Block} key=${i} b=${b} strip=${strip} />`)}
+    <div class="asst-bubble">
+      ${(turn.blocks || []).map((b, i) => html`<${Block} key=${i} b=${b} strip=${strip} />`)}
+    </div>
   </div>`;
 }
 
@@ -272,7 +287,7 @@ export function TranscriptView({ conn, live }) {
           <input type="checkbox" checked=${strip} onChange=${(e) => setStrip(e.target.checked)} />
           strip line #s
         </label>
-        <${CopyBtn} get=${() => allText(turns, strip)} label="copy all" />
+        <${CopyBtn} get=${() => allText(turns, strip)} label="copy all" showText=${true} />
       </div>
       <div class="turns tv-turns" ref=${scroller}>
         ${status && html`<div class="t-sys">${status}</div>`}

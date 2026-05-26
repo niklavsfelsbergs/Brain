@@ -110,7 +110,7 @@ export function Board({
   return html`
     <aside class="board-col">
       <header class="topbar">
-        <h1>SWITCHBOARD<span style="font-size:9px;opacity:.45;font-weight:400;letter-spacing:0;margin-left:5px;" title="cockpit build tag — confirms fresh code loaded after relaunch">b89.4</span></h1>
+        <h1>SWITCHBOARD<span style="font-size:9px;opacity:.45;font-weight:400;letter-spacing:0;margin-left:5px;" title="cockpit build tag — confirms fresh code loaded after relaunch">b91.0</span></h1>
         <span class="count">
           ${sessions.length} live${waiting
             ? html` · <b class="warn">${waiting} need you</b>`

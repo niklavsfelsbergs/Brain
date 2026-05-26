@@ -374,6 +374,16 @@ html, body {
 }
 .term-send:hover { filter: brightness(1.1); }
 
+/* #5 — the transcript is a read/copy surface, so the big PTY compose box at the
+   bottom competes with reading. While the transcript view is up (.term-col gains
+   `reading` in main.js) the composer dims and collapses to a single line. It's
+   kept rather than hidden for "read and respond": focusing it (click / Tab) wakes
+   it to full opacity + full height so a reply is one click away. */
+.term-col.reading .term-composer { opacity: 0.4; transition: opacity 0.15s; }
+.term-col.reading .term-composer:focus-within { opacity: 1; }
+.term-col.reading .term-compose-input { min-height: 44px; transition: min-height 0.15s; }
+.term-col.reading .term-composer:focus-within .term-compose-input { min-height: 116px; }
+
 .board-col {
   width: var(--board-w);
   flex: none;
@@ -989,8 +999,8 @@ html, body {
   border: none;
   color: var(--ink-faint);
   font: inherit;
-  font-size: 11px;
-  padding: 3px 12px;
+  font-size: 13px;          /* #4 — was 11px; the toggle read tiny too */
+  padding: 5px 15px;
   cursor: pointer;
 }
 .tv-tab + .tv-tab { border-left: 1px solid var(--line); }
@@ -1019,49 +1029,64 @@ html, body {
    surface, so size it for reading. Scoped to .transcript-view so the VS Code
    peek Console keeps its compact sizing. */
 /* All sizes ride --tv-scale (#7 — A−/A+ in the bar; default 1). */
-.transcript-view .t-asst { font-size: calc(16px * var(--tv-scale, 1)); line-height: 1.62; }
-.transcript-view .bubble { font-size: calc(15.5px * var(--tv-scale, 1)); line-height: 1.55; }
+.transcript-view .t-asst { font-size: calc(18px * var(--tv-scale, 1)); line-height: 1.38; }
+.transcript-view .bubble { font-size: calc(18px * var(--tv-scale, 1)); line-height: 1.38; }
 .transcript-view .b-text pre { font-size: calc(14px * var(--tv-scale, 1)); }
 .transcript-view .tool-head { font-size: calc(13.5px * var(--tv-scale, 1)); }
 .transcript-view .tv-result { font-size: calc(14px * var(--tv-scale, 1)); } /* match code blocks (#6) */
 .transcript-view .b-think { font-size: calc(14px * var(--tv-scale, 1)); }
 
-/* #3 readable measure — cap prose; code/tool blocks stay full width. */
+/* Prose fills the agent bubble, which fills the box (principal: "stretch the
+   whole box, not just the left side"). The old 66ch measure cap left the right
+   ~40% of the panel empty; the wide-assistant bubble now provides the container,
+   and the panel is already bounded by the board/feed side pillars, so full-bleed
+   reads fine here. Code/tool blocks were always full width. */
 .transcript-view .b-text > p,
 .transcript-view .b-text > ul,
 .transcript-view .b-text > ol,
 .transcript-view .b-text > blockquote,
 .transcript-view .b-text > h1,
 .transcript-view .b-text > h2,
-.transcript-view .b-text > h3 { max-width: 66ch; }
+.transcript-view .b-text > h3 { max-width: none; }
 
+/* #4 — the bar lived inside the unzoomed reading surface, so its controls
+   rendered at literal px while the board / console-head / composer all scale by
+   --zoom (1.35): they read as tiny next to everything else. Zoom the bar to the
+   same chrome scale (width:100% per the WebView2 console-head lesson at L300 —
+   `zoom` scales content+height but not the explicit box width) and bump the base
+   sizes so the controls sit proportionate to the reading text below. */
 .tv-bar {
+  zoom: var(--zoom);
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 16px;
+  gap: 12px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--line);
 }
 /* #7 font control + #6 line-number strip toggle, both in the bar. */
-.tv-font { display: flex; gap: 4px; }
+.tv-font { display: flex; gap: 5px; }
 .tv-fbtn {
   background: transparent; border: 1px solid var(--line); color: var(--ink-faint);
-  border-radius: 6px; padding: 1px 8px; font: inherit; font-size: 11px; cursor: pointer;
+  border-radius: 6px; padding: 3px 10px; font: inherit; font-size: 12.5px; cursor: pointer;
 }
 .tv-fbtn:hover { color: var(--ink); border-color: var(--ink-faint); }
 .tv-strip {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 11px; color: var(--ink-faint); cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: var(--ink-faint); cursor: pointer; user-select: none;
 }
-.tv-strip input { margin: 0; cursor: pointer; }
+.tv-strip input { margin: 0; cursor: pointer; width: 14px; height: 14px; }
 
 .tv-turns { background: var(--panel); gap: 0; }
 .tv-turn { max-width: 100%; }
-/* #2 turn boundaries — a hairline + breathing room between successive turns. */
-.transcript-view .tv-turns > * + * {
+/* #2 turn boundaries. The divider fires ONLY before a YOU turn, so each question
+   and the answer(s) below it read as ONE block, and the hairline marks the start
+   of the next exchange (principal). Turns within a block get a small gap only. */
+.transcript-view .tv-turns > * + * { margin-top: 14px; }
+.transcript-view .tv-turns > * + .t-user {
   border-top: 1px solid var(--line);
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 24px;
+  padding-top: 24px;
 }
 .transcript-view .t-user.tv-turn-u {
   flex-direction: column;
@@ -1075,6 +1100,50 @@ html, body {
   font-weight: 600; color: var(--crew);
 }
 .tv-speaker.u { color: var(--ink-faint); }
+
+/* Agent speech bubble (principal ask). Wide + left-aligned: it spans from the
+   left padding to a thin right gutter, so it reclaims the box width the 66ch cap
+   used to waste while still reading as "the agent's side" against the user's
+   compact right bubble. Calm warm fill lifts gently off the #1c1813 reading bg;
+   the squared TOP-LEFT corner is the tail, pointing up to the CLAUDE label above
+   (mirrors the user bubble's squared bottom-right tail). Prose + the de-chromed
+   tool rows all nest inside, so a turn reads as one coherent utterance. */
+.transcript-view .asst-bubble {
+  /* Near-black fill + near-white text for maximum reading contrast (principal:
+     "make the bubbles black so the white text reads easier than on the gold").
+     The thin gold trim stays so the bubble edge still reads against the warm
+     #1c1813 surface. */
+  background: #0d0d0f;
+  color: #f4f4f4;
+  border: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  border-radius: 4px 14px 14px 14px;
+  padding: 14px 18px;
+  /* Cap the bubble at a comfortable reading measure (~78ch at the bumped reading
+     font) so lines stay trackable; the larger font makes that measure fill most
+     of the panel, so the box still reads as "used" rather than the empty-right
+     look of the pre-bubble 66ch version. min(100%, …) never exceeds the panel. */
+  max-width: min(100%, 78ch);
+}
+.transcript-view .asst-bubble > :first-child { margin-top: 0; }
+.transcript-view .asst-bubble > :last-child { margin-bottom: 0; }
+/* the tool rows nest one step in from the prose so support material is visually
+   subordinate to the agent's words without leaving the bubble */
+.transcript-view .asst-bubble .b-tool { margin-left: 2px; }
+
+/* User bubble MIRRORS the agent bubble (principal: "my own comms format should
+   match the agent"). Same fill / border / measure / padding as .asst-bubble; the
+   only differences are it's right-aligned (the .tv-turn-u column) and its tail is
+   the squared TOP-RIGHT corner — pointing up to the right-aligned YOU label,
+   mirroring the agent's squared top-left. Font size/line-height match via the
+   .transcript-view .bubble rule above. */
+.transcript-view .t-user .bubble {
+  background: #0d0d0f;
+  color: #f4f4f4;
+  border: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  border-radius: 14px 4px 14px 14px;
+  padding: 14px 18px;
+  max-width: min(100%, 78ch);
+}
 .tv-result {
   margin: 0;
   padding: 8px 11px;
@@ -1090,6 +1159,9 @@ html, body {
 .copy-btn {
   margin-left: auto;            /* right-align inside tool-head / tv-bar / tv-turn-bar */
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: transparent;
   border: 1px solid var(--line);
   color: var(--ink-faint);
@@ -1100,6 +1172,29 @@ html, body {
   cursor: pointer;
 }
 .copy-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+.copy-btn .copy-ic { font-size: 1.1em; line-height: 1; }
+
+/* #3 — the per-tool / per-turn copies repeat on every row, so they recede:
+   icon-only, borderless, and invisible until you hover the row they belong to
+   (or focus them by keyboard). The single labelled "copy all" in the bar is the
+   exception — one prominent control, always shown. */
+.transcript-view .copy-btn.icon-only {
+  opacity: 0;
+  border-color: transparent;
+  padding: 1px 6px;
+  font-size: 12.5px;
+  transition: opacity 0.12s, color 0.12s, border-color 0.12s;
+}
+.transcript-view .b-tool:hover .copy-btn.icon-only,
+.transcript-view .tv-turn:hover .copy-btn.icon-only,
+.transcript-view .copy-btn.icon-only:focus-visible,
+.transcript-view .copy-btn.icon-only.done { opacity: 1; }
+.transcript-view .copy-btn.icon-only:hover { color: var(--ink); border-color: var(--ink-faint); }
+.transcript-view .copy-btn.done { color: var(--working); border-color: transparent; opacity: 1; }
+/* the bar's copy-all rides the bigger chrome scale (#4) */
+.transcript-view .copy-btn.has-text { font-size: 12px; padding: 3px 11px; }
+/* touch / no-hover environments can't reveal-on-hover — keep a faint baseline */
+@media (hover: none) { .transcript-view .copy-btn.icon-only { opacity: 0.55; } }
 
 /* #1 collapsible tool calls (transcript only — the peek Console keeps its own
    tool rendering, so this is scoped). Head row stays one line: chevron, name,
@@ -1108,6 +1203,44 @@ html, body {
 .transcript-view .tool-arg { flex: 1 1 auto; min-width: 0; }
 .transcript-view .tool-chev { flex: none; color: var(--ink-faint); width: 0.9em; }
 .transcript-view .tool-meta { flex: none; color: var(--ink-faint); font-size: 0.82em; }
+
+/* #1/#2 — tool calls are SUPPORT material, not the subject. They were full
+   bordered, panel-filled rectangles, and there are many per turn, so they
+   crowded out the prose that should read primary. Strip the box entirely: no
+   border / radius / fill — just a faint left rule + hanging indent, dim
+   monospace text, tight margins. Hovering a row lifts it slightly so it's still
+   clearly interactive; an open result gets a quiet inset so output stays legible
+   without becoming a bright card. Errors keep a red rule (they SHOULD catch the
+   eye). All scoped to .transcript-view; the peek Console keeps its boxed look. */
+.transcript-view .b-tool {
+  margin: 2px 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  border-left: 2px solid color-mix(in srgb, var(--line) 55%, transparent);
+  padding-left: 11px;
+  overflow: visible;
+}
+.transcript-view .b-tool.err { border-left-color: #a3402f; background: transparent; }
+.transcript-view .tool-head {
+  padding: 2px 0;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink-faint);
+}
+.transcript-view .tool-name { color: var(--ink-dim); font-weight: 600; }
+.transcript-view .tool-arg { color: var(--ink-faint); }
+.transcript-view .tool-head.clickable:hover { color: var(--ink-dim); }
+.transcript-view .tool-head.clickable:hover .tool-name { color: var(--ink); }
+.transcript-view .tool-head.clickable:hover .tool-chev { color: var(--ink-dim); }
+/* open result: quiet inset, no top border (there's no box to divide anymore) */
+.transcript-view .tv-result {
+  border-top: none;
+  margin-top: 5px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  color: var(--ink-dim);
+}
 
 /* ════════════════════════════════════════════════════════════════════
    S093 reading-surface polish (principal: "hard on the eyes"). The
@@ -1132,11 +1265,17 @@ html, body {
   letter-spacing: 0.005em;
 }
 
-/* C — inline code reads inline: a faint wash + dimmer ink, no gold chip. */
+/* C — inline code reads INLINE, not as a chip. The faint wash still drew a
+   little box on every span, and a dense paragraph carries a dozen of them, so
+   the text read as speckled fragments. Drop the box entirely (no bg, no pad, no
+   radius): the monospace family + dimmer ink (both inherited / set here) are
+   enough to mark it as code while it sits flush in the sentence. (issue: "not
+   easy to read" — de-speckle.) */
 .transcript-view .b-text code {
-  background: rgba(241, 231, 196, 0.08);
+  background: none;
   color: var(--ink-dim);
-  padding: 0 3px;
+  padding: 0;
+  border-radius: 0;
 }
 
 /* D — real heading hierarchy so sections separate at a glance. */
@@ -1153,8 +1292,11 @@ html, body {
 .transcript-view .b-text h3 { font-size: 1.02em; }
 .transcript-view .b-text > :first-child { margin-top: 0; }
 
-/* G — steadier vertical rhythm (em-based, so it scales with --tv-scale). */
-.transcript-view .b-text p { margin: 0 0 0.7em; }
+/* G — steadier vertical rhythm (em-based, so it scales with --tv-scale). Tight
+   leading (line-height above) with a larger inter-paragraph gap so lines read
+   dense but paragraph breaks stay clear (principal: "reduce line spacing a bit
+   more, increase the space between paragraphs"). */
+.transcript-view .b-text p { margin: 0 0 1em; }
 .transcript-view .b-text ul,
-.transcript-view .b-text ol { margin: 0.4em 0 0.7em; }
+.transcript-view .b-text ol { margin: 0.6em 0 1em; }
 .transcript-view .b-text li { margin: 0.15em 0; }

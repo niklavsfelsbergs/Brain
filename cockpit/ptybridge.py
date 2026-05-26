@@ -70,30 +70,52 @@ def _log_size(sid8: str, cols: int, rows: int) -> None:
         pass
 
 
-def _carry_disk_name(old_sid8: str, new_sid8: str) -> None:
+# Transient rename trace, re-enabled 2026-05-26 for the "all sessions lost their
+# name on restart" report — the same instrument S093 R4 used (then stripped once
+# it answered). Records announce + rotate + carry so a relaunch shows whether
+# --resume rotated the id and whether the disk-name carry fired. STRIP this + its
+# call sites once the orphan cause is known. Pairs with term.js's localStorage
+# carry on re-announce (the OTHER name store). Best-effort, never raises.
+RENAME_DIAG_PATH = BRAIN_ROOT / "switchboard" / "rename-diag.log"
+
+
+def _log_rename(event: dict) -> None:
+    try:
+        import time as _t
+        with RENAME_DIAG_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"ts": round(_t.time(), 3), **event}) + "\n")
+    except Exception:
+        pass
+
+
+def _carry_disk_name(old_sid8: str, new_sid8: str) -> str:
     """Carry a board label across a session-id rotation. `claude --resume` (what a
     cockpit reopen runs) and `/clear` both mint a NEW session id; the rename in
     state-names.json is keyed on the OLD sid8, so without this it's orphaned and
     the resumed row comes back on its bare actor label — the "lost rename on
     reopen" bug. Copy old→new only when the old has a label and the new doesn't
     (never clobber a fresh rename). Best-effort: any IO/parse failure leaves the
-    row unnamed, exactly as before, and never raises into the PTY pump."""
+    row unnamed, exactly as before, and never raises into the PTY pump. Returns a
+    short result token for the transient rename trace (purely informational)."""
     if not old_sid8 or not new_sid8 or old_sid8 == new_sid8:
-        return
+        return "noop"
     try:
         names = json.loads(NAMES_PATH.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return
+        return "read-fail"
     if not isinstance(names, dict):
-        return
+        return "not-dict"
     label = names.get(old_sid8)
-    if not label or names.get(new_sid8):
-        return
+    if not label:
+        return "no-label"
+    if names.get(new_sid8):
+        return "new-exists"
     names[new_sid8] = label
     try:
         NAMES_PATH.write_text(json.dumps(names, indent=2), encoding="utf-8")
     except OSError:
-        pass
+        return "write-fail"
+    return "wrote"
 
 
 def _session_for_shell_pid(shell_pid: int):
@@ -227,6 +249,9 @@ async def pty_handler(request):
     announced = {"sid": session_id}
     await _ws_send(ws, {"t": "session", "sessionId": session_id,
                         "sid8": session_id[:8], "resumed": resuming})
+    _log_rename({"event": "announce", "resuming": resuming,
+                 "session_id": session_id, "sid8": session_id[:8],
+                 "anchor_sid8": anchor_sid8})  # transient (name-orphan diag) — strip after
 
     if resuming:
         # reattach to the saved session — survives cockpit reload/restart.
@@ -299,9 +324,13 @@ async def pty_handler(request):
                     # the anchor→cur step handles a restart where claude minted a
                     # fresh id straight off --resume (the name is still under the
                     # resume uuid's sid8, which prev may no longer equal). (S093b)
-                    await loop.run_in_executor(None, _carry_disk_name, prev[:8], cur[:8])
+                    r_prev = await loop.run_in_executor(None, _carry_disk_name, prev[:8], cur[:8])
+                    r_anchor = "skip-eq"
                     if anchor_sid8 != prev[:8]:
-                        await loop.run_in_executor(None, _carry_disk_name, anchor_sid8, cur[:8])
+                        r_anchor = await loop.run_in_executor(None, _carry_disk_name, anchor_sid8, cur[:8])
+                    _log_rename({"event": "rotate", "prev": prev[:8], "cur": cur[:8],
+                                 "anchor_sid8": anchor_sid8,
+                                 "carry_prev": r_prev, "carry_anchor": r_anchor})  # transient — strip after
                     await _ws_send(ws, {"t": "session", "sessionId": cur,
                                         "sid8": cur[:8], "resumed": False, "rotated": True})
         except asyncio.CancelledError:

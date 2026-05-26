@@ -129,3 +129,16 @@ Section started life as "development rules layer" (the collaboration-contract fr
 - §M.1 `[x]` **Visualizer → switchboard** — live session/state surface; map era retired, surface promoted to `switchboard/` ([[D-008]]–[[D-010]], [[D-014]], [[D-020]], [[D-026]]).
 - §M.2 `[x]` **Status sidecar + hooks** — per-session state machine ([[D-020]]).
 - §M.3 `[x]` **Parallel-session coordination** — parallel instances ([[D-017]]), substrate isolation ([[D-018]]), parallel Braindead + dev comms ([[D-019]]), parallel player coordination + `comms/` ([[D-024]]).
+
+---
+
+> **Forward-parked pillars (§N+).** Researched and planned but deliberately not built yet. Captured so they resurface; not competing with the load-bearing §C build until unparked.
+
+## §N — Semantic retrieval / RAG layer (parked 2026-05-26)
+
+**Status.** `[ ]` parked — researched, phased, **gated on the Obsidian revamp** (in progress, principal-led). Full survey + phased plan in `bank/research/2026-05-26-rag-for-the-brain.md`. Headline finding: the brain is **already an agentic-search retrieval system** (grep + `@`-imports + `[[links]]`) — the architecture Claude Code/Cursor/Devin converged on *after* dropping RAG. So RAG enters narrow + additive, never as a grep replacement.
+
+- §N.0 `[ ]` **Gate — the Obsidian link migration applies** (NOT merely "Obsidian installed"). Speced live in `bank/research/obsidian-fit-and-migration-spec.md` (braindead-b53fca39): stock Obsidian resolves links by exact filename, so `[[D-027]]`/`[[SNNN]]` links are ~91% phantom until a **one-time full-stem link-TEXT rewrite** (Option A, DECIDED 2026-05-26) runs. **Depends on b53fca39's forthcoming `D-NNN`.** Until then Obsidian's graph is unusable for retrieval.
+- §N.1 `[ ]` **GraphRAG over `[[links]]`** (cheapest, first). Reads the *post-migration* resolved-link/backlink index for "N hops from X" in bankstanding + consultation. **Inherits the migration's classification semantics** (ID→main-entry; `_dN`/`_pN`/`_gN`/`-resume` = by-design clusters). **Per-brain vaults** ⇒ traversal can't cross the gielinor↔dev-brain boundary. Parse-only, no embeddings, no billing.
+- §N.2 `[ ]` **Semantic-recall index** (only if §N.1 proves need). Local embeddings over `bank/notes/` + `research/` + `confirmed/`, scoped to bankstanding + consultation, metadata-filtered by layer/player/mode to respect the gates. Local model preferred (headless-billing). Eval Obsidian Smart Connections as build-vs-buy.
+- §N.3 `[ ]` **Expose as MCP tool** — `semantic_recall` / `graph_neighbors` in `.mcp.json`; agent calls explicitly, grep stays primary.

@@ -18,7 +18,9 @@ Cutover from `enterprise_silver.*` landed 2026-05-22 — old silver facts are **
 
 **Connection.** Local `.env` in `shipping-agent/` with the `ship_mart_ro` user (read-only, gold-only). `harness/db.py` loads from the local `.env` only — does not walk up. Smoke-test: `python harness/connect_redshift.py --query "SELECT 1"`.
 
-**Ground truth.** `Documents/GitHub/bi-etl/dags/enterprise_silver/shipping_data_mart/` per-folder READMEs — being repointed to gold (path stays for now). `git pull origin main` before reading the code for an audit/sanity check.
+**Access tiers (2026-05-27, S101).** One agent, two tiers off `picanova/shipping-agent`: colleagues on `ship_mart_ro` (gold-only); Niklavs full-access via a gitignored `CLAUDE.local.md` overlay + `.env` user `tcg_nfe` (verified read on `enterprise_silver`/`enterprise_bronze`/`dw`/`sl_gold`). Full lineage + design: `bank/notes/projects/2026-05-27-shipping-mart-gold-lineage-and-access-tiering.md`.
+
+**Ground truth.** `Documents/GitHub/bi-etl/dags/shipping_mart/` (top-level gold DAG; per-carrier provider SQL under `fact_shipment_invoice_lines/sql/providers/`). `git pull origin main` before reading the code for an audit/sanity check.
 
 **`cost_source` values (2026-05-22):** `'invoice'` 65%, `'expected'` 24%, NULL/uncosted 8%, `'avg'` 2%. Column name is `real_shipping_cost_eur` but the flag value is `'invoice'` — naming asymmetry; future cleanup may align.
 
@@ -30,7 +32,7 @@ Cutover from `enterprise_silver.*` landed 2026-05-22 — old silver facts are **
 
 Pinned 2026-05-21 ([[S021_2026-05-21_alching-and-rule-fix|S021]]). Source: `archive/proposals/2026-05-21_eu-tender-2026.md`.
 
-Quantitative review of 2026 EU shipping carrier tenders for TCG-Picanova. Target: 4–6 parcel + 1 freight, cost-only scoring. Phase 2 in flight; **DPD PL walkthrough is the next concrete step.** Decisions locked 2026-05-12 (cost-only, hard cap 6, lane diagnostic + portfolio scoring). New offers landing live (DPD PL + FedEx arrived 2026-05-20). Full detail in `bank/notes/projects/eu_tender_2026.md`.
+Quantitative review of 2026 EU shipping carrier tenders for TCG-Picanova. Target: 4–6 parcel + 1 freight, cost-only scoring. **Decision basis = full-year cost (2026-05-27, S099).** Q1 2026 is the per-shipment unit-cost reference; the decision re-weights it by an annual volume profile with the seasonal layers Q1 never exercises (peak/demand surcharges, Q4 volume + product-mix spike, forward fuel) — a Q1-cheap carrier can be Q4-expensive. Annualisation method TBD/parked; current work proceeds on Q1. Decisions locked 2026-05-12 (cost-only, hard cap 6, lane diagnostic + portfolio scoring). Round-1 replies reviewed + deterministic engine rebuilds in flight (maersk-3.0.0 done; hermes/dhl_express/austrian_post next). Full detail in `bank/notes/projects/eu_tender_2026.md`; full-year scoping note in the tender repo `carrier_responses_to_open_questions/FULL_YEAR_SCOPING_NOTE.md`.
 
 *Rotate out when tender decisions are signed and carriers contracted, OR project pauses > 1 month with no active work, OR pin grows stale relative to current state.*
 

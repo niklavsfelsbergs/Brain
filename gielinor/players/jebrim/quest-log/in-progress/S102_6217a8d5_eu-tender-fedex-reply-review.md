@@ -38,5 +38,10 @@ Principal: 1 fuel (look + resend scope), 2 pull FX, 3 **shipping_zipcode IS in f
 - Cross-carrier sweep: the "no postcode column" claim is wrong in Maersk/GLS/Hermes/DHL Express/DPD PL reviews too.
 - `fedex-2.0.0` rebuild stays HELD pending fuel + RE vol-weight.
 
+## Engine rebuilds (principal: "rebuild the engines which we can"; cadence = one-at-a-time/verified)
+- **maersk-3.0.0 — DONE + VERIFIED.** constants (FUEL_PCT_EU 0.10→0.066, FUEL_PCT_ROW 0.10→0.2475, AT_TOLL 0.29, new DE_TOLL 0.19 + DK_TOLL_GLS 0.05, ROW_MAX_LWH_PRODUCT_CM3 169901), at_toll trigger flipped on, new de_toll.py + dk_toll.py (always-on DE/DK), registered in __init__, row_oversize 4th trigger (lwh_product>169901 = the "2xLxH cm3" AHS volume cap). Fixtures 15/15 pass (+ new DK fixture, toll/fuel checks added to test_engine). Full-pop smoke clean: 468,552 eligible, total €4.35M, AT toll €6,763/DE €65,385/DK €121, fuel €170k. Oversize parquet was already populated (BE/LU 6.10/IT 2.0/ES 1.0/CH reject) — IT "2+2 stack" + ES exact-tier-trigger left as the review's flagged minor residuals.
+- **HELD/next:** hermes-2.0.0, dhl_express-2.0.0, austrian_post-2.0.0, then cost_matrix re-run + ranking shift. FedEx + DHL Paket rebuilds stay HELD (round-2 pending).
+- Engine edits UNCOMMITTED (bi-analytics-main, on top of 8cdf616).
+
 ## Brain side
 UNCOMMITTED (awaiting principal go): S102 quest-log, this session's intent, penguin research file + S099_p2 quest-log, comms OPEN. Out-of-tree bi-analytics-main edits (REVIEW_CONCLUSIONS + cascade + round-2 dispatch) also uncommitted. git commit -- <pathspec> (shared-index hazard; sibling braindead-a268b008 dev-brain, no overlap).

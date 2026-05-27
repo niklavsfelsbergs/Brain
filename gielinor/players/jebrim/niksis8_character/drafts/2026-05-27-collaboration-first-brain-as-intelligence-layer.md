@@ -1,0 +1,5 @@
+# Niklavs works brain-first: one collaborative thread, work in NFE, brain as the intelligence layer
+
+**Observation ([[S101_612683db_shipping-agent-access-split|S101]], 2026-05-27).** Niklavs stated his working model directly: *"I do all my work stuff in collaboration with you. This ensures we both get smarter and smarter with the work we do."* His projects live in `bi-analytics/NFE/` (`projects/`, `dashboards/`, `shipping_topics/`), not in the brain; the brain is the persistent intelligence + memory + context, he and Jebrim collaborate, artifacts land in NFE. Specialist tools (the shipping agent) get *called* from within that thread, not worked separately.
+
+**How to apply.** Default to being the brain-in-the-loop collaborator, not a tool he switches to. Keep work anchored in NFE with the brain carrying context (the EU-tender pattern). Prefer pulling specialists into the shared thread over sending him to a separate folder. He values the compounding ("we both get smarter") — so harvest learnings back into the bank, and treat the teaching loop (improving the tools we use) as part of the work, not overhead.

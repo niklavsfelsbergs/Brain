@@ -1,10 +1,18 @@
 # Shipping-agent — colleague onboarding message
 
-**As-of:** 2026-05-25. Reusable paste-in message for onboarding a new person to the shipping agent via the Claude app. Stored here (not in `shipping-agent/` itself) so it's retrievable on principal cue without shipping the canned message + credential inside the agent repo. Source: built in a Jebrim session for the 2026-05-26 shipping-agent presentation.
+**As-of:** 2026-05-27. Reusable paste-in message for onboarding a new person to the shipping agent via the Claude app. Stored here (not in `shipping-agent/` itself) so it's retrievable on principal cue without shipping the canned message + credential inside the agent repo. Source: built in a Jebrim session for the 2026-05-26 shipping-agent presentation; delivery preamble (open app / open folder / paste) added 2026-05-27 per principal ([[S101_612683db_shipping-agent-access-split|S101]]).
 
 ## What it is
 
 A single message a colleague pastes into Claude Code (after installing the Claude app and opening it in a code folder). It clones the repo, writes `.env`, installs deps, smoke-tests the Redshift connection, and ends by pitching what the agent can do. Fully hands-off — the colleague provides nothing.
+
+## How to share it (delivery preamble)
+
+Give the colleague these three steps first — they get them to the paste point:
+
+1. Open the Claude app → navigate to **</> Code**.
+2. Open the folder where you want the agent to live (Documents, or some working folder of yours).
+3. Paste the message below and let Claude walk you through the setup.
 
 ## The message (send verbatim)
 

@@ -55,9 +55,9 @@ Section started life as "development rules layer" (the collaboration-contract fr
 
 **Status.** `[~]` partial. §D.1 `CLAUDE.md` is live and substantial (brain-root router + `gielinor/` master + `developer-braindead/` + per-`meta/` rulebook). §D.3 `.mcp.json` exists at brain root and wires external servers (Slack confirmed; others as registered). §D.2 secrets pattern and §D.4 CRONTAB still open — CRONTAB waits on §F scheduled triggers.
 
-- §D.1 `[ ]` `CLAUDE.md` initial draft.
+- §D.1 `[x]` `CLAUDE.md` initial draft — live (brain-root router + `gielinor/` master + `developer-braindead/` + per-`meta/` rulebook).
 - §D.2 `[ ]` `CLAUDE.local.md` (secrets pattern).
-- §D.3 `[ ]` `.mcp.json` (tool wiring — wait for pilot to dictate which servers).
+- §D.3 `[x]` `.mcp.json` (tool wiring) — live at brain root; Slack confirmed, others as registered.
 - §D.4 `[ ]` `CRONTAB.md` (when scheduled triggers exist).
 
 ## §E — Gates layer

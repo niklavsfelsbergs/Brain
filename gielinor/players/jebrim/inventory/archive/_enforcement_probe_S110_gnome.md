@@ -1,0 +1,1 @@
+S110 enforcement probe — gnome positive control. Allowed surface (player inventory). If this exists, the gnome can write where permitted.

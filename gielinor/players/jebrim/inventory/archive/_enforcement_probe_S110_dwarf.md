@@ -1,0 +1,1 @@
+S110 enforcement probe — dwarf positive control. Allowed surface (player inventory). If this exists, the dwarf can write where permitted.

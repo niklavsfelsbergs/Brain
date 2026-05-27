@@ -1,0 +1,1 @@
+S110 enforcement probe — penguin positive control. Allowed surface (player research/). If this exists, the penguin can write where permitted.

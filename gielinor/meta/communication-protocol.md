@@ -31,6 +31,25 @@ Examples:
 
 The acknowledgment-and-action structure still appears, just in compressed form. The compression test: if the restatement of the ask and the restatement of the action would say the same thing twice, collapse.
 
+## Copyable deliverables — plain text, not code blocks
+
+When producing text the principal will **copy out of the terminal and paste somewhere else** (an email, a Slack message, a ticket, a doc), present it as **plain prose**. Do **not** wrap it in a fenced code block or a markdown blockquote.
+
+**Why.** In a terminal the clean way to copy is to select text directly and copy — that yields plain text that pastes as normal text anywhere. Markdown decoration fights that paste:
+
+- A **fenced code block** renders monospace and carries code styling into the target (Outlook rendered a pasted draft in monospace — "the block is not clean").
+- A **blockquote** prefixes every line with `>`, which gets dragged into the selection; nested bullets render as `> -` instead of clean bullets.
+
+Plain prose has neither problem. The principal selects the span and gets exactly the characters.
+
+**This generalizes.** The principal copies *arbitrary* conversation text the same way, not just things explicitly marked as deliverables — so the agent's standing job is simply to never wrap copyable content in markup that resists a clean paste.
+
+**The mechanic (to remind the principal when copy fails).** Windows Terminal captures the mouse while the Claude Code TUI runs, so a plain click-drag may not select. **Hold Shift while click-dragging, then Ctrl+C** — bypasses the app's mouse capture, uses the terminal's own selection, produces clean plain text. Works on any message.
+
+**The distinction to hold.** Prose-to-paste (emails, messages, tickets) → plain text. Literal **code, shell commands, file paths, config** → code formatting is still correct and wanted; monospace is a feature there. The rule bans code fences around *prose deliverables*, not code.
+
+Applies to every actor and mode. See [[D-027_plain-text-deliverables-for-terminal-copy|D-027]] for the founding decision.
+
 ## Dwarf-spawn annotation
 
 When the dwarf-spawning heuristic fires (see `spellbook/skills/spawning-dwarves.md`), the Plan line names the dwarves inline instead of describing the work serially:

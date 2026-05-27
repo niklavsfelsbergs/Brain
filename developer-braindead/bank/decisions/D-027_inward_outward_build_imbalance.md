@@ -43,3 +43,15 @@ The unifying read: **the brain has optimized inward — better self-model, bette
 - `bank/plan.md` — reconciled this session; §C is the target.
 - [[D-023_close_the_promote_consult_loop]] close the promote/consult loop — the prior "underutilization" course-correction. This decision is its operational sequel: [[D-023_close_the_promote_consult_loop|D-023]] fixed the *inward* promote/consult leak; this names the *outward* gap.
 - [[A-001]] manual-invocation-only Phase 1 — the assumption this decision proposes to finally retire.
+
+---
+
+## Amendment — 2026-05-27 (urgency recalibrated, principal)
+
+The *observation* this decision names — the brain built inward more than outward — **stands.** What's recalibrated is the *urgency*: §C (the scheduled pilot / "outward hands") is **a known future phase, not the urgent next build.** Principal's steer, verbatim: *"lets stop taking point C so seriously, we will get to it. For now I'm working in collaboration with you. Scheduled tasks will come much later."*
+
+The current operating phase is deliberate hands-on collaboration — the operator drives the work interactively, which is itself outward action, just operator-in-the-loop. Manual-invocation ([[A-001]]) is the *intended* mode for now, not a deficiency to urgently retire. So:
+
+- Drop the reflexive "§C is the load-bearing next step" framing in `respawn.md`, `plan.md §C`, and session sign-offs (applied the same day: `plan.md §C` status softened, `respawn.md` "Where we are" + "Next concrete step" reframed — the latter also via the [[S110_144c0ca2_brain_full_audit|S110]] steering note).
+- The "watch on the switchboard-polish reflex" (Consequence above) is unchanged — *inward over-build* is still the thing to resist; this amendment is about **timing of the outward build**, not licence to pile on more inward work.
+- Revisit §C's priority when the principal calls for scheduled autonomy.

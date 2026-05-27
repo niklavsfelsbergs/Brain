@@ -31,7 +31,14 @@ Cross-brain refs left as plain text per §O.5 (per-brain vaults); example links 
 ## Open / next
 
 - **Not yet committed** — awaiting principal go (boundary: always ask before committing). Commit by pathspec: the 8 surfaces + this quest-log only; exclude f4aadfed's comms-rotation WIP, cockpit/switchboard runtime, the zezima S095 quest WIP, build-lessons.
-- Strategic next step UNCHANGED — **§C shipping-mart pilot** ([[D-027_inward_outward_build_imbalance]]), the load-bearing outward build. §O.9 is inward (keeps §O durable / serves §N).
+- §O.9 is inward (keeps §O durable / serves §N). *(See the addendum below: later in this same session the principal recalibrated §C's urgency — a known much-later phase, not the load-bearing next step.)*
 
 **Cascade.** gielinor/meta/{write-rules,drafts-mechanics}.md; developer-braindead/{_about,CLAUDE}.md; developer-braindead/spellbook/entry-formats.md; bank/decisions/D-004_stable_ids.md; bank/research/obsidian-fit-and-migration-spec.md; bank/plan.md; this quest-log.
 **Main-brain changes.** gielinor/meta/write-rules.md + drafts-mechanics.md (the going-forward authoring rule gielinor sessions read every respawn).
+
+## Addendum — §C urgency recalibrated (same session)
+
+Principal steer mid-conversation: *"lets stop taking point C so seriously, we will get to it. For now I'm working in collaboration with you. Scheduled tasks will come much later."* Saved as a feedback memory; then reframed the dev docs so the steer sticks across respawns (otherwise the next respawn re-loads "§C is the load-bearing next step"):
+- `respawn.md` "Where we are" — "load-bearing gap / strategic next step" → "the inward/outward *observation* stands; the *urgency* is recalibrated — known future phase, hands-on collaboration now." (The "Next concrete step" demotion was already landed by the parallel [[S110_144c0ca2_brain_full_audit|S110]] audit's steering note — we converged on the same steer.)
+- `bank/plan.md §C` — status softened from "the load-bearing gap / the next build" to "a known future phase, deprioritized 2026-05-27."
+- [[D-027_inward_outward_build_imbalance]] — dated *Amendment (urgency recalibrated)*; analysis preserved, and the "watch on inward over-build" consequence kept (this is about *timing of the outward build*, not licence for more inward work).

@@ -33,6 +33,7 @@ ACTORS_PATH = VIZ_DIR / "state-actors.json"
 DWARVES_PATH = VIZ_DIR / "state-dwarves.json"
 GNOMES_PATH = VIZ_DIR / "state-gnomes.json"
 PENGUINS_PATH = VIZ_DIR / "state-penguins.json"
+SHIPPING_AGENTS_PATH = VIZ_DIR / "state-shipping-agents.json"
 INSTANCES_PATH = VIZ_DIR / "state-instances.json"
 
 # S052: chat.ndjson is the human-language event stream for the chat panel.
@@ -70,17 +71,24 @@ NON_PLAYER_SUFFIX_ACTORS = {"braindead", "guthix", "wisp"}
 # attribution from payload.agent_type. Both reach into the same per-kind state
 # (id prefix, color palette, event names, chat speaker).
 #
-# Adding a new kind:
+# Adding a new kind (current live consumer = the cockpit, not the archived
+# switchboard map):
 #   - Add an entry below with all six keys; pick a unique id_prefix letter and
 #     a fresh state file under VIZ_DIR.
-#   - Add matching CSS vars (--<color_prefix>-1..N) in index.html and a sprite
-#     spawner (parallel to spawnDwarf / spawnGnome).
-#   - Update spawn_kind_from_tool_input to route subagent_type strings to the
-#     new kind. Already an "in ROLE_CONFIG" lookup since penguins landed.
-#   - Update attribute_to_subagent's agent_type dispatch. Already an
-#     "in ROLE_CONFIG" lookup since penguins landed.
-#   - Add a COMMS tab + filter + dot CSS for the new speaker (parallel to
-#     dwarves/gnomes/penguins blocks in index.html).
+#   - Register the new state file in the cockpit's role-file lists so the board
+#     shows the crew chip + the "awaiting crew" state: backend.py ROLE_FILES and
+#     status-sidecar.py SUBAGENT_STATE_PATHS. The board chip is derived from the
+#     kind string (board.js: kind[0] + a per-kind `sub-<kind>` class); add a
+#     `.sub-<kind>` color in cockpit/web/styles.css for a distinct hue.
+#   - spawn_kind_from_tool_input (subagent_type) and attribute_to_subagent
+#     (agent_type) both route via an "in ROLE_CONFIG" lookup since penguins
+#     landed — adding the entry below is enough; no dispatch edit needed.
+#   - color_prefix/color_count are vestigial here (they fed the old switchboard
+#     index.html CSS vars, now archived) — kept for shape consistency.
+#   - Add a write-boundary hook (gielinor/.claude/hooks/<kind>-write-boundary.py,
+#     gated on agent_type) if the kind needs fine-grained brain-write limits —
+#     a new agent_type inherits only the global guards, not the dwarf/gnome/
+#     penguin boundaries.
 ROLE_CONFIG = {
     "dwarf": {
         "id_prefix": "D",
@@ -108,6 +116,18 @@ ROLE_CONFIG = {
         "speaker": "penguins",
         "color_prefix": "penguin",
         "color_count": 3,
+    },
+    # Shipping Data Mart specialist (S101 / .claude/agents/shipping-agent.md).
+    # subagent_type + agent_type are the literal "shipping-agent"; the board
+    # chip renders "S" with a distinct sub-shipping-agent hue.
+    "shipping-agent": {
+        "id_prefix": "S",
+        "state_path": SHIPPING_AGENTS_PATH,
+        "spawn_event": "spawn-shipping-agent",
+        "despawn_event": "despawn-shipping-agent",
+        "speaker": "shipping-agent",
+        "color_prefix": "shipagent",
+        "color_count": 2,
     },
 }
 

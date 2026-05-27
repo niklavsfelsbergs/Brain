@@ -65,7 +65,7 @@ The five modes are orthogonal to the principal/sub-agent axis below. Bankstandin
 
 This axis describes which side of the invocation the agent is on, and — if it's a sub-agent — which kind. It applies within player mode and within unscoped mode; bankstanding is always principal.
 
-The agent operates in one of four roles per invocation: **principal**, **dwarf**, **gnome**, or **penguin**. Role is orthogonal to player: any player can run as either a principal, a dwarf, or a penguin (those inherit player); gnomes are system-namespace and don't inherit a player (the spawn brief carries player scope as a parameter instead).
+The agent operates in one of four roles per invocation: **principal**, **dwarf**, **gnome**, or **penguin**. Role is orthogonal to player: any player can run as either a principal, a dwarf, or a penguin (those inherit player); gnomes are system-namespace and don't inherit a player (the spawn brief carries player scope as a parameter instead). On top of the functional axis sit **named specialist sub-agent types** — a dwarf-like functional sub-agent given its own identity, tool surface, and write boundary so a call is visibly its own thing. The first is **shipping-agent** (see below); the pattern generalizes to future domain specialists.
 
 ### Principal role
 
@@ -156,9 +156,21 @@ The boundary is enforced by `.claude/hooks/penguin-write-boundary.py`, gated on 
 
 See `spellbook/skills/research.md` for the methodology and `spellbook/skills/spawning-penguins.md` for the spawn heuristic.
 
+### Shipping-agent role
+
+The agent has been invoked as the **Shipping Data Mart specialist** — an in-session *emulation* of the external `picanova/shipping-agent` talk-to-your-data agent, spawned by a player (default Jebrim) for a mart-shaped pull where that agent's hardened methodology earns its keep. It is the first **named specialist** sub-agent: functionally like a dwarf, but with its own identity, tool surface (the Redshift MCP), and write boundary, so a mart consult renders distinctly on the cockpit (a cyan "S" crew chip) instead of folding into a generic dwarf. See `.claude/agents/shipping-agent.md` for the full brief and `players/jebrim/spellbook/skills/calling-the-shipping-agent.md` for when Jebrim calls it.
+
+It reads the live gold `shipping_mart` via the Redshift MCP (read-only), defaults to the gold contract, and reaches the upstream raw layer only when asked *and* a local profile grants it. Its real deliverables — charts, CSVs, saved SQL — land **outside the brain** (the shipping-agent repo's `workbench/` or the NFE work folder), where no brain hook governs them.
+
+**A shipping-agent may write (inside the brain) to** its inherited player's `quest-log/in-progress/`, `quest-log/completed/`, `inventory/` — the brain-side trace only.
+
+**A shipping-agent may not** write `bank/` (mart findings reach bank via *alching*, like penguins), any `drafts/`, any `confirmed/` path, `keepsake/`, `lorebook/`, `examine/`, `niksis8_character/`, `meta/`, `spellbook/rituals/`, body files, or any other player's namespace. It also cannot spawn sub-agents (it carries no Task/Agent tool; `block-sub-spawn.py` is the unreachable backstop) and never runs headless (`claude -p` / Agent SDK) — it is an in-session emulation on the subscription path.
+
+**Tool surface:** `Read`, `Glob`, `Grep`, `Edit`, `Write`, `Bash` (the chart harness is `python harness/build_inline_chart.py`), plus the Redshift MCP read tools (`execute_sql`, `list_schemas`, `list_objects`, `get_object_details`, `explain_query`). The boundary is enforced by `.claude/hooks/shipping-agent-write-boundary.py`, gated on PreToolUse payload field `agent_type == "shipping-agent"` — same mechanism as the dwarf/gnome/penguin hooks.
+
 ## Player inheritance
 
-By default, a dwarf or penguin inherits the principal's player. A Zezima-spawned dwarf operates in Zezima's namespace — reads from Zezima's `bank/`, writes its quest-log entry to Zezima's `quest-log/`. A Zezima-spawned penguin writes research into Zezima's `research/`.
+By default, a dwarf, penguin, or shipping-agent inherits the principal's player. A Zezima-spawned dwarf operates in Zezima's namespace — reads from Zezima's `bank/`, writes its quest-log entry to Zezima's `quest-log/`. A Zezima-spawned penguin writes research into Zezima's `research/`. A shipping-agent traces into its inherited player's `quest-log/` (default Jebrim, since mart work is his domain).
 
 **Cross-player invocation** is allowed but must be explicit. The principal names which player the dwarf or penguin should embody. Example: Zezima (principal) spawns Jebrim as a dwarf to handle a work-flavored task on the side. The Jebrim-dwarf operates in *Jebrim's* namespace — reads Jebrim's bank, writes its findings to Jebrim's quest-log — and returns a summary to the Zezima-principal. The Zezima-principal then notes in *her* quest-log that she delegated the task. Same pattern for penguins: *"Hey Zezima, have a penguin look into X for Jebrim"* spawns a Jebrim-scoped penguin whose research lands in Jebrim's `research/`.
 
@@ -166,14 +178,15 @@ By default, a dwarf or penguin inherits the principal's player. A Zezima-spawned
 
 ## Principle
 
-Principals are introspective. Dwarves are functional within the repo. Penguins are functional beyond the gates. Gnomes are structural housekeepers.
+Principals are introspective. Dwarves are functional within the repo. Penguins are functional beyond the gates. Gnomes are structural housekeepers. Named specialists (shipping-agent) are functional against one external system — a dwarf hardened to one domain, with its real output living outside the brain.
 
 Principals can change who the agent (or a player) thinks it is. Dwarves can only do the work they were invoked for within the repo and leave a trace. Penguins can gather and synthesize external information into their own `research/` folder but never canonicalize and never write into the player's bank. Gnomes can walk a ritual's checklist and propose writes inside the housekeeping surface, but they don't introspect and they don't canonicalize.
 
 ## Related
 
-- `write-rules.md` for the full per-layer table; this file documents the dwarf, gnome, and penguin subsets.
-- `.claude/hooks/dwarf-write-boundary.py`, `.claude/hooks/gnome-write-boundary.py`, `.claude/hooks/penguin-write-boundary.py`, and `.claude/hooks/block-sub-spawn.py` for the enforcement.
+- `write-rules.md` for the full per-layer table; this file documents the dwarf, gnome, penguin, and shipping-agent subsets.
+- `.claude/hooks/dwarf-write-boundary.py`, `.claude/hooks/gnome-write-boundary.py`, `.claude/hooks/penguin-write-boundary.py`, `.claude/hooks/shipping-agent-write-boundary.py`, and `.claude/hooks/block-sub-spawn.py` for the enforcement.
+- `.claude/agents/shipping-agent.md` for the shipping-agent specialist brief.
 - `spellbook/rituals/bankstanding.md` for the bankstanding-mode procedure.
 - `spellbook/skills/spawning-gnomes.md` for the gnome operating spec, spawn heuristic, and reporting format.
 - `spellbook/skills/spawning-penguins.md` for the penguin operating spec.

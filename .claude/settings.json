@@ -49,6 +49,10 @@
           {
             "type": "command",
             "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/penguin-write-boundary.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/shipping-agent-write-boundary.py\""
           }
         ]
       },

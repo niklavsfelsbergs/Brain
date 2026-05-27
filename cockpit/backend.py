@@ -47,6 +47,7 @@ ROLE_FILES = {
     "dwarf": STATE_DIR / "state-dwarves.json",
     "gnome": STATE_DIR / "state-gnomes.json",
     "penguin": STATE_DIR / "state-penguins.json",
+    "shipping-agent": STATE_DIR / "state-shipping-agents.json",
 }
 CHAT_NDJSON = STATE_DIR / "chat.ndjson"
 COMMS_FILES = {

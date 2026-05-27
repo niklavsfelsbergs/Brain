@@ -19,6 +19,7 @@
   --waiting: #f0a020;
   --answers: #ff5d8f;
   --crew: #5a9fe0;
+  --ship: #46c8d8;
   --alching: #b07ad8;
   --wrapped: #34c0ad;
   --stalled: #e0673a;
@@ -202,6 +203,13 @@ html, body {
   color: var(--crew);
   font-weight: 700;
   font-size: 11px;
+}
+/* Shipping Data Mart specialist (.claude/agents/shipping-agent.md): a distinct
+   cyan chip + ring so a mart consult reads apart from the blue dwarf/gnome/
+   penguin crew. The "S" label comes from board.js (kind[0]). */
+.sub-shipping-agent {
+  color: var(--ship);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ship) 50%, transparent);
 }
 
 /* ---- per-state color (border + dot + chip) ---- D-029 two-axis vocabulary.

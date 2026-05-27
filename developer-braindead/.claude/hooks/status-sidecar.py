@@ -58,11 +58,12 @@ ACTORS_PATH = VIZ_DIR / "state-actors.json"
 NAMES_PATH = VIZ_DIR / "state-names.json"
 # Sub-agent role-state files (written by emit-event.py). Read here to derive
 # the "awaiting crew" state — a session with in-flight foreground spawns is
-# blocked waiting for its dwarves/gnomes/penguins to return.
+# blocked waiting for its dwarves/gnomes/penguins/shipping-agent to return.
 SUBAGENT_STATE_PATHS = (
     VIZ_DIR / "state-dwarves.json",
     VIZ_DIR / "state-gnomes.json",
     VIZ_DIR / "state-penguins.json",
+    VIZ_DIR / "state-shipping-agents.json",
 )
 # S052: chat-stream sidecar — mirrors the path emit-event.py writes to.
 CHAT_PATH = VIZ_DIR / "chat.ndjson"

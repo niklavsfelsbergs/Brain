@@ -94,7 +94,7 @@ function Row({ s, selected, onSelect, onRename }) {
       html`<div class="crew">
         crew
         ${s.subagents.map(
-          (a) => html`<span class="sub" title=${a.kind}>${(a.kind || "?")[0].toUpperCase()}</span>`
+          (a) => html`<span class=${"sub sub-" + (a.kind || "unknown")} title=${a.kind}>${(a.kind || "?")[0].toUpperCase()}</span>`
         )}
       </div>`}
     </div>

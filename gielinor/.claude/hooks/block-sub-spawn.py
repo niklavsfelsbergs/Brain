@@ -17,6 +17,7 @@ ROLE_PLURALS = {
     "dwarf": "dwarves",
     "gnome": "gnomes",
     "penguin": "penguins",
+    "shipping-agent": "shipping-agents",
 }
 
 

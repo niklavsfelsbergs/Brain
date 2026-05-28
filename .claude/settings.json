@@ -115,6 +115,10 @@
           {
             "type": "command",
             "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/grounding-cue-reminder.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/close-cue-reminder.py\""
           }
         ]
       }
@@ -139,6 +143,10 @@
           {
             "type": "command",
             "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/developer-braindead/.claude/hooks/status-sidecar.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/session-end-safety-net.py\""
           }
         ]
       }

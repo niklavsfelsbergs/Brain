@@ -1,14 +1,14 @@
 # S118 — EU Tender 2026: decision_scorer + report regen
 
 **Session:** jebrim-f41737e5 · 2026-05-28 · player Jebrim
-**Continuation of:** S117 (d1a3b803, ended clean ~1min before respawn, same terminal). Adopted resume `inventory/eu-tender-engine-builds-resume__d1a3b803.md`.
+**Continuation of:** [[S117_d1a3b803_eu-tender-dpd-pl-gls-engine-builds|S117]] (d1a3b803, ended clean ~1min before respawn, same terminal). Adopted resume `inventory/eu-tender-engine-builds-resume__d1a3b803.md`.
 
 ## Ask
 Principal: "continue on EU tender." Confirmed via multiple-choice → run `decision_scorer.py` + report regen (Q1 portfolio scoring across the 6 rebuilt engines).
 
 ## Turn log
 
-**T1 — respawn + ground.** Loaded Jebrim layers; sibling check (sole live sibling jebrim-7f67fe48 = S116 FIF, different repo, no overlap). No pending drafts → no alching due. Posted OPEN. Confirmed scope with principal (multiple-choice → "decision_scorer + report").
+**T1 — respawn + ground.** Loaded Jebrim layers; sibling check (sole live sibling jebrim-7f67fe48 = [[S116_7f67fe48_shipping-agent-fif-monthly-skill|S116]] FIF, different repo, no overlap). No pending drafts → no alching due. Posted OPEN. Confirmed scope with principal (multiple-choice → "decision_scorer + report").
 
 **T2 — verify inputs (scorer needs no code change).**
 - `cost_matrix.parquet` fresh (today 13:24, all 9 engines incl. dpd_pl-2.0.0 `5998ef6` / gls-2.0.0 `96bc47f`).
@@ -23,7 +23,7 @@ Principal: "continue on EU tender." Confirmed via multiple-choice → run `decis
 **T4 — ran `report.py`.** Clean (EXIT=0). `decision_report.html` regenerated (211KB, 13:40), dated 2026-05-28, references "90 decision sets". Reflects the new ranking.
 
 ## Open / gap (surface to principal)
-- **Report does NOT flag the two material S117 assumptions.** Only per-engine caveat prose in the HTML is the older hardcoded Hermes 11-assumptions block. The dpd_pl CH-customs €484k (@44/parcel opt-1) and gls EFTA €278.9k (@25/parcel CH/NO) levers — both collapsing under consolidated customs — are baked into engine costs but invisible to a decision-maker reading the report. Per project doc system these belong in `docs/REPORT_NOTES.md` → drained into report.py prose (confirm-with-draft; never auto-write docs/*).
+- **Report does NOT flag the two material [[S117_d1a3b803_eu-tender-dpd-pl-gls-engine-builds|S117]] assumptions.** Only per-engine caveat prose in the HTML is the older hardcoded Hermes 11-assumptions block. The dpd_pl CH-customs €484k (@44/parcel opt-1) and gls EFTA €278.9k (@25/parcel CH/NO) levers — both collapsing under consolidated customs — are baked into engine costs but invisible to a decision-maker reading the report. Per project doc system these belong in `docs/REPORT_NOTES.md` → drained into report.py prose (confirm-with-draft; never auto-write docs/*).
 - decision_scorer.py + report.py needed **no code change** — pure re-run against the S117-regenerated cost_matrix.
 - Commit (scorer/report outputs + brain-side records) HELD — principal-gated, pathspec-scoped, local-only.
 - FedEx + DHL Paket still HELD (round-2 pending).
@@ -31,3 +31,16 @@ Principal: "continue on EU tender." Confirmed via multiple-choice → run `decis
 ## Outputs touched (out-of-tree tender repo, uncommitted)
 - `2_analysis/data/scenarios.parquet` (regenerated, gitignored)
 - `2_analysis/decision_report.html` (regenerated)
+
+## T5 — open-questions reconciliation (principal: "I thought I answered these — is it nowhere?")
+- Committed ede440f (tender decision_report.html) + cb6e91c (brain S118 records) per principal "commit first".
+- Surfaced 3 reconstructed small-carrier question sets (Maersk/DHL Express/AP) from stale NEXT.md → principal recalled answering them.
+- **Found: all 3 replies arrived + were reviewed 2026-05-27 (S099).** Each has committed `carrier_responses_to_open_questions/<carrier>/REVIEW_CONCLUSIONS.md`. Raw dumps (`DHL_express/_qa_dump.txt`, Maersk `_fedex-demand-surcharge`/`_new-offer-rates` txt+pdf) are UNCOMMITTED but conclusions are in git. **NEXT.md is STALE** — still lists them as open follow-ups (written without folding in the replies). Engines already rebuilt against these answers (maersk-3.0.0/dhl_express-2.0.0/austrian_post-2.0.0).
+- **Triage verdict:** nothing vital left to ASK A CARRIER. The 4 high-value residuals are INTERNAL (Picanova ops / Niklavs): (1) DHL Express incoterm DTP? (2) AP parcels-per-pallet density (largest flagged assumption, sensitivity €20-82k); (3) DHL Express pickup days/week (line-haul denominator); (4) AP import-VAT-8% treatment. Low-value carrier asks (skip/batch): Maersk demand-passthrough+TierC, DHL Express demand-zone-confirm, AP D-card. Decision lens: cheap tier (Hermes/DPD PL/GLS) already deterministic-ready; Maersk/DHL Express are expensive non-winners → precision low-ROI.
+- Offered: (a) refresh stale NEXT.md, (b) draft the 4 internal confirmations as a checklist. Awaiting principal go (no docs/* write without go).
+
+## T6 — full doc reconciliation (principal: "update all docs to current state")
+- Explicit go to write docs/* (overrides confirm-with-draft default). Spawned 4 Jebrim dwarves in parallel, each with a shared canonical-state block: D1 NEXT.md + CROSS_CARRIER_OVERVIEW; D2 PLAN.md (§A/§B statuses); D3 SESSION_LOG + DECISIONS appends; D4 OPEN_QUESTIONS + ASSUMPTIONS + REPORT_NOTES reconcile.
+- Verified diffs (8 files, +449/-178): NEXT rewritten to current state; PLAN §B.19/20/22/23/25 + §B.7 flipped done, §B.21/24/28 held; SESSION_LOG +6 entries (sessions 26-31); DECISIONS +3 (ranking / open-Q triage / 2 material assumptions); OPEN_QUESTIONS reviewed-carrier residuals reconciled + DPD PL section created; ASSUMPTIONS GLS+DPD PL flipped to wired; REPORT_NOTES +ranking +2 material caveats (the gap from T4 now closed).
+- Committed tender 002486c (8 docs, pathspec-scoped, local-only no push). Dwarf traces in S118_..._d1_*.md.
+- Then produced the carrier-grouped open-questions deliverable (internal items + held-carrier items).

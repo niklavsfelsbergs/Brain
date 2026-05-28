@@ -44,16 +44,29 @@ Principal chose "commit 2+12, then build item 5." Home decision (multiple-choice
 
 **Deferred:** brittle markdown-structure checks (respawn step-order, drafts-triage verdict table — break on benign reword); the born-link WRAP path (needs a resolvable mini-vault; exercised live every commit, verified S118).
 
+## Then — close-ritual enforcement ([[D-034_close_ritual_enforcement|D-034]])
+
+After the "are you 100% wrapped?" catch, the principal asked: make the close ritual non-skippable when a convo ends. Spawned claude-code-guide (background) to confirm hook semantics — decisive: **`SessionEnd` runs async/no-wait** (unreliable on hard window-close), `UserPromptSubmit` injects via `hookSpecificOutput.additionalContext`, `Stop` fires every turn (not an end signal). Core constraint: **a hook runs a script, not the model** — the cognitive half of the ritual can't be hook-forced at exit. So: make skipping loud in-session, guarantee a visibility floor at exit. **Built 3 layers (principal: build all three):**
+
+- **L1 close-completeness gate** — `developer-braindead/verification/close_check.py --sid8`: re-derives the dev close steps from ground truth (CLOSING / quest-log+Cascade+Main-brain lines / respawn / active-mode / committed), locked `CLOSE RITUAL INCOMPLETE` banner on FAIL. Bound as **mandatory step 9** of `spellbook/session-close.md`. Reuses Khaan item-5 harness + item-2 banner.
+- **L2 end-cue reminder** — `gielinor/.claude/hooks/close-cue-reminder.py` (`UserPromptSubmit`, all actors, non-blocking additionalContext on wind-down cues). Exit-symmetry of [[D-033_positive_enforcement_gate_open_on_entry|D-033]]. Root `settings.json` (root-only → fire once).
+- **L3 SessionEnd safety-net** — `gielinor/.claude/hooks/session-end-safety-net.py`: auto-CLOSING **stub** on unmatched OPEN, **no auto-commit** (S118 shared-index hazard), skips `clear`/`resume`. Root `settings.json` SessionEnd. Best-effort by nature (async).
+
+**Verified:** close_check reports the realistic mid-session mix + re-applied the ASCII-banner lesson (an em-dash slipped into a script string again); close-cue fires on cues / silent on the meta-question + ordinary prompts; session-end-safety-net unit + temp-comms e2e append + clear-skip + real-comms no-op (my sid8 has a CLOSING). **Honest ceiling documented in [[D-034_close_ritual_enforcement|D-034]]:** L3 can't be relied on for a hard window-close; the durable floor is the in-session quest-log + next-respawn reconciliation.
+
 ## State / next
 
-- plan.md §P.2 + §P.3 → done. Khaan recommended-sequence steps 1+2 complete.
+- plan.md §P.2 + §P.3 + §P.4 → done. Khaan recommended-sequence steps 1+2 complete; close-ritual enforcement ([[D-034_close_ritual_enforcement|D-034]]) landed on top.
 - Pending from [[S114_277d9053_khaan-audit-and-open-gate|S114]], unchanged: `meta/write-rules.md` "enforced by hook" line via godly proposal at next bankstanding.
 - Next Khaan steps (sequence step 3+): positive-gate-bundle (item 1 + H anti-lockout), 5-lens doctrine (4), scored recall/digest/charges (3/8/7). Autonomous (A/B/C…) = §C-phase, much-later.
+- Follow-on for [[D-034_close_ritual_enforcement|D-034]]: extend `close_check.py` to the **gielinor** player close-session ritual (this pass scoped it to the dev close).
 
 ## Targets touched
 
-`gielinor/spellbook/failure-banners.md` (new), `gielinor/spellbook/rituals/{respawn,alching,drafts-triage}.md`, `developer-braindead/bank/research/born-link-lint.py`, `developer-braindead/bank/build-lessons.md`, `developer-braindead/bank/plan.md`, `developer-braindead/verification/check.py` (new), this quest-log, `respawn.md` (prepend at close), `comms/active.md`.
+**Cascade.** Dev-brain: `bank/research/born-link-lint.py` (BANNER constant + emit), `bank/build-lessons.md` (item-12 hygiene + ASCII corollary + the close-completeness lesson), `bank/plan.md` (§P.2/§P.3/§P.4), `verification/check.py` (NEW harness) + `verification/close_check.py` (NEW close gate), `spellbook/session-close.md` (new mandatory step 9), `bank/decisions/D-034_close_ritual_enforcement.md` (NEW), `respawn.md` (S115 prepend + G hand-off), `comms/active.md` (OPEN + CLOSING + reopen UPDATE), this quest-log. Commits `8748c87` (2+12), `c180d31` (item 5 + close), `bc8d8ee` (G hand-off), `a14153b`/`9cff7ec` (close-ritual fix + learning), + the close-enforcement commit.
 
-**Cascade.** Dev-brain: `bank/research/born-link-lint.py` (BANNER constant + emit), `bank/build-lessons.md` (item-12 hygiene invariants + ASCII corollary), `bank/plan.md` (§P.2/§P.3 → done), `verification/check.py` (NEW harness), `respawn.md` (S115 prepend + G hand-off), `comms/active.md` (OPEN + CLOSING), this quest-log. Commits `8748c87` (2+12), `c180d31` (item 5 + close), `bc8d8ee` (G hand-off).
+**Main-brain changes (crossed into `gielinor/`).** NOT none. From the Khaan work: `gielinor/spellbook/failure-banners.md` (NEW) + the three user-only ritual files `gielinor/spellbook/rituals/{respawn,alching,drafts-triage}.md` (Failure-handling pointers; principal-authorized). From the close-enforcement work: two NEW hooks `gielinor/.claude/hooks/{close-cue-reminder,session-end-safety-net}.py` + their registration in root `.claude/settings.json`. No identity-layer / `confirmed/` / `meta/` writes; the `meta/write-rules.md` "enforced by hook" note still routes through a godly proposal at next bankstanding.
 
-**Main-brain changes (crossed into `gielinor/`).** NOT none — this session edited the main brain: `gielinor/spellbook/failure-banners.md` (NEW — the locked-banner registry + no-silent-fallback doctrine) and the three user-only ritual files `gielinor/spellbook/rituals/{respawn,alching,drafts-triage}.md` (each gained a one-line Failure-handling pointer; principal authorized the user-only edits). No identity-layer / `confirmed/` / `meta/` writes; the `meta/write-rules.md` "enforced by hook" note remains routed through a godly proposal at next bankstanding.
+## Close (the second, real one)
+
+The principal's "alright lets wrap this up" arrived and **L2 (`close-cue-reminder`) fired live in production** — the UserPromptSubmit hook injected its close-ritual reminder on the "wrap this up" cue. Build-then-watch-it-fire on the very next relevant message: the ideal verify-enforcement loop, this time on a hook I shipped minutes earlier. And this close runs through **step 9 = `close_check.py` (L1)** — the gate dogfoods itself on the session that built it. Closed clean after close_check went all-PASS; `wrapped_up` marker written as the final action (the step that was silently skipped the first time, now gated).

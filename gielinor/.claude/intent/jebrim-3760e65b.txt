@@ -1,0 +1,1 @@
+Full-year build steps 1–4 DONE + verified: gold repoint (2.875M ships) → chunked 26M-row matrix → maersk EU peak (€250k/yr) → re-priced 2026 baseline (€14.85M vs €14.27M invoice; do_nothing=0 PASS; leader renew_maersk+hermes €635k/yr). Step 5 (fuel band + report regen) = substantial prose conversion, recommend fresh session.

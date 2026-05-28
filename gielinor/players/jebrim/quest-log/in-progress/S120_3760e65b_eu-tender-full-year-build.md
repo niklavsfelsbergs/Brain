@@ -102,3 +102,17 @@ Fresh session per the handoff. Respawn: adopted the `__3760e65b` STEP 5 HANDOFF 
 - **cross_carrier_view left as the Q1 unit-cost reference** (its whole framing is Q1; reads the current legacy Q1 matrix; html already current) — converting to full-year is a separate build that changes its purpose; flagged to principal, not done.
 
 **Step 5 COMPLETE.** All report + doc changes UNCOMMITTED — held for principal go (commit scope in `inventory/eu-tender-full-year-build-resume__2ae1248b.md`). Quest S120 essentially complete pending commit; remaining full-year refinements (fuel sweep, seasonal layers, carrier round-2s) are tracked in NEXT.md, not blockers.
+
+**T5 — commit + push (principal "wrap it up" → "push it").**
+- Committed: tender 35b4ec9 (8 files, pathspec-scoped); brain 93743f3 (quest-log + inventory resume + comms). Posted CLOSING.
+- Push: brain → origin/main clean FF (16da44b..93743f3). Tender was **17 ahead / 39 behind** origin/main — plain push non-FF. Verified the 39 (dashboard cutover [[S073_006248ef_aws-report-swap-guide|S073]], shipping_costs_monitoring_nextjs) are **disjoint** from my 17 (EU-tender subtree) → zero conflict; and disjoint from the 43 unrelated uncommitted WIP files → autostash-safe.
+- First pushed tender HEAD to a feature branch (safety, dirty tree blocked rebase); principal asked for main directly → `git rebase --autostash origin/main` (17 replayed clean, 43 WIP restored intact) → `git push origin main` (3535229..07e65be). Deleted the now-redundant `eu-tender-full-year` branch. Both repos in sync with origin/main. **Did NOT touch the 43 unrelated WIP files; no force-push.**
+- **Correction logged:** I'd framed the divergence as "merge conflict risk" — verifying showed it was purely a non-fast-forward (history) issue, files fully disjoint, zero conflicts. Verify-before-asserting.
+
+**Step 5 + push CLOSED.** Tender S099→S120 (incl. Step 5) now on origin/main (07e65be). Quest S120 complete; full-year refinements tracked in NEXT.md.
+
+## Cascade
+EU-tender working repo (out-of-tree bi-analytics-main): report.py + 4 docs + decision_report.html + 2 maersk files → committed 35b4ec9, rebased + pushed to origin/main (07e65be).
+
+## Main-brain changes
+jebrim quest-log S120 (this file) + inventory resume `__2ae1248b` + comms OPEN/CLOSING/UPDATE → committed 93743f3, pushed origin/main; this close addendum committing now.

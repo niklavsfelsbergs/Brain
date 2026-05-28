@@ -1,7 +1,7 @@
 # RESUME — EU Tender 2026 full-year build (Option 1) — S120 cont. (2ae1248b)
 
-**Status:** Step 5 DONE. Full-year build (Option 1) computationally + presentation complete. All code/docs UNCOMMITTED (held for principal go).
-**Repo:** out-of-tree `bi-analytics-main/NFE/projects/2_EU_tender_2026/2_analysis`. Tender HEAD = `6991d37` (S120 steps 1-4).
+**Status:** Step 5 DONE + COMMITTED + PUSHED to origin/main. Full-year build (Option 1) complete; quest S120 closed.
+**Repo:** out-of-tree `bi-analytics-main/NFE/projects/2_EU_tender_2026/2_analysis`. **Tender now on origin/main @ `07e65be`** (S099→S120 line pushed — rebased onto the dashboard-cutover work, zero conflicts). Brain on origin/main @ `93743f3` (+ this close addendum).
 **Predecessor resume:** `inventory/eu-tender-full-year-build-resume__3760e65b.md` (steps 1-4, had the STEP 5 HANDOFF SPEC).
 
 ## Where we are
@@ -39,8 +39,9 @@ Tender (out-of-tree, `git commit -- <pathspec>`, local-only no push; ~80+ unrela
 Brain: jebrim quest-log S120 + this inventory + comms + intent.
 
 ## Next concrete step
-1. **Commit** the above (principal go). 
-2. Then per NEXT.md: fuel low/mid/high sweep (deferred), remaining seasonal layers (DHL Paket peak/peak-in-peak, Hermes Q4, DHL Express/Maersk-ROW demand), carrier round-2s (FedEx/DHL-Paket/Güll/UPS) to flip held sets from provisional.
+Committed + pushed to origin/main (tender 07e65be, brain 93743f3). Remaining full-year refinements per NEXT.md (not blockers): fuel low/mid/high sweep (deferred), remaining seasonal layers (DHL Paket peak/peak-in-peak, Hermes Q4, DHL Express/Maersk-ROW demand), carrier round-2s (FedEx/DHL-Paket/Güll/UPS) to flip held sets from provisional.
+
+**Push note:** tender was 17 ahead / 39 behind origin/main; the 39 (S073 dashboard cutover) are disjoint from the EU-tender subtree, so a `rebase --autostash origin/main` was conflict-free and the 43 unrelated WIP files restored intact. Pattern for next time the tender line needs pushing: rebase --autostash onto origin/main (disjoint subtrees → clean), push to main; never force, never bare `git add`.
 
 ## Carrier-blocked (full-year build does NOT depend on these)
 UPS (no offer); FedEx r2 (June ZOOM 2/9 Jun); DHL Paket r2 (Bulky €2.31M); Güll r1. HELD on old engines → provisional in matrix, flagged downstream.

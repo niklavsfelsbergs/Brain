@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Brains — Khaan × Gielinor comparative audit</title>
+<style>
+  :root{
+    --bg:#0d0f14; --panel:#151821; --panel-2:#1b1f2b; --ink:#e7e9ee; --muted:#9aa3b2;
+    --line:#2a2f3d; --gie:#d9a441; --gie-soft:#3a3115; --khaan:#6aa8ff; --khaan-soft:#16243f;
+    --good:#5fd49a; --warn:#e08a6a; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.62;
+    font-size:16px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px}
+
+  /* header */
+  header{padding:64px 0 36px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  header::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(900px 320px at 12% -10%,var(--gie-soft),transparent 60%),
+               radial-gradient(900px 320px at 88% -10%,var(--khaan-soft),transparent 60%);
+    opacity:.7;pointer-events:none}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 14px;position:relative}
+  h1{font-size:clamp(30px,5vw,48px);line-height:1.05;margin:0 0 16px;font-weight:740;
+    letter-spacing:-.02em;position:relative}
+  h1 .x{color:var(--muted);font-weight:400;padding:0 .15em}
+  h1 .gie{color:var(--gie)} h1 .khaan{color:var(--khaan)}
+  .sub{color:var(--muted);max-width:64ch;font-size:17px;position:relative;margin:0}
+  .meta{margin-top:22px;font-family:var(--mono);font-size:12.5px;color:var(--muted);
+    display:flex;gap:18px;flex-wrap:wrap;position:relative}
+  .meta b{color:var(--ink);font-weight:600}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:5;background:rgba(13,15,20,.86);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);margin-bottom:8px}
+  nav .wrap{display:flex;gap:6px;flex-wrap:wrap;padding-top:11px;padding-bottom:11px}
+  nav a{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-decoration:none;
+    padding:5px 11px;border:1px solid transparent;border-radius:7px}
+  nav a:hover{color:var(--ink);border-color:var(--line);background:var(--panel)}
+
+  section{padding:46px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:26px;margin:0 0 6px;letter-spacing:-.01em;font-weight:700}
+  .lead{color:var(--muted);margin:0 0 26px;max-width:74ch}
+  h3{font-size:16px;margin:26px 0 8px;font-weight:680}
+  p{margin:0 0 14px}
+  a.inline{color:var(--khaan)}
+  code{font-family:var(--mono);font-size:.88em;background:var(--panel-2);
+    padding:.1em .42em;border-radius:5px;color:#cdd6e6;border:1px solid var(--line)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;padding:3px 9px;border-radius:999px;vertical-align:middle}
+  .tag.gie{color:var(--gie);background:var(--gie-soft);border:1px solid #4d4220}
+  .tag.khaan{color:var(--khaan);background:var(--khaan-soft);border:1px solid #2a4670}
+
+  /* two-up identity cards */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:8px 0 4px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px 8px}
+  .card.gie{border-top:3px solid var(--gie)} .card.khaan{border-top:3px solid var(--khaan)}
+  .card h4{margin:0 0 2px;font-size:19px}
+  .card .who{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 14px}
+  .card ul{margin:0;padding:0 0 12px;list-style:none}
+  .card li{padding:7px 0 7px 22px;position:relative;border-top:1px solid var(--line);font-size:14.5px}
+  .card li:first-child{border-top:none}
+  .card.gie li::before{content:"◆";position:absolute;left:0;color:var(--gie);font-size:11px;top:9px}
+  .card.khaan li::before{content:"◆";position:absolute;left:0;color:var(--khaan);font-size:11px;top:9px}
+
+  /* similarity rows */
+  ol.sim{counter-reset:s;list-style:none;padding:0;margin:0}
+  ol.sim>li{counter-increment:s;position:relative;padding:16px 16px 16px 58px;margin:0 0 10px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px}
+  ol.sim>li::before{content:counter(s);position:absolute;left:16px;top:15px;width:28px;height:28px;
+    display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:700;
+    color:var(--ink);background:linear-gradient(140deg,var(--gie-soft),var(--khaan-soft));
+    border:1px solid var(--line);border-radius:8px}
+  ol.sim>li b{color:var(--ink)}
+  .map{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:5px}
+  .map .g{color:var(--gie)} .map .k{color:var(--khaan)}
+
+  .headline{background:linear-gradient(140deg,var(--gie-soft),var(--khaan-soft));
+    border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:22px}
+  .headline p{margin:0;font-size:15.5px}
+
+  /* learn lists */
+  .learn{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+  .learn li{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;
+    border-left:3px solid var(--accent)}
+  .learn.toGie li{--accent:var(--gie)} .learn.toKhaan li{--accent:var(--khaan)}
+  .learn h4{margin:0 0 6px;font-size:16.5px}
+  .learn p{margin:0;color:var(--muted);font-size:14.5px}
+  .learn p .em{color:var(--ink)}
+
+  /* closing */
+  .finale{background:var(--panel-2);border:1px solid var(--line);border-radius:16px;
+    padding:30px 28px;margin-top:8px}
+  .finale h2{margin-bottom:10px}
+  .finale .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+  .finale .col{padding:16px;border-radius:11px}
+  .finale .col.gie{background:var(--gie-soft);border:1px solid #4d4220}
+  .finale .col.khaan{background:var(--khaan-soft);border:1px solid #2a4670}
+  .finale .col h5{margin:0 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase}
+  .finale .col.gie h5{color:var(--gie)} .finale .col.khaan h5{color:var(--khaan)}
+  .finale .col p{margin:0;font-size:14px;color:var(--ink)}
+
+  footer{padding:34px 0 60px;color:var(--muted);font-family:var(--mono);font-size:12px}
+  footer p{margin:4px 0}
+
+  @media(max-width:720px){.duo,.finale .split{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">Dev-brain · comparative audit · 2026-05-28</p>
+    <h1><span class="khaan">Kha'an</span><span class="x">×</span><span class="gie">Gielinor</span></h1>
+    <p class="sub">Two personal Claude-Code brains, built independently, in different metaphors —
+      audited side by side. What converged, and what each can take from the other.</p>
+    <div class="meta">
+      <span><b>Subject:</b> github.com/JustsCE/Khaan</span>
+      <span><b>Baseline:</b> this brain (gielinor/)</span>
+      <span><b>Corpus:</b> ~1,900 files, brain-cycle #116</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#what">What Khaan is</a>
+  <a href="#similar">Convergence</a>
+  <a href="#to-gie">Gielinor ← Khaan</a>
+  <a href="#to-khaan">Khaan ← Gielinor</a>
+  <a href="#finale">The finding</a>
+</div></nav>
+
+<section id="what">
+  <div class="wrap">
+    <h2>What Khaan is</h2>
+    <p class="lead">Same raw materials as us — a markdown brain, Claude Code, subscription (no
+      API / no headless), hooks as the substrate. A fundamentally different philosophy on top.</p>
+
+    <div class="duo">
+      <div class="card khaan">
+        <h4>Kha'an</h4>
+        <p class="who">single autonomous entity · EC2 (goodhealth.lv) · builder: Justs Ceplis</p>
+        <ul>
+          <li><b>Neuroscience memory.</b> <code>cortex/</code> regions — amygdala (trust/emotion), broca (voice), episodic, identity, prefrontal (rules), procedural, semantic, fusiform (people). Consolidation levels <code>L1→L4</code>.</li>
+          <li><b>Hooks as <em>positive</em> enforcement.</b> Every turn blocks all tools except the one clearing the current gate: <code>recall → situational-identity → decision</code>, in order, before the agent may act.</li>
+          <li><b>Real retrieval.</b> <code>recall-engine</code> scores + reranks cortex against the prompt (inverted index, domain dictionary, bundles) into <code>active-recall.json</code> each turn.</li>
+          <li><b>Autonomous producer.</b> <code>autonomy-engine</code> walks dashboard tasks through skill chains; <code>learning-engine</code> runs a 10-phase consolidation cycle on a counter trigger.</li>
+          <li><b>Engineering rigor.</b> every skill ships <code>verification/check.py</code> + golden files; <code>create-skill</code> enforces a strict four-folder pattern.</li>
+        </ul>
+      </div>
+      <div class="card gie">
+        <h4>Gielinor</h4>
+        <p class="who">multi-actor cognitive system · local + cockpit · principal: Niklavs</p>
+        <ul>
+          <li><b>RuneScape memory.</b> per-player <code>bank/ · quest-log/ · examine/ · keepsake/</code> plus globals (<code>niksis8/ · lorebook/ · meta/</code>). Drafts → confirmed pipeline.</li>
+          <li><b>Hooks as <em>negative</em> enforcement.</b> block writes to <code>confirmed/</code>, block deletes, block sub-spawn, per-role write boundaries. The positive loop is ritual discipline.</li>
+          <li><b>Agentic search.</b> grep + an Obsidian-navigable wiki-link graph. Scored recall (GraphRAG, §N) designed but parked.</li>
+          <li><b>Human-in-the-loop.</b> the principal is the producer; rituals (respawn / alching / bankstanding) tend the brain. Scheduled autonomy (§C) deferred.</li>
+          <li><b>Observability-first.</b> the cockpit (PTY + board/console/feed) with a regression harness for that surface.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="similar">
+  <div class="wrap">
+    <h2>What's similar — the convergent design</h2>
+    <p class="lead">Two people built personal Claude-Code brains independently and landed on a
+      startling amount of the same scaffolding.</p>
+
+    <ol class="sim">
+      <li><b>File-based markdown brain over a subscription harness, hooks load-bearing.</b>
+        Both reject API / headless metering and drive everything through Claude Code hooks over
+        markdown + JSON on disk.</li>
+      <li><b>Layered memory with ID'd atomic entries.</b>
+        <div class="map"><span class="k">AM### / BR### / E### / ID### / PR### / R###</span> &nbsp;≈&nbsp; <span class="g">D-NNN / S-NNN / B-NNN</span> — prefix-stable IDs, descriptive filenames.</div></li>
+      <li><b>Raw observation → consolidated knowledge as a pipeline.</b>
+        <div class="map"><span class="k">L1 → L4 promotion</span> &nbsp;≈&nbsp; <span class="g">drafts/ → confirmed/</span> — "captured" separated from "canonical."</div></li>
+      <li><b>Identity composed and surfaced at boot.</b>
+        <div class="map"><span class="k">core-identity → boot-identity.md kernel</span> &nbsp;≈&nbsp; <span class="g">respawn.md + examine/ + keepsake/</span> — "who am I this session" is recomposed, not static.</div></li>
+      <li><b>A relationship-with-the-human layer.</b>
+        <div class="map"><span class="k">fusiform / identity "Who Is Justs" + amygdala trust</span> &nbsp;≈&nbsp; <span class="g">niksis8/ + niksis8_character/</span></div></li>
+      <li><b>A learned voice layer that decodes the human's shorthand.</b> Khaan's <code>broca</code>
+        ("scrap"/"sooo"/"sataisi"/"goodboi") ≈ our <code>persona.md</code> + the Niklavs voice profile.
+        Both even land the <em>same</em> anti-slop rule — Khaan: "do not append summary blocks, the diff is
+        visible"; us: "don't summarize what just happened, the principal can read the diff."</li>
+      <li><b>Archive discipline + git as the audit log.</b> Both keep an <code>archive/</code> mirror
+        and commit the brain to git as durable history.</li>
+      <li><b>Skills/rituals as procedural memory, and an observability surface.</b>
+        Their <code>dashboard/*.json</code> digests ≈ our cockpit. Both wanted to <em>watch</em> the brain run.</li>
+    </ol>
+
+    <div class="headline">
+      <p><b>The headline:</b> the <em>markdown-brain + Claude-Code-hooks + subscription + boot-time
+      identity + ID'd atomic memory + draft-to-canonical pipeline</em> pattern was arrived at twice,
+      independently. Strong signal it's the right shape.</p>
+    </div>
+  </div>
+</section>
+
+<section id="to-gie">
+  <div class="wrap">
+    <h2><span class="tag gie">Gielinor learns</span> &nbsp;What Gielinor can learn from Khaan</h2>
+    <p class="lead"><b>Our hooks only say "no." Theirs say "now do this."</b> Every guarantee we
+      enforce is <em>negative</em>; the positive loop (respawn properly, ground before advising, alch on
+      cadence, post an OPEN) is left to prompt-discipline — and our own audits keep finding it leaks.
+      Khaan gate-enforces its cognitive loop: you physically cannot call a tool until recall + identity +
+      decision have refreshed.</p>
+
+    <ul class="learn toGie">
+      <li>
+        <h4>Mechanical grounding gate</h4>
+        <p>Our memory literally carries <span class="em">"grounding before advice"</span> and
+          <span class="em">"check own memory before working repo"</span> as <em>repeated</em> feedback
+          misses. Khaan would make those non-skippable with a per-turn gate + escape clause. We could
+          gate "read <code>keepsake/current.md</code> before substantive player advice" the same way.</p>
+      </li>
+      <li>
+        <h4>A scored recall engine</h4>
+        <p>We keep parking GraphRAG (§N) behind §C. Khaan <span class="em">shipped</span> retrieval —
+          inverted index + domain dictionary + bundles, reranked every turn, deterministic (no LLM, no
+          billing). Our brain "is agentic search," but has no scored surface that pre-loads relevant
+          memory <em>before</em> the turn. Their <code>recall-engine</code> is a working blueprint.</p>
+      </li>
+      <li>
+        <h4>The autonomous producer we keep naming but not building</h4>
+        <p>Our D-027 inward/outward gap and the §C pilot <em>are</em> Khaan's <code>autonomy-engine</code>
+          + consolidation cycle: a scheduled loop that <span class="em">acts</span> on the queue instead
+          of waiting for the principal. They're at cycle #116; we're "all inbox, no producer." Their
+          <code>orchestration.yaml</code> (trigger → skill-chain) is a clean, copyable pattern.</p>
+      </li>
+      <li>
+        <h4>Golden-file verification per skill</h4>
+        <p>Every Khaan skill ships <code>verification/check.py</code> + <code>golden_run.md</code>. We
+          have <code>test_backend.py</code> for the cockpit and nothing for rituals/skills — yet
+          <span class="em">"verify enforcement fires"</span> is one of our hardest-won lessons. Bake a
+          golden harness into the skill template.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section id="to-khaan">
+  <div class="wrap">
+    <h2><span class="tag khaan">Khaan learns</span> &nbsp;What Khaan can learn from Gielinor</h2>
+    <p class="lead"><b>Their brain auto-rewrites its own identity with no human gate — and the identity
+      it's writing is mostly trust-collapse.</b> <code>learning-engine</code> auto-promotes
+      self-observations into cortex (including the <code>identity</code> region) on salience thresholds,
+      then recomposes the boot kernel from them. The current <code>boot-identity.md</code> is dominated by
+      fabrication charges and demotions to "USELESS." An ungated self-observation → identity loop can
+      entrench exactly that drift.</p>
+
+    <ul class="learn toKhaan">
+      <li>
+        <h4>HITL identity gating</h4>
+        <p>Our <code>confirmed/</code> is hook-enforced user-only; identity changes go
+          <span class="em">drafts → (principal approves) → confirmed</span>. Khaan would benefit from a
+          draft-gate on at least the <code>identity</code>/<code>amygdala</code> regions — let the cycle
+          <em>propose</em>, let the human <em>ratify</em>. (Their <code>create-skill</code> is gated this
+          way; the <em>memory</em> isn't.)</p>
+      </li>
+      <li>
+        <h4>A separate rationale layer (the "why")</h4>
+        <p>Khaan's <code>create-skill</code> explicitly <em>bans</em> rationale from SKILL.md — efficient
+          for the reading LLM, but then the <em>why</em> lives nowhere, and a future cycle can't tell a
+          load-bearing rule from an arbitrary one. Our <code>lorebook/</code> (D-NNN decisions, anchored
+          and linked) + the whole dev brain <em>are</em> that store, kept out of the operating path. Keep
+          the why — somewhere navigable.</p>
+      </li>
+      <li>
+        <h4>Multi-actor separation with bounded write surfaces</h4>
+        <p>Khaan is one monolithic self; <code>agents/jeff</code> and <code>agents/teacher</code> are
+          empty placeholders. For a builder "juggling eight threads," our model — domain-scoped players,
+          system actors, per-role write-boundary hooks, explicit delegation — contains blast radius and
+          keeps context clean. Their monolith piles work-context, identity, and emotional state together.</p>
+      </li>
+      <li>
+        <h4>The two-brain split</h4>
+        <p>We separate the cognitive system (<code>gielinor/</code>) from its construction log
+          (<code>developer-braindead/</code>). Khaan builds itself <em>inside</em> itself. Splitting them
+          keeps the operating brain uncluttered and gives the build its own discipline.</p>
+      </li>
+      <li>
+        <h4>Never-delete as architecture</h4>
+        <p>We hook-block deletes and mirror to <code>archive/</code>. Khaan's consolidation actually
+          <em>loses</em> memory — the hippocampus queue caps at 50 and drops the lowest-salience entry;
+          the hygiene phase decays high-miss entries. Unrecoverable. A salience-0 memory today can be the
+          load-bearing anchor next month.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section id="finale">
+  <div class="wrap">
+    <div class="finale">
+      <h2>The finding — complementary halves</h2>
+      <p>Each brain has <b>built</b> the thing the other only <b>talks about</b>.</p>
+      <div class="split">
+        <div class="col khaan">
+          <h5>Khaan shipped</h5>
+          <p>The autonomous producer + scored retrieval engine that gielinor keeps deferring (§C / §N).</p>
+        </div>
+        <div class="col gie">
+          <h5>Gielinor shipped</h5>
+          <p>The human-gated identity discipline + rationale layer + multi-actor isolation that Khaan's
+            monolith lacks.</p>
+        </div>
+      </div>
+      <p style="margin-top:18px;margin-bottom:0;color:var(--muted)">Put bluntly: Khaan is a running
+        cognitive loop in search of a brake; gielinor is a well-governed brain in search of an engine.
+        The two are almost the same system viewed from opposite ends.</p>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <p>developer-braindead/bank/research/2026-05-28-khaan-comparative-audit.html</p>
+  <p>Authored by Braindead (dev-brain). Read-only audit of a cloned external repo; no gielinor writes.</p>
+</div></footer>
+
+</body>
+</html>

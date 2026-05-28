@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khaan → Gielinor — implementable learnings</title>
+<style>
+  :root{
+    --bg:#0d0f14; --panel:#151821; --panel-2:#1b1f2b; --ink:#e7e9ee; --muted:#9aa3b2;
+    --line:#2a2f3d; --gie:#d9a441; --gie-soft:#3a3115; --khaan:#6aa8ff; --khaan-soft:#16243f;
+    --good:#5fd49a; --warn:#e0a96a; --danger:#e0746a; --violet:#b58cff;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;
+    font-size:15.5px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 24px}
+
+  header{padding:60px 0 32px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  header::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(820px 300px at 85% -10%,var(--khaan-soft),transparent 60%),
+               radial-gradient(820px 300px at 10% -20%,var(--gie-soft),transparent 60%);
+    opacity:.7;pointer-events:none}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 14px;position:relative}
+  h1{font-size:clamp(28px,4.6vw,44px);line-height:1.07;margin:0 0 16px;font-weight:740;
+    letter-spacing:-.02em;position:relative}
+  h1 .khaan{color:var(--khaan)} h1 .gie{color:var(--gie)} h1 .arr{color:var(--muted);font-weight:400}
+  .sub{color:var(--muted);max-width:74ch;font-size:16.5px;position:relative;margin:0}
+  .meta{margin-top:20px;font-family:var(--mono);font-size:12px;color:var(--muted);
+    display:flex;gap:18px;flex-wrap:wrap;position:relative}
+  .meta b{color:var(--ink);font-weight:600}
+
+  nav{position:sticky;top:0;z-index:5;background:rgba(13,15,20,.88);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;gap:6px;flex-wrap:wrap;padding:11px 24px}
+  nav a{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-decoration:none;
+    padding:5px 11px;border:1px solid transparent;border-radius:7px}
+  nav a:hover{color:var(--ink);border-color:var(--line);background:var(--panel)}
+
+  section{padding:42px 0;border-bottom:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  h2{font-size:25px;margin:0;letter-spacing:-.01em;font-weight:720}
+  .sec-tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    padding:4px 10px;border-radius:999px}
+  .sec-tag.hitl{color:var(--gie);background:var(--gie-soft);border:1px solid #4d4220}
+  .sec-tag.auto{color:var(--khaan);background:var(--khaan-soft);border:1px solid #2a4670}
+  .lead{color:var(--muted);margin:14px 0 26px;max-width:80ch}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel-2);
+    padding:.1em .42em;border-radius:5px;color:#cdd6e6;border:1px solid var(--line)}
+  a.inline{color:var(--khaan)}
+
+  /* legend */
+  .legend{display:flex;gap:20px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:16px 20px;margin:6px 0 4px;font-size:13.5px}
+  .legend div{display:flex;align-items:center;gap:8px}
+  .chip{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.05em;
+    padding:3px 8px;border-radius:6px;text-transform:uppercase;white-space:nowrap}
+  .p-high{color:#0d0f14;background:var(--good)} .p-med{color:#0d0f14;background:var(--warn)}
+  .p-low{color:var(--ink);background:#39404f}
+  .e-low{color:var(--good);border:1px solid #2f5b46;background:#13241c}
+  .e-med{color:var(--warn);border:1px solid #5b4a2f;background:#241e13}
+  .e-high{color:var(--danger);border:1px solid #5b332f;background:#241513}
+
+  /* item card */
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:0;margin:0 0 16px;overflow:hidden}
+  .item.hitl{border-left:3px solid var(--gie)} .item.auto{border-left:3px solid var(--khaan)}
+  .item-head{display:flex;align-items:flex-start;gap:14px;padding:18px 20px 14px}
+  .num{flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;
+    font-family:var(--mono);font-size:13px;font-weight:700;margin-top:1px}
+  .item.hitl .num{color:var(--gie);background:var(--gie-soft);border:1px solid #4d4220}
+  .item.auto .num{color:var(--khaan);background:var(--khaan-soft);border:1px solid #2a4670}
+  .item-title{flex:1;min-width:0}
+  .item-title h3{margin:0 0 7px;font-size:18px;letter-spacing:-.01em}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .item-body{padding:0 20px 18px 64px}
+  .row{margin:0 0 11px}
+  .row .k{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);display:block;margin-bottom:3px}
+  .row .v{margin:0}
+  .row.why .v{color:var(--ink)}
+  .row.how{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+  .row.how .v{color:#cfd6e3;font-size:14.5px}
+  .row.caveat{border-left:2px solid var(--danger);padding-left:11px}
+  .row.caveat .k{color:var(--danger)}
+  .row.benefit{border-left:2px solid var(--good);padding-left:11px}
+  .row.benefit .k{color:var(--good)}
+
+  /* matrix */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);font-weight:600}
+  td.t{font-weight:600;color:var(--ink)}
+  .seq{counter-reset:q;list-style:none;padding:0;margin:18px 0 0}
+  .seq li{counter-increment:q;position:relative;padding:12px 0 12px 44px;border-top:1px solid var(--line)}
+  .seq li::before{content:counter(q);position:absolute;left:6px;top:11px;width:26px;height:26px;
+    display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);
+    background:linear-gradient(140deg,var(--gie-soft),var(--khaan-soft));border:1px solid var(--line);border-radius:7px}
+  .seq b{color:var(--ink)}
+
+  .note{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:0 0 6px}
+  .note.warn{border-left:3px solid var(--danger)}
+  footer{padding:30px 0 60px;color:var(--muted);font-family:var(--mono);font-size:12px}
+  footer p{margin:4px 0}
+  @media(max-width:720px){.item-body{padding-left:20px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">Dev-brain · implementation catalogue · 2026-05-28</p>
+    <h1><span class="khaan">Khaan</span> <span class="arr">→</span> <span class="gie">Gielinor</span><br>everything worth stealing</h1>
+    <p class="sub">A complete, honestly-prioritised list of patterns from the Kha'an brain that would
+      improve ours. Human-in-the-loop items first — that's your daily mode. Autonomous behaviour in its
+      own section, gated behind it. Every item: what it is, why it's worth it <em>for us specifically</em>,
+      how it would look in gielinor, the benefit, and the catch.</p>
+    <div class="meta">
+      <span><b>Source:</b> github.com/JustsCE/Khaan</span>
+      <span><b>Items:</b> 12 HITL · 8 autonomous</span>
+      <span><b>Verdict basis:</b> the comparative audit (same folder)</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#how">How to read</a>
+  <a href="#hitl">Human-in-the-loop</a>
+  <a href="#auto">Autonomous</a>
+  <a href="#matrix">Priority matrix</a>
+  <a href="#sequence">Recommended sequence</a>
+</div></nav>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head"><h2>How to read this</h2></div>
+    <p class="lead">Each item carries a <b>priority</b> (value to us) and an <b>effort</b> (build cost).
+      "Why for us" is tied to a real, documented pain in our own brain — a recurring discipline leak, a
+      parked plan section, or a hard-won lesson — not a generic best-practice. Nothing here is committed;
+      this is a menu.</p>
+    <div class="legend">
+      <div><span class="chip p-high">High</span> strong value</div>
+      <div><span class="chip p-med">Med</span> worth doing</div>
+      <div><span class="chip p-low">Low</span> nice-to-have</div>
+      <div><span class="chip e-low">Effort·Low</span> hours</div>
+      <div><span class="chip e-med">Effort·Med</span> a session</div>
+      <div><span class="chip e-high">Effort·High</span> multi-session</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── HITL ─────────────────────────── -->
+<section id="hitl">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag hitl">Section 1</span>
+      <h2>Human-in-the-loop — improvements to daily collaborative work</h2>
+    </div>
+    <p class="lead">These make the brain more reliable, better-grounded, and harder to derail <em>while
+      you're driving it</em>. None of them remove you from the loop — most of them make the loop tighter.
+      This is where the highest-value, lowest-regret wins are.</p>
+
+    <!-- 1 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">1</div>
+        <div class="item-title">
+          <h3>Positive enforcement gates (hooks that say "now do this")</h3>
+          <div class="chips"><span class="chip p-high">High</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">Every turn, <code>hook.py</code> arms gate binaries and <code>rule_engine.py</code> <em>blocks every tool</em> except the one that clears the current gate — forcing <code>recall → identity → decision</code> before the agent can act. The loop is mechanically non-skippable.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">Our hooks are <em>negative-only</em> (block <code>confirmed/</code> writes, block deletes). Every <em>positive</em> obligation — post an OPEN on entry, ground before advising, write the per-turn quest-log — is left to prompt-discipline, and our own audits keep catching it leaking ("did not post an OPEN" was the top recurring leak for ~70% of sessions; "grounding before advice" and "check own memory before working repo" are repeat feedback misses). A doctrine that needs willpower every session is a doctrine that drifts.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A <code>PreToolUse</code> gate hook that, on a fresh dev/player entry, blocks edits until an OPEN exists in <code>comms/active.md</code> for this <code>sid8</code>; and in player mode, blocks substantive output until <code>keepsake/current.md</code> has been read this session. Escape-clause pattern lifted straight from <code>rule_engine.ESCAPE_BY_BIN</code>. Pair it with Khaan's <b>anti-lockout safety</b> (auto-clear a stuck gate after 60s / next prompt) so a failed check never bricks a session.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">The leaks we keep re-documenting stop happening, structurally — not because we remembered, because we couldn't proceed without it.</p></div>
+        <div class="row caveat"><span class="k">Catch</span><p class="v">Gates are intrusive; over-gating turns the brain into a permission-prompt machine (one of Khaan's own logged frustration triggers). Gate only the 2–3 obligations that actually leak, not everything.</p></div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">2</div>
+        <div class="item-title">
+          <h3>Locked failure receipts — no silent fallback</h3>
+          <div class="chips"><span class="chip p-high">High</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">Every skill has exactly one byte-locked failure banner — <code>## KERNEL DEAD — I AM BLIND THIS SESSION</code>, <code>## RECALL DEAD</code>, <code>## DECISION DEAD</code>. On any error the skill emits the banner and stops; it <em>never</em> silently uses a stale artifact. The wording lives in one <code>_alert.py</code> constant.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">Two of our hardest lessons are "verify enforcement fires" and "a documented tradeoff isn't acceptance." Today, if a respawn step can't read a file, or alching can't promote a draft, we tend to narrate it softly and carry on. A loud, canonical "this failed, I am operating blind" banner is the difference between a caught failure and a silent-wrong-answer.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A small convention + helper: each ritual (respawn, alching, drafts-triage, born-link lint) defines one locked banner string. On any step failure the agent prints it verbatim and halts that ritual rather than proceeding. Cheap — it's doctrine plus a shared constants file.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Failures become visible to you at the moment they happen, in a consistent shape you learn to recognise. No more "it seemed to work."</p></div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">3</div>
+        <div class="item-title">
+          <h3>A scored recall surface, pre-loaded per turn</h3>
+          <div class="chips"><span class="chip p-med">Med-High</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v"><code>recall-engine</code> scores + reranks cortex entries against the prompt (lexical overlap + domain dictionary + entry "bundles" + recency + entity-ID co-reference), drops below a floor, and writes the qualified set to <code>active-recall.json</code> — deterministic, no LLM, no billing. Refreshed every turn.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">We keep parking GraphRAG (<code>plan.md §N</code>) behind §C. Our retrieval today is grep + an Obsidian graph — reactive, and only as good as the agent remembering to search. The "check own memory before working repo" miss is exactly a recall failure. Khaan's design is a deterministic, billing-free version of the thing we deferred.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A <code>recall</code> skill that, given the prompt, scores the active player's <code>bank/notes</code> + <code>examine/confirmed</code> + <code>keepsake</code> (we already have the Obsidian link graph for the entity/co-reference bonus, and the born-link work means anchors resolve) and writes a ranked shortlist into <code>inventory/&lt;quest&gt;-recall__&lt;sid8&gt;.md</code> or injects it via <code>UserPromptSubmit</code> additionalContext. Lighter than full §N — start lexical + graph-adjacency, no embeddings.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Relevant prior knowledge is on the table <em>before</em> you have to ask "did you check X?" — grounding becomes default, not a correction.</p></div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">4</div>
+        <div class="item-title">
+          <h3>The 5-lens decision scaffold</h3>
+          <div class="chips"><span class="chip p-med">Med</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v"><code>decision-engine</code> generates five reads of every ambiguous ask before acting — <b>Literal</b>, <b>Identity-shaped</b> (what the user usually means), <b>Recall-shaped</b> (what memory says they're asking), <b>Contrarian</b> (what if the obvious read is wrong), <b>Minimal-action</b> (smallest thing that satisfies) — each with parse / intent / approach / action.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">This is a structured upgrade to our Understanding/Plan preamble, and it directly serves three of our existing checks: the <em>wrong-instance</em> check (Contrarian lens), <em>anchor-referent-before-analysing</em> (Recall lens), and our anti-over-build lessons "don't over-formalise a reachable capability" / "documented tradeoff isn't acceptance" (the Minimal-action lens is a built-in brake on gold-plating).</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">Not a per-turn engine — too heavy for our HITL register. Adopt it as a <em>doctrine in <code>communication-protocol.md</code></em>: on a genuinely ambiguous or high-blast-radius ask, run the five lenses internally and let them shape the Plan line (and the multiple-choice options when you offer them). The Contrarian + Minimal-action lenses become the standing guard against the over-building we keep flagging.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Fewer confidently-wrong starts; the cheap restatement catches more misreads before the expensive implementation.</p></div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">5</div>
+        <div class="item-title">
+          <h3>Golden-file verification for rituals &amp; skills</h3>
+          <div class="chips"><span class="chip p-med">Med-High</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">Every skill ships a <code>verification/check.py</code> + golden fixtures. Checks are concrete: phase registry has exactly 10 entries in order, a hash guards against registry mutation, receipt printers round-trip against golden output, the SKILL.md contains its locked banner verbatim. <code>create-skill</code> won't bless a skill that fails its check.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">"Verify enforcement fires" is one of our most expensive lessons — we shipped "architectural guarantees" that were inert until a live test proved them. Today only the cockpit has a regression harness (<code>test_backend.py</code>); our rituals, hooks, and the born-link linter have none. A golden-file check is how you stop a refactor from silently breaking a guarantee.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A <code>verification/</code> folder per ritual with golden fixtures: the respawn load-order, the drafts-triage verdict-execution table, the born-link linter's wrap/block decisions, each write-boundary hook fired against synthetic payloads (we already do this ad hoc in audits — formalise it). One <code>check.py</code> per, runnable as the pre-commit gate alongside <code>py_compile</code> / <code>node --check</code>.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">The "is the guarantee actually enforced?" question gets answered by a command, not a manual audit every few weeks.</p></div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">6</div>
+        <div class="item-title">
+          <h3>Freshness primitive — context-hash stamping</h3>
+          <div class="chips"><span class="chip p-med">Med</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">Every active artifact (<code>active-recall</code>, <code>active-identity</code>, <code>active-decision</code>) is stamped with <code>context_hash = sha256(prompt)[:16]</code>. A consumer that derives a different hash from the current context <em>rejects the file as stale</em> rather than acting on yesterday's answer.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">We run parallel sessions and carry resume/inventory state across turns and sessions — and we've already had to suffix files with <code>sid8</code> to stop parallel-session clobber (D-024). A staleness stamp is the next layer: it catches the case where the <em>content</em> is for a different context, not just a different session.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">Add a <code>context_hash</code> / <code>ts</code> header to <code>inventory/*-resume__&lt;sid8&gt;.md</code> recall and resume files. On respawn / reconciliation, if the stamp doesn't match the current quest context, surface it as "this resume state is for a different task" instead of silently resuming.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">No more resuming into stale working state after context shifts — the crash-recovery story gets a correctness check.</p></div>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">7</div>
+        <div class="item-title">
+          <h3>The "Charges" surface — what the agent is carrying right now</h3>
+          <div class="chips"><span class="chip p-med">Med</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">The boot kernel composes three sections: <b>Identity</b> (stable traits), <b>Voice</b> (how it speaks), and <b>Charges</b> — "what it feels right now, active concerns, what it is watching for, what it is carrying." Charges is the live attention layer, recomposed each boot from scored recent entries.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">We have <code>keepsake/current.md</code> (load-bearing pins) and <code>examine/</code> (stable self-model), but nothing that captures "what is this player actively watching for / worried about this week." It's the difference between a CV and a state-of-mind. Our deadlines and live commitments live in keepsake but aren't framed as <em>attention</em>.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A per-player "charges" block — either a section of the respawn surface or a scored compose over recent <code>quest-log</code> + <code>keepsake</code>, written into the boot read. Distinct from pins: pins are facts to surface; charges are the open loops and watch-items. Could be auto-composed at respawn and human-trimmed.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Each session opens knowing not just who the player is, but what they're mid-worry about — sharper continuity across days.</p></div>
+        <div class="row caveat"><span class="k">Catch</span><p class="v">Khaan's Charges are dominated by trust-collapse and fabrication guilt — a warning that an auto-composed attention layer amplifies whatever's salient. Keep it human-trimmed.</p></div>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">8</div>
+        <div class="item-title">
+          <h3>The prioritised digest</h3>
+          <div class="chips"><span class="chip p-med">Med</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v"><code>latest-digest.json</code>: a ranked roll-up — <code>"5 items: 2 urgent, 2 medium, 1 low"</code> — each with <code>from / preview / action / priority / timestamp</code>. A single glanceable "here's what needs you" surface across channels.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">Our pending state is scattered: drafts per layer, <code>players/inbox/</code>, <code>comms/active.md</code> tails, overdue-alching flags. There's no single "what needs your attention" view — the closest is what respawn happens to surface. The "lead with the send-ready surface" lesson generalises: lead the <em>session</em> with the attention-ranked surface.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A respawn-time (or <code>/digest</code>) roll-up: count pending drafts by layer + age, overdue alching/bankstanding, open in-progress quests with unresolved <code>pending</code> actions, live comms hand-offs addressed to you — ranked, one screen. Read-only; you act on it.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Session opens with a triage view instead of you reconstructing "what was I in the middle of" from scattered files.</p></div>
+      </div>
+    </div>
+
+    <!-- 9 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">9</div>
+        <div class="item-title">
+          <h3>Skill scaffolder + SKILL.md doc discipline</h3>
+          <div class="chips"><span class="chip p-med">Med</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v"><code>create-skill</code> enforces a four-folder layout (<code>SKILL.md / scripts / verification / logs</code>) and a strict SKILL.md spec: present-tense only, no TODOs, atomic single-line gotchas, locked failure receipts, <code>ref &lt;name&gt;</code> cross-references. A scaffolder generates it and runs the check.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">Our <code>spellbook/skills</code> are freeform markdown of varying shape. A consistent skeleton + a check makes them legible to a reading agent and prevents the doc-drifts-from-code rot Khaan's rules exist to stop.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">Adopt the <em>structure</em> and the discipline, not the dogma. Borrow: present-tense, atomic gotchas, one locked failure banner, <code>ref</code>-style cross-links. <b>Reject</b> their "no biographical clutter / no why-this-exists" rule — that fights our lorebook ethos (see catch).</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Skills become uniform and self-validating; new ones are cheaper to author and trust.</p></div>
+        <div class="row caveat"><span class="k">Catch</span><p class="v">Khaan <em>bans the why</em> from skill docs for token reasons — and then the rationale lives nowhere. We deliberately keep the why (lorebook D-NNN, dev brain). Take their format; keep our memory of motive.</p></div>
+      </div>
+    </div>
+
+    <!-- 10 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">10</div>
+        <div class="item-title">
+          <h3>Per-context voice refresh (situational-identity)</h3>
+          <div class="chips"><span class="chip p-low">Low</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v"><code>situational-identity</code> composes one paragraph per turn — "what voice / mood / concerns do I bring to <em>this</em> context" — grounded in scored entries, written to <code>active-identity.json</code>.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">Our player voices are static <code>persona.md</code> cards. They're strong already (Jebrim terse-dense, Zezima reflective), so the value is marginal — but voice consistency across a long session occasionally slips, and a per-context anchor would hold it.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">Optional and light: a recall pass that, for the active player, surfaces the persona's most context-relevant register notes into the turn. Most useful for the intent-line voice cards. Low priority — our static cards mostly suffice.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Tighter in-character consistency on long or topic-shifting sessions.</p></div>
+      </div>
+    </div>
+
+    <!-- 11 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">11</div>
+        <div class="item-title">
+          <h3>Structured per-invocation logs</h3>
+          <div class="chips"><span class="chip p-low">Low</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">Every skill writes one JSONL file per invocation (<code>invocation_start … invocation_end</code>, shared <code>invocation_id</code>) — "record what happened, not what it cost; cost is derived later."</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">Rituals leave a quest-log <em>narrative</em> but no machine-readable trace. We can't currently answer "how often does alching reject vs promote" or "which hooks fire most" without grepping prose.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A lightweight ritual-event JSONL (the cockpit already emits events — extend that stream to rituals). Lets the cockpit/feed show ritual analytics over time.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Quantified visibility into how the rituals actually behave, feeding future tuning.</p></div>
+      </div>
+    </div>
+
+    <!-- 12 -->
+    <div class="item hitl">
+      <div class="item-head">
+        <div class="num">12</div>
+        <div class="item-title">
+          <h3>Engineering hygiene rules (atomic write · ship-dormant · minimal surface)</h3>
+          <div class="chips"><span class="chip p-low">Low</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">Three codified invariants: atomic-write everything (<code>tempfile + os.replace</code>) — <em>except never on a symlinked path</em>; "ship dormant" (a new skill never self-wires crons/auto-invocation — the human promotes it); "minimal surface area" (no speculative <code>--dry-run/--force</code> flags, add reactively).</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">"Ship dormant" is <em>literally our HITL ethos</em> stated as an engineering rule — strong external validation that our instinct is right, and worth writing down. Atomic-write protects our JSON state files (cockpit, intent sidecars) from torn writes. The symlink caveat is a live trap if we ever symlink the brain onto a host (the ascension/VPS phase).</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A short "build hygiene" note in <code>bank/build-lessons.md</code>: atomic-write for all state JSON; never auto-wire a capability the principal hasn't promoted; don't add flags speculatively. Mostly codifying what we already do.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Fewer torn-file bugs; the HITL principle gets a crisp, citable statement for the autonomy phase.</p></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─────────────────────────── AUTONOMOUS ─────────────────────────── -->
+<section id="auto">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag auto">Section 2</span>
+      <h2>Autonomous behaviour — the engine we keep deferring</h2>
+    </div>
+    <p class="lead">This is the half Khaan actually shipped and we keep parking (<code>plan.md §C</code>, the
+      D-027 inward/outward gap). Per your steer, scheduled autonomy is a <em>much-later</em> phase — so
+      read this as the blueprint for when you get there, not a to-do. The ordering matters: items B and C
+      are the bridge <em>from</em> your HITL inbox <em>to</em> a producer; A is the producer; E is the
+      riskiest and most optional.</p>
+
+    <!-- A -->
+    <div class="item auto">
+      <div class="item-head">
+        <div class="num">A</div>
+        <div class="item-title">
+          <h3>The autonomy-engine — a workflow controller</h3>
+          <div class="chips"><span class="chip p-high">High (for §C)</span><span class="chip e-high">Effort·High</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v"><code>orchestration.yaml</code> declares workflows as trigger → ordered skill-chain → tail-call. Each iteration picks the top matching task and walks <code>recall → identity → decision → research → execute</code>. Adding a workflow = adding a YAML key.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">This is the concrete shape of our §C "scheduled producer in front of the drafts→confirmed inbox." We've described it abstractly for ~30 sessions; Khaan's <code>orchestration.yaml</code> is a copyable, minimal implementation that proves it's a small declarative file, not a framework.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A workflow file driving the §C Jebrim shipping-mart pilot: trigger (scheduled / task on the panel) → recall → the read-only SQL checks → write findings to a file (Slack draft only once trusted). Fires an <em>interactive PTY</em> session (subscription-safe), not <code>claude -p</code> — the billing constraint from your hosting question.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">The brain gains "hands" — it produces without you initiating every action. Closes the inward/outward gap.</p></div>
+        <div class="row caveat"><span class="k">Catch</span><p class="v">Outputs must land HITL-gated (file/draft, not auto-send) until trusted. This is the engine; keep our brakes on it.</p></div>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="item auto">
+      <div class="item-head">
+        <div class="num">B</div>
+        <div class="item-title">
+          <h3>A task panel — the queue a producer pulls from</h3>
+          <div class="chips"><span class="chip p-high">High (prereq)</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">The "BRAIN panel" — tasks tagged <code>EXECUTE</code> (finite action) or <code>PROJECT</code> (ongoing) that the agent is responsible for. The autonomy loop pulls "the top task" from here. Untagged tasks exist but never reach the panel.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">A producer needs a queue. We have drafts and <code>players/inbox/</code>, but no explicit "tasks the brain owns and will act on" surface. This is the missing piece between our HITL inbox and any autonomous loop — and it's useful <em>even before</em> autonomy, as a shared backlog you and the brain both see (the cockpit already has the surface to render it).</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A per-player task queue (<code>inventory/tasks.json</code> or a cockpit panel) with EXECUTE/PROJECT tags. Populated by you (HITL) now; pulled by the autonomy-engine later. Bridges cleanly to our existing harness task lists.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">One authoritative backlog of what the brain should do next — valuable as a planning surface immediately, load-bearing for autonomy later.</p></div>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="item auto">
+      <div class="item-head">
+        <div class="num">C</div>
+        <div class="item-title">
+          <h3>schedule-task — turn transcripts into tasks</h3>
+          <div class="chips"><span class="chip p-med">Med-High</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">Reads inbox folders of channel transcripts (Slack, Gmail, WhatsApp, Fireflies), decides per item "new task vs follow-up on existing," and POSTs/PATCHes the task panel. Cursor-based: a per-source <code>last_processed_ts</code> means re-runs never re-scan; errored files don't advance the cursor (auto-retry next run).</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">This is the <em>front</em> of the §C pilot and it leans on infrastructure you already have — the Slack MCP is live, posting in your voice is a known pattern. Auto-converting incoming messages into a reviewable task backlog is a high-leverage HITL-adjacent feature even before full autonomy.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A skill that reads Slack/Gmail via MCP, dedupes against the task panel (item B), and proposes new/updated tasks for <em>your</em> review. The cursor pattern (advance only on success) is the robustness trick worth copying verbatim.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Incoming work stops living in your head / scattered DMs and lands as a triaged backlog.</p></div>
+      </div>
+    </div>
+
+    <!-- D -->
+    <div class="item auto">
+      <div class="item-head">
+        <div class="num">D</div>
+        <div class="item-title">
+          <h3>A comms envelope protocol (machine-actionable coordination)</h3>
+          <div class="chips"><span class="chip p-med">Med</span><span class="chip e-med">Effort·Med</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v"><code>read-coms</code> filters one channel by a structured <code>[COMS:v1 {…}]</code> envelope: <code>to</code> array, <code>requires_response</code>, <code>waiting_on</code>, <code>status</code>, and a <code>max_turns</code> runaway guard that drops threads that loop too long.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">Our <code>comms/active.md</code> is freeform append-only prose — great for humans, opaque to machines. An envelope (who it's for, does it need a response, who's blocked on whom) would make inter-session coordination queryable, and is the prerequisite for sessions that <em>act</em> on each other's hand-offs rather than just reading them. The <code>max_turns</code> guard is a cheap safety against runaway agent-to-agent loops.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">Add an optional structured header to <code>comms/active.md</code> entries (<code>to / requires_response / waiting_on</code>) alongside the prose, or a parallel <code>comms/envelopes.jsonl</code>. Keeps human readability; gains machine-actionability. Adopt <code>max_turns</code> before any session-to-session automation.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Parallel sessions (and eventually autonomous ones) can coordinate on structured signals, not prose-scraping.</p></div>
+      </div>
+    </div>
+
+    <!-- E -->
+    <div class="item auto">
+      <div class="item-head">
+        <div class="num">E</div>
+        <div class="item-title">
+          <h3>The consolidation cycle (auto drafts → bank)</h3>
+          <div class="chips"><span class="chip p-med">Med</span><span class="chip e-high">Effort·High</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v"><code>learning-engine</code>: a 10-phase cycle — ingest turns → hippocampus queue → consolidate (overlap ≥0.5 reinforces, &lt;0.25 promotes if salient) → synthesis (cluster &amp; promote at strength ≥5) → domain/bundle update → eval (miss-rate every 30) → hygiene (decay) → <b>index rebuild last</b> → commit. Fully automatic.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">This is automated alching — the drafts→confirmed promotion we do entirely by hand. The <em>mechanisms</em> are genuinely worth learning: overlap-based dedupe (catches our "is this a duplicate draft" problem), salience scoring, miss-rate eval to find dead memory, and "rebuild the index last so retrieval sees this cycle's writes."</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">A <em>proposal-only</em> consolidation pass: cluster/dedupe pending drafts, compute overlap against existing <code>bank/notes</code>, and <em>rank them for your alching review</em> — automate the analysis, never the promotion. Steal the overlap math and the index-rebuild-last ordering; leave the auto-promote out.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Alching gets faster and sharper — duplicates and contradictions surfaced for you instead of found by hand.</p></div>
+        <div class="row caveat"><span class="k">Catch — the big one</span><p class="v">Khaan auto-promotes into the <em>identity</em> region and <em>loses</em> low-salience/high-miss memory (hippocampus cap, hygiene decay). That's exactly the loop the audit flagged as its core fragility. Keep the human gate on promotion and keep never-delete. Automate the <em>proposal</em>, never the <em>commit</em>.</p></div>
+      </div>
+    </div>
+
+    <!-- F -->
+    <div class="item auto">
+      <div class="item-head">
+        <div class="num">F</div>
+        <div class="item-title">
+          <h3>The accumulation gate (consolidation nudge)</h3>
+          <div class="chips"><span class="chip p-low">Low-Med</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">When <code>messages_since_last_cycle ≥ 10</code> (or the queue hits 40), a gate blocks <em>everything</em> until a consolidation cycle runs. The brain can't keep accruing unprocessed observations indefinitely.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">We already surface "alching overdue" as a soft recommendation — but it's ignorable, and drafts pile up. A threshold nudge ("N pending drafts, bank grew by M since last alch") with more teeth would keep the knowledge layer from silting up.</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">Keep it a <em>recommendation</em>, not a hard block (HITL ethos) — but make it louder and quantified at respawn, and optionally a one-line gate-style prompt when the count is egregious. We have the threshold logic already; this just sharpens it.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">The drafts backlog stops silently growing past the point where alching is a slog.</p></div>
+        <div class="row caveat"><span class="k">Catch</span><p class="v">A hard block fights HITL — Khaan can afford it because it's autonomous. For us, loud-nudge, not lock.</p></div>
+      </div>
+    </div>
+
+    <!-- G -->
+    <div class="item auto">
+      <div class="item-head">
+        <div class="num">G</div>
+        <div class="item-title">
+          <h3>Phase-registry mutation guard</h3>
+          <div class="chips"><span class="chip p-low">Low</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">The cycle's phase list is hashed; <code>check.py</code> fails if the hash drifts, and an assertion enforces phases run in declared order. You can't silently reorder or drop a pipeline step.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">Any ordered pipeline we build (a consolidation pass, the respawn load-order, the §C workflow chain) is vulnerable to silent reordering. This is a cheap, general guard — and it pairs with item 5 (golden verification).</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">Where order is load-bearing (respawn steps, workflow chains), encode the sequence as data + a hash check in that ritual's <code>verification/check.py</code>.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Order-dependent rituals can't be quietly broken by a refactor.</p></div>
+      </div>
+    </div>
+
+    <!-- H -->
+    <div class="item auto">
+      <div class="item-head">
+        <div class="num">H</div>
+        <div class="item-title">
+          <h3>Anti-lockout safety net (mandatory if we adopt gates)</h3>
+          <div class="chips"><span class="chip p-high">High (paired)</span><span class="chip e-low">Effort·Low</span></div>
+        </div>
+      </div>
+      <div class="item-body">
+        <div class="row"><span class="k">In Khaan</span><p class="v">Gate binaries auto-clear if stuck &gt;60s, and every gate clears on the next prompt. A skill hard-killed mid-run can't lock the agent out forever — there's always an escape.</p></div>
+        <div class="row why"><span class="k">Why for us</span><p class="v">This isn't optional if we build item 1 (positive gates). A gate without an escape is a footgun — a failed grounding check would otherwise freeze the session. Khaan learned this the hard way (it's a documented defense in their hook).</p></div>
+        <div class="row how"><span class="k">How in gielinor</span><p class="v">Bundle it <em>with</em> item 1: any positive gate we add gets an age-based auto-clear + next-prompt reset, copied from <code>rule_engine._auto_clear_stale_pending_bins</code>.</p></div>
+        <div class="row benefit"><span class="k">Benefit</span><p class="v">Gates become safe to adopt — enforcement without the lock-out risk.</p></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─────────────────────────── MATRIX ─────────────────────────── -->
+<section id="matrix">
+  <div class="wrap">
+    <div class="sec-head"><h2>Priority matrix</h2></div>
+    <table>
+      <thead><tr><th>#</th><th>Item</th><th>Section</th><th>Priority</th><th>Effort</th><th>Pays down which of our pains</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td class="t">Positive enforcement gates</td><td>HITL</td><td><span class="chip p-high">High</span></td><td><span class="chip e-med">Med</span></td><td>OPEN-skip leak · grounding-before-advice</td></tr>
+        <tr><td>2</td><td class="t">Locked failure receipts</td><td>HITL</td><td><span class="chip p-high">High</span></td><td><span class="chip e-low">Low</span></td><td>verify-enforcement-fires · silent failures</td></tr>
+        <tr><td>3</td><td class="t">Scored recall surface</td><td>HITL</td><td><span class="chip p-med">Med-Hi</span></td><td><span class="chip e-med">Med</span></td><td>parked §N · check-own-memory miss</td></tr>
+        <tr><td>4</td><td class="t">5-lens decision scaffold</td><td>HITL</td><td><span class="chip p-med">Med</span></td><td><span class="chip e-low">Low</span></td><td>over-build lessons · wrong-instance check</td></tr>
+        <tr><td>5</td><td class="t">Golden-file verification</td><td>HITL</td><td><span class="chip p-med">Med-Hi</span></td><td><span class="chip e-med">Med</span></td><td>verify-enforcement-fires</td></tr>
+        <tr><td>6</td><td class="t">Context-hash freshness</td><td>HITL</td><td><span class="chip p-med">Med</span></td><td><span class="chip e-low">Low</span></td><td>parallel-session staleness (D-024)</td></tr>
+        <tr><td>7</td><td class="t">"Charges" attention surface</td><td>HITL</td><td><span class="chip p-med">Med</span></td><td><span class="chip e-med">Med</span></td><td>cross-day continuity</td></tr>
+        <tr><td>8</td><td class="t">Prioritised digest</td><td>HITL</td><td><span class="chip p-med">Med</span></td><td><span class="chip e-med">Med</span></td><td>scattered pending state</td></tr>
+        <tr><td>9</td><td class="t">Skill scaffolder + doc rules</td><td>HITL</td><td><span class="chip p-med">Med</span></td><td><span class="chip e-low">Low</span></td><td>skill-shape drift</td></tr>
+        <tr><td>10</td><td class="t">Per-context voice refresh</td><td>HITL</td><td><span class="chip p-low">Low</span></td><td><span class="chip e-med">Med</span></td><td>long-session voice slip</td></tr>
+        <tr><td>11</td><td class="t">Structured invocation logs</td><td>HITL</td><td><span class="chip p-low">Low</span></td><td><span class="chip e-low">Low</span></td><td>no ritual analytics</td></tr>
+        <tr><td>12</td><td class="t">Engineering hygiene rules</td><td>HITL</td><td><span class="chip p-low">Low</span></td><td><span class="chip e-low">Low</span></td><td>torn-write risk · validates ship-dormant</td></tr>
+        <tr><td>A</td><td class="t">Autonomy-engine controller</td><td>Auto</td><td><span class="chip p-high">High*</span></td><td><span class="chip e-high">High</span></td><td>§C / D-027 inward-outward gap</td></tr>
+        <tr><td>B</td><td class="t">Task panel / queue</td><td>Auto</td><td><span class="chip p-high">High*</span></td><td><span class="chip e-med">Med</span></td><td>no owned-task backlog</td></tr>
+        <tr><td>C</td><td class="t">schedule-task (transcript→task)</td><td>Auto</td><td><span class="chip p-med">Med-Hi</span></td><td><span class="chip e-med">Med</span></td><td>incoming work scattered</td></tr>
+        <tr><td>D</td><td class="t">Comms envelope protocol</td><td>Auto</td><td><span class="chip p-med">Med</span></td><td><span class="chip e-med">Med</span></td><td>prose-only comms coordination</td></tr>
+        <tr><td>E</td><td class="t">Consolidation cycle (proposal-only)</td><td>Auto</td><td><span class="chip p-med">Med</span></td><td><span class="chip e-high">High</span></td><td>manual alching · dup detection</td></tr>
+        <tr><td>F</td><td class="t">Accumulation nudge</td><td>Auto</td><td><span class="chip p-low">Low-Md</span></td><td><span class="chip e-low">Low</span></td><td>drafts silting up</td></tr>
+        <tr><td>G</td><td class="t">Phase-registry guard</td><td>Auto</td><td><span class="chip p-low">Low</span></td><td><span class="chip e-low">Low</span></td><td>silent pipeline reorder</td></tr>
+        <tr><td>H</td><td class="t">Anti-lockout safety</td><td>Auto</td><td><span class="chip p-high">High†</span></td><td><span class="chip e-low">Low</span></td><td>makes item 1 safe</td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--muted);font-size:13px;margin-top:10px">* High <em>for the §C phase</em> — deferred per your steer; not the current next step. &nbsp;† High only if item 1 is adopted (they ship as a pair).</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────── SEQUENCE ─────────────────────────── -->
+<section id="sequence">
+  <div class="wrap">
+    <div class="sec-head"><h2>Recommended sequence</h2></div>
+    <p class="lead">If you act on any of this, this is the order that compounds — cheap-and-safe first,
+      each step making the next one cheaper, autonomy strictly last.</p>
+    <ol class="seq">
+      <li><b>Failure receipts (2) + engineering hygiene (12).</b> Hours of work, pure safety, zero behavioural risk. Establishes "loud, consistent failure" as the house style before anything else leans on it.</li>
+      <li><b>Golden-file verification (5) + phase guard (G).</b> Build the harness next, because every later item should ship with a check. This is the "verify enforcement fires" lesson made permanent.</li>
+      <li><b>Positive gates (1) bundled with anti-lockout (H).</b> Now that failures are loud and checks exist, gate the 2–3 obligations that actually leak. Never ship 1 without H.</li>
+      <li><b>5-lens doctrine (4) + context-hash (6).</b> Cheap correctness upgrades to everyday reasoning and state-handling.</li>
+      <li><b>Scored recall (3) + digest (8) + charges (7).</b> The grounding/continuity cluster — these share machinery (scoring over the corpus) and together transform session-open quality.</li>
+      <li><b>Skill scaffolder (9) + invocation logs (11) + voice refresh (10).</b> Polish and standardisation once the high-value items are in.</li>
+      <li><b>Autonomy, when the phase comes:</b> task panel (B) → schedule-task (C) → envelope protocol (D) → autonomy-engine (A) → consolidation proposals (E) → accumulation nudge (F). B and C are useful as HITL tools <em>before</em> autonomy; A and E only once everything above is trusted.</li>
+    </ol>
+    <div class="note warn" style="margin-top:24px">
+      <p style="margin:0"><b>The through-line:</b> take Khaan's <em>mechanisms</em> (gates, scoring, verification, freshness,
+      consolidation math) and keep our <em>governance</em> (human gate on every promotion, never-delete,
+      rationale preserved). The audit's verdict in one line — <em>borrow their engine, keep our brakes</em> —
+      is the filter for every item above. Anything that automates a <em>commit</em> rather than a
+      <em>proposal</em> is where we say no.</p>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <p>developer-braindead/bank/research/2026-05-28-khaan-learnings-implementation.html</p>
+  <p>Authored by Braindead (dev-brain). Companion to 2026-05-28-khaan-comparative-audit.html. Menu, not a commitment.</p>
+</div></footer>
+
+</body>
+</html>

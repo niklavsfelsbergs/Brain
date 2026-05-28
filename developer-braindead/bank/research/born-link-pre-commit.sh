@@ -1,33 +1,36 @@
 #!/bin/sh
 # born-link pre-commit hook — auto-wrap resolvable links + BLOCK malformed ones
-# in staged gielinor/ markdown. Enforces the §O.9 born-linked discipline at the
-# commit (durability) boundary so the graph stops re-rotting.
+# in staged markdown of BOTH brains (gielinor + developer-braindead). Enforces the
+# §O.9 born-linked discipline at the commit (durability) boundary so the graph
+# stops re-rotting. Each vault resolves links against its OWN files (per-brain
+# vaults), so cross-brain refs correctly stay dangling (not blocked).
 #
 # INSTALL (run from the repo root; do this when no sibling session is committing):
 #   cp developer-braindead/bank/research/born-link-pre-commit.sh .git/hooks/pre-commit
 #   chmod +x .git/hooks/pre-commit
-# UNINSTALL:  rm .git/hooks/pre-commit
+# UNINSTALL:  mv .git/hooks/pre-commit /tmp/   (block-deletes refuses `rm`)
 #
-# Behaviour: auto-wraps bare [[ID]] / unwrapped prose IDs in staged gielinor .md
-# and re-stages them; FAILS the commit (exit 1) on a malformed [[..md]] / [[../x]]
-# wikilink with a list to fix. Scope + exclusions live in born-link-lint.py.
+# Behaviour per vault: auto-wraps bare [[ID]] / unwrapped prose+anchor IDs in
+# staged .md and re-stages them; FAILS the commit (exit 1) on a malformed
+# [[..md]] / [[../x]] wikilink with a fix-list. Scope + exclusions: born-link-lint.py.
 
 ROOT="$(git rev-parse --show-toplevel)"
 LINT="$ROOT/developer-braindead/bank/research/born-link-lint.py"
+FAIL=0
 
-# staged gielinor markdown (Added/Copied/Modified), as gielinor-relative paths
-STAGED=$(git diff --cached --name-only --diff-filter=ACM -- gielinor \
-         | grep '\.md$' | sed 's#^gielinor/##')
-[ -z "$STAGED" ] && exit 0
-
-CSV=$(printf '%s\n' "$STAGED" | tr '\n' ',' | sed 's/,$//')
-
-# Run the fixer+linter. stdout = FIX\t<rel> lines (re-stage targets);
-# stderr = human report + the BLOCK list. Non-zero exit => malformed link => abort.
-OUT=$(python "$LINT" --vault "$ROOT/gielinor" --files "$CSV") || exit 1
-
-# Re-stage files the auto-wrap modified.
-printf '%s\n' "$OUT" | while IFS="$(printf '\t')" read -r tag rel; do
-    [ "$tag" = "FIX" ] && [ -n "$rel" ] && git add "gielinor/$rel"
+for VAULT in gielinor developer-braindead; do
+    STAGED=$(git diff --cached --name-only --diff-filter=ACM -- "$VAULT" \
+             | grep '\.md$' | sed "s#^$VAULT/##")
+    [ -z "$STAGED" ] && continue
+    CSV=$(printf '%s\n' "$STAGED" | tr '\n' ',' | sed 's/,$//')
+    if OUT=$(python "$LINT" --vault "$ROOT/$VAULT" --files "$CSV"); then
+        # re-stage files the auto-wrap modified (FIX\t<rel> lines on stdout)
+        printf '%s\n' "$OUT" | while IFS="$(printf '\t')" read -r tag rel; do
+            [ "$tag" = "FIX" ] && [ -n "$rel" ] && git add "$VAULT/$rel"
+        done
+    else
+        FAIL=1   # malformed link in this vault -> abort; auto-wraps stay in worktree
+    fi
 done
-exit 0
+
+exit $FAIL

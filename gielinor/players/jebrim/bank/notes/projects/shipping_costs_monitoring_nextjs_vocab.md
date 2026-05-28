@@ -17,7 +17,7 @@
 - `docs/reference.md` — API routes table, parquet inventory, framework config.
 - `docs/calculation_logic.html`, `docs/alert_system_guide.html`, `docs/tab_guide.html`, `docs/codebase_guide.html`, `docs/backtest_report.html` — generated HTML guides.
 
-**Mart contract:** the cutover replaced five Redshift queries with two pulls against `enterprise_silver.shipping_data_mart`. Shipping-mart's own knowledge home is `bi-analytics/NFE/projects/3_shipping_data_mart/shipping-agent/` (pinned in [[shipping-data-mart routing]] keepsake).
+**Mart contract:** the cutover replaced five Redshift queries with two pulls against `enterprise_silver.shipping_data_mart`. Shipping-mart's own knowledge home is `bi-analytics/NFE/projects/3_shipping_data_mart/shipping-agent/` (pinned in shipping-data-mart routing keepsake).
 
 ## Cost columns (load-bearing)
 
@@ -234,6 +234,6 @@ Full technical + mathematical review of the cutover branch + fixes. Findings doc
 
 ## Related
 
-- [[shipping-data-mart routing]] — keepsake pin for the underlying mart (the `shipping-agent/how_to.md` etc.).
+- shipping-data-mart routing — keepsake pin for the underlying mart (the `shipping-agent/how_to.md` etc.).
 - [[coverage-questions-time-and-source-axis]] — skill draft from [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] on cost-coverage methodology.
 - [[shipping_mart_coverage_audit_2026-05-21]] — bank draft, the four concentrated holes (ORWO POST, Picturator POST_DVF, MAERSK, ASENDIA).

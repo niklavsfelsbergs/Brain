@@ -55,8 +55,8 @@ This is a transferable pattern — worth extracting as a separate concept note l
 
 ## Cross-references
 
-- Sibling NFE project: [[projects/shipping_data_mart]] — the mart this phase pulls from.
-- Predecessor approach: [[shipping_costs/overview]] — SHIPPING-COSTS was the US-tender first pass; EU tender is a different approach. Comparison/review pending.
+- Sibling NFE project: projects/shipping_data_mart — the mart this phase pulls from.
+- Predecessor approach: shipping_costs/overview — SHIPPING-COSTS was the US-tender first pass; EU tender is a different approach. Comparison/review pending.
 - Architecture lineage: `NFE/SHIPPING-COSTS/carriers/ontrac/` + `NFE/SHIPPING-COSTS/shared/surcharges/` is the source of the Surcharge ABC pattern.
 
 ## Current state (2026-05-20)

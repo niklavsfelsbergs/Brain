@@ -80,6 +80,6 @@ Listed by reversibility — cheap-to-try first.
 ## Related
 
 - [[shipping_costs_monitoring_nextjs_vocab]] — dashboard glossary, drafted [[S026_2026-05-22_shipping-costs-nextjs-architecture-read|S026]].
-- [[shipping-data-mart routing]] — keepsake pin for the agent's home.
+- shipping-data-mart routing — keepsake pin for the agent's home.
 - [[shipping_mart_coverage_audit_2026-05-21]] — [[S023_2026-05-21_shipping-mart-coverage-audit|S023]] audit, where the structural holes were named.
 - `inventory/dashboard-agent-convergence-resume.md` — parked quest covering the work above.

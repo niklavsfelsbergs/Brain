@@ -33,4 +33,4 @@ No silent *"decide: ..."* with no opinion. No recommendation without the nutshel
 
 ## Related
 
-- [[feedback_confirmed_entry_brevity]] (user memory) — same direction.
+- feedback_confirmed_entry_brevity (user memory) — same direction.

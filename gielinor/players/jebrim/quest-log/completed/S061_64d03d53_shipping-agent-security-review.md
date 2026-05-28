@@ -56,7 +56,7 @@ Then turn the priority list into a scoped fix plan for principal sign-off.
 
 Principal asked how to host the agent for company use online. Resolved:
 
-- **Cockpit-dodge misconception corrected.** The cockpit keeps an *interactive single-operator* session on subscription via PTY ([[project_headless_billing_constraint]]). That's per-operator — it does NOT fan one subscription out to a company web app, and multiplexing a subscription across many users via puppeted interactive sessions is exactly what the 2026-06-15 headless-metering change targets. Wrong tool for "company online."
+- **Cockpit-dodge misconception corrected.** The cockpit keeps an *interactive single-operator* session on subscription via PTY (project_headless_billing_constraint). That's per-operator — it does NOT fan one subscription out to a company web app, and multiplexing a subscription across many users via puppeted interactive sessions is exactly what the 2026-06-15 headless-metering change targets. Wrong tool for "company online."
 - **Two clean shapes:** (A) API-backed web product (Agent SDK) — metered token pricing, but the only legitimately scalable shape for many users; (B) per-seat desktop tooling — each analyst on their own Claude Code subscription, no central hosting, no API meter.
 - **Principal chose B (per-seat desktop).**
 

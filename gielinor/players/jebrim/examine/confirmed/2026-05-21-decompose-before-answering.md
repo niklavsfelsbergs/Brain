@@ -19,4 +19,4 @@ Each layer disproved the prior framing. §9 landed at extkey level.
 
 **Tell.** If I'm tempted to skip because "I already know the answer," that's when the disprove-pass earns the most.
 
-**Scope.** Jebrim only. Pairs with [[mart-null-classification-by-drill-down]] (the mart-NULL operationalization).
+**Scope.** Jebrim only. Pairs with mart-null-classification-by-drill-down (the mart-NULL operationalization).

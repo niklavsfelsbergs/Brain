@@ -50,4 +50,4 @@ Publishing the aggregate as classification ("PICT is 34% NULL — possibly bugge
 ## Related
 
 - §9 of `bi-analytics-main/NFE/projects/3_shipping_data_mart_TTYD/how_to.md` for the classification this skill produced.
-- [[publish-aggregates-only-after-disprove-pass]] (Jebrim examine draft) — the meta-rule about always running one disprove-pass before publishing.
+- publish-aggregates-only-after-disprove-pass (Jebrim examine draft) — the meta-rule about always running one disprove-pass before publishing.

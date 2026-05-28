@@ -29,4 +29,4 @@ Authoring with status blocks beats waiting AND beats rewriting once the system s
 ## Related
 
 - `S014_2026-05-21_shipping-data-mart-ttyd-howto.md` T5 — the pivot turn.
-- [[biases-progress-over-completeness-when-blocked]] — the principal preference this skill operationalizes.
+- [[2026-05-21-biases-progress-over-completeness-when-blocked]] — the principal preference this skill operationalizes.

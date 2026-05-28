@@ -16,7 +16,7 @@ override that signal and assumed novelty.
 more," "afterall," "back to X"), treat the subject as **presumptively known** — map it to existing
 quests/research first. If surface details don't match what's on file, **ask "is this the same one?"**
 before building an analysis on the novelty assumption. A wrong identity inference wastes a full
-response. (Sibling to [[grounding-before-advice]]: grounding is necessary but not sufficient — the
+response. (Sibling to [[2026-05-25-grounding-precondition-before-substantive-output|grounding-before-advice]]: grounding is necessary but not sufficient — the
 referent has to be *identified*, not just researched.)
 
 **Anchor.** [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] T1–T2 (2026-05-25).

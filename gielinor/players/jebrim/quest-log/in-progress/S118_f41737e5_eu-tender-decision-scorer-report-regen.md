@@ -1,14 +1,14 @@
 # S118 — EU Tender 2026: decision_scorer + report regen
 
 **Session:** jebrim-f41737e5 · 2026-05-28 · player Jebrim
-**Continuation of:** [[S117_d1a3b803_eu-tender-dpd-pl-gls-engine-builds|S117]] (d1a3b803, ended clean ~1min before respawn, same terminal). Adopted resume `inventory/eu-tender-engine-builds-resume__d1a3b803.md`.
+**Continuation of:** S117 (d1a3b803, ended clean ~1min before respawn, same terminal). Adopted resume `inventory/eu-tender-engine-builds-resume__d1a3b803.md`.
 
 ## Ask
 Principal: "continue on EU tender." Confirmed via multiple-choice → run `decision_scorer.py` + report regen (Q1 portfolio scoring across the 6 rebuilt engines).
 
 ## Turn log
 
-**T1 — respawn + ground.** Loaded Jebrim layers; sibling check (sole live sibling jebrim-7f67fe48 = [[S116_7f67fe48_shipping-agent-fif-monthly-skill|S116]] FIF, different repo, no overlap). No pending drafts → no alching due. Posted OPEN. Confirmed scope with principal (multiple-choice → "decision_scorer + report").
+**T1 — respawn + ground.** Loaded Jebrim layers; sibling check (sole live sibling jebrim-7f67fe48 = S116 FIF, different repo, no overlap). No pending drafts → no alching due. Posted OPEN. Confirmed scope with principal (multiple-choice → "decision_scorer + report").
 
 **T2 — verify inputs (scorer needs no code change).**
 - `cost_matrix.parquet` fresh (today 13:24, all 9 engines incl. dpd_pl-2.0.0 `5998ef6` / gls-2.0.0 `96bc47f`).
@@ -23,7 +23,7 @@ Principal: "continue on EU tender." Confirmed via multiple-choice → run `decis
 **T4 — ran `report.py`.** Clean (EXIT=0). `decision_report.html` regenerated (211KB, 13:40), dated 2026-05-28, references "90 decision sets". Reflects the new ranking.
 
 ## Open / gap (surface to principal)
-- **Report does NOT flag the two material [[S117_d1a3b803_eu-tender-dpd-pl-gls-engine-builds|S117]] assumptions.** Only per-engine caveat prose in the HTML is the older hardcoded Hermes 11-assumptions block. The dpd_pl CH-customs €484k (@44/parcel opt-1) and gls EFTA €278.9k (@25/parcel CH/NO) levers — both collapsing under consolidated customs — are baked into engine costs but invisible to a decision-maker reading the report. Per project doc system these belong in `docs/REPORT_NOTES.md` → drained into report.py prose (confirm-with-draft; never auto-write docs/*).
+- **Report does NOT flag the two material S117 assumptions.** Only per-engine caveat prose in the HTML is the older hardcoded Hermes 11-assumptions block. The dpd_pl CH-customs €484k (@44/parcel opt-1) and gls EFTA €278.9k (@25/parcel CH/NO) levers — both collapsing under consolidated customs — are baked into engine costs but invisible to a decision-maker reading the report. Per project doc system these belong in `docs/REPORT_NOTES.md` → drained into report.py prose (confirm-with-draft; never auto-write docs/*).
 - decision_scorer.py + report.py needed **no code change** — pure re-run against the S117-regenerated cost_matrix.
 - Commit (scorer/report outputs + brain-side records) HELD — principal-gated, pathspec-scoped, local-only.
 - FedEx + DHL Paket still HELD (round-2 pending).

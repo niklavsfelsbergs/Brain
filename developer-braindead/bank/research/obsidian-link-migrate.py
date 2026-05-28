@@ -375,9 +375,11 @@ def scan_prose(vault: Path, rindex, prefix):
     return rewrites, flagged, dangling, self_skips
 
 
-def run_prose(vault: Path, prefix, apply: bool):
+def run_prose(vault: Path, prefix, apply: bool, files=None):
     rindex = build_index_rich(vault)
     rewrites, flagged, dangling, self_skips = scan_prose(vault, rindex, prefix)
+    if files:
+        rewrites = [r for r in rewrites if r[0] in files]
 
     print(f"# Obsidian PROSE-WRAP (§O.6) — {'APPLY' if apply else 'DRY-RUN'}")
     print(f"# vault: {vault}")
@@ -487,11 +489,16 @@ def main():
     ap.add_argument("--mode", choices=("links", "prose"), default="links",
                     help="links = rewrite bracketed [[bare-ID]] (§O.4, default); "
                          "prose = wrap UNBRACKETED resolvable IDs as [[stem|ID]] (§O.6)")
+    ap.add_argument("--files", default=None,
+                    help="comma-separated vault-relative paths to restrict writes/report "
+                         "to (the index is still built over the WHOLE vault for resolution). "
+                         "Used by the born-link pre-commit hook to scope to staged files.")
     args = ap.parse_args()
 
     vault = Path(args.vault).resolve()
+    files_set = set(args.files.split(",")) if args.files else None
     if args.mode == "prose":
-        run_prose(vault, args.prefix, args.apply)
+        run_prose(vault, args.prefix, args.apply, files_set)
         return
     index = build_index(vault)
     resolved, flagged, sole_sub = resolve_targets(index)
@@ -505,6 +512,8 @@ def main():
         flagged = {k: v for k, v in flagged.items() if k.startswith(args.prefix)}
 
     rewrites, flag_hits, dangling, already = scan(vault, resolved, flagged, existing_stems)
+    if files_set:
+        rewrites = [r for r in rewrites if r[0] in files_set]
 
     print(f"# Obsidian link migration — {'APPLY' if args.apply else 'DRY-RUN'}")
     print(f"# vault: {vault}")

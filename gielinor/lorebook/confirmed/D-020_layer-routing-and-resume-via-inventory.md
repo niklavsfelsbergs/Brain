@@ -51,7 +51,7 @@ The five binary questions Niklavs answered to direct the audit (Q1: quest vs ses
 
 ## Supersedes / superseded by
 
-Supersedes [[2026-05-21-harvest-pump-installation]] in the narrow sense that:
+Supersedes [[D-019_harvest-pump-installation]] in the narrow sense that:
 - The harvest-pump entry routed skill drafts to `spellbook/skills/drafts/<slug>.md`; this entry corrects to `spellbook/drafts/skills/<slug>.md` (drafts-folder-first convention, parallel to bank).
 - The harvest-pump entry left skill drafts going through `gielinor/lorebook/drafts/` for promotion; this entry routes them through per-player drafts + alching promotion, like bank.
 

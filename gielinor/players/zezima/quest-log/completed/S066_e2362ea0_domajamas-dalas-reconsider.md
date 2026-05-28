@@ -40,7 +40,7 @@ The reasons were **structural**, untouched by "4k exist" or "2 years looking":
   disproportionately comes held this way (old buildings never converted). If that exact thing is
   what he wants, he may keep hitting this form — "wait for clean-title version of exactly this"
   may be waiting for what rarely comes to market.
-- [[gut-fit veto]] inversion: Duntes (#2) was head-yes / gut-no (passed on narrow room). This is
+- [[2026-05-23-home-decisions-gut-fit-veto|gut-fit veto]] inversion: Duntes (#2) was head-yes / gut-no (passed on narrow room). This is
   gut-yes / head-wait. His felt-sense is a downside strength; on the upside, attraction can make
   him under-weight a real structural no. The reflective job here is the *symmetric* caution to the
   gut-fit note: don't let 2-yr fatigue rebrand a known-compromised thing as "fine."
@@ -146,7 +146,7 @@ upside capped") is the strongest harvest candidate for `bank/notes/latvia-proper
 
 Niklavs: "this apartment doesn't really have place for a working station." Reframed this as the
 **most decisive issue**, not a minor one — and flagged the pattern: **it's the same axis that
-killed Duntes (#2)** ([[home-decisions-gut-fit-veto]] — "narrow long room, not much space"). Two
+killed Duntes (#2)** ([[2026-05-23-home-decisions-gut-fit-veto]] — "narrow long room, not much space"). Two
 flats in a row passed/wobbling on *space*.
 
 Key reflection delivered:
@@ -168,7 +168,7 @@ problem? A true "no" after Duntes → take very seriously.
 
 Niklavs: "ima pass, not fully feeling it. I know that this means I likely wont find anything for a
 long time. But so be it." **Gut-fit veto fired again** — same axis as Duntes, passed cleanly without
-agonizing ([[home-decisions-gut-fit-veto]]). Affirmed the call as *consistency, not indecision*; did
+agonizing ([[2026-05-23-home-decisions-gut-fit-veto]]). Affirmed the call as *consistency, not indecision*; did
 not relitigate. Reframed the 2-year search as not-wasted: it surfaced his **binding spec** (space to
 work / flexible layout → likely 3-room), which makes the next search faster + more decisive. Honest
 on "long time" (rarer/dearer at budget) but: rare-with-clear-spec > common-with-vague-one; no penalty
@@ -195,7 +195,7 @@ station** (gut-fit, same axis as Duntes). Third domājamās-daļas-or-fit pass i
 ## Next concrete step
 
 None — quest closed. **Harvest candidates already drafted this close** (above); promote on a later
-Zezima alching pass per [[bank-notes-harvest-from-finished-quests]]:
+Zezima alching pass per bank-notes-harvest-from-finished-quests (memory):
 - `niksis8_character/drafts/`: **space/layout is Niklavs' binding home-buy constraint** — 2
   consecutive flats decided on it; WFH station is a hard requirement, not a nice-to-have (2nd
   instance strengthening the gut-fit-veto note). Search-spec reframe: he needs 3-room / flexible

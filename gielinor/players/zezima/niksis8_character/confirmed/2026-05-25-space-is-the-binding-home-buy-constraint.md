@@ -12,7 +12,7 @@ financial analysis. Two consecutive flats were passed on it:
 
 **What it means.**
 - His felt spatial sense is the real decision-maker; the research's job is to surface dealbreakers
-  and frame trade-offs, not to talk him in. (Reinforces [[home-decisions-gut-fit-veto]] with a 2nd
+  and frame trade-offs, not to talk him in. (Reinforces [[2026-05-23-home-decisions-gut-fit-veto]] with a 2nd
   instance — this is now a pattern, not a one-off.)
 - A **WFH station is a hard requirement, not a nice-to-have.** A renovated pre-war 2-room at his
   budget is structurally ~55–60 m² with both rooms committed → likely too small *whichever* one.

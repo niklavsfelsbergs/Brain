@@ -22,10 +22,10 @@ expose ownership structure on the card, so the share adjustment leans on the pri
 ~30% number, not on this comp set. Directional, not surveyor-grade.
 
 **Reuses as GIVEN (not re-derived here):** share discount ~25–45%, centred ~a third
-([[2026-05-25-gertrudes113-price-resale.md]] B2); market trend +7–10% 2026 (ibid. A4); the
+([[2026-05-25-gertrudes113-price-resale]] B2); market trend +7–10% 2026 (ibid. A4); the
 building's own internal comps — realised ceiling ~€1,891/m² (flat 86 attic, Apr 2026), old
 renovated ~€1,826–1,835/m² (bank draft `latvia-property/2026-05-26-gertrudes113-folio-5262-gate2-closed.md`);
-Avoti micro-location ([[2026-05-25-gertrudes113-location.md]]). The legal/ownership and
+Avoti micro-location ([[2026-05-25-gertrudes113-location]]). The legal/ownership and
 financing analysis is closed in prior work; not repeated.
 
 ---

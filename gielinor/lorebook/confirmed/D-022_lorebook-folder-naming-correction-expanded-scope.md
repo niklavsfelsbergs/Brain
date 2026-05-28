@@ -2,7 +2,7 @@
 
 ## What changed
 
-Follow-up to [[2026-05-22-lorebook-folder-naming-correction]] ([[D-021_lorebook-folder-naming-correction|D-021]] once promoted). That entry corrected 2 of the stale `lorebook/decisions/` references in `meta/`. Bankstanding [[B-001_2026-05-22_first-bankstanding|B-001]] surveyed the rest of `meta/` and found **5 additional references** that still need correcting to `lorebook/confirmed/`.
+Follow-up to 2026-05-22-lorebook-folder-naming-correction ([[D-021_lorebook-folder-naming-correction|D-021]] once promoted). That entry corrected 2 of the stale `lorebook/decisions/` references in `meta/`. Bankstanding [[B-001_2026-05-22_first-bankstanding|B-001]] surveyed the rest of `meta/` and found **5 additional references** that still need correcting to `lorebook/confirmed/`.
 
 **Proposed corrections (principal-only edits, since `meta/` is user-only):**
 
@@ -35,7 +35,7 @@ Concrete moment: bankstanding [[B-001_2026-05-22_first-bankstanding|B-001]], 202
 
 ## Supersedes / superseded by
 
-Extends [[2026-05-22-lorebook-folder-naming-correction]] ([[D-021_lorebook-folder-naming-correction|D-021]]). Not a supersede — additive. Same correction, expanded scope.
+Extends 2026-05-22-lorebook-folder-naming-correction ([[D-021_lorebook-folder-naming-correction|D-021]]). Not a supersede — additive. Same correction, expanded scope.
 
 ## Anchor
 

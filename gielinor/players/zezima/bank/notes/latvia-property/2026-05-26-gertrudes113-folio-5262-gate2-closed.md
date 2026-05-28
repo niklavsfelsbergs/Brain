@@ -10,7 +10,7 @@ pulled 2026-04-28). Asking price **€120,000**.
 **Process note (for me).** Niklavs opened with "I am *once again* considering" — a continuation
 cue. I re-derived the whole thing from the PDF cold before connecting it to [[S066_e2362ea0_domajamas-dalas-reconsider|S066]]. The right first
 move was to read my own bank/research and recognise the upload as Gate 2. (Same lesson as
-[[feedback_anchor_referent_before_analyzing]] / [[feedback_check_own_memory_before_working_repo]].)
+feedback_anchor_referent_before_analyzing / feedback_check_own_memory_before_working_repo, both in memory.)
 
 ## What the folio settles (the [[S066_e2362ea0_domajamas-dalas-reconsider|S066]] Gate-2 checklist, now answered)
 
@@ -138,7 +138,7 @@ Niklavs's own way in: he spends ~€6k/yr on rent (100% unrecoverable), so he wa
 
 Niklavs: *"I find something wrong with any flat... if I keep going like this I will never buy
 anything."* The deliberation is no longer about this flat — it's about the **fault-finding pattern**
-(see [[../../../niksis8_character/drafts/2026-05-26-finds-a-fault-in-every-flat]]). The share
+(see [[2026-05-26-finds-a-fault-in-every-flat]]). The share
 hesitation is, by his own admission, largely a vibe ("sounds dirty") on a structure now de-risked.
 The quiet compounding risk (€6k/yr to keep searching for a flawless flat that doesn't exist)
 outweighs the vivid nameable one (share friction, which only bites on a panic sale). Decision rule
@@ -146,7 +146,7 @@ to hold: *buy when the good outweighs the known, priced-in flaw* — not *when n
 
 ## Lived-experience + financing re-test (penguin, 2026-05-26)
 
-Research: [[../../../research/2026-05-26-domajamas-dalas-lived-experience-and-financing-recheck]].
+Research: [[2026-05-26-domajamas-dalas-lived-experience-and-financing-recheck]].
 
 - **Online tone is selection-biased** — cautionary practitioners (paid to warn) + complaints-box
   legal-Q&A forums (people only post when it broke); the quiet "fine" majority don't write. So
@@ -176,7 +176,7 @@ Research: [[../../../research/2026-05-26-domajamas-dalas-lived-experience-and-fi
 
 ## Price fairness — comp valuation (penguin p2, 2026-05-26)
 
-Research: [[../../../research/2026-05-26-gertrudes113-price-fairness-comps]]. ~16 current asking comps
+Research: [[2026-05-26-gertrudes113-price-fairness-comps]]. ~16 current asking comps
 (ss.lv/mm.lv/viszinis) segmented (prestige belt dropped; Avoti belt + share signals kept) + VZD
 asking→achieved haircut, reusing the given discount/trend/internal comps.
 
@@ -202,7 +202,7 @@ asking→achieved haircut, reusing the given discount/trend/internal comps.
 stories live in *unsorted* shares; this one's sorted), financing (banks lend here; old cash-only fear
 corrected), price (fair, ~€114–115k furnished). Residual is the **values call** alone — accepting a
 share + capped upside + governance grind for a flat he loves, in Avoti. Per
-[[../../../niksis8_character/drafts/2026-05-26-finds-a-fault-in-every-flat]], "research one more
+[[2026-05-26-finds-a-fault-in-every-flat]], "research one more
 angle" is now the fault-finding pattern in sophisticated dress, not new signal. The decision is no
 longer an analysis problem.
 

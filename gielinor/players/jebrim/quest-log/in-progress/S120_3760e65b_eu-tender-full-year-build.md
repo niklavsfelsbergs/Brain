@@ -78,3 +78,27 @@ See `inventory/eu-tender-full-year-build-resume__3760e65b.md`.
 
 ## Close note (S120)
 Steps 1–4 of the full-year build DONE + verified; principal chose to commit + do **Step 5 (fuel band + report regen) in a fresh session** (full spec in the inventory resume). Quest S120 stays in-progress for Step 5. No live siblings; no collision (braindead-277d9053 dev-brain only).
+
+---
+
+## S120 cont. — Step 5 (jebrim-2ae1248b · 2026-05-28)
+
+Fresh session per the handoff. Respawn: adopted the `__3760e65b` STEP 5 HANDOFF SPEC; no live siblings (sidecar+comms clean); posted OPEN.
+
+**T1 — fix report.py read + ground-truth.**
+- Fixed the broken read: `report.py` L550 `pl.read_parquet(DATA/"cost_matrix.parquet")` → `load_cost_matrix()` (lazy, column-pruned to 7+3 cols), mirroring decision_scorer.
+- Ground-truthed full-year numbers (scratch `_groundtruth_s120.py`, untracked): baseline €14.85M / invoice €14.27M / +€581k; OML 97/€126.7k + LPS 2169/€144.6k; Hermes cov 96.8% @ €5.87; **two Q1-hardened bugs surfaced** — (a) the `n_uncovered==0` "full coverage" filter matches NOTHING on full-year (every set strands 3-20 residual parcels) → report.py would crash; (b) trustworthy ≤6 reorders: drop-DPD route €732k > +GLS €642k > +Hermes €635k. Also `renew_maersk` ALONE flipped negative (−€199k, 138.5k stranded). **dhl_paket book over-pricing = +2.9% (1.029), NOT the +5.5% the handoff/T9 carried** — verify-don't-assert.
+
+**T2 — two principal decisions (AskUserQuestion).**
+- Headline leader: KEEP `renew_maersk_plus_hermes` (€635k) pinned as the minimum-disruption headline; relax the broken filter to ≤100 tolerance; surface the higher trustworthy routes (€732k drop-DPD, €642k +GLS) as alternatives in prose.
+- Fuel: DEFER the numerical low/mid/high sweep; ship the qualitative band now.
+
+**T3 — report.py Step-5 edits.**
+- Moved cm-load + bias infra above the narrative; added a LIVE-facts block (bias ratios via REC_ALL won-slice, Hermes coverage, gls/dpd customs components, maersk peak, dhl_paket book ratio). Pinned tw_leader=Hermes + computed tw_best (drop-DPD). Rewrote all 9 carrier narratives + KPI + summary + the two-caveats / chart-1 / §B.13 / fuel / UPS callouts + the what-changes table to use live full-year values; relabelled all "Q1" framing. Customs caveats now live: GLS EFTA €1.32M/yr, DPD-PL CH €2.32M/yr. Maersk peak €250,410/yr (post-OML-adj), +ROW-demand deferral added.
+- Regenerated `decision_report.html` (233KB), EXIT 0, deterministic across two runs. **Ground-truthed every headline number against scenarios/matrix** (not pixel-eyeballed): all match.
+
+**T4 — doc cascade.**
+- NEXT.md (full-year build EXECUTED; next steps reordered — fuel sweep #1), DECISIONS.md (S120 full-year-build-executed entry), ASSUMPTIONS.md (maersk EU peak + ROW-demand entries w/ revisit triggers), REPORT_NOTES.md (full-year caveat figures + executed note), stray PEAK_PCT refs fixed in carriers/maersk/{report.py, migration_plan.html}.
+- **cross_carrier_view left as the Q1 unit-cost reference** (its whole framing is Q1; reads the current legacy Q1 matrix; html already current) — converting to full-year is a separate build that changes its purpose; flagged to principal, not done.
+
+**Step 5 COMPLETE.** All report + doc changes UNCOMMITTED — held for principal go (commit scope in `inventory/eu-tender-full-year-build-resume__2ae1248b.md`). Quest S120 essentially complete pending commit; remaining full-year refinements (fuel sweep, seasonal layers, carrier round-2s) are tracked in NEXT.md, not blockers.

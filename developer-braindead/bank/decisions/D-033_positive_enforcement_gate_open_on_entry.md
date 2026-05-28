@@ -1,6 +1,6 @@
 # D-033 — 2026-05-28 — Positive enforcement gate: OPEN-on-entry
 
-> **Status: decided and built (code).** First *positive* enforcement hook in the brain — it blocks a **must-do** step (post your OPEN) rather than a must-not-do one. Imported from the Khaan comparative audit (item 1 of the learnings catalogue). Principal chose the **hard-block** scope over warn-only. Hook written, tested at the boundary (12/12 synthetic payloads), registered in both settings files. Runtime-unverified pending a fresh session.
+> **Status: decided and built (code).** First *positive* enforcement hook in the brain — it blocks a **must-do** step (post your OPEN) rather than a must-not-do one. Imported from the Khaan comparative audit (item 1 of the learnings catalogue). Principal chose the **hard-block** scope over warn-only. Hook written, tested at the boundary (12/12 synthetic payloads), registered in both settings files, and **live-verified** — both the allow and the block path observed firing through Claude Code's real hook pipeline (see Verification).
 
 ## Context — where this came from
 
@@ -41,7 +41,11 @@ Principal picked **hard-block** over the warn-only and "also harden grounding" a
 
 Boundary-tested on 12 synthetic stdin payloads (the "verify-enforcement-fires" lesson): braindead-no-OPEN → **block**, braindead-WITH-OPEN (real live sid) → allow, player-no-OPEN → **block** (routes to gielinor comms), all four escape paths → allow, guthix/unknown actor → allow, sub-agent → allow, non-brain path → allow, non-write tool → allow, malformed payload → exit 0. **12/12.** `py_compile` clean; both `settings.json` parse.
 
-**RUNTIME-UNVERIFIED:** mid-session `settings.json` edits don't reload hooks, so this session is not gated by it. Needs a **fresh session** that attempts a brain-content write before posting an OPEN and is blocked (the [[S106_cf03bfe1_self-eating-audit-and-d8-enforcement-fix|S106]]/[[S110_144c0ca2_brain_full_audit|S110]] fresh-session-config-load pattern). Verify: open a fresh player/dev session, try an Edit before the OPEN → expect the block banner; post the OPEN → expect the write to succeed.
+**LIVE-VERIFIED (2026-05-28, same session).** The pre-build assumption that mid-session `settings.json` edits don't hot-reload turned out **wrong** — they do. Verified by instrumenting the hook with a temporary probe-log and triggering real tool calls through Claude Code's live pipeline:
+- **Allow path:** a real `Write` (braindead actor, OPEN present for sid `277d9053`) → hook fired (`tool='Write' agent_type=None`), exit 0, write succeeded.
+- **Block path:** temporarily flipped this session's status-actor to `jebrim` (faithfully reproducing "a player session that skipped its OPEN" — routes the gate to gielinor comms, where this sid has no OPEN), attempted a real `Write` to `gielinor/players/jebrim/inventory/` → **blocked** with the exit-2 banner; the file was never created. Status-actor restored to braindead immediately after; probe instrumentation removed (hook now byte-identical to the committed version).
+
+This closes the verification debt directly rather than deferring to a fresh session. The exit-2-blocks-the-tool contract was already proven for this pipeline by the [[S110_144c0ca2_brain_full_audit|S110]] live boundary-hook tests; this confirms the new gate rides it correctly.
 
 ## Out of scope / open
 

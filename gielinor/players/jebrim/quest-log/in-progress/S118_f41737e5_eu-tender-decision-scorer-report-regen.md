@@ -48,3 +48,16 @@ Principal: "continue on EU tender." Confirmed via multiple-choice → run `decis
 ## T7 — revisit-trigger annotations (principal: "yes lets document it")
 - Confirmed the assume-and-document strategy: DHL Paket + FedEx await round-2 (genuine large blockers); all others assumed + documented; escalate only when cost-truth becomes decision-vital. Saved as feedback memory [[phase-gate-precision-assume-and-document]].
 - Tagged the 3 material deferred assumptions in ASSUMPTIONS.md with explicit "revisit if this carrier makes the final shortlist" triggers: DPD PL CH customs €484k, GLS EFTA €278.9k, AP pallet density (sens. €20-82k). Committed tender (ASSUMPTIONS.md, pathspec-scoped, local-only).
+
+## T8 — overview artifacts state (principal: "do we have a presentation of the current situation" → re: decision_report + cross_carrier_view)
+- Mgmt deck ([[S113_34ab5b53_eu-tender-mgmt-summary-deck|S113]], docs/EU_Tender_2026_Management_Summary.*) = STALE pre-ranking snapshot (Slide 6 "no numbers by design" now obsolete); uncommitted; .pptx open in PP.
+- decision_report.html = current data (regen ede440f, 90 sets) but interpretively thin (missing 2 material caveats + trustworthy/provisional decision-so-far framing).
+- cross_carrier_view.html = was STALE (2026-05-22, pre-rebuild); RE-RAN cross_carrier_view.py → now current (2026-05-28, 9 rebuilt engines). Greedy ceiling €772k all-9 (incl. provisional FedEx/Güll); Hermes alone 96.5% cover @ €443k cherry-pick. Uncommitted.
+- Decision-so-far (trustworthy engines, scorer realistic floor): renew Maersk + Hermes ~€250k full coverage; GLS alternate. Recommended next: harden decision_report.html with the trustworthy/provisional split + 2 material caveats, then commit cross_carrier_view + report. Awaiting principal go.
+
+## T9 — close-session (S118)
+- No pending external actions (all commits completed inline).
+- Re-ran cross_carrier_view.py → cross_carrier_view.html current (2026-05-28); committed at close.
+- Harvest (Q5 — principal redirect): examine draft `2026-05-28-mine-computed-output-before-proposing-new-work.md` (offered new workstreams before reading the decision off the already-re-run scorer; "can't we already test the scenarios?"). Qs 1-4 empty (findings captured in tender DECISIONS/REPORT_NOTES, the repo source of truth).
+- Resume foreground written: inventory/eu-tender-decision-scorer-report-regen-resume__f41737e5.md (forward handover).
+- Complete-ready (proposed → completed/, awaiting principal y/n, not auto-moved): [[S114_db60ed8a_eu-tender-austrian-post-rebuild|S114]] (austrian_post, e8ddc62), [[S115_db60ed8a_eu-tender-dpd-pl-reply-review|S115]] (DPD PL/GLS reviews, cf0b6c4), [[S117_d1a3b803_eu-tender-dpd-pl-gls-engine-builds|S117]] (dpd_pl+gls builds + cost_matrix, 96bc47f), S118 (this). All shipped+committed, no open dependency (the cost_matrix/report they waited on is done). Keep open: [[S113_34ab5b53_eu-tender-mgmt-summary-deck|S113]] (mgmt deck — stale + .pptx-move blocked), [[S100_201f195c_outlook-connection-it-ticket|S100]]/[[S101_612683db_shipping-agent-access-split|S101]]/[[S116_7f67fe48_shipping-agent-fif-monthly-skill|S116]] + shipping-agent quests (bankstanding territory).

@@ -238,6 +238,15 @@ class TermConn {
         if (e.ctrlKey || e.metaKey) return; // Ctrl+wheel is the cockpit zoom gesture, not scroll
         if (e.deltaY < 0) this._follow = false;
         else if (e.deltaY > 0 && this._isAtBottom()) this._follow = true;
+        // [term-diag issue#3] capture scroll geometry to disk so the "scroll-up
+        // locks, can't scroll-down" stuck state lands in term-fit-diag.log. rAF so
+        // the sample reflects the POST-scroll geometry. Throttled (120ms) so a wheel
+        // burst doesn't flood the log. STRIP with the rest of the diag once fixed.
+        const now = Date.now();
+        if (now - (this._wheelDiagAt || 0) > 120) {
+          this._wheelDiagAt = now;
+          requestAnimationFrame(() => this._diag("wheel" + (e.deltaY < 0 ? "Up" : "Dn"), true));
+        }
       },
       { passive: true },
     );
@@ -417,6 +426,7 @@ class TermConn {
   // geometry change that can shift the row count re-pins through here while _follow.
   _pinBottom() {
     try {
+      this._syncViewport(); // scrollHeight must reflect the true buffer before we pin to it
       this.term.scrollToBottom();
       const vp = this.container.querySelector(".xterm-viewport");
       if (vp) vp.scrollTop = vp.scrollHeight;
@@ -424,15 +434,20 @@ class TermConn {
   }
 
   _isAtBottom() {
-    // Buffer-index check (viewportY >= baseY) is the primary signal, but after the
-    // over-fit guard resizes mid-stream the native viewport can briefly disagree
-    // with the buffer indices. Treat "at bottom" as true if EITHER the buffer says
-    // so OR the native .xterm-viewport is scrolled within a row of its end — so a
-    // wheel-down that lands the thumb at the real bottom always re-engages _follow
-    // even if the buffer math is momentarily off (S081, covers H2).
+    // xterm's BUFFER is authoritative (viewportY >= baseY). The native
+    // .xterm-viewport scrollbar is NOT trustworthy here: its scrollHeight lags the
+    // buffer by ~one viewport when output arrives off-bottom (or on a fresh open),
+    // so "scrollTop is maxed" reads true while ydisp is still rows short of baseY.
+    // Trusting that stale signal (the old EITHER branch) was the bug: a wheel-down
+    // capped at the native floor, _isAtBottom false-positived, and _follow flipped
+    // on while genuinely above the bottom — the prompt + compose bar locked below
+    // the fold until a keystroke (issue#3, 2026-05-27 trace: wheelDn viewportY=120
+    // baseY=191 follow=true). The native fallback survives only if the buffer read
+    // throws. (Supersedes the S081 H2 EITHER rule; the over-fit guard's mid-stream
+    // index wobble is moot now — _syncViewport keeps scrollHeight honest.)
     try {
       const b = this.term.buffer.active;
-      if (b.viewportY >= b.baseY) return true;
+      return b.viewportY >= b.baseY;
     } catch {}
     try {
       const vp = this.container.querySelector(".xterm-viewport");
@@ -442,6 +457,18 @@ class TermConn {
       }
     } catch {}
     return true;
+  }
+
+  // Force xterm's render service to recompute the .xterm-viewport scroll area so
+  // its scrollHeight tracks the live buffer length. Without this the native scroll
+  // area lags the buffer by ~one viewport when output arrives off-bottom or on a
+  // fresh open, so a wheel-down caps short of the true bottom (issue#3). refresh()
+  // marks the row range dirty → onRender → viewport syncScrollArea; cheap and
+  // idempotent within a frame.
+  _syncViewport() {
+    try {
+      this.term.refresh(0, this.term.rows - 1);
+    } catch {}
   }
 
   // Batch PTY output into one write per animation frame, then re-pin to the bottom
@@ -460,6 +487,10 @@ class TermConn {
       if (!d) return;
       const follow = this._follow;
       this.term.write(d, () => {
+        // Always resync the native scroll area to the grown buffer — even when NOT
+        // following — so a user scrolled up to read can still wheel down to the
+        // true bottom (the scrollHeight lag was what stranded them; issue#3).
+        this._syncViewport();
         if (follow) this._pinBottom();
       });
     });
@@ -666,9 +697,16 @@ class TermConn {
         let guard = 0;
         // 8px top + 8px bottom .term-host padding (styles.css .term-host).
         const pad = 16;
+        let shrank = false;
         while (this.term.rows > 1 && this.term.rows * cell > frame.clientHeight - pad && guard++ < 4) {
           this.term.resize(this.term.cols, this.term.rows - 1);
+          shrank = true;
         }
+        // [term-diag issue#3] a resize here reflows xterm and re-syncs the native
+        // viewport scroll area — if it fires while the user is scrolled up it can
+        // collapse scrollHeight and lock the down-scroll. Log when it actually
+        // shrinks so the trace shows whether fitNow is the thing breaking scroll.
+        if (shrank) this._diag("overfit-shrink", true);
       }
     } catch {}
   }

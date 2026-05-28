@@ -39,12 +39,19 @@ export function mdToHtml(text) {
   let inCode = false;
   let codeBuf = [];
   let listBuf = null; // { type: "ul" | "ol", items: [] }
+  // A blank line BETWEEN list items makes a "loose" list — still ONE list, not a
+  // fresh one per item. Flushing on every blank (the old behavior) split a
+  // blank-separated ordered list into N single-item <ol>s, each restarting at 1
+  // (the "all items show 1." bug). So defer the flush across a blank: a same-type
+  // item that follows continues the list; any other content closes it.
+  let pendingBlank = false;
   const flushList = () => {
     if (listBuf) {
       const { type, items } = listBuf;
       out.push(`<${type}>` + items.map((li) => `<li>${inline(li)}</li>`).join("") + `</${type}>`);
       listBuf = null;
     }
+    pendingBlank = false;
   };
   for (const ln of lines) {
     if (/^```/.test(ln)) {
@@ -76,6 +83,7 @@ export function mdToHtml(text) {
         flushList();
         listBuf = { type, items: [] };
       }
+      pendingBlank = false; // a same-type item after a blank → keep ONE list, don't restart
       listBuf.items.push((ul || ol)[1]);
       continue;
     }
@@ -91,7 +99,10 @@ export function mdToHtml(text) {
       continue;
     }
     if (ln.trim() === "") {
-      flushList();
+      // Don't end an open list on a single blank — defer. A following same-type
+      // item continues it (loose list); any other block flushes via flushList().
+      if (listBuf) pendingBlank = true;
+      else flushList();
       continue;
     }
     flushList();

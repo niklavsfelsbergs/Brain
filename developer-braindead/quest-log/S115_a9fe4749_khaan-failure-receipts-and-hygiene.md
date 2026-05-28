@@ -53,3 +53,7 @@ Principal chose "commit 2+12, then build item 5." Home decision (multiple-choice
 ## Targets touched
 
 `gielinor/spellbook/failure-banners.md` (new), `gielinor/spellbook/rituals/{respawn,alching,drafts-triage}.md`, `developer-braindead/bank/research/born-link-lint.py`, `developer-braindead/bank/build-lessons.md`, `developer-braindead/bank/plan.md`, `developer-braindead/verification/check.py` (new), this quest-log, `respawn.md` (prepend at close), `comms/active.md`.
+
+**Cascade.** Dev-brain: `bank/research/born-link-lint.py` (BANNER constant + emit), `bank/build-lessons.md` (item-12 hygiene invariants + ASCII corollary), `bank/plan.md` (§P.2/§P.3 → done), `verification/check.py` (NEW harness), `respawn.md` (S115 prepend + G hand-off), `comms/active.md` (OPEN + CLOSING), this quest-log. Commits `8748c87` (2+12), `c180d31` (item 5 + close), `bc8d8ee` (G hand-off).
+
+**Main-brain changes (crossed into `gielinor/`).** NOT none — this session edited the main brain: `gielinor/spellbook/failure-banners.md` (NEW — the locked-banner registry + no-silent-fallback doctrine) and the three user-only ritual files `gielinor/spellbook/rituals/{respawn,alching,drafts-triage}.md` (each gained a one-line Failure-handling pointer; principal authorized the user-only edits). No identity-layer / `confirmed/` / `meta/` writes; the `meta/write-rules.md` "enforced by hook" note remains routed through a godly proposal at next bankstanding.

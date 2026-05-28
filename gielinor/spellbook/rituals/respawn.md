@@ -4,6 +4,8 @@ The procedure the agent runs at the start of every session, and as a **mini-resp
 
 This file is the canonical ritual. The agent performs it; the principal owns its definition.
 
+**Failure handling.** On any step failure (a required file won't read, the `@import`s didn't land, an expected layer is missing), emit this ritual's locked banner from `spellbook/failure-banners.md` verbatim and **halt** — do not narrate it softly and continue, and never act as if a load completed that didn't.
+
 ## Why this ritual exists
 
 Context is finite and recall degrades as it fills (context rot). Respawn answers: of everything in the brain, what *must* be loaded before the agent can act, and what can wait for cued retrieval?

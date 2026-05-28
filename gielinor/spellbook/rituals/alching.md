@@ -4,6 +4,8 @@ The procedure the agent runs to tend a **single player's** content. Active, not 
 
 Named for the RuneScape High Alchemy spell: cast on items in your inventory to convert them into something more useful. A tidying-while-extracting-value ritual you do to your own stuff.
 
+**Failure handling.** On any step failure (a promotion `git mv` fails, a layer won't read, `last-alched.md` won't write), emit this ritual's locked banner from `spellbook/failure-banners.md` verbatim and **halt** — do not skip the failed step silently, and never mark the pass finished when the knowledge layer is in a partial state.
+
 ## Alching is its own mode
 
 Alching is **a distinct session mode**, separate from player mode, unscoped mode, and bankstanding. While alching is running, the agent is the active player tending its own house — not adventuring, not the system-as-a-whole.

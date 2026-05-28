@@ -4,6 +4,8 @@ The procedure the agent runs when the principal invokes `/drafts`. A standalone 
 
 Born 2026-05-22 (S038, brain-underutilization fix). The need surfaced when 12+ confirmed entries existed on disk but `respawn.md` was reading only `current.md`, and 5+ drafts had been sitting promotion-ready for days with no review pass. Alching covers the gate but is too heavy to invoke just for promotion. `/drafts` is the lightweight cut.
 
+**Failure handling.** On any step failure (a verdict `git mv` fails, a layer won't read), emit this ritual's locked banner from `spellbook/failure-banners.md` verbatim and **halt** — never report the triage as clean when some verdicts landed and some didn't.
+
 ## Scope
 
 **In scope:**

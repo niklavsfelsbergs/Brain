@@ -39,6 +39,16 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 MIGRATE = HERE / "obsidian-link-migrate.py"
 
+# Locked failure receipt (Khaan item 2). CANONICAL copy lives in
+# gielinor/spellbook/failure-banners.md; this is the mirror. They MUST match
+# byte-for-byte -- item 5's golden-file check asserts the equality so the two
+# copies can't drift. Emit verbatim on any failure path; never fail silently.
+BANNER = (
+    "## BORN-LINK LINT FAILED -- the graph is not safe to commit\n"
+    "A malformed wikilink or a failed migrate pass means the commit was blocked "
+    "rather than silently mangled. Fix the listed link(s) and re-commit."
+)
+
 
 def load_migrate():
     spec = importlib.util.spec_from_file_location("obsidian_link_migrate", MIGRATE)
@@ -111,6 +121,7 @@ def main():
         for mode in ("links", "prose"):
             r = run_migrate(vault, mode, csv)
             if r.returncode != 0:
+                sys.stderr.write("\n" + BANNER + "\n")
                 sys.stderr.write(f"[born-link] migrate {mode} failed:\n{r.stderr}\n")
                 return 1
         fixed = [f for f in targets
@@ -129,8 +140,9 @@ def main():
             blocks.append((f, lineno, link, target))
 
     if blocks:
+        sys.stderr.write("\n" + BANNER + "\n")
         sys.stderr.write(
-            "\n[born-link] COMMIT BLOCKED — malformed wikilink(s) that Obsidian "
+            "\n[born-link] COMMIT BLOCKED -- malformed wikilink(s) that Obsidian "
             "cannot resolve (fix the target stem, then re-commit):\n")
         for f, ln, link, target in blocks:
             sys.stderr.write(f"  {f}:{ln}  {link}\n")

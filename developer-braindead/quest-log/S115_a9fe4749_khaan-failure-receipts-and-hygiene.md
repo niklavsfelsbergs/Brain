@@ -28,12 +28,28 @@ Item 2's banner doctrine needs a home + a binding into the rituals. The three ag
 
 First banner used `☠` + em-dash; the Windows console codepage mangled it to `☠`/`�` on fire — defeating a *recognizable* receipt. Switched all four banners to **ASCII** (`--`, no emoji); all-caps carries the loudness. Also ASCII'd the adjacent pre-existing `COMMIT BLOCKED —` detail line (zero behavioral risk, same stderr block). Pairs with the [[S037_terminal_switchboard_phase_3_click_to_focus|S037]] ASCII-for-`.ps1` lesson. Agent-emitted markdown banners still render unicode fine — the rule is only for output crossing a Windows-console / Python-subprocess boundary.
 
+**2+12 committed** at `8748c87` (scoped pathspec; the born-link pre-commit hook auto-wrapped + re-staged this quest-log on the way through — live confirmation the enforcement still fires).
+
+## Then — item 5 (golden-file verification harness)
+
+Principal chose "commit 2+12, then build item 5." Home decision (multiple-choice): **dev-brain `verification/`** — Braindead owns construction-verification, one harness spanning both vaults, keeps gielinor clean of meta-test code.
+
+**Built `developer-braindead/verification/check.py`** — one harness, registry of code-shaped checks, runnable standalone (`python developer-braindead/verification/check.py`). Dogfoods item 2 (own locked `VERIFICATION FAILED` banner) + item 12 (ship-dormant: NOT auto-wired into pre-commit — promote when wanted).
+
+- **C1 banner-integrity** — registry holds the 4 ritual banners; `born-link-lint.py` BANNER == its registry block byte-for-byte.
+- **C2 born-link-golden** — malformed `[[x.md]]`/`[[../y]]` → block (exit 1 + banner); clean → exit 0. Fixtures **inline → tempdir** (NOT committed `.md`: the commit hook lints every staged `.md`, so a committed malformed fixture would block its own commit — the meta-trap dodged).
+- **C3 write-boundaries** — the 4 sub-agent boundary hooks (dwarf/gnome/penguin/shipping-agent) each block an off-surface path (exit 2), allow an on-surface path (exit 0), stay inert on an untyped `general-purpose` spawn (exit 0 — the [[S110_144c0ca2_brain_full_audit|S110]] caveat made permanent). Payloads crafted from each hook's actual stdin contract (read the hooks first — no guessing).
+
+**Verified BOTH ways** (the harness must fail too, not just pass): 3/3 PASS exit 0; then fault-injected a one-char drift into the born-link BANNER → C1 FAIL + `VERIFICATION FAILED` banner + exit 1 → restored (born-link-lint.py back to byte-identical, clean diff).
+
+**Deferred:** brittle markdown-structure checks (respawn step-order, drafts-triage verdict table — break on benign reword); the born-link WRAP path (needs a resolvable mini-vault; exercised live every commit, verified S118).
+
 ## State / next
 
-- plan.md §P.2 → done; §P.3 (item 5, golden-file verification harness) is NEXT — it would formalize the byte-match check done ad hoc here into `verification/check.py` per ritual.
-- **Not yet committed** — awaiting principal go (ask-before-committing). Close artifacts (respawn prepend, comms CLOSING) pending at session close.
+- plan.md §P.2 + §P.3 → done. Khaan recommended-sequence steps 1+2 complete.
 - Pending from [[S114_277d9053_khaan-audit-and-open-gate|S114]], unchanged: `meta/write-rules.md` "enforced by hook" line via godly proposal at next bankstanding.
+- Next Khaan steps (sequence step 3+): positive-gate-bundle (item 1 + H anti-lockout), 5-lens doctrine (4), scored recall/digest/charges (3/8/7). Autonomous (A/B/C…) = §C-phase, much-later.
 
-## Targets touched (for the scoped commit)
+## Targets touched
 
-`gielinor/spellbook/failure-banners.md` (new), `gielinor/spellbook/rituals/{respawn,alching,drafts-triage}.md`, `developer-braindead/bank/research/born-link-lint.py`, `developer-braindead/bank/build-lessons.md`, `developer-braindead/bank/plan.md`, this quest-log, `respawn.md` (prepend at close), `comms/active.md`.
+`gielinor/spellbook/failure-banners.md` (new), `gielinor/spellbook/rituals/{respawn,alching,drafts-triage}.md`, `developer-braindead/bank/research/born-link-lint.py`, `developer-braindead/bank/build-lessons.md`, `developer-braindead/bank/plan.md`, `developer-braindead/verification/check.py` (new), this quest-log, `respawn.md` (prepend at close), `comms/active.md`.

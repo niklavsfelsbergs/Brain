@@ -12,10 +12,15 @@
 - **Maersk renewal alone strands ~25k parcels** (engine rejects its own incumbent oversize/country tail) → must pair Maersk with a broad-coverage carrier (Hermes/GLS).
 - Provisional sets leaning on FedEx/Güll/DHL Paket as NEW_OFFER score higher (€330–379k) **but rest on under-priced held engines** (FedEx prices residential/fuel/vol-weight at 0) → optimistic ceilings, will shrink once priced. This is why we wait, not decide.
 
+## Done this session (4c2210ee, 2026-05-28) — UNCOMMITTED, awaiting principal go
+1. **`decision_report.html` HARDENED** ✓ (report.py prose). Trustworthy/provisional split (HELD_ENGINES + _is_trustworthy; KPI leads with trustworthy full-cov leader renew_maersk_plus_hermes €247.7k vs provisional ceiling renew_maersk_plus_fedex €379k; per-row TW/PROV badge, 17/73 of 90); decision-so-far in summary; 2 material caveats callout (dpd_pl CH €484k, gls EFTA €278.9k); full Section-04 carrier rewrite (principal chose full); refreshed frontier/fuel/what-changes prose. Regenerated + verified (numbers ground-truthed; NOT pixel-eyeballed). Opened in browser.
+2. **Full-year basis CHOSEN = Option 1** (replay 2025 actuals on 2026 cards). Feasibility GREEN: repoint population.sql silver→gold (silver cost_summary gone; all 22 fact cols + 14 buckets on gold 1:1), 2025 in-scope = 2.93M ships, ~26M-row matrix (chunk by month). Recorded in DECISIONS.md / NEXT.md item 3 (5-step build plan) / FULL_YEAR_SCOPING_NOTE.md.
+
 ## Next concrete step (agent-drivable — pick up here)
-1. **Harden `decision_report.html`** — fold in the trustworthy-vs-provisional split + decision-so-far read + the 2 material caveats (dpd_pl CH €484k, gls EFTA €278.9k). report.py prose edits (REPORT_NOTES already carries the content). OFFERED this session; **principal didn't yet say go — confirm first.**
-2. **Meantime workstreams** (carrier-independent, ranked): (a) full-year scoping — feasibility of a 2025 full-year population pull from the mart + pick the annualisation basis (the decision basis, parked; longest pole); (b) service-quality sidecar (S034 condition #2 — returns/claims/transit/account-team per carrier); (c) fuel sensitivity sweep across the 6 rebuilt engines (pre-spike → Iran-spike bands; you flagged fuel = band not point).
-3. **Refresh the management deck** (`docs/EU_Tender_2026_Management_Summary.*`) — STALE pre-ranking snapshot (Slide 6 "no numbers by design" now obsolete). Flip to current-situation overview. `.pptx` needs PowerPoint closed to rebuild; `.md`+`.html` regenerate freely. Deck is uncommitted.
+1. **COMMIT** the report-hardening + doc updates (principal go): tender = report.py + decision_report.html + docs/{DECISIONS,NEXT}.md + FULL_YEAR_SCOPING_NOTE.md (commit -- <pathspec>, untracked debris stays out); brain = jebrim quest-log + inventory + comms + intent.
+2. **Full-year build (Option 1)** — the 5-step plan in NEXT.md item 3: (a) repoint+widen population.sql to gold 2025, (b) chunk cost_matrix.py by month, (c) wire seasonal peak/demand surcharges, (d) re-price do-nothing baseline on 2026 rates, (e) fuel band → re-run scorer+report. Meaty next phase.
+3. **Other meantime workstreams** (carrier-independent): service-quality sidecar (S034 cond #2); fuel sensitivity sweep across the 6 rebuilt engines.
+4. **Refresh the management deck** (`docs/EU_Tender_2026_Management_Summary.*`) — STALE pre-ranking snapshot. Flip to current-situation overview. `.pptx` needs PowerPoint closed; `.md`+`.html` regenerate freely.
 
 ## Status checks (principal / Picanova ops — phrased as questions)
 - The 4 internal items (fold into engine assumptions when answered): DHL Express incoterm — DTP? DHL Express pickup days/week? AP parcels-per-pallet density? AP import-VAT-8% treatment?

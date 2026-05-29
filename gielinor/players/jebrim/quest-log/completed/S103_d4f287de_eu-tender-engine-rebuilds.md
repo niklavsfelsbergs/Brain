@@ -1,7 +1,7 @@
 # S103 — EU Tender 2026 engine rebuilds (continued)
 
 **Session:** d4f287de · 2026-05-27 · Jebrim (principal)
-**Continues:** S102 (6217a8d5, closed clean @15:30). Adopting resume `inventory/eu-tender-engine-rebuilds-resume__6217a8d5.md`.
+**Continues:** [[S102_6217a8d5_eu-tender-fedex-reply-review|S102]] (6217a8d5, closed clean @15:30). Adopting resume `inventory/eu-tender-engine-rebuilds-resume__6217a8d5.md`.
 **Repo:** out-of-tree `Documents/GitHub/bi-analytics-main/NFE/projects/2_EU_tender_2026/2_analysis/carriers/`
 
 ## Goal
@@ -38,6 +38,6 @@ Read the dhl_express engine (constants/calculate) + REVIEW_CONCLUSIONS + confirm
 1. **dhl_express residual drivers → MODEL BOTH** (demand + pickup) as clearly-flagged ASSUMPTION constants, not hold-at-0. (Folded into the resume note's build plan.)
 2. **Session scope → checkpoint here, build dhl_express fresh next session.** Right discipline for a precision-sensitive multi-subsystem engine; avoids carrying a half-built engine across a context boundary.
 
-**Clean checkpoint state:** hermes-2.0.0 shipped + committed (tender `990d61c`). Full dhl_express-2.0.0 build plan (7 ordered steps, model-both folded in) is durable in `inventory/eu-tender-engine-rebuilds-resume__d4f287de.md`. Brain-side S103 records (this quest-log, inventory resume, comms, intent) UNCOMMITTED — held for principal go (consistent with the held S099/B-008 brain records). Live sibling: guthix-97dba361 (B-009 bankstanding, globals-only) — no collision; jebrim-34ab5b53 (mgmt deck, different bi-analytics subtree).
+**Clean checkpoint state:** hermes-2.0.0 shipped + committed (tender `990d61c`). Full dhl_express-2.0.0 build plan (7 ordered steps, model-both folded in) is durable in `inventory/eu-tender-engine-rebuilds-resume__d4f287de.md`. Brain-side S103 records (this quest-log, inventory resume, comms, intent) UNCOMMITTED — held for principal go (consistent with the held S099/[[B-008_2026-05-26_eighth-bankstanding|B-008]] brain records). Live sibling: guthix-97dba361 ([[B-009_2026-05-27_ninth-bankstanding|B-009]] bankstanding, globals-only) — no collision; jebrim-34ab5b53 (mgmt deck, different bi-analytics subtree).
 
 Session paused at clean checkpoint. Resume = wire dhl_express-2.0.0 per the resume-note plan.

@@ -64,7 +64,7 @@ Briefing template per gnome:
 - Any player's `examine/drafts/`, `niksis8_character/drafts/`.
 - Any player's `keepsake/proposals/`.
 - Any player's `spellbook/drafts/skills/`, `spellbook/skills/` (the latter via alching-promotion).
-- Any player's `last-alched.md` (the alching stamp — gnomes run alching, so they write its closing step; widened B-010 2026-05-29).
+- Any player's `last-alched.md` (the alching stamp — gnomes run alching, so they write its closing step; widened [[B-010_2026-05-29_tenth-bankstanding|B-010]] 2026-05-29).
 - Global `examine/drafts/`, `niksis8/drafts/`, `keepsake/proposals/`, `lorebook/drafts/`.
 - `players/inbox/`.
 - Any `archive/` or `rejected/` path (housekeeping moves).

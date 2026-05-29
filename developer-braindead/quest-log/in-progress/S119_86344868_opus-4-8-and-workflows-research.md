@@ -1,6 +1,6 @@
 # S119 — Opus 4.8 substrate + dynamic-workflows research
 
-**Session.** sid 86344868. Dev-brain via "lets develop gielinor", mid-conversation. OPEN posted (discussion-only initial scope), UPDATE posted on the pivot to a doc write. Sibling braindead-e0a88f49 (S118, item-6 freshness) flagged stale-intent but principal confirmed **live-but-idle** → no ABANDONED synthesis, steered clear of its surfaces.
+**Session.** sid 86344868. Dev-brain via "lets develop gielinor", mid-conversation. OPEN posted (discussion-only initial scope), UPDATE posted on the pivot to a doc write. Sibling braindead-e0a88f49 ([[S118_e0a88f49_khaan-item-6-freshness-header|S118]], item-6 freshness) flagged stale-intent but principal confirmed **live-but-idle** → no ABANDONED synthesis, steered clear of its surfaces.
 
 ## What was asked
 
@@ -28,9 +28,9 @@ Principal asked which model this session runs (→ Opus 4.8, 1M context, `claude
 
 ## Notes
 
-- Item 4 (5-lens) turned out built in parallel by S120 (885d6702) — visible as the new five-lens section in `gielinor/meta/communication-protocol.md`; not this session's work.
+- Item 4 (5-lens) turned out built in parallel by [[S120_885d6702_khaan-item-4-five-lens-doctrine|S120]] (885d6702) — visible as the new five-lens section in `gielinor/meta/communication-protocol.md`; not this session's work.
 - Principal's standing concern: he'll forget the workflow capability exists → asked me to surface it when relevant. Delivered as a cross-conversation `feedback` memory (heuristic disposition, not a hook; brain-session-scoped). Declined the global `~/.claude/CLAUDE.md` line.
 
 **Cascade.** `bank/plan.md` (§Q added; §Q.1 billing answered `[x]`; §Q.2 sharpened) · `bank/research/2026-05-29-opus-4-8-and-workflows.md` (new substrate note) · this quest-log entry · `bank/build-lessons.md` (fast-mode inference lesson) · `comms/active.md` (OPEN + UPDATE + CLOSING) · `respawn.md` (S119 prepend). Cross-conversation memory (outside the repo): `~/.claude/projects/.../memory/feedback_suggest_dynamic_workflows_when_fanout.md` + `MEMORY.md` pointer.
 
-**Main-brain changes.** none — no `gielinor/` writes this session (the five-lens edit in `gielinor/meta/communication-protocol.md` was S120/885d6702, not S119).
+**Main-brain changes.** none — no `gielinor/` writes this session (the five-lens edit in `gielinor/meta/communication-protocol.md` was [[S120_885d6702_khaan-item-4-five-lens-doctrine|S120]]/885d6702, not S119).

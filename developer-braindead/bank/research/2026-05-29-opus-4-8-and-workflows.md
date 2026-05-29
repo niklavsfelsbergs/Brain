@@ -1,6 +1,6 @@
 # Opus 4.8 + dynamic workflows — substrate knowledge
 
-> **What this is.** Reference knowledge about the model substrate the brain runs on, captured [[S119]] (2026-05-29, dev-brain consultation, sid 86344868) when the principal asked "what's new in 4.8." Anchors plan [[§Q]] (dynamic workflows as a fan-out engine for the brain). Sources at the foot — all official Anthropic docs unless noted.
+> **What this is.** Reference knowledge about the model substrate the brain runs on, captured [[S119_86344868_opus-4-8-and-workflows-research]] (2026-05-29, dev-brain consultation, sid 86344868) when the principal asked "what's new in 4.8." Anchors plan [[§Q]] (dynamic workflows as a fan-out engine for the brain). Sources at the foot — all official Anthropic docs unless noted.
 
 ## The model we run on
 
@@ -38,7 +38,7 @@ Official doc, verbatim: **"Runs count toward your plan's usage and rate limits l
 
 ### The open governance question (the §Q.2 gate — still open)
 
-Workflow subagents **"always run in `acceptEdits` mode and inherit your tool allowlist, regardless of your session's mode. File edits are auto-approved."** So the permission layer is OFF inside a workflow → **our PreToolUse hooks are the only remaining write guard.** Whether `require-open-on-entry.py` (D-033) + the 4 write-boundary hooks fire inside a workflow (do they see `payload.agent_type`?) is now load-bearing, not nice-to-have. PreToolUse hooks *should* still fire under acceptEdits (that mode governs prompting, not hook execution) — but this is exactly the verify-it-fires case to confirm empirically before letting a workflow write brain content. See plan [[§Q]].
+Workflow subagents **"always run in `acceptEdits` mode and inherit your tool allowlist, regardless of your session's mode. File edits are auto-approved."** So the permission layer is OFF inside a workflow → **our PreToolUse hooks are the only remaining write guard.** Whether `require-open-on-entry.py` ([[D-033_positive_enforcement_gate_open_on_entry|D-033]]) + the 4 write-boundary hooks fire inside a workflow (do they see `payload.agent_type`?) is now load-bearing, not nice-to-have. PreToolUse hooks *should* still fire under acceptEdits (that mode governs prompting, not hook execution) — but this is exactly the verify-it-fires case to confirm empirically before letting a workflow write brain content. See plan [[§Q]].
 
 ## Sources
 

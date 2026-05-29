@@ -1,18 +1,18 @@
-# S118 D1 — EU Tender snapshot-docs refresh (dwarf trace)
+# [[S118_f41737e5_eu-tender-decision-scorer-report-regen|S118]] D1 — EU Tender snapshot-docs refresh (dwarf trace)
 
-**Role:** Jebrim dwarf. **Spawned by:** Jebrim principal (S118).
+**Role:** Jebrim dwarf. **Spawned by:** Jebrim principal ([[S118_f41737e5_eu-tender-decision-scorer-report-regen|S118]]).
 **Scope:** Bring two stale out-of-tree EU-Tender-2026 snapshot docs to current state. No git commit (principal commits). Out-of-tree paths under `bi-analytics-main/NFE/projects/2_EU_tender_2026/`.
 
 ## What I did
 - Read both target files, then rewrote/refreshed in place preserving voice + section structure.
-- `2_analysis/docs/NEXT.md` — full rewrite (always-overwritten handoff). Stamp → 2026-05-28 (S118).
+- `2_analysis/docs/NEXT.md` — full rewrite (always-overwritten handoff). Stamp → 2026-05-28 ([[S118_f41737e5_eu-tender-decision-scorer-report-regen|S118]]).
 - `carrier_responses_to_open_questions/CROSS_CARRIER_OVERVIEW.md` — refreshed header, readiness table, per-carrier notes, outstanding list, cross-carrier themes.
 
 ## NEXT.md changes
 - Phase line → engines rebuilt → cost matrix re-run → decision report regenerated.
 - Listed all 6 rebuilt+committed engines with commits (maersk-3.0.0 3b86d6a, hermes-2.0.0 990d61c, dhl_express-2.0.0 146e9ed, austrian_post-2.0.0 e8ddc62, dpd_pl-2.0.0 5998ef6, gls-2.0.0 96bc47f).
-- Added S117 cost-matrix ranking (Hermes 4.575 < DPD PL 4.907 < GLS 5.029 << FedEx 6.93 [HELD] < DHL Paket 7.98 [HELD] < Maersk 8.11; DPD PL flipped →2nd).
-- Added S118 decision_scorer + report regen (90 sets, do_nothing €0.00 PASS, ~€196k–€206k Q1 saving).
+- Added [[S117_d1a3b803_eu-tender-dpd-pl-gls-engine-builds|S117]] cost-matrix ranking (Hermes 4.575 < DPD PL 4.907 < GLS 5.029 << FedEx 6.93 [HELD] < DHL Paket 7.98 [HELD] < Maersk 8.11; DPD PL flipped →2nd).
+- Added [[S118_f41737e5_eu-tender-decision-scorer-report-regen|S118]] decision_scorer + report regen (90 sets, do_nothing €0.00 PASS, ~€196k–€206k Q1 saving).
 - Added the two material flagged assumptions (dpd_pl CH €484k, gls EFTA €278.9k; both collapse under CCD).
 - New "Status checks (user-blocked, phrased as questions)" = the 4 INTERNAL Picanova-ops items (DHL Express DTP incoterm; AP pallet density; DHL Express pickup days/week; AP import-VAT-8%). Open-Q triage: nothing vital to ask a carrier.
 - "Still carrier-blocked" = FedEx round-2 (June ZOOM) / DHL Paket round-2 (Bulky) / Güll (no reply, guell-1.0.0) / UPS (no offer).
@@ -21,7 +21,7 @@
 ## CROSS_CARRIER_OVERVIEW.md changes
 - Header → 2026-05-28; added a cost-matrix-ranking + report-regen callout block.
 - Readiness table: 6 done engines now "rebuilt + committed (engine-x.y.z)" with commits + €/parcel; added DPD PL + GLS rows; FedEx/DHL Paket marked HELD.
-- Per-carrier notes: rewrote Hermes/AP/Maersk/DHL Express to "rebuilt + committed" with engine internals; added new DPD PL + GLS sections (S115, deterministic-ready); DHL Paket/FedEx marked HELD + round-2 dispatched/sent.
+- Per-carrier notes: rewrote Hermes/AP/Maersk/DHL Express to "rebuilt + committed" with engine internals; added new DPD PL + GLS sections ([[S115_db60ed8a_eu-tender-dpd-pl-reply-review|S115]], deterministic-ready); DHL Paket/FedEx marked HELD + round-2 dispatched/sent.
 - Re-ordered notes by competitiveness (Hermes, DPD PL, GLS, AP, Maersk, DHL Express, DHL Paket, FedEx).
 - "Still outstanding" list → FedEx round-2 / DHL Paket round-2 / Güll (no reply) / UPS (no offer); dropped DPD PL + GLS (now reviewed/built).
 - CH-customs theme line updated for DPD PL + GLS; noted both collapse under consolidated customs.
@@ -81,7 +81,7 @@
 - **FedEx / DHL Paket / Güll / UPS left OPEN** (carrier-blocked) — added one-line current-status notes only.
 
 ### ASSUMPTIONS.md
-- Read fully (755 lines). Found Maersk/DHL Paket/DHL Express/Hermes/AP/FedEx already carried "REPLY UPDATE 2026-05-27" blocks (folded by prior S099/S102 sessions). **GLS and DPD PL were still pure v1/Phase-1 placeholders** — those were the gap.
+- Read fully (755 lines). Found Maersk/DHL Paket/DHL Express/Hermes/AP/FedEx already carried "REPLY UPDATE 2026-05-27" blocks (folded by prior S099/[[S102_6217a8d5_eu-tender-fedex-reply-review|S102]] sessions). **GLS and DPD PL were still pure v1/Phase-1 placeholders** — those were the gap.
 - **GLS:** added a REPLY UPDATE block (gls-2.0.0) flipping placeholder rows to confirmed wired values (compounding stack, Pre-financing/Weighing→0, Delivery-private €0.15, EFTA €25) + marked the **EFTA €278.9k MATERIAL FLAGGED ASSUMPTION** (collapses under CCD).
 - **DPD PL:** added a REPLY UPDATE block (dpd_pl-2.0.0) + marked the **CH-customs €484k MATERIAL FLAGGED ASSUMPTION** (€44/parcel opt-1; collapses under CCD).
 - Kept AP line-haul €0.83/parcel (density 150, sensitivity €20–82k) + DHL Express demand Jan1–Feb16 as flagged (already present, reaffirmed).
@@ -102,16 +102,16 @@
 **Scope:** the two APPEND-ONLY history docs under `2_analysis/docs/` that stopped at 2026-05-21 (session 25). Append concise entries to bring both current; read each first to match format; never edit existing entries; no git commit.
 
 ### SESSION_LOG.md — 6 new entries appended (newest-at-top, before session 25)
-- session 31 (2026-05-28) — decision_scorer + report regen + open-Q triage (brain S118): 90 sets, do_nothing €0.00 PASS, no code change; ~€196-206k Q1 saving; 4 residuals INTERNAL; 2 material flagged assumptions.
+- session 31 (2026-05-28) — decision_scorer + report regen + open-Q triage (brain [[S118_f41737e5_eu-tender-decision-scorer-report-regen|S118]]): 90 sets, do_nothing €0.00 PASS, no code change; ~€196-206k Q1 saving; 4 residuals INTERNAL; 2 material flagged assumptions.
 - session 30 (2026-05-28) — cost_matrix re-run all 9 engines (4.76M/3.27M); Q1 like-for-like ranking on 429,721 common-coverage parcels; DPD PL flipped →2nd.
-- session 29 (2026-05-28) — DPD PL + GLS reviews + dpd_pl-2.0.0 (5998ef6) / gls-2.0.0 (96bc47f) rebuilds (S115/S117); GLS 0-byte-reply lesson.
-- session 28 (2026-05-27/28) — dhl_express-2.0.0 (146e9ed, S104) + austrian_post-2.0.0 (e8ddc62, S114).
+- session 29 (2026-05-28) — DPD PL + GLS reviews + dpd_pl-2.0.0 (5998ef6) / gls-2.0.0 (96bc47f) rebuilds ([[S115_db60ed8a_eu-tender-dpd-pl-reply-review|S115]]/[[S117_d1a3b803_eu-tender-dpd-pl-gls-engine-builds|S117]]); GLS 0-byte-reply lesson.
+- session 28 (2026-05-27/28) — dhl_express-2.0.0 (146e9ed, [[S104_e50113ed_eu-tender-engine-rebuilds|S104]]) + austrian_post-2.0.0 (e8ddc62, [[S114_db60ed8a_eu-tender-austrian-post-rebuild|S114]]).
 - session 27 (2026-05-27) — maersk-3.0.0 (3b86d6a) + hermes-2.0.0 (990d61c).
-- session 26 (2026-05-27) — reply-review wave + FedEx Round-1 reviewed + Round-2 sent (S099/S102).
+- session 26 (2026-05-27) — reply-review wave + FedEx Round-1 reviewed + Round-2 sent (S099/[[S102_6217a8d5_eu-tender-fedex-reply-review|S102]]).
 - Continued the local session counter from 25; matched existing header style + NEXT.md pointer per entry.
 
 ### DECISIONS.md — 3 new dated 2026-05-28 entries appended (newest-at-top, before the 2026-05-27 FedEx entry)
-- (a) Q1 like-for-like ranking = current decision basis; DPD PL flipped uncompetitive→2nd (S118) — 6-row ranking table + S034 -€417k contrast.
+- (a) Q1 like-for-like ranking = current decision basis; DPD PL flipped uncompetitive→2nd ([[S118_f41737e5_eu-tender-decision-scorer-report-regen|S118]]) — 6-row ranking table + [[S034_2026-05-22_eu-tender-logic-review|S034]] -€417k contrast.
 - (b) Open-questions triage: no further carrier round for Maersk/DHL Express/AP/DPD PL/GLS; 4 residuals internal.
 - (c) Two material flagged assumptions held (dpd_pl CH €484k @ opt-1; gls EFTA €278.9k) pending consolidated-customs call — ~€763k Q1 contingent.
 - Matched existing entry format (date header, one-line decision, rationale, Related wiki-links).

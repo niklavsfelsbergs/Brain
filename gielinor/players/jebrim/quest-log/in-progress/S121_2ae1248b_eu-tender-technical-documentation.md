@@ -1,6 +1,6 @@
 # S121 — EU Tender 2026: technical documentation (document-as-audit)
 
-**Session:** jebrim-2ae1248b · 2026-05-28 · new quest, same session re-opened after S120 close.
+**Session:** jebrim-2ae1248b · 2026-05-28 · new quest, same session re-opened after [[S120_3760e65b_eu-tender-full-year-build|S120]] close.
 **Goal:** Full technical documentation of the analysis system incl. every calculation engine's logic, as a "document-as-audit" pass (principal-chosen scope: stable-first; parallel dwarves).
 
 ## Resume foreground
@@ -21,7 +21,7 @@ See `inventory/eu-tender-technical-documentation-resume__2ae1248b.md` (written a
   - A3/A4 (maersk ROW fuel scope base-only vs base+surcharges; ROW AHS stacked vs highest-only) — small ROW tail.
   - A5 (gls Season month gate no date-column guard) — latent crash.
   - Doc-drift B1–B11: stale CLAUDE.md files (maersk/gls/dpd_pl), Hermes ASSUMPTIONS fuel row + "11 assumptions" framing, FUEL_SUMMARY "no reply" lines, dpd_pl CH-customs €484k-Q1-vs-€2.32M/yr basis, AP FX band +3.7%→+3.2%, maersk fixtures/parity.
-- Cross-engine note: PEAK (maersk EU + hermes Q4) was dead code on Q1; S120 full-year is the first to fire it — validation to-do, not a fix.
+- Cross-engine note: PEAK (maersk EU + hermes Q4) was dead code on Q1; [[S120_3760e65b_eu-tender-full-year-build|S120]] full-year is the first to fire it — validation to-do, not a fix.
 
 **Status:** technical reference COMPLETE (15 files). All UNCOMMITTED — held for principal go + a corrections-scope decision (code fixes A1–A5 move numbers → re-run; doc-drift B1–B11 is a no-number cleanup). Dwarf traces in `quest-log/in-progress/S121_*_dwarf.md`.
 

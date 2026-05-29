@@ -9,7 +9,7 @@
 - `docs/ASSUMPTIONS.md` DHL Express block (lines 255-307).
 
 ## Engine snapshot
-- Version `dhl_express-2.0.0` (S104, 2026-05-27). Services: express_worldwide (TDI air), economy_select (DDI road), HD-only, fuel-aware cheapest-pick.
+- Version `dhl_express-2.0.0` ([[S104_e50113ed_eu-tender-engine-rebuilds|S104]], 2026-05-27). Services: express_worldwide (TDI air), economy_select (DDI road), HD-only, fuel-aware cheapest-pick.
 - Surcharges: OVERSIZE, OVERWEIGHT(never fires), NONCONVEYABLE(weight band, OSP excl), DEMAND(Jan1-Feb16 window), REMOTE_AREA + flat pickup-line-haul alloc + customs=0.
 - Two-phase fuel: per-CW pct × (base + oversize/overweight/nonconveyable/remote/demand). Pickup excluded (road fuel baked in).
 

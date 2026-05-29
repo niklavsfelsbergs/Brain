@@ -9,7 +9,7 @@
 - `docs/ASSUMPTIONS.md` AP block (lines 409–442) + cross-carrier AT fuel-scope row (52–53).
 
 ## Engine snapshot
-- Version `austrian_post-2.0.0` (S114 rebuild). Services: `paket_at_hd` (AT), `paket_ch_hd` (CH+LI). HD only, gross weight only, max 30 kg.
+- Version `austrian_post-2.0.0` ([[S114_db60ed8a_eu-tender-austrian-post-rebuild|S114]] rebuild). Services: `paket_at_hd` (AT), `paket_ch_hd` (CH+LI). HD only, gross weight only, max 30 kg.
 - Phase order: supplement → attach rates (forward-asof on weight_kg) → eligibility → `_apply_ch_fx` → apply_surcharges(BASE) → `_apply_fuel` → finalize → stamp.
 - Surcharges: MAUT_AT 0.29 (AT), SPERRGUT_AT 7.80 (AT, d_max>100 & L+girth<=360), DIESEL_CH 0.05 (CH), CUSTOMS_CH 1.00 (CH, regardless ZAZ), LINE_HAUL ~0.83 (all eligible, flagged), PEAK 0 (placeholder). All BASE phase, none DEPENDENT.
 - Fuel: AT base×4% (D5 Q1 point est); CH=0 (diesel is fixed-EUR surcharge).

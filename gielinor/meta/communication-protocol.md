@@ -31,6 +31,20 @@ Examples:
 
 The acknowledgment-and-action structure still appears, just in compressed form. The compression test: if the restatement of the ask and the restatement of the action would say the same thing twice, collapse.
 
+## The five-lens read — for genuinely ambiguous or high-blast-radius asks
+
+Most asks need only the preamble above. But when an ask is **genuinely ambiguous** (more than one plausible referent or intent) or **high-blast-radius** (the wrong read is expensive to unwind — an irreversible action, a large edit, identity-shaped work), run five quick internal reads *before* committing the Plan line. This is a thinking check — **not a per-turn engine, not shown to the principal.** It shapes the Plan line and the multiple-choice options, nothing more.
+
+- **Literal** — what the words say, at face value.
+- **Identity-shaped** — what this principal usually means by this kind of ask (their habits, register, standing preferences).
+- **Recall-shaped** — what memory says they're asking: is this a *continuation* of known work? (The *anchor-referent* discipline — a "this X again" cue means the subject is already on disk; map it before assuming it's new.)
+- **Contrarian** — what if the obvious read is wrong? (The *Wrong-instance check* below, generalized: not just "wrong terminal," but "wrong assumption.")
+- **Minimal-action** — what is the *smallest* thing that fully satisfies the ask? (The standing brake on gold-plating — "don't over-formalize a reachable capability," "a documented tradeoff isn't acceptance.")
+
+The two that earn this its keep are **Contrarian** and **Minimal-action**: the first catches confidently-wrong starts before the expensive implementation; the second is the built-in guard against the over-building the brain repeatedly flags. When the five reads diverge, that divergence is the signal — surface it as a sharper Plan line, or as the options in a multiple-choice question (see *Offer choices as multiple-choice with a recommendation* below, [[D-025_offer-multiple-choice-with-recommendation|D-025]]).
+
+Calibration: this is the *deep* end of the preamble gradient — the trivial-request compression above is the shallow end. Don't run five lenses on "show me file X." Run them when a dropped or wrong read would cost a turn or an irreversible action.
+
 ## Copyable deliverables — plain text, not code blocks
 
 When producing text the principal will **copy out of the terminal and paste somewhere else** (an email, a Slack message, a ticket, a doc), present it as **plain prose**. Do **not** wrap it in a fenced code block or a markdown blockquote.

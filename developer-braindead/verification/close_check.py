@@ -54,6 +54,16 @@ GIELINOR = ROOT / "gielinor"
 GIELINOR_COMMS = GIELINOR / "comms" / "active.md"
 GIELINOR_PLAYERS = GIELINOR / "players"
 
+# Session-load hygiene caps (S125 audit). The brain's discipline-NUDGE chores
+# (comms rotation, the respawn A4 trim) drift because nothing forces them -- the
+# A4 trim was a verbatim no-op for 10+ consecutive closes. This converts those
+# WATCHes into a close-GATE: a real FAIL until the surface is rotated/trimmed,
+# so a must-hold cap actually holds (hook-blocking holds, WATCH drifts). The
+# comms threshold mirrors comms/_about.md's ~300-line rotation trigger; the
+# respawn cap is the header's own "current block + 1-2 pointers" rule.
+THRESH_COMMS_LINES = 300
+THRESH_RESPAWN_PRIOR = 2  # stacked '**Prior ([[Sxxx' per-session blocks (NOT the curated rollups)
+
 # Locked failure receipt (Khaan item 2 pattern; ASCII per the Windows-console
 # lesson). Ritual-neutral wording -- both close rituals share the same
 # do-NOT-declare-wrapped semantics on a gap.
@@ -176,6 +186,25 @@ def check_committed(sid8):
         return (name, False, f"exception: {e}")
 
 
+def check_session_load_dev():
+    name = "session-load hygiene"
+    try:
+        issues = []
+        n = len(COMMS.read_text(encoding="utf-8", errors="replace").splitlines())
+        if n > THRESH_COMMS_LINES:
+            issues.append(f"dev comms/active.md {n} lines > {THRESH_COMMS_LINES} -- rotate to comms/archive/ "
+                          "(keep newest ~30-45; move the rest; per comms/_about.md)")
+        priors = RESPAWN.read_text(encoding="utf-8", errors="replace").count("**Prior ([[")
+        if priors > THRESH_RESPAWN_PRIOR:
+            issues.append(f"respawn.md has {priors} stacked Prior blocks > {THRESH_RESPAWN_PRIOR} -- run the A4 trim "
+                          "(fold older blocks into the rollups; full detail stays in quest-log/)")
+        if issues:
+            return (name, False, "; ".join(issues))
+        return (name, True, f"dev comms {n} lines, respawn {priors} stacked Prior block(s) -- within caps")
+    except Exception as e:
+        return (name, False, f"exception: {e}")
+
+
 def run_dev(sid8: str) -> int:
     results = [
         check_closing(sid8),
@@ -183,6 +212,7 @@ def run_dev(sid8: str) -> int:
         check_respawn(sid8),
         check_active_mode(),
         check_committed(sid8),
+        check_session_load_dev(),
     ]
     return _emit(results, _wrapped_up_hint(sid8))
 
@@ -330,6 +360,19 @@ def check_committed_player(sid8):
         return (name, False, f"exception: {e}")
 
 
+def check_session_load_player():
+    name = "session-load hygiene"
+    try:
+        n = len(GIELINOR_COMMS.read_text(encoding="utf-8", errors="replace").splitlines())
+        if n > THRESH_COMMS_LINES:
+            return (name, False,
+                    f"gielinor comms/active.md {n} lines > {THRESH_COMMS_LINES} -- rotate to comms/archive/ "
+                    "(keep newest ~30; move the rest; per comms/_about.md)")
+        return (name, True, f"gielinor comms {n} lines -- within the {THRESH_COMMS_LINES}-line cap")
+    except Exception as e:
+        return (name, False, f"exception: {e}")
+
+
 def run_player(sid8: str) -> int:
     results = [
         check_closing_player(sid8),
@@ -337,6 +380,7 @@ def run_player(sid8: str) -> int:
         check_resume_player(sid8),
         check_freshness_header_player(sid8),
         check_committed_player(sid8),
+        check_session_load_player(),
     ]
     return _emit(results, _wrapped_up_hint(sid8))
 

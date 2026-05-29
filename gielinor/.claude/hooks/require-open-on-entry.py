@@ -18,11 +18,19 @@
 #
 # DECISION TABLE (principal-chosen 2026-05-28, hard-block scope)
 #   non-brain target path .................................. allow
-#   actor not an OPEN-poster (guthix/wisp/unknown/'') ...... allow
+#   actor not an OPEN-poster (guthix/wisp/unknown) ......... allow
+#   actor unresolved ('') after status + intent fallback ... allow + log skip-noactor
 #   sub-agent (agent_type set) ............................. allow  (dwarves etc. don't post OPENs)
 #   target is an escape path (comms/marker/intent/narration) allow  (so you CAN post the OPEN + set up)
 #   OPEN with this sid8 already in the actor's comms ....... allow
 #   otherwise .............................................. BLOCK
+#
+# ACTOR RESOLUTION (S125 fix for the S124 silent-fail-open hole)
+#   _actor_for(sid8) reads ~/.claude/status/<sid8>.json, written by a SEPARATE
+#   sidecar that can lag the first write of a 'Hey Jebrim'-straight-into-task
+#   session -> '' -> the gate failed open with NO telemetry (invisible). Now we
+#   fall back to the per-session intent file on disk, and if STILL unresolved we
+#   fail open but emit a skip-noactor event so the hole is measurable, not silent.
 #
 # Escapes exist so the entry sequence itself is never gated: posting the OPEN
 # (comms/active.md), the dev-brain marker (.claude/active-mode.txt), intent
@@ -79,6 +87,27 @@ def _actor_for(sid8: str) -> str:
         return (data.get("actor") or "").lower()
     except (OSError, ValueError):
         return ""
+
+
+def _actor_from_intent(sid8: str) -> str:
+    """Disk fallback for actor resolution. The status file is written by a
+    separate sidecar and can lag the first write of a session that opens
+    'Hey Jebrim' straight into a task — so _actor_for returns '' and the gate
+    used to fail open SILENTLY (the S124/61d62e21 hole). The per-session intent
+    file `.claude/intent/<actor>-<sid8>.txt` is the documented on-disk session
+    anchor (communication-protocol.md → Intent narration); recover the actor
+    from its filename prefix. Actor names carry no hyphen, so rsplit is safe."""
+    if not sid8:
+        return ""
+    try:
+        intent_dir = BRAIN_ROOT / ".claude" / "intent"
+        for f in intent_dir.glob(f"*-{sid8}.txt"):
+            actor = f.name[:-4].rsplit("-", 1)[0].lower()  # drop '.txt', take prefix
+            if actor:
+                return actor
+    except OSError:
+        return ""
+    return ""
 
 
 def _player_names() -> set:
@@ -142,10 +171,18 @@ def main() -> int:
     sid = payload.get("session_id") or os.environ.get("CLAUDE_CODE_SESSION_ID") or ""
     sid8 = sid[:8].lower()
 
-    actor = _actor_for(sid8)
+    actor = _actor_for(sid8) or _actor_from_intent(sid8)
     comms = _comms_for(actor)
     if comms is None:
-        return 0  # not an OPEN-posting actor
+        # Empty actor = unresolved (status file lagged AND no intent anchor on
+        # disk). This is the silent-fail-open path that let S124 slip through.
+        # Keep failing open (a hook bug must never brick a session), but log it
+        # so the hole is VISIBLE — instrument, don't re-guess. guthix/wisp and
+        # known-but-non-posting actors are legitimately ungated; don't log them.
+        if actor == "":
+            log_event("require-open", "skip-noactor", actor="", sid8=sid8,
+                      path_class=classify_path(rel))
+        return 0  # not an OPEN-posting actor (or unresolved — failed open)
 
     try:
         posted = _has_open(comms, sid8)

@@ -39,3 +39,7 @@ None chat-only — all written to disk (surfaced for triage in this session's CL
 - The no is about the **neighbourhood feel**, not the flat. Reads as a **genuine values-no**, not the fault-finding reflex: "how the area feels to come home to" is daily lived texture, not an abstract nitpick. Honoured.
 - Key recalibration: the area (Avoti, far-east Ģertrūdes) was knowable from day one — it's *why the flat was discounted*. Second flat in the lineage where he's pulled in by the discount, does deep work, then bounces off the thing that created the discount. → New niksis8_character draft: `2026-05-26-area-feel-is-top-rank-criterion.md` (area-feel as front-rank filter, above price; start search from area, then flat).
 - Decision now resolved with a stable reason. Quest ready to close at session-end; keepsake proposal can move to rejected/archive at triage (never pinned to current.md, so nothing to un-pin).
+
+---
+
+**2026-05-29 (S126 close).** Principal reports the flat is **off the table** — the buy/no-buy this quest deliberated is resolved (no longer a live option). Deliverable (research + synthesis across S056/S066/S095) was always complete; the only open part was Niklavs' values call, now made. Quest graduated → `completed/`. Keepsake pin (`keepsake/current.md`) flagged stale for archival per its own terms ("pinned until the buy/no-buy resolves, then archive") — user-only surface, left to principal.

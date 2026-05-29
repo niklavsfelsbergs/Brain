@@ -110,6 +110,7 @@ Gnomes are **system-namespace**. There is one gnome agent config; the spawn brie
 - Any player's `examine/drafts/`, `niksis8_character/drafts/`.
 - Any player's `keepsake/proposals/`.
 - Any player's `spellbook/drafts/skills/`, `spellbook/skills/` (the latter via alching-promotion path).
+- Any player's `last-alched.md` (the alching stamp; gnomes run alching, so they close its final step — widened B-010 2026-05-29).
 - Global `examine/drafts/`, `niksis8/drafts/`, `keepsake/proposals/`, `lorebook/drafts/`.
 - `players/inbox/`.
 - Any `archive/` or `rejected/` path (housekeeping moves).

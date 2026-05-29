@@ -1,5 +1,31 @@
 # Jebrim — last alched
 
+2026-05-29 (B-010 Phase 0, bankstanding — gnome-run).
+
+**Spawned a gnome** for the heaviest D-026 backlog yet (22 in-progress files, entire S114–S122 EU-tender campaign, all settled-but-ungraduated on a clean board).
+
+**Quest graduation — in-progress 22 → 0:**
+
+- **Shipped quests (12) → completed/:** S100, S101, S103, S113, S114, S115, S116, S117, S118 (×2 — main + d1 docs-refresh dwarf log), S120, S121. (S114/S115/S117/S118 were explicitly proposed →completed in the S118 CLOSING.)
+- **Sub-agent traces (10) → completed/:** S121 dhl-express/dpd-pl/hermes/maersk engine-doc dwarf audits + Sxxx_dwarf austrian-post + dwarf_gls-engine-doc-audit (all consumed by S121's document-as-audit pass) + 2 Sxxx_shipping-agent traces + 2 shipping-agent_db-schenker-pcspl traces. Same trace-graduation pattern B-009 used for the S099 sub-logs.
+- **Kept open:** none. Board clean, every quest had a CLOSING.
+- 16 via `git mv` (tracked), 6 untracked traces via plain `mv`.
+
+**Draft triage:**
+
+- **Bank promoted (1):** `bank/notes/projects/eu-tender-switchable-incumbent-treatment.md` — no contradiction with the parent `eu_tender_2026.md` architecture note; extends it with the post-build decision mechanic (2026-card-where-priceable, else 2025 invoice).
+- **3 identity drafts left for principal (gnome can't write confirmed/):** examine `mine-computed-output-before-proposing-new-work` (S118), examine `verify-routing-against-the-table-not-domain-logic` (S122), niksis8_character `prefers-complete-rewrite-on-decision-deliverables` (S118/S119). Gnome recommend-approve on all 3; **principal approval pending at B-010.**
+
+**Bank harvest:** none — EU tender ongoing (UPS/FedEx r2/DHL Paket r2/Güll pending; FedEx & DHL Paket on HELD stale engines; fuel sweep deferred), ranking + €635k/yr headline in flux. Per-engine technical logic lives checked-in in the tender repo's `docs/technical/`. Bias-to-less held.
+
+**Carry-forward:** 2 bank staleness candidates now deferred 3 rounds (B-008→B-009→B-010) — `dashboard_and_shipping_agent_convergence.md` + `shipping_agent_vocab_harvest_2026-05-22.md`, never read for staleness. Deliberate look next alch.
+
+**Context:** B-010 Phase 0 (cue "bankstand"), gnome-run. Prior alch: 2026-05-27 (B-009). The largest single-pass graduation yet — flagged the in-session-close graduation discipline isn't holding for rapid same-terminal handoff chains (Phase 7 lorebook candidate). Last-alched stamp applied by Guthix (principal session) — gnome write boundary blocks this file.
+
+---
+
+## Prior rounds
+
 2026-05-27 (B-009 Phase 0, bankstanding).
 
 **Promotions (6, all from cleanly-closed quests — principal batch `y`):**

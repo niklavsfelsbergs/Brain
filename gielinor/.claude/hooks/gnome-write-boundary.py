@@ -22,6 +22,7 @@
 #   - /spellbook/drafts/      and  /spellbook/skills/
 #   - /lorebook/drafts/
 #   - /players/inbox/
+#   - /last-alched.md           (per-player alching stamp; gnomes run alching, so they close it — B-010)
 #   - any /archive/ or /rejected/ path (housekeeping moves)
 #
 # Gnomes may NOT write to:
@@ -67,6 +68,7 @@ ALLOWED_PATTERNS = [
     "/spellbook/skills/",
     "/lorebook/drafts/",
     "/players/inbox/",
+    "/last-alched.md",
     "/archive/",
     "/rejected/",
 ]

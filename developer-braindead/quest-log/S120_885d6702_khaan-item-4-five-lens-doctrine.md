@@ -38,7 +38,7 @@ Resolution (surfaced to the principal, per the respawn ritual — did not synthe
 ## Open / not done
 
 - `meta/write-rules.md` "enforced by hook" godly proposal — next `Hey Guthix, bankstand`.
-- Optional: a gielinor `lorebook/drafts/` D-NNN to anchor the five-lens doctrine the way gielinor's [[D-025_offer-multiple-choice-with-recommendation|D-025]]/[[D-027_plain-text-deliverables-for-terminal-copy|D-027]] anchor theirs (separate principal-gated write; not done). These are the *gielinor* [[D-025_visualizer_character_audit_findings|D-025]]/[[D-027_inward_outward_build_imbalance|D-027]] (cross-vault, dangling per §O.5) — NOT the dev brain's same-numbered decisions, which is what the born-link hook wrongly auto-wrapped them to first.
+- Optional: a gielinor `lorebook/drafts/` D-NNN to anchor the five-lens doctrine the way gielinor's [[D-025_offer-multiple-choice-with-recommendation|D-025]]/[[D-027_plain-text-deliverables-for-terminal-copy|D-027]] anchor theirs (separate principal-gated write; not done) — the *gielinor* lorebook decisions (multiple-choice + plain-text-deliverables), cross-vault and dangling per §O.5, NOT the dev brain's same-numbered decisions (which is exactly what the born-link hook first wrongly auto-wrapped a bare token to — hence the full bracketed stems here).
 - §Q's two empirical unknowns (billing, hook-firing inside workflows) remain `[ ]` — the still-open sibling's parked work, not this session's.
 - `braindead-86344868` is still open (principal-confirmed) — no ABANDONED synthesis needed; it owns §Q / S119 and may continue on its end.
 

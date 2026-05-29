@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from "preact/hooks";
 import { html } from "htm/preact";
 import { nameFor, subscribeNames } from "./names.js";
+import { mountBrain } from "./brain.js";
 
 const KIND_LABEL = {
   picked_up: "PICKED UP",
@@ -51,8 +52,14 @@ export function FeedPanel({ onJump, onCollapse }) {
   });
   const elRef = useRef(null);
   const pinned = useRef(false);
+  const brainRef = useRef(null);
   const [, bump] = useState(0);
   useEffect(() => subscribeNames(() => bump((n) => n + 1)), []); // re-render on rename
+  // the brain graph — a square docked at the top of the feed column. Mounted
+  // imperatively (vanilla canvas) into a stable ref'd div, once; torn down on
+  // unmount (feed collapse). The div carries no Preact children, so the 2s feed
+  // re-render never disturbs the canvas underneath it.
+  useEffect(() => (brainRef.current ? mountBrain(brainRef.current) : undefined), []);
 
   useEffect(() => {
     let alive = true;
@@ -89,6 +96,7 @@ export function FeedPanel({ onJump, onCollapse }) {
   );
   return html`
     <aside class="feed-col">
+      <div class="brain-dock" ref=${brainRef}></div>
       <div class="feed-head">
         <span>FEED</span>
         <span class="feed-head-right">

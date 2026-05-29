@@ -44,3 +44,8 @@ EU-tender working repo (out-of-tree bi-analytics-main): docs/technical/ (15 new 
 
 ## Main-brain changes (close)
 jebrim quest-log S121 + 6 dwarf traces + inventory resume `__2ae1248b` + comms OPEN/CLOSING + intent → committed + pushed origin/main this close.
+
+**T4 — cleanup: decision report → self-contained folder (post-close).**
+- Principal: the decision report should live in a standalone folder with everything associated (like docs/technical/). git-moved report.py + decision_report.html + REPORT_NOTES.md + bias_table.md → `2_analysis/decision_report/` (renames preserved 98-100%); added a README. report.py path-fixed (parent on sys.path for cost_matrix/_decision_sets/invoice_adjustments, reads ../data, writes ./decision_report.html) + regenerated from the new location (verified, exit 0, no stray root html).
+- Cross-refs updated: CLAUDE.md (REPORT_NOTES write-location), ASSUMPTIONS.md + report.py prose (bias_table path), 01-architecture.md (layout/diagram/artifacts). Append-only logs (DECISIONS/SESSION_LOG/PLAN/open_questions) left as point-in-time history; bare-filename mentions still resolve. `_refresh_bias_table.py` is untracked `_`-debris (docstring fixed in tree, not committed). cross_carrier_view stays in root (separate Q1 reference).
+- Committed tender e2b898c → rebased --autostash → pushed (36ee4fa..e2b898c). Brain committing this addendum.

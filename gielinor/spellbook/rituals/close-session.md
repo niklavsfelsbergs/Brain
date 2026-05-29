@@ -33,7 +33,7 @@ Each session that runs close-session gets a sequential ID: `S001`, `S002`, etc. 
 
 ## Steps
 
-For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-11.
+For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-12.
 
 ### 0. Spawn-decision — principal-self or gnome?
 
@@ -49,11 +49,11 @@ If any fires, spawn a **gnome** with the session-close brief:
 - Players in scope: all players with non-empty `quest-log/in-progress/`.
 - Inputs: which threshold(s) fired (turn count, players touched, drafts pending).
 
-The gnome runs steps 1–10 and returns the structured report (per `spellbook/skills/spawning-gnomes.md`). The principal reviews the report and approves any proposals before the session actually ends.
+The gnome runs steps 1–11 and returns the structured report (per `spellbook/skills/spawning-gnomes.md`). The principal reviews the report and approves any proposals before the session actually ends.
 
-If no threshold fires (light session — typically **< 10 turns AND read-only**), run steps 1–10 personally. Light closes stay with the principal so the procedure doesn't drift.
+If no threshold fires (light session — typically **< 10 turns AND read-only**), run steps 1–11 personally. Light closes stay with the principal so the procedure doesn't drift.
 
-Skip the special-case unscoped step 11 if a gnome ran the close — the gnome handles inbox writes via its own step coverage. If principal-self ran, step 11 below applies.
+Skip the special-case unscoped step 12 if a gnome ran the close — the gnome handles inbox writes via its own step coverage. If principal-self ran, step 12 below applies.
 
 ### 1. Reconcile pending actions
 
@@ -194,7 +194,26 @@ The principal has authorised the close-session commit by making it part of this 
 
 If the tree is clean — read-only session, audit, discussion — skip the commit silently and note "no commit; tree clean" in the close.
 
-### 10. State the close
+### 10. Run the close-completeness gate
+
+Before declaring the session wrapped, run:
+
+```
+python developer-braindead/verification/close_check.py --ritual player --sid8 <sid8>
+```
+
+(`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`.) It re-derives the load-bearing player-close steps from **ground truth**, keyed by sid8 across `players/*/`:
+
+- **CLOSING posted** — `gielinor/comms/active.md` carries a `<actor>-<sid8> CLOSING` for any actor that posted an `OPEN` this session (step 8; skipped if no `OPEN`).
+- **quest-log present** — a `players/*/quest-log/{in-progress,completed}/*<sid8>*.md` exists, or a `players/inbox/*<sid8>*.md` for an unscoped session (step 2 / step 12).
+- **inventory resume present** — every player with an in-progress quest for this sid8 has a matching `inventory/*-resume__<sid8>.md` (step 3, the step-9 inventory-empty enforcement clause mechanized).
+- **core artifacts committed** — those quest + resume files are git-clean and not orphan-untracked (step 9).
+
+**On any FAIL it prints the locked `CLOSE RITUAL INCOMPLETE` banner + the specific gaps — fix them, re-commit if needed, and re-run until it exits 0. Do NOT declare the session wrapped or write the `wrapped_up` marker on a FAIL.** This is the mechanized guard against a premature done-claim — the gielinor-player half of [[D-034_close_ritual_enforcement|D-034]], parallel to the dev-brain close's own step 9 (the dev twin, `developer-braindead/spellbook/session-close.md`). It turns "I think I closed" into "the checklist passed." The check is **per-player and multi-player** (a session that switched players is verified for each), has no `respawn.md` arm (gielinor resume state lives in inventory), and does not check the dev-brain `active-mode.txt` marker. Added 2026-05-29 (S117).
+
+If the close ran via a **gnome**, the gnome runs this gate as part of steps 1–11 and surfaces a FAIL in its report; the principal does not declare the session wrapped until it passes.
+
+### 11. State the close
 
 One or two sentences back to the principal. Include:
 
@@ -206,7 +225,7 @@ Then wait. The principal closes the conversation.
 
 **Switchboard marker (visualizer concern).** As the **final action** — after the commit and the close statement, whether the close ran principal-self or via a gnome — write `wrapped_up` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`). This flips the session's switchboard row from `CLOSING` (mid-wrap, intent-derived) to `WRAPPED UP` — "done, terminal still open" — distinct from `ENDED` (process gone). `status-sidecar.py` reads the marker on this turn's `Stop` event and holds the `wrapped_up` state until the process actually ends. If the principal sends a fresh prompt instead of closing the conversation, the marker auto-clears and the session resumes as `working`. Not architecturally enforced — a missing marker just leaves the row reading `WAITING`/`IDLE` as before.
 
-### 11. Special case: unscoped session
+### 12. Special case: unscoped session
 
 If the session was unscoped (no player ever activated), there is no per-player quest-log to close. The agent writes a single entry to `players/inbox/S{NNN}_{sid8}_unscoped.md` capturing what happened. Same SNNN rule. Bankstanding triages the inbox later. Skip step 8 — wisp sessions don't post to comms.
 

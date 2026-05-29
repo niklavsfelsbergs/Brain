@@ -274,3 +274,21 @@
   Committed by pathspec: cockpit/graph-export.py + cockpit/web/{brain.js,graph.json,feed.js} + dev-brain close artifacts (S126 quest-log, respawn, build-lessons, this comms). LEFT ALONE: the not-mine cockpit/web/styles.css WIP, all jebrim/zezima player WIP, switchboard/*.log, state.ndjson, .claude/intent archive.
   Leaving open: relaunch to eyeball the bubble map (likely tweak: small-bubble label overflow → truncate/hover-only); graph.json staleness (regen py cockpit/graph-export.py, or a future /api/graph endpoint); v1 "watch a memory consolidate" (draft→confirmed synapse-hardening) still unbuilt. Khaan item 9 + the write-rules "enforced by hook" godly proposal still open from prior sessions.
   Sibling note: braindead-3cd9d646 (agentic-OS research) + braindead-37975cd2 (hook survey) OPEN'd earlier, discussion-only, intent stale >50min — neither touched cockpit; no overlap. active-mode → unscoped.
+
+[2026-05-29 21:40] braindead-c0dd1afb UPDATE (re-opened post-CLOSING)
+  Principal wants the S126 bubble map organized into logical super-groups: Jebrim's bubbles clustered together, Zezima separate, Developer on top. Implementing per-super-group anchor gravity (dev=top, jebrim=lower-left, zezima=lower-right, global=center, infra=bottom) + faint group headers in cockpit/web/brain.js layoutOverview + drawOverview. No new siblings live (3cd9d646/37975cd2 stale discussion-only, no cockpit overlap).
+
+[2026-05-29 22:55] braindead-b2e3bea8 OPEN (cross-brain conversation, no dev file targets)
+  Entered via "lets develop gielinor". Principal is spawning Jebrim in a parallel terminal and wants the two of us to hold a ~10-message conversation, then a report on how it went. Talk, not construction.
+  Shared channel = gielinor/comms/active.md (the channel Jebrim actually reads) — dialogue there via `-> @jebrim-<sid8>` once his OPEN lands. Mirrors the 22:12 zezima<->jebrim conversation precedent.
+  Targets: none on disk — dialogue only. No dev-brain or gielinor writes beyond the two comms OPENs + intent + monitoring.
+  Steering clear of: all of Jebrim's namespace + repos, cockpit/*, .claude/hooks/, switchboard runtime, state.ndjson. No live Braindead siblings (S126 c0dd1afb CLOSED; only stale intent).
+
+[2026-05-30 00:30] braindead-b2e3bea8 UPDATE — scope shifted from conversation to a build
+  The Jebrim conversation closed (10 messages). Principal asked to BUILD the reusable comms-to-speech tool (edge-tts, two voices).
+  Targets: NEW tools/read_comms.py + tools/README.md (brain root); pip install edge-tts (user env). Reads gielinor/comms/active.md (+ any comms file via --file) READ-ONLY; writes only the tool + an mp3 artifact. No gielinor knowledge/doc writes, no hooks, no cockpit.
+  Steering clear of: all jebrim/zezima player WIP, cockpit/*, .claude/hooks/, switchboard runtime, state.ndjson. No live Braindead siblings.
+
+[2026-05-30 00:25] braindead-b2e3bea8 CLOSING
+  Completed: S127 — staged Braindead<->Jebrim conversation (10 messages) that turned into a design review, then BUILT the reusable comms-to-speech tool. Shipped: tools/read_comms.py (edge-tts, one natural voice per speaker, parses any comms log -> mp3) + README + .gitignore tools/out/. Captured 3 findings as plan §R (append-lock / render-the-cut / graduation-clerk) + a dialogue-as-self-review build-lesson.
+  Leaving open: §R.1/§R.2/§R.3 builds DEFERRED to focused sessions; render-the-cut is a gielinor meta change = a bankstanding godly proposal, not a Braindead edit. Khaan item 9 + the write-rules "enforced by hook" carry still open from prior sessions. active-mode -> unscoped. No live Braindead siblings.

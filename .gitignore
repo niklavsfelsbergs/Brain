@@ -66,3 +66,6 @@ desktop.ini
 .env.*
 *.pem
 *.key
+
+# read_comms.py audio outputs (regenerable)
+tools/out/

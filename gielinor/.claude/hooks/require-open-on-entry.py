@@ -33,6 +33,16 @@ import os
 import sys
 from pathlib import Path
 
+# Ritual analytics (Khaan item 11) — best-effort; never breaks the hook.
+_SB = Path(__file__).resolve().parents[3] / "switchboard"
+if str(_SB) not in sys.path:
+    sys.path.insert(0, str(_SB))
+try:
+    from ritual_log import log_event, classify_path
+except Exception:
+    def log_event(*a, **k): pass
+    def classify_path(p): return ""
+
 BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent.parent  # gielinor/.claude/hooks -> brain root
 STATUS_DIR = Path(os.path.expanduser("~")) / ".claude" / "status"
 
@@ -143,8 +153,10 @@ def main() -> int:
         return 0  # can't read comms — fail open, never brick on infra
 
     if posted:
+        log_event("require-open", "allow", actor=actor, sid8=sid8, path_class=classify_path(rel))
         return 0
 
+    log_event("require-open", "block", actor=actor, sid8=sid8, path_class=classify_path(rel))
     sys.stderr.write(
         "BLOCKED: post your OPEN to comms/active.md before writing brain content.\n"
         f"  Actor: {actor}   Session: {sid8}\n"

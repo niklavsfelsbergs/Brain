@@ -22,6 +22,16 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
+
+# Ritual analytics (Khaan item 11) — best-effort; never breaks the hook.
+_SB = Path(__file__).resolve().parents[3] / "switchboard"
+if str(_SB) not in sys.path:
+    sys.path.insert(0, str(_SB))
+try:
+    from ritual_log import log_event
+except Exception:
+    def log_event(*a, **k): pass
 
 # Winding-down cues (case-insensitive). Narrow on purpose — a false positive
 # costs one advisory line, but bare "close"/"done"/"bye" over-fire into
@@ -74,7 +84,9 @@ def main() -> int:
     if m is None:
         return 0  # ordinary prompt — fast, silent pass-through
 
-    _emit(m.group(0).strip())
+    matched = m.group(0).strip()
+    _emit(matched)
+    log_event("close-cue", "nudge", sid8=(payload.get("session_id") or "")[:8], detail=matched)
     return 0
 
 

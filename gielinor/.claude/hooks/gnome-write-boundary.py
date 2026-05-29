@@ -40,6 +40,16 @@ import os
 import sys
 from pathlib import Path
 
+# Ritual analytics (Khaan item 11) — best-effort; never breaks the hook.
+_SB = Path(__file__).resolve().parents[3] / "switchboard"
+if str(_SB) not in sys.path:
+    sys.path.insert(0, str(_SB))
+try:
+    from ritual_log import log_event, classify_path
+except Exception:
+    def log_event(*a, **k): pass
+    def classify_path(p): return ""
+
 BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent
 
 ALLOWED_PATTERNS = [
@@ -115,6 +125,7 @@ def main() -> None:
     # Hard blocks take precedence over allow-list matches.
     for blk in BLOCKED_SUBSTRINGS:
         if blk in rel:
+            log_event("gnome-boundary", "block", actor="gnome", sid8=(payload.get("session_id") or "")[:8], path_class=classify_path(rel), detail=rel)
             print(
                 f"BLOCKED: gnomes cannot write to {rel}.\n"
                 f"  Hit blocked substring: {blk}\n"
@@ -125,6 +136,7 @@ def main() -> None:
             sys.exit(2)
 
     if not any(pat in rel for pat in ALLOWED_PATTERNS):
+        log_event("gnome-boundary", "block", actor="gnome", sid8=(payload.get("session_id") or "")[:8], path_class=classify_path(rel), detail=rel)
         print(
             f"BLOCKED: gnomes cannot write to {rel}.\n"
             f"  Path is outside the gnome write surface.\n"

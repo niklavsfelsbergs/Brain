@@ -7,6 +7,16 @@
 import json
 import re
 import sys
+from pathlib import Path
+
+# Ritual analytics (Khaan item 11) — best-effort; never breaks the hook.
+_SB = Path(__file__).resolve().parents[3] / "switchboard"
+if str(_SB) not in sys.path:
+    sys.path.insert(0, str(_SB))
+try:
+    from ritual_log import log_event
+except Exception:
+    def log_event(*a, **k): pass
 
 DELETE_PATTERNS = [
     re.compile(r"(?<![A-Za-z0-9_-])rm(?:\s+-[A-Za-z]+)*\s", re.IGNORECASE),
@@ -40,6 +50,7 @@ def main() -> None:
 
     for pat in DELETE_PATTERNS:
         if pat.search(command):
+            log_event("block-deletes", "block", sid8=(payload.get("session_id") or "")[:8], detail=command[:120])
             print(
                 f"BLOCKED: delete operations are disallowed inside the brain.\n"
                 f"  Matched pattern: {pat.pattern!r}\n"

@@ -26,6 +26,8 @@ switchboard/state-names.json
 switchboard/state-*.json.tmp.*
 switchboard/state-comms-*.md
 switchboard/chat.ndjson
+switchboard/ritual-events.ndjson
+switchboard/ritual-events.ndjson.tmp.*
 
 # Embedded-terminal server (S058) — venv + throwaway smoke test
 switchboard/.venv/

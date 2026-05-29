@@ -27,6 +27,15 @@ import re
 import sys
 from pathlib import Path
 
+# Ritual analytics (Khaan item 11) — best-effort; never breaks the hook.
+_SB = Path(__file__).resolve().parents[3] / "switchboard"
+if str(_SB) not in sys.path:
+    sys.path.insert(0, str(_SB))
+try:
+    from ritual_log import log_event
+except Exception:
+    def log_event(*a, **k): pass
+
 STATUS_DIR = Path(os.path.expanduser("~")) / ".claude" / "status"
 
 # Continuation-cue patterns (case-insensitive, word-boundaried where it matters).
@@ -113,6 +122,7 @@ def main() -> int:
         return 0  # ordinary prompt — fast, silent pass-through
 
     _emit(matched)
+    log_event("grounding-cue", "nudge", sid8=sid8, detail=matched)
     return 0
 
 

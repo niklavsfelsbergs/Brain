@@ -7,6 +7,16 @@ import json
 import sys
 from pathlib import Path
 
+# Ritual analytics (Khaan item 11) — best-effort; never breaks the hook.
+_SB = Path(__file__).resolve().parents[3] / "switchboard"
+if str(_SB) not in sys.path:
+    sys.path.insert(0, str(_SB))
+try:
+    from ritual_log import log_event, classify_path
+except Exception:
+    def log_event(*a, **k): pass
+    def classify_path(p): return ""
+
 BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
@@ -40,6 +50,7 @@ def main() -> None:
 
     parts_lower = [part.lower() for part in p.parts]
     if "confirmed" in parts_lower:
+        log_event("block-confirmed", "block", sid8=(payload.get("session_id") or "")[:8], path_class="confirmed", detail=str(p))
         print(
             f"BLOCKED: writes to confirmed/ paths are user-only.\n"
             f"  Path: {p}\n"

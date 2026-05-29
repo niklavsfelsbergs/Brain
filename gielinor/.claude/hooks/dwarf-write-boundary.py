@@ -25,6 +25,16 @@ import os
 import sys
 from pathlib import Path
 
+# Ritual analytics (Khaan item 11) — best-effort; never breaks the hook.
+_SB = Path(__file__).resolve().parents[3] / "switchboard"
+if str(_SB) not in sys.path:
+    sys.path.insert(0, str(_SB))
+try:
+    from ritual_log import log_event, classify_path
+except Exception:
+    def log_event(*a, **k): pass
+    def classify_path(p): return ""
+
 BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent
 
 ALLOWED_PATTERNS = [
@@ -69,6 +79,7 @@ def main() -> None:
     rel = "/" + str(p.resolve().relative_to(BRAIN_ROOT)).replace("\\", "/")
 
     if not any(pat in rel for pat in ALLOWED_PATTERNS):
+        log_event("dwarf-boundary", "block", actor="dwarf", sid8=(payload.get("session_id") or "")[:8], path_class=classify_path(rel), detail=rel)
         print(
             f"BLOCKED: dwarves cannot write to {rel}.\n"
             f"  Allowed: bank/notes, quest-log/in-progress, quest-log/completed,\n"

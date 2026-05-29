@@ -12,6 +12,16 @@
 
 import json
 import sys
+from pathlib import Path
+
+# Ritual analytics (Khaan item 11) — best-effort; never breaks the hook.
+_SB = Path(__file__).resolve().parents[3] / "switchboard"
+if str(_SB) not in sys.path:
+    sys.path.insert(0, str(_SB))
+try:
+    from ritual_log import log_event
+except Exception:
+    def log_event(*a, **k): pass
 
 ROLE_PLURALS = {
     "dwarf": "dwarves",
@@ -35,6 +45,7 @@ def main() -> None:
     tool_name = payload.get("tool_name", "")
     if tool_name in ("Agent", "Task"):
         role = ROLE_PLURALS[agent_type]
+        log_event("block-sub-spawn", "block", actor=agent_type, sid8=(payload.get("session_id") or "")[:8], detail=role)
         print(
             f"BLOCKED: {role} cannot spawn further sub-agents.\n"
             f"  Return control to the principal to spawn the next agent.\n"

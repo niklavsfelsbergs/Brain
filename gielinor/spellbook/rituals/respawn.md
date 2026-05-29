@@ -61,7 +61,7 @@ The load order below front-loads only the durable, in-force, identity-shaped mat
         - Live sibling per step h → **don't touch** their inventory. The other session owns it.
       - **Legacy unsuffixed `<topic>-resume.md` files** (pre-[[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]) are treated as own-session state: read directly. The next close-session pass writes the suffixed form going forward.
 
-      Each file carries the `Where we are` / `Next concrete step` / `Files to read first` state populated by close-session step 3. **This is what the reconciliation prompt surfaces** — not the quest-log file's body, which is the turn-by-turn history. If inventory has no resume files but `quest-log/in-progress/` is non-empty, surface the gap (close-session step 3 didn't populate inventory) and read the quest log directly as a fallback. Note the gap for the next close-session pass.
+      Each file carries the `Where we are` / `Next concrete step` / `Files to read first` state populated by close-session step 3, plus a freshness header (`quest`/`sid8`/`ts`) on resumes written after 2026-05-29 — read it and surface staleness per the reconciliation prompt below. **This is what the reconciliation prompt surfaces** — not the quest-log file's body, which is the turn-by-turn history. If inventory has no resume files but `quest-log/in-progress/` is non-empty, surface the gap (close-session step 3 didn't populate inventory) and read the quest log directly as a fallback. Note the gap for the next close-session pass.
 
    j. **Post `OPEN` entry to `gielinor/comms/active.md`.** Per [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] and `comms/_about.md`. Header `[YYYY-MM-DD HH:MM] <player>-<sid8> OPEN` (use Guthix in consultation/bankstanding mode). Body lines as needed:
 
@@ -91,6 +91,7 @@ The resume foreground for each in-flight quest lives in `inventory/<quest-slug>-
    - The **Where we are** section verbatim — current state across open threads.
    - The **Next concrete step** section verbatim — what next session is meant to do.
    - The **Files / paths to read first** list — so the principal sees the load plan.
+   - The **freshness header** (`quest` / `sid8` / `ts`), if present — surface the resume's age from `ts`, and if `quest` or `sid8` don't match the in-progress quest being resumed, flag it: *"this resume is N days old / tagged for quest X — you're resuming Y. Stale?"* A **note, not a block** (Khaan item 6, dev brain S118; see `inventory/_about.md`): the principal decides resume / abandon / reconcile. Absence of the header is fine — legacy resumes predate the convention; just skip the staleness note.
    - The **last logged `pending` action**, if any — separate from the above; this is the crash-recovery signal. (This is still pulled from the quest log itself, where per-turn pending markers live.)
 
    Do not surface the per-turn narrative log. That's history; the inventory resume file is foreground. If multiple in-flight quests exist for the player, surface each in order — most-recently-touched first.

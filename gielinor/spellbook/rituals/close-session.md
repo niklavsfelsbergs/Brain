@@ -80,6 +80,18 @@ This closes the "chat-only state is volatile" gap. Drafts that exist only in con
 - **Files / paths to read first:** bulleted, ordered by load priority.
 - **Pending drafts:** populated by step 2 if any.
 
+**Freshness header (top of file).** Open the resume file with a machine-readable header so the next respawn can judge whether the state still fits the task it's resuming (Khaan item 6, dev brain S118; see `inventory/_about.md` for the full convention):
+
+```
+---
+quest: SNNN_<slug>      # the quest-log entry this resume serves (or topic slug if multi-session)
+sid8: <sid8>            # first 8 chars of CLAUDE_CODE_SESSION_ID — this session
+ts: YYYY-MM-DD HH:MM    # now (last-write time)
+---
+```
+
+No cryptographic hash — the three fields **are** the identity check (a `sha256(prompt)` stamp would false-trip every turn, the brittleness that held Khaan item G). **Migration:** an existing headerless resume gets the header on its next close — this step overwrites resume files each pass — mirroring the [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] sid8-suffix migration.
+
 These sections are what `respawn.md`'s reconciliation prompt reads to surface the next move. The respawn ritual reads inventory files for the active player as the resume foreground; without this file, the next respawn has nothing to surface beyond the turn log.
 
 **Compact the quest log itself.** Strip any resume-state sections that historically lived at the top of the quest-log file (`Status`, `Where we are`, `Next concrete step`, `Files to read first`) — they belong in inventory now. The quest log keeps narrative + decisions + turn-by-turn log + Pending drafts (if any). Per-turn history is reference; the inventory file is foreground.
@@ -207,9 +219,10 @@ python developer-braindead/verification/close_check.py --ritual player --sid8 <s
 - **CLOSING posted** — `gielinor/comms/active.md` carries a `<actor>-<sid8> CLOSING` for any actor that posted an `OPEN` this session (step 8; skipped if no `OPEN`).
 - **quest-log present** — a `players/*/quest-log/{in-progress,completed}/*<sid8>*.md` exists, or a `players/inbox/*<sid8>*.md` for an unscoped session (step 2 / step 12).
 - **inventory resume present** — every player with an in-progress quest for this sid8 has a matching `inventory/*-resume__<sid8>.md` (step 3, the step-9 inventory-empty enforcement clause mechanized).
+- **resume freshness header** — every resume file for this sid8 carries the `quest`/`sid8`/`ts` header (step 3; Khaan item 6, S118). Bounded to the current sid8 so legacy headerless resumes never false-trip.
 - **core artifacts committed** — those quest + resume files are git-clean and not orphan-untracked (step 9).
 
-**On any FAIL it prints the locked `CLOSE RITUAL INCOMPLETE` banner + the specific gaps — fix them, re-commit if needed, and re-run until it exits 0. Do NOT declare the session wrapped or write the `wrapped_up` marker on a FAIL.** This is the mechanized guard against a premature done-claim — the gielinor-player half of [[D-034_close_ritual_enforcement|D-034]], parallel to the dev-brain close's own step 9 (the dev twin, `developer-braindead/spellbook/session-close.md`). It turns "I think I closed" into "the checklist passed." The check is **per-player and multi-player** (a session that switched players is verified for each), has no `respawn.md` arm (gielinor resume state lives in inventory), and does not check the dev-brain `active-mode.txt` marker. Added 2026-05-29 (S117).
+**On any FAIL it prints the locked `CLOSE RITUAL INCOMPLETE` banner + the specific gaps — fix them, re-commit if needed, and re-run until it exits 0. Do NOT declare the session wrapped or write the `wrapped_up` marker on a FAIL.** This is the mechanized guard against a premature done-claim — the gielinor-player half of [[D-034_close_ritual_enforcement|D-034]], parallel to the dev-brain close's own step 9 (the dev twin, `developer-braindead/spellbook/session-close.md`). It turns "I think I closed" into "the checklist passed." The check is **per-player and multi-player** (a session that switched players is verified for each), has no `respawn.md` arm (gielinor resume state lives in inventory), and does not check the dev-brain `active-mode.txt` marker. Added 2026-05-29 (S117); the resume-freshness-header arm added the same day (S118, Khaan item 6).
 
 If the close ran via a **gnome**, the gnome runs this gate as part of steps 1–11 and surfaces a FAIL in its report; the principal does not declare the session wrapped until it passes.
 

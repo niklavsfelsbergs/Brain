@@ -30,6 +30,11 @@ per-player and multi-player (keyed by sid8 across players/*/), has no rolling
 respawn.md (resume state lives in each player's inventory/), and does not use
 the dev-brain active-mode marker. Only the harness -- BANNER, _git_clean, the
 print/exit loop -- is shared. (D-034 + its gielinor follow-on, S117.)
+
+The player check-list also asserts the resume freshness header (quest/sid8/ts)
+on this session's own resume files -- the gielinor end of Khaan item 6 (S118).
+It is bounded to the current sid8, so legacy resumes that predate the header
+convention are never inspected and never false-trip.
 """
 from __future__ import annotations
 
@@ -271,6 +276,43 @@ def check_resume_player(sid8):
         return (name, False, f"exception: {e}")
 
 
+def _missing_header_keys(path: Path):
+    """Header keys absent from a resume file's top region (empty = header present).
+
+    Parse-lenient on purpose: a substring scan of the first lines, NOT a strict
+    YAML parse, so benign format drift (spacing, field order, an extra comment)
+    never false-trips -- only a wholesale-missing header does. Bounded to the
+    CURRENT sid8's resume files by the caller, so legacy/other-session resumes
+    that predate the convention are never inspected. (Khaan item 6, S118.)"""
+    head = "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[:15]).lower()
+    return [k for k in ("quest:", "sid8:", "ts:") if k not in head]
+
+
+def check_freshness_header_player(sid8):
+    name = "resume freshness header"
+    try:
+        inprog = _player_quest_files(sid8, stages=("in-progress",))
+        if not inprog:
+            return (name, True, "no in-progress quest for this sid8; no resume header required")
+        bad, any_file = [], False
+        for player in sorted({p for p, _ in inprog}):
+            for f in _player_resume_files(player, sid8):
+                any_file = True
+                missing = _missing_header_keys(f)
+                if missing:
+                    bad.append(f"{f.name} (missing {', '.join(missing)})")
+        if not any_file:
+            # 'inventory resume present' already FAILs this; don't double-report.
+            return (name, True, "no resume file for this sid8 (covered by 'inventory resume present')")
+        if bad:
+            return (name, False,
+                    f"resume file(s) missing the freshness header: {'; '.join(bad)} "
+                    "(quest/sid8/ts -- close-session step 3 / inventory _about convention)")
+        return (name, True, "every resume file for this sid8 carries the quest/sid8/ts header")
+    except Exception as e:
+        return (name, False, f"exception: {e}")
+
+
 def check_committed_player(sid8):
     name = "core artifacts committed"
     try:
@@ -293,6 +335,7 @@ def run_player(sid8: str) -> int:
         check_closing_player(sid8),
         check_questlog_player(sid8),
         check_resume_player(sid8),
+        check_freshness_header_player(sid8),
         check_committed_player(sid8),
     ]
     return _emit(results, _wrapped_up_hint(sid8))

@@ -28,6 +28,22 @@ inventory/
   <free-form files as needed>
 ```
 
+## Freshness header
+
+Resume files (`<quest-slug>-resume__<sid8>.md`) open with a small machine-readable header so a future respawn can tell whether the state still fits the task it's resuming — the gielinor port of Khaan's context-hash freshness primitive (dev brain S116/S118; pairs with the [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] staleness model). Three fields, **no cryptographic hash**:
+
+```
+---
+quest: SNNN_<slug>      # the quest-log entry this resume serves (or topic slug if multi-session)
+sid8: <sid8>            # session that last wrote it
+ts: YYYY-MM-DD HH:MM    # last-write time
+---
+```
+
+- **The fields ARE the identity check.** `quest` + `sid8` answer "is this state for the task I'm resuming, and which session wrote it"; `ts` answers "how old." A `sha256(prompt)` stamp was deliberately rejected — the prompt changes every turn, so a content-hash reads stale immediately and false-trips every respawn (the brittleness that held Khaan item G, dev brain S116).
+- **Read, not enforced.** Respawn's reconciliation surfaces age + any `quest`/`sid8` mismatch as a *note* ("this resume is N days old / tagged for a different quest — stale?"); it never hard-blocks a resume. The principal decides.
+- Written by `close-session.md` step 3; surfaced by `respawn.md`'s reconciliation prompt; presence on this session's own resume verified by `close_check.py --ritual player`.
+
 ## Write rules
 
 Auto-write. Volatile by design. See `gielinor/meta/write-rules.md` and `gielinor/meta/death-and-spawn.md`.

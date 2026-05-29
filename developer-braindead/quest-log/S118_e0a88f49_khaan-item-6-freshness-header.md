@@ -1,6 +1,6 @@
 # S118 — Khaan item 6: resume freshness header (context-hash freshness, gielinor port)
 
-**Session.** sid e0a88f49. Dev-brain via "lets develop gielinor", mid-conversation. OPEN posted; no live Braindead siblings (S112–S117 all CLOSED; only stale intent files).
+**Session.** sid e0a88f49. Dev-brain via "lets develop gielinor", mid-conversation. OPEN posted; no live Braindead siblings ([[S112_c7986694_cockpit-terminal-scroll-up-lock|S112]]–[[S117_fa446492_close-check-player-ritual|S117]] all CLOSED; only stale intent files).
 
 **Ask.** "lets continue with khaan." Per the respawn ★ NEXT + the [[S117_fa446492_close-check-player-ritual|S117]] close, the agreed next cheap carry was **item 6 — context-hash freshness**, teed up to be scoped fresh in a new session.
 

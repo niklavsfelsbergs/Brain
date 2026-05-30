@@ -26,7 +26,7 @@ Clean (empty but `_about.md`).
 
 ## Phase 3 — cross-player synthesis (N=2, live)
 
-Prior candidates (collaboration-first + parallelism-enjoyment) already graduated at [[B-009_2026-05-27_ninth-bankstanding|B-009]]. **New find written:** `examine/drafts/2026-05-30-anchor-to-existing-state-before-treating-work-as-new.md` — both players independently confirm the same reflex (Zezima via *recognition*: anchor-referenced-subject + read-doc-cold; Jebrim via *verification*: mine-computed-output + check-own-bank + verify-current-state). It is the standing-rule form of the five-lens preamble's Recall-shaped read. Awaiting principal approval to confirmed.
+Prior candidates (collaboration-first + parallelism-enjoyment) already graduated at [[B-009_2026-05-27_ninth-bankstanding|B-009]]. **New find written:** `examine/drafts/2026-05-30-anchor-to-existing-state-before-treating-work-as-new.md` — both players independently confirm the same reflex (Zezima via *recognition*: anchor-referenced-subject + read-doc-cold; Jebrim via *verification*: mine-computed-output + check-own-bank + verify-current-state). It is the standing-rule form of the five-lens preamble's Recall-shaped read. **Confirmed** → `examine/confirmed/2026-05-30-anchor-to-existing-state-before-treating-work-as-new.md`.
 
 ## Phases 4–6
 
@@ -36,7 +36,7 @@ Prior candidates (collaboration-first + parallelism-enjoyment) already graduated
 
 ## Phase 7 — lorebook
 
-Candidate surfaced, not auto-written: an *operating-discipline* rule that **alching should sweep the alched player's `in-progress/` for finished orphan sub-agent traces and graduate them** (since dwarves/penguins/shipping-agents never run close-session). Complementary to — not duplicating — dev-brain's structural beam-#8 reaping work. Left to principal's call.
+Candidate surfaced, not auto-written: an *operating-discipline* rule that **alching should sweep the alched player's `in-progress/` for finished orphan sub-agent traces and graduate them** (since dwarves/penguins/shipping-agents never run close-session). Complementary to — not duplicating — dev-brain's structural beam-#8 reaping work. **Confirmed** → `lorebook/confirmed/D-030_alching-sweeps-orphan-subagent-traces.md`.
 
 ## Self-note (instructive)
 

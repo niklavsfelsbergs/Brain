@@ -1,0 +1,20 @@
+# Anchor to existing state before treating work as new
+
+**Proposed (cross-player synthesis, [[B-012_2026-05-30_twelfth-bankstanding|B-012]] 2026-05-30).** Graduate to global `examine/` — the same operating reflex independently confirmed by two players across many sessions.
+
+**The claim.** Before re-deriving, re-analysing, or asserting a state ("this is open", "no data", "new property"), check the state that *already exists* — on disk, in the bank, in the git log, in context, in prior work. The recurring failure is starting fresh on something that already has an answer or an anchor sitting right there. The fix is the same in every instance: consult ground truth *first*, treat the ask as a continuation until proven new.
+
+**The two independent instances (each multi-occurrence):**
+
+- **Zezima — the recall/recognition axis.** `examine/confirmed/2026-05-25-anchor-referenced-subject-before-assuming-its-new.md` (S066/S076/S095): continuation cues ("this X again", "afterall") mean the subject is already on disk — map it before assuming it's new. `examine/confirmed/2026-05-26-read-doc-cold-recurrence.md` (S066/S076/S095): opened a doc cold and re-derived a whole analysis before recognising it as a prior gate. Both are *recognition* failures — not seeing that the work was already done.
+
+- **Jebrim — the verify-before-asserting axis.** `examine/confirmed/2026-05-28-mine-computed-output-before-proposing-new-work.md` (S118): mine the computed output you already have before proposing new work. `examine/confirmed/2026-05-26-check-own-bank-for-prepared-content.md` (S076): on "the X I prepared earlier", search your own notes first. `examine/confirmed/2026-05-30-verify-current-state-before-listing-as-open.md` (S131): listed something as open that the git log in his own context showed had already landed. All are *verification* failures — asserting state without consulting the ground truth in reach.
+
+**Why it graduates.** Zezima meets it through *recognition* (is this continuation of known work?), Jebrim through *verification* (is my state-claim true against ground truth?). Same underlying reflex — **the answer is more often already present than the situation looks** — seen from two angles. That cross-player recurrence, with ≥2 confirmed instances on each side, is exactly what the global layer exists to capture. It is also the standing-rule form of the five-lens preamble's **Recall-shaped** read (`meta/communication-protocol.md`) — promote it and the lens gains a confirmed self-model anchor.
+
+**How to apply (system-wide, every actor).**
+- **Default to continuation.** Treat an ask as a continuation of known work until ground truth proves it new — map the referent before analysing it fresh.
+- **Consult before asserting.** Before any "X is open / absent / broken / new" claim — especially in an audit, status report, or comms OPEN — check the live source (git log, the file, the bank, the computed output) rather than the narrative you're carrying.
+- **The evidence is usually in reach.** The failure is rarely missing information; it is not consulting information already on disk or in context. Cheaper to grep the record than to ship a stale finding.
+
+**Anchors.** Zezima: `examine/confirmed/2026-05-25-anchor-referenced-subject-before-assuming-its-new.md`, `examine/confirmed/2026-05-26-read-doc-cold-recurrence.md`. Jebrim: `examine/confirmed/2026-05-28-mine-computed-output-before-proposing-new-work.md`, `examine/confirmed/2026-05-26-check-own-bank-for-prepared-content.md`, `examine/confirmed/2026-05-30-verify-current-state-before-listing-as-open.md`. Source bankstanding: [[B-012_2026-05-30_twelfth-bankstanding|B-012]].

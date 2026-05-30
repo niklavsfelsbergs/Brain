@@ -1,5 +1,33 @@
 # Jebrim — last alched
 
+2026-05-30 (B-012 Phase 0, bankstanding — principal-self, Guthix-run).
+
+**Spawn-decision:** principal-self (5 drafts <10, 3 in-progress, not never-alched — no gnome threshold fired). Session 0b0f2049 had closed S131 ~7 min prior; tree hot.
+
+**Step 1 — identity drafts → confirmed (5, all approved clean):**
+- `2026-05-28-fixture-vs-live-data-claim.md` (S116) — distinguish offline fixture from live before a data-state claim.
+- `2026-05-29-read-domain-knowledge-before-proposing-mechanism.md` (S124) — read the canonical reference before proposing a column/anchor/value.
+- `2026-05-29-reconcile-definition-before-numbers.md` (S123) — suspect definitional equivocation before a causal story.
+- `2026-05-30-dont-script-the-other-partys-turns.md` (S127) — one move per turn in interactive exchanges.
+- `2026-05-30-verify-current-state-before-listing-as-open.md` (S131) — check live ground truth before listing something open/broken.
+
+**Step 2 — bank drafts → notes/projects (3, all promoted, no contradictions):**
+- `2026-05-28-ups-orwo-fif-data-quirks.md` (S116) — invoicedate format trap, VAT-as-row, split-invoice VAT delta.
+- `2026-05-29-b2b-b2c-strict-definition.md` (S123) — canonical buyer-based B2B/B2C SQL; builds on S075.
+- `carrier-otd-proxy-sla-method.md` (S124) — frozen-p90 proxy-SLA method + mart facts. **Skill-watch:** graduate to a skill if the method recurs (1st occurrence, stays bank for now).
+
+**Staleness:** the 2 candidates deferred B-008→B-010 (`dashboard_and_shipping_agent_convergence`, `shipping_agent_vocab_harvest_2026-05-22`) **read this round → both keep** (living references, self-caveated as-of). 3-round defer-debt cleared — directly addressing S131 beam #8's "deferred-manual drifts" warning.
+
+**Quest hygiene:** `S125_dwarf_interesting-thing.md` (orphan sub-agent trace, **S131 beam #8 in the flesh**) → graduated to completed/. S116 (PR unmerged) + S124 kept open, genuinely in-flight. Optional S125 disposition-reflection harvest (silent-wrongness orientation) — **not drafted** (bias-to-less; character-flavored, not correction-backed).
+
+**Steps 4–6:** keepsake/current.md 685 words (under ~2k); rejected folders no *new* pattern (probe-design pair already noted B-009); no skill graduation.
+
+**Context:** B-012 Phase 0 (cue "bankstand"). Prior alch: 2026-05-29 (B-010). Clean round — 8 drafts all from settled S116/S123/S124/S127/S131 closes. The orphan-trace graduation is the lived fix for the leak S131 named hours earlier.
+
+---
+
+## Prior rounds
+
 2026-05-29 (B-010 Phase 0, bankstanding — gnome-run).
 
 **Spawned a gnome** for the heaviest D-026 backlog yet (22 in-progress files, entire S114–S122 EU-tender campaign, all settled-but-ungraduated on a clean board).
@@ -23,8 +51,6 @@
 **Context:** B-010 Phase 0 (cue "bankstand"), gnome-run. Prior alch: 2026-05-27 (B-009). The largest single-pass graduation yet — flagged the in-session-close graduation discipline isn't holding for rapid same-terminal handoff chains (Phase 7 lorebook candidate). Last-alched stamp applied by Guthix (principal session) — gnome write boundary blocks this file.
 
 ---
-
-## Prior rounds
 
 2026-05-27 (B-009 Phase 0, bankstanding).
 

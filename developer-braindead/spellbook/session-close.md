@@ -24,7 +24,7 @@
      Leaving open: <items in respawn.md that are still pending, or 'none'>
    ```
 
-   Append-only. If the session ran without posting an `OPEN` (rare — read-only sessions that didn't trigger one), still post a `CLOSING` so the channel reads cleanly. If the working tree is clean *and* no `OPEN` was posted, skip silently.
+   Append-only — **append with `tools/comms_append.py`, not Edit/Write** (`printf '%s' "$ENTRY" | py tools/comms_append.py --vault dev`); a raw Edit/Write of `active.md` is blocked by `comms-append-guard.py` (S128 — the read-modify-rewrite path truncates the log under concurrent sessions). If the session ran without posting an `OPEN` (rare — read-only sessions that didn't trigger one), still post a `CLOSING` so the channel reads cleanly. If the working tree is clean *and* no `OPEN` was posted, skip silently.
 7. **Clear the visualizer marker.** Overwrite `brain/.claude/active-mode.txt` with `unscoped` (or leave empty). The hook emits `despawn-braindead` on the transition — Braindead packs up and leaves the workshop. Skip silently if the file is already empty / not `dev-brain`.
 8. **Commit the session.** Always. This is the durability checkpoint — every session ends with a git commit that captures everything the session changed.
 

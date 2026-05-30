@@ -9,6 +9,6 @@ Dev-brain via "lets develop gielinor", mid-conversation; OPEN posted (`braindead
 
 **Verification debt (relaunch checklist).** Board bumps to a fresh `b91.x` on load. Confirm: (1) transcript bubbles ~3/4 panel width, still opposite-aligned; (2) gold scrollbars on all panels; (3) BRAIN bar matches feed/cockpit headers (rivets, gold underline, stud button); all four headers read more bevelled; (4) brain graph is a slowly self-rotating 3D sphere, drag orbits, wheel zooms, hover still focuses. Tunables if off: `AUTO_SPIN` (spin speed), `FOCAL = R*2.6` (perspective strength), the `75%` bubble cap.
 
-Cascade. `developer-braindead/`: this quest-log entry, `respawn.md` (prepend), `comms/active.md` (OPEN + 3 UPDATEs + CLOSING), `bank/build-lessons.md` (the over-shoot lesson). `cockpit/web/styles.css` + `cockpit/web/brain.js` (the polish itself — cockpit infra, neither brain's knowledge layer).
+**Cascade.** `developer-braindead/`: this quest-log entry, `respawn.md` (prepend), `comms/active.md` (OPEN + 3 UPDATEs + CLOSING), `bank/build-lessons.md` (the over-shoot lesson). `cockpit/web/styles.css` + `cockpit/web/brain.js` (the polish itself — cockpit infra, neither brain's knowledge layer).
 
-Main-brain changes. none — no `gielinor/` files touched.
+**Main-brain changes.** none — no `gielinor/` files touched.

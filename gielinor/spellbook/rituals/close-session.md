@@ -87,10 +87,11 @@ This closes the "chat-only state is volatile" gap. Drafts that exist only in con
 quest: SNNN_<slug>      # the quest-log entry this resume serves (or topic slug if multi-session)
 sid8: <sid8>            # first 8 chars of CLAUDE_CODE_SESSION_ID — this session
 ts: YYYY-MM-DD HH:MM    # now (last-write time)
+open_dep: none          # or a one-line name of what blocks closing (player-declared; feeds D-029 graduation)
 ---
 ```
 
-No cryptographic hash — the three fields **are** the identity check (a `sha256(prompt)` stamp would false-trip every turn, the brittleness that held Khaan item G). **Migration:** an existing headerless resume gets the header on its next close — this step overwrites resume files each pass — mirroring the [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] sid8-suffix migration.
+No cryptographic hash — the quest/sid8/ts fields **are** the identity check (a `sha256(prompt)` stamp would false-trip every turn, the brittleness that held Khaan item G). **Set `open_dep` from what the session actually leaves open:** `none` if the deliverable shipped with nothing pending, else a one-line name of the blocker (an awaiting-sign-off, an external dependency, a follow-up another actor owns). This is the field step 4's graduation scan reads — declaring it here is the player's cheap half of the clerk-not-nanny split (§R.2, dev brain 2026-05-30). **Migration:** an existing headerless resume gets the header on its next close — this step overwrites resume files each pass — mirroring the [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] sid8-suffix migration.
 
 These sections are what `respawn.md`'s reconciliation prompt reads to surface the next move. The respawn ritual reads inventory files for the active player as the resume foreground; without this file, the next respawn has nothing to surface beyond the turn log.
 
@@ -116,10 +117,10 @@ A quest is done when its "Next concrete step" is "none — quest closed." Multi-
 - Inventory resume file (if present) status reads `done` or describes a clean ship.
 - No fresh activity since a prior session, AND this session didn't reopen it.
 
-For each quest that fires this signal, **classify it by ambiguity** ([[D-029_auto-graduate-unambiguous-complete-ready-quests]]):
+For each quest that fires this signal, **classify it by ambiguity** ([[D-029_auto-graduate-unambiguous-complete-ready-quests]]). **Read the resume file's `open_dep` header field first** (the player's declaration, `inventory/_about.md`); fall back to inferring from the quest body only when the field is absent (legacy resumes):
 
-- **Unambiguous** — the CLOSING / resume records the deliverable **shipped + committed** *and* there is **no named open dependency**. → **Graduate it in this close without a separate y/n.** Execute the complete-flow above, then report the moves as one vetoable batch: *"Graduated S114/S115/S117 → completed/ (shipped+committed, no open dep). Veto any to carry forward."* An un-vetoed move stands; a veto reverses it (`git mv` back).
-- **Ambiguous** — a stated open dependency, a "done but pending principal/external action," or any uncertainty about whether it's truly closed. → Propose for explicit approval as a batch with a one-line reason each; the principal approves per-line (`1y 2y 3n`) or in bulk (`all y`). Do **not** auto-move. Per approval: execute the complete-flow above.
+- **Unambiguous** — the CLOSING / resume records the deliverable **shipped + committed** *and* `open_dep: none` (legacy: no open dependency inferable from the body). → **Graduate it in this close without a separate y/n.** Execute the complete-flow above, then report the moves as one vetoable batch: *"Graduated S114/S115/S117 → completed/ (shipped+committed, no open dep). Veto any to carry forward."* An un-vetoed move stands; a veto reverses it (`git mv` back).
+- **Ambiguous** — `open_dep` names a blocker, or (legacy) a stated open dependency, a "done but pending principal/external action," or any uncertainty about whether it's truly closed. → Propose for explicit approval as a batch with a one-line reason each; the principal approves per-line (`1y 2y 3n`) or in bulk (`all y`). Do **not** auto-move. Per approval: execute the complete-flow above.
 
 **Why this exists.** Born 2026-05-22 (S038 brain-underutilization fix). Before this scan, the principal had to remember to cue "this quest is done" per-quest, which they didn't — Jebrim accumulated 5 stale-done quests over 18 in-progress entries before bulk cleanup. The agent has full read of each quest body and the resume file; it can propose the moves the principal would have eventually cued.
 

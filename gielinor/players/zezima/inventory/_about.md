@@ -30,18 +30,20 @@ inventory/
 
 ## Freshness header
 
-Resume files (`<quest-slug>-resume__<sid8>.md`) open with a small machine-readable header so a future respawn can tell whether the state still fits the task it's resuming — the gielinor port of Khaan's context-hash freshness primitive (dev brain S116/S118; pairs with the [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] staleness model). Three fields, **no cryptographic hash**:
+Resume files (`<quest-slug>-resume__<sid8>.md`) open with a small machine-readable header so a future respawn can tell whether the state still fits the task it's resuming — the gielinor port of Khaan's context-hash freshness primitive (dev brain S116/S118; pairs with the [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]] staleness model). Four fields, **no cryptographic hash**:
 
 ```
 ---
 quest: SNNN_<slug>      # the quest-log entry this resume serves (or topic slug if multi-session)
 sid8: <sid8>            # session that last wrote it
 ts: YYYY-MM-DD HH:MM    # last-write time
+open_dep: none          # or a one-line name of what blocks closing (player-declared)
 ---
 ```
 
 - **The fields ARE the identity check.** `quest` + `sid8` answer "is this state for the task I'm resuming, and which session wrote it"; `ts` answers "how old." A `sha256(prompt)` stamp was deliberately rejected — the prompt changes every turn, so a content-hash reads stale immediately and false-trips every respawn (the brittleness that held Khaan item G, dev brain S116).
 - **Read, not enforced.** Respawn's reconciliation surfaces age + any `quest`/`sid8` mismatch as a *note* ("this resume is N days old / tagged for a different quest — stale?"); it never hard-blocks a resume. The principal decides.
+- **`open_dep` is the graduation discriminator the player owns.** `none` declares the thread carries no named open dependency; otherwise name the blocker in one line (e.g. `open_dep: waiting to re-read against next week's notes`). Close-session's stale-done scan reads it ([[D-029_auto-graduate-unambiguous-complete-ready-quests|D-029]]): `open_dep: none` on a shipped + committed thread → **unambiguous, graduates silently** this close; a named dep → **ambiguous, held for veto/approval**; the field absent (legacy resumes) → the agent falls back to inferring from the body. The point (§R.2, dev brain 2026-05-30): the player alone cheaply knows whether a dep is open, so a one-line declaration beats the agent inferring it from prose — and `Next concrete step: none` is *not* the same as `no open dependency`.
 - Written by `close-session.md` step 3; surfaced by `respawn.md`'s reconciliation prompt; presence on this session's own resume verified by `close_check.py --ritual player`.
 
 ## Write rules

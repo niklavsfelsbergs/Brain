@@ -69,3 +69,7 @@ desktop.ini
 
 # read_comms.py audio outputs (regenerable)
 tools/out/
+
+# comms_append.py lockfiles (runtime, per-vault)
+comms/active.md.lock
+*/comms/active.md.lock

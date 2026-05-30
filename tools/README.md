@@ -76,4 +76,29 @@ order. Override any with `--voice actor=VOICE`; list every available voice with
   plays cleanly in normal players. If some player chokes on the joins, install
   `ffmpeg` and re-encode, or play the per-turn clips.
 - Outputs land in `tools/out/` (git-ignored).
+
+## comms_append.py — atomic locked append to comms/active.md
+
+The **only** safe way to post a comms entry. Takes an exclusive cross-process
+lock, then does a true append (`open(path,'a')` + fsync) — concurrent sessions
+serialize, no lost updates, no truncation. Replaces posting entries via the
+Edit/Write tool, which read-modify-rewrites the whole file and truncated the
+log to zero under concurrent writers (the S127 bug).
+
 ```
+printf '%s' "$ENTRY" | py tools/comms_append.py --vault dev
+py tools/comms_append.py --vault gielinor --entry "[ts] jebrim-xxxx OPEN
+  Targets: ..."
+py tools/comms_append.py --file gielinor/comms/active.md --entry "..."
+```
+
+Flags: `--vault dev|gielinor` (auto-detects from CWD if omitted), `--file PATH`
+(overrides `--vault`), `--entry TEXT` (else reads the entry from stdin). The
+entry is the full block (header line + indented body); the tool fixes the
+blank-line separation against whatever the file currently ends with.
+
+Enforced by `gielinor/.claude/hooks/comms-append-guard.py` — a raw Edit/Write of
+`comms/active.md` is blocked and points here. A deliberate rotation is the one
+legitimate whole-file rewrite: set `COMMS_ROTATE=1` for that single action.
+
+No dependencies (stdlib only). See `developer-braindead/bank/plan.md` §R.1.

@@ -67,11 +67,21 @@ Cross-reference each live session id against the comms log: any id in the sideca
 - **Lead with a human gist.** Line 1 reads as plain language the principal can follow on the board — what you're doing or asking; any precise refs (file, query name, ticket id) go on a following line where the board dims them. Players are naturally conversational, so this mostly means: don't open with an artifact path or a symbol name. Born [[S056_e5df54a2_apartment-domajamas-dalas-research|S056]] (2026-05-23), shared with the dev-brain twin where agent-to-agent handoffs had rendered as unreadable jargon.
 - **`CLOSING` template:** one line for what shipped, optionally one for what's left open. SNNN reference is enough — the quest-log carries the rest.
 
-## Concurrent-write safety
+## Concurrent-write safety — append via the tool, never Edit/Write
 
-Append-only newline-separated entries with `open(path, 'a')` are atomic at the line level on Windows + POSIX for small writes. Two sessions posting OPENs within the same second may interleave entries in either order, but no data is lost. The protocol tolerates minor ordering noise — the file is a coordination signal, not a database.
+**Append entries with `tools/comms_append.py`, not the Edit or Write tool.**
 
-If observable garbling shows up routinely, add a file lock around append. Defer until needed.
+```
+printf '%s' "$ENTRY" | py tools/comms_append.py --vault gielinor
+```
+
+The tool takes an exclusive cross-process lock, then does a true append (`open(path,'a')` + fsync). Concurrent sessions serialize — no lost updates, no truncation.
+
+**Why the rule changed (S127/S128).** This section used to claim appends were safe because they used `open(path,'a')`. That was a fiction: the agent never appended that way — it posted entries by *reading the file and rewriting it* (Edit rewriting around the last entry, or Write rewriting the whole file). Both are read-modify-write: two sessions clobber each other (lost update), and an interrupted/raced rewrite leaves the file short or **empty**. That truncation-to-zero fired live in S127. The lock + true append closes the whole class.
+
+**Enforced:** `gielinor/.claude/hooks/comms-append-guard.py` (PreToolUse) blocks a raw Edit/Write/MultiEdit of `comms/active.md` and points here. A deliberate rotation (the bulk-move below) is the one whole-file rewrite that's legitimate — set `COMMS_ROTATE=1` for that single action and the guard stands down. Discipline-only adoption was rejected for the born-link reason: discipline drifts, hooks hold.
+
+Minor ordering noise (two OPENs in the same second landing in either order) is still tolerated — the file is a coordination signal, not a database. The lock prevents *loss*, not *reordering*.
 
 ## Rotation
 

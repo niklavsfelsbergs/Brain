@@ -49,11 +49,21 @@ Polling every turn is overkill. These three trigger points cover the actual risk
 - **Lead with a human gist; bury the machine detail.** Line 1 is a plain-language sentence a *human* watching the board can follow — what you're doing or asking, in prose. **No file paths, line numbers, or code identifiers on line 1.** The exact refs a sibling needs to act (`styles.css ~L301`, `STATE_RANK`, `.sb-row[data-state=…]`) go on line 2+, where the board dims them as monospace. The dev channel is read by *two* audiences — the sibling Claude (needs precision) and the principal watching the board (needs to follow along); line 1 serves the human, the tail serves the agent. **Bad:** *"[[S059_2de9789c_switchboard_alching_wrapped_up_states|S059]] needs ADDITIVE hunks — styles.css: two `.sb-row[data-state="alching"]` blocks ~L301 + STATE_RANK keys, renumber idle/ended down."* **Good:** *"Heads up — I need you to add styling for two new switchboard states."* …then the file/line refs on the next line. Born [[S056_e433ac17_switchboard-osrs-chatbox|S056]] (2026-05-23): a dev handoff rendered as unfollowable jargon on the human board.
 - **`CLOSING` template:** one line for what shipped, optionally one for what's left open. SNNN reference is enough — the quest-log carries the rest.
 
-## Concurrent-write safety
+## Concurrent-write safety — append via the tool, never Edit/Write
 
-Append-only newline-separated entries with `open(path, 'a')` are atomic at the line level on Windows + POSIX for small writes. Two Braindeads posting OPENs within the same second may interleave entries in either order, but no data is lost. The protocol tolerates minor ordering noise — the file is a coordination signal, not a database.
+**Append entries with `tools/comms_append.py`, not the Edit or Write tool.**
 
-If observable garbling shows up routinely, add a file lock around append. Defer until needed.
+```
+printf '%s' "$ENTRY" | py tools/comms_append.py --vault dev
+```
+
+The tool takes an exclusive cross-process lock, then does a true append (`open(path,'a')` + fsync). Concurrent Braindeads serialize — no lost updates, no truncation.
+
+**Why the rule changed (S127/S128).** This section used to claim appends were safe because they used `open(path,'a')`. That was a fiction: nothing appended that way — the agent posted entries by *reading the file and rewriting it* (Edit rewriting around the last entry, or Write rewriting the whole file). Both are read-modify-write: two Braindeads clobber each other (lost update), and an interrupted/raced rewrite leaves the file short or **empty**. That truncation-to-zero fired live in S127 (the garbled tail it left is still visible in the rotated history). The lock + true append closes the whole class.
+
+**Enforced:** `gielinor/.claude/hooks/comms-append-guard.py` (PreToolUse) blocks a raw Edit/Write/MultiEdit of `comms/active.md` (both vaults) and points here. A deliberate rotation (the bulk-move below) is the one whole-file rewrite that's legitimate — set `COMMS_ROTATE=1` for that single action and the guard stands down. Discipline-only adoption was rejected for the born-link reason: discipline drifts, hooks hold.
+
+Minor ordering noise (two OPENs in the same second landing in either order) is still tolerated — the file is a coordination signal, not a database. The lock prevents *loss*, not *reordering*.
 
 ## Rotation
 

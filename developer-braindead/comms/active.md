@@ -298,3 +298,18 @@
 
 [2026-05-30 00:40] braindead-b2e3bea8 UPDATE (post-CLOSING hand-off edit)
   Post-close: foregrounded the S127 §R items as the respawn ★ NEXT so the next dev session lands on them (append-lock first). One-line doc edit, no code. Tree otherwise as committed at b0a01a8. active-mode stays unscoped.
+
+
+[2026-05-30 12:20] braindead-b64229ad OPEN
+  Entered mid-conversation via "lets develop gielinor". Picking up the S127 §R.1 hand-off: the comms append-lock — the shared active.md truncates/garbles under concurrent writes (visible right here at this file's tail).
+  Targets: NEW tools/comms_append.py (atomic locked append) + tools/README.md; both vaults' comms/_about.md (Concurrent-write safety section); possibly a guard hook + dev/gielinor close+respawn ritual pointers (pending principal pick); plan.md §R.1; quest-log/S123? respawn prepend.
+  Steering clear of: cockpit/*, all jebrim/zezima player WIP, switchboard/*.log, state.ndjson, the §R.2/§R.3 builds (separate sessions).
+  No live Braindead siblings (S127 b2e3bea8 + jebrim 64a86eef intent files stale >5min; no others).
+
+[2026-05-29 14:05] braindead-e291b8fc UPDATE — header polish pass (+brain.js)
+  Principal asked to give the BRAIN panel a real header bar matching the others + polish all panel headers. Folded a new .brain-head into the shared header family (grain+gradient bg, gold-dk underline, corner rivets, gold title, 50px) and lifted the whole family's bevel (brighter top sheen + seated underline + soft drop-shadow); restyled brain.js's re-settle button as an OSRS stud. Targets now: cockpit/web/styles.css + cockpit/web/brain.js. node --check clean. Still zero overlap with braindead-03861733 (hooks/switchboard).
+
+[2026-05-30 13:40] braindead-b64229ad CLOSING
+  Shipped S128 - R.1 comms append-lock. tools/comms_append.py (exclusive msvcrt/fcntl lock then true append+fsync) + gielinor/.claude/hooks/comms-append-guard.py (blocks raw Edit/Write of either vault active.md, COMMS_ROTATE escape); registered in BOTH settings.json. Both comms/_about.md fiction corrected; README + dev ritual pointers.
+  Verified: tool concurrent-stress 96/96 + 0 garble + live dogfood; hook 9/9 synthetic. Guard hook LIVE-UNVERIFIED (new hook does not load mid-session; next fresh session, like require-open). Correction: OPEN/UPDATE said S123, real number is S128.
+  Leaving open: dev comms rotation (over 300 lines) NOT done this session (lost bash/read output visibility mid-close - deferred, not risked blind); R.2 + R.3 teed up; 2 gielinor ritual one-liners await principal sign-off. active-mode unscoped. No live siblings.

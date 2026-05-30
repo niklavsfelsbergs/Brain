@@ -26,7 +26,7 @@
      Open to handoff: <work surfaced in respawn.md that this session won't pick up>
    ```
 
-   Append-only — never edit an existing entry.
+   Append-only — never edit an existing entry. **Append with `tools/comms_append.py`, not Edit/Write** (`printf '%s' "$ENTRY" | py tools/comms_append.py --vault dev`); a raw Edit/Write of `active.md` is blocked by `comms-append-guard.py` (S128 — the read-modify-rewrite path truncates the log under concurrent sessions).
 
 ## Notes
 

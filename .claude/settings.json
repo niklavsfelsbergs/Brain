@@ -59,6 +59,10 @@
           {
             "type": "command",
             "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/require-open-on-entry.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/comms-append-guard.py\""
           }
         ]
       },

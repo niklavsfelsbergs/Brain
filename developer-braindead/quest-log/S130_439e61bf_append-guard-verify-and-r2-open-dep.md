@@ -32,11 +32,9 @@ Grounding confirmed: `close_check.py` has player arms but **no graduation/open-d
 - **`close-session.md` updated** (user-only ritual; applied on explicit principal go-ahead, [[D-017_user-only-with-explicit-permission|D-017]]): step-3 header block + write-instruction now carry `open_dep`; step-4 classify reads the field first, infers from the body only as a legacy fallback. Backward-compatible — absent field → today's behavior.
 - close_check arm: **deferred** (optional, thin guard — the classification judgment can't be mechanized per the [[S121_03861733_ritual-analytics-item-11|S121]] constraint; only the marker axis is now a read field).
 
-## Cascade.
+**Cascade.** None. The change is additive convention + ritual prose; no per-carrier/status tables, no downstream docs depend on it. `inventory/_about.md` (both players) and `close-session.md` are mutually consistent (same field name, same semantics).
 
-None. The change is additive convention + ritual prose; no per-carrier/status tables, no downstream docs depend on it. `inventory/_about.md` (both players) and `close-session.md` are mutually consistent (same field name, same semantics).
-
-## Main-brain changes.
+**Main-brain changes.**
 
 - `gielinor/players/jebrim/inventory/_about.md` — `open_dep` freshness-header field + bullet.
 - `gielinor/players/zezima/inventory/_about.md` — same.

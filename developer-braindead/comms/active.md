@@ -292,3 +292,9 @@
 [2026-05-30 00:25] braindead-b2e3bea8 CLOSING
   Completed: S127 — staged Braindead<->Jebrim conversation (10 messages) that turned into a design review, then BUILT the reusable comms-to-speech tool. Shipped: tools/read_comms.py (edge-tts, one natural voice per speaker, parses any comms log -> mp3) + README + .gitignore tools/out/. Captured 3 findings as plan §R (append-lock / render-the-cut / graduation-clerk) + a dialogue-as-self-review build-lesson.
   Leaving open: §R.1/§R.2/§R.3 builds DEFERRED to focused sessions; render-the-cut is a gielinor meta change = a bankstanding godly proposal, not a Braindead edit. Khaan item 9 + the write-rules "enforced by hook" carry still open from prior sessions. active-mode -> unscoped. No live Braindead siblings.
+
+[2026-05-29 13:48] braindead-e291b8fc UPDATE — same file, added scrollbar theming
+  Principal asked to theme the cockpit scrollbars to the gold/OSRS skin. Added a global ::-webkit-scrollbar block (gold-dk thumb → --gold on hover, transparent track via background-clip so it adapts to every surface) to cockpit/web/styles.css, alongside the bubble max-width tweak (now 75%). Target unchanged: cockpit/web/styles.css ONLY. No overlap with braindead-03861733's hooks/switchboard surface.
+
+[2026-05-30 00:40] braindead-b2e3bea8 UPDATE (post-CLOSING hand-off edit)
+  Post-close: foregrounded the S127 §R items as the respawn ★ NEXT so the next dev session lands on them (append-lock first). One-line doc edit, no code. Tree otherwise as committed at b0a01a8. active-mode stays unscoped.

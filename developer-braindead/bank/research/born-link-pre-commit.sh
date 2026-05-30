@@ -24,8 +24,11 @@ for VAULT in gielinor developer-braindead; do
     [ -z "$STAGED" ] && continue
     CSV=$(printf '%s\n' "$STAGED" | tr '\n' ',' | sed 's/,$//')
     if OUT=$(python "$LINT" --vault "$ROOT/$VAULT" --files "$CSV"); then
-        # re-stage files the auto-wrap modified (FIX\t<rel> lines on stdout)
-        printf '%s\n' "$OUT" | while IFS="$(printf '\t')" read -r tag rel; do
+        # re-stage files the auto-wrap modified (FIX\t<rel> lines on stdout).
+        # tr -d '\r': the linter prints under Windows text-mode stdout (CRLF), so
+        # without this `rel` keeps a trailing \r and `git add "..md\r"` fails
+        # ("did not match", \r renders as ?), leaving auto-wraps dirty for a 2nd commit.
+        printf '%s\n' "$OUT" | tr -d '\r' | while IFS="$(printf '\t')" read -r tag rel; do
             [ "$tag" = "FIX" ] && [ -n "$rel" ] && git add "$VAULT/$rel"
         done
     else

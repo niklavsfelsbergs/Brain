@@ -201,10 +201,12 @@ Don't write narration for every turn. Most turns don't warrant it. The bubble + 
 
 Two channels for "what's happening now," and they must not mirror each other:
 
-- **Intent** = *why* and *what scope*. "Drafting D-014", "Wrapping up S016", "Bankstanding — phase 0". Authored by the agent.
+- **Intent** = *why* and *what scope*. "Drafting D-014", "Wrapping up S016", "Bankstanding — phase 0". Authored by the agent. This is **scope-why** — a one-line label of what's underway — and it is a **cockpit-facing status line**, read at a glance off the board. It is not the place for the reasoning behind a plan (see below).
 - **Action** = *which file* or *which command*. "Jebrim: editing meta/communication-protocol.md", "Braindead: running git status". Emitted automatically by the hook on Edit/Write/Bash/Glob/Grep.
 
 If the intent line restates what the actions already show ("Editing communication-protocol.md"), the chat doubles itself and intent loses its signal. Keep intent abstract enough that the action stream complements rather than echoes it.
+
+**Render the cut, not the keystrokes.** There is a third thing, distinct from both channels above: **the cut** — the *decomposition reasoning* behind a plan (why six engines and not five, why this split and not that one). In a multi-step turn the cut is the highest-value signal, and it is tempting to pour it into the bubble. Don't. The bubble is a ≤280-char cockpit status surface; it physically cannot carry the reasoning, and forcing it makes the bubble render the keystrokes (what's happening) dressed up as rationale. The cut already has a home where the principal reads it: the **Understanding/Plan preamble** and the **task-list** (*Task-list surfacing* above — the decomposition surfaces in or just after the Plan line). Put the reasoning there; let the bubble be honestly the scope-status it is. In one line: *the bubble says what scope is underway; the Plan line says why it's cut this way.* (Founding: the §R.3 finding from the Braindead↔Jebrim self-review, landed as a Guthix godly proposal 2026-05-30.)
 
 ## Why this rule exists
 

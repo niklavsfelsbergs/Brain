@@ -570,7 +570,8 @@ class TermConn {
         const prevId = this.id;
         const prevSessionId = this.sessionId;
         // [rename-diag] opt-in: `window.__RENAMEDIAG = 1` traces the carry path in
-        // the console; the authoritative server-side trace is switchboard/rename-diag.log.
+        // the console (zero-cost no-op when the flag is unset). The always-on
+        // server-side rename-diag.log writer was removed once the orphan bug was fixed.
         if (window.__RENAMEDIAG)
           console.log("[rename-diag] session frame", { prevId, sid8: f.sid8, rotated: !!f.rotated, resumeId: this.resumeId, nameForNew: nameFor(f.sid8) });
         if (prevId && prevId !== f.sid8) {
@@ -627,12 +628,11 @@ class TermConn {
   // Two call sites: keydown (throttled) + the <Term/> open pin loop (force=true,
   // the decisive f1/f8/f40 samples — bypass the throttle so none are dropped).
   //
-  // Console output stays opt-in (`window.__TERMDIAG = 1` in DevTools). TRANSIENT
-  // ADDITION (issue #2, 2026-05-26): it ALSO posts each line to the backend's
-  // /api/termdiag → switchboard/term-fit-diag.log so a relaunch+open reproduces
-  // the cut-off straight to disk, no DevTools needed. STRIP the disk POST + the
-  // backend route once the bug is fixed (S093 rename-diag / S094 size-diag
-  // precedent — debug-only, always-on while debugging).
+  // Console output stays opt-in (`window.__TERMDIAG = 1` in DevTools) — a
+  // zero-cost no-op when the flag is unset. (The transient disk sink that
+  // POSTed each open-frame line to /api/termdiag → switchboard/term-fit-diag.log
+  // was removed once the prompt-below-fold bug was fixed; the backend route went
+  // with it.)
   _diag(why, force = false) {
     const now = Date.now();
     if (!force && now - (this._diagAt || 0) < 250) return;
@@ -653,18 +653,6 @@ class TermConn {
         `vp.scrollTop=${vp ? vp.scrollTop : "?"} vp.scrollHeight=${vp ? vp.scrollHeight : "?"} ` +
         `vp.clientHeight=${vp ? vp.clientHeight : "?"}`;
       if (window.__TERMDIAG) console.log("[term-diag] " + line);
-      // transient disk sink — OPEN-frame samples only (force), so it doesn't write
-      // on every keystroke; enough to verify the reshow fix. Strip with the backend
-      // route once #2 is confirmed (S095).
-      if (force) {
-        try {
-          fetch("/api/termdiag", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ line }),
-          });
-        } catch {}
-      }
     } catch (e) {
       if (window.__TERMDIAG) console.log("[term-diag] error", e);
     }

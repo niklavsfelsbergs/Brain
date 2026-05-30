@@ -72,6 +72,10 @@
           {
             "type": "command",
             "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/block-deletes.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"C:/Users/niklavs.felsbergs/Documents/GitHub/brain/gielinor/.claude/hooks/git-index-guard.py\""
           }
         ]
       },

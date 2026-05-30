@@ -144,6 +144,21 @@ def _has_open(comms: Path, sid8: str) -> bool:
     return False
 
 
+# Shared actor resolution (audit finding #2) — prefer the canonical helper so
+# the S124 anti-race fallback lives in ONE place reusable by future actor-keyed
+# hooks; keep the inline functions above as a behavior-identical fallback if the
+# helper is ever unavailable (this is the brain's #1 gate — it must never break
+# on an import fluke).
+_HOOK_DIR = Path(__file__).resolve().parent
+if str(_HOOK_DIR) not in sys.path:
+    sys.path.insert(0, str(_HOOK_DIR))
+try:
+    from _actor import resolve_actor
+except Exception:
+    def resolve_actor(sid8, brain_root=None):
+        return _actor_for(sid8) or _actor_from_intent(sid8)
+
+
 def main() -> int:
     try:
         payload = json.load(sys.stdin)
@@ -171,7 +186,7 @@ def main() -> int:
     sid = payload.get("session_id") or os.environ.get("CLAUDE_CODE_SESSION_ID") or ""
     sid8 = sid[:8].lower()
 
-    actor = _actor_for(sid8) or _actor_from_intent(sid8)
+    actor = resolve_actor(sid8, BRAIN_ROOT)
     comms = _comms_for(actor)
     if comms is None:
         # Empty actor = unresolved (status file lagged AND no intent anchor on

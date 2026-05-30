@@ -52,40 +52,6 @@ MANIFEST_PATH = BRAIN_ROOT / "switchboard" / "state-switchboard.json"
 # rename-intercept.py, status-sidecar.py). Carried across an id rotation below.
 NAMES_PATH = BRAIN_ROOT / "switchboard" / "state-names.json"
 SESSION_WATCH_SEC = 2.0  # how often to re-check the live session id (board cadence)
-# Transient debug trace for the S094 terminal-garble fix: every winsize the PTY
-# actually applies, so a relaunch confirms xterm↔PTY size agreement and that the
-# coalescer fires ONE setwinsize per event (not a storm). Always-on while
-# debugging; STRIP this + its call site once verified (S093 rename-diag precedent).
-SIZE_DIAG_PATH = BRAIN_ROOT / "switchboard" / "term-size-diag.log"
-
-
-def _log_size(sid8: str, cols: int, rows: int) -> None:
-    """Append the applied PTY winsize to term-size-diag.log. Best-effort; any IO
-    failure is swallowed so the diag can never stall or break the PTY pump."""
-    try:
-        import time
-        with SIZE_DIAG_PATH.open("a", encoding="utf-8") as f:
-            f.write(f"{time.strftime('%H:%M:%S')} {sid8} setwinsize cols={cols} rows={rows}\n")
-    except Exception:
-        pass
-
-
-# Transient rename trace, re-enabled 2026-05-26 for the "all sessions lost their
-# name on restart" report — the same instrument S093 R4 used (then stripped once
-# it answered). Records announce + rotate + carry so a relaunch shows whether
-# --resume rotated the id and whether the disk-name carry fired. STRIP this + its
-# call sites once the orphan cause is known. Pairs with term.js's localStorage
-# carry on re-announce (the OTHER name store). Best-effort, never raises.
-RENAME_DIAG_PATH = BRAIN_ROOT / "switchboard" / "rename-diag.log"
-
-
-def _log_rename(event: dict) -> None:
-    try:
-        import time as _t
-        with RENAME_DIAG_PATH.open("a", encoding="utf-8") as f:
-            f.write(json.dumps({"ts": round(_t.time(), 3), **event}) + "\n")
-    except Exception:
-        pass
 
 
 def _carry_disk_name(old_sid8: str, new_sid8: str) -> str:
@@ -249,9 +215,6 @@ async def pty_handler(request):
     announced = {"sid": session_id}
     await _ws_send(ws, {"t": "session", "sessionId": session_id,
                         "sid8": session_id[:8], "resumed": resuming})
-    _log_rename({"event": "announce", "resuming": resuming,
-                 "session_id": session_id, "sid8": session_id[:8],
-                 "anchor_sid8": anchor_sid8})  # transient (name-orphan diag) — strip after
 
     if resuming:
         # reattach to the saved session — survives cockpit reload/restart.
@@ -324,13 +287,9 @@ async def pty_handler(request):
                     # the anchor→cur step handles a restart where claude minted a
                     # fresh id straight off --resume (the name is still under the
                     # resume uuid's sid8, which prev may no longer equal). (S093b)
-                    r_prev = await loop.run_in_executor(None, _carry_disk_name, prev[:8], cur[:8])
-                    r_anchor = "skip-eq"
+                    await loop.run_in_executor(None, _carry_disk_name, prev[:8], cur[:8])
                     if anchor_sid8 != prev[:8]:
-                        r_anchor = await loop.run_in_executor(None, _carry_disk_name, anchor_sid8, cur[:8])
-                    _log_rename({"event": "rotate", "prev": prev[:8], "cur": cur[:8],
-                                 "anchor_sid8": anchor_sid8,
-                                 "carry_prev": r_prev, "carry_anchor": r_anchor})  # transient — strip after
+                        await loop.run_in_executor(None, _carry_disk_name, anchor_sid8, cur[:8])
                     await _ws_send(ws, {"t": "session", "sessionId": cur,
                                         "sid8": cur[:8], "resumed": False, "rotated": True})
         except asyncio.CancelledError:
@@ -359,7 +318,6 @@ async def pty_handler(request):
                     r = _clamp(int(obj["rows"]), ROWS_MIN, ROWS_MAX)
                     c = _clamp(int(obj["cols"]), COLS_MIN, COLS_MAX)
                     proc.setwinsize(r, c)
-                    _log_size(announced["sid"][:8], c, r)  # S094 transient diag — strip after verify
                 except Exception:
                     pass
     finally:

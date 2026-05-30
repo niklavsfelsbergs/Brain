@@ -39,13 +39,25 @@ EXIT CODES
   1  usage / lock-timeout / write error (message on stderr)
 """
 import argparse
+import datetime
 import os
+import re
 import sys
 import time
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 VAULTS = {"dev": "developer-braindead", "gielinor": "gielinor"}
 LOCK_TIMEOUT = 10.0  # seconds to wait for the lock before giving up
+
+# Auto-rotation (audit finding #6, S2): rotation must self-hold in code, not as a
+# manual step that drifts. When active.md grows past ROTATE_LINES, the oldest
+# entries beyond the most recent KEEP_ENTRIES are bulk-moved to
+# comms/archive/active-YYYY-MM-DD.md, under the same lock the append holds.
+ROTATE_LINES = 300  # active.md line-count trigger (see comms/_about.md "Rotation")
+KEEP_ENTRIES = 50   # most-recent entries left in active.md after a rotation
+
+# An entry header line, e.g. "[2026-05-30 12:10] braindead-xxxx OPEN".
+_ENTRY_HEADER_RE = re.compile(r"^\[\d{4}-\d{2}-\d{2} ")
 
 
 class _FileLock:
@@ -136,8 +148,108 @@ def _leading_newlines(path):
     return "\n\n"
 
 
-def append_entry(path, entry):
-    """Atomic locked append. Returns None on success, an error string on failure."""
+def _parse_preamble_entries(text):
+    """Split active.md text into (preamble, entries).
+
+    Preamble = every line up to (but not including) the FIRST entry-header line
+    (a line matching `^\\[\\d{4}-\\d{2}-\\d{2} `). Entries = a list of strings,
+    each one entry-header line plus the body lines following it up to the next
+    header. Entry boundaries are preserved verbatim — nothing is split mid-block.
+    A file with no entry headers yields (whole-text, []).
+    """
+    lines = text.splitlines(keepends=True)
+    first = None
+    for i, ln in enumerate(lines):
+        if _ENTRY_HEADER_RE.match(ln):
+            first = i
+            break
+    if first is None:
+        return text, []
+    preamble = "".join(lines[:first])
+    entries = []
+    cur = []
+    for ln in lines[first:]:
+        if _ENTRY_HEADER_RE.match(ln):
+            if cur:
+                entries.append("".join(cur))
+            cur = [ln]
+        else:
+            cur.append(ln)
+    if cur:
+        entries.append("".join(cur))
+    return preamble, entries
+
+
+def _write_atomic(path, data):
+    """Write `data` to `path` (overwrite) with flush+fsync."""
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
+
+
+def _rotate(path, rotate_lines, keep_entries):
+    """Best-effort rotation. MUST be called while holding the file lock, AFTER
+    the append has been durably written. Returns None on success or a no-op,
+    an error string on failure (the caller swallows it — the append is already
+    safe). Nothing is ever deleted: the archive is written + fsynced BEFORE
+    active.md is rewritten."""
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        text = f.read()
+    if text.count("\n") + (0 if text.endswith("\n") or text == "" else 1) <= rotate_lines:
+        return None  # under threshold; no-op
+
+    preamble, entries = _parse_preamble_entries(text)
+    if len(entries) <= keep_entries:
+        return None  # not enough entries to move; leave it
+
+    bulk = entries[:-keep_entries]
+    kept = entries[-keep_entries:]
+    today = datetime.date.today().isoformat()
+
+    archive_dir = os.path.join(os.path.dirname(path), "archive")
+    os.makedirs(archive_dir, exist_ok=True)
+    archive_path = os.path.join(archive_dir, f"active-{today}.md")
+
+    bulk_text = "".join(bulk)
+    # Write archive FIRST (so the bulk exists in two places before it leaves
+    # active.md). Append to a same-day archive; fresh file gets a header.
+    if os.path.exists(archive_path):
+        with open(archive_path, "r", encoding="utf-8") as f:
+            existing = f.read()
+        sep = "" if existing == "" or existing.endswith("\n\n") else ("\n" if existing.endswith("\n") else "\n\n")
+        _write_atomic(archive_path, existing + sep + bulk_text)
+    else:
+        header = f"# archived comms entries (rotated {today})\n\n"
+        _write_atomic(archive_path, header + bulk_text)
+
+    # Now rewrite active.md = preamble + breadcrumb + kept entries.
+    breadcrumb = (
+        f"> **Rotated {today} — {len(bulk)} older entries bulk-moved to "
+        f"`active-{today}.md`** (auto-rotation, comms_append.py). Kept the most "
+        f"recent {len(kept)} below; seek to EOF for the live tail. "
+        f"Nothing deleted (per `_about.md` -> Rotation).\n"
+    )
+    pre = preamble
+    if pre and not pre.endswith("\n"):
+        pre += "\n"
+    # one blank line between preamble and breadcrumb, and between breadcrumb and
+    # the first kept entry.
+    new_text = pre.rstrip("\n") + "\n\n" + breadcrumb + "\n" + "".join(kept)
+    _write_atomic(path, new_text)
+    return None
+
+
+def append_entry(path, entry, rotate=True, rotate_lines=ROTATE_LINES, keep_entries=KEEP_ENTRIES):
+    """Atomic locked append. Returns None on success, an error string on failure.
+
+    Append-then-rotate, both under the same lock. The append is the guaranteed
+    write; rotation is best-effort AFTER it. If rotation raises, the entry is
+    already safely on disk — the error is swallowed and the append still
+    succeeds. Rotation failure never fails the append.
+    """
     entry = entry.rstrip("\n") + "\n"
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -147,6 +259,12 @@ def append_entry(path, entry):
                 f.write(lead + entry)
                 f.flush()
                 os.fsync(f.fileno())
+            # Append succeeded and is durable. Rotation is best-effort from here.
+            if rotate:
+                try:
+                    _rotate(path, rotate_lines, keep_entries)
+                except Exception:
+                    pass  # never let rotation failure lose/fail the append
         return None
     except TimeoutError as e:
         return f"lock timeout: {e}"
@@ -159,6 +277,10 @@ def main():
     ap.add_argument("--vault", choices=list(VAULTS), help="dev | gielinor (auto-detect from CWD if omitted)")
     ap.add_argument("--file", help="explicit path to a comms/active.md (overrides --vault)")
     ap.add_argument("--entry", help="entry text (full block); read from stdin if omitted")
+    ap.add_argument("--rotate-lines", type=int, default=ROTATE_LINES,
+                    help=f"rotate active.md when it exceeds this many lines (default {ROTATE_LINES})")
+    ap.add_argument("--no-rotate", action="store_true",
+                    help="disable auto-rotation (append only)")
     args = ap.parse_args()
 
     path = _resolve_path(args)
@@ -174,7 +296,12 @@ def main():
         sys.stderr.write("comms_append: empty entry; nothing to append.\n")
         sys.exit(1)
 
-    err = append_entry(path, entry)
+    err = append_entry(
+        path, entry,
+        rotate=not args.no_rotate,
+        rotate_lines=args.rotate_lines,
+        keep_entries=KEEP_ENTRIES,
+    )
     if err:
         sys.stderr.write(f"comms_append: {err}\n")
         sys.exit(1)

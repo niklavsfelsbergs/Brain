@@ -29,6 +29,9 @@ switchboard/chat.ndjson
 switchboard/ritual-events.ndjson
 switchboard/ritual-events.ndjson.tmp.*
 
+# Transient cockpit diagnostic logs (debug-only writers removed; files regenerable)
+switchboard/*-diag.log
+
 # Embedded-terminal server (S058) — venv + throwaway smoke test
 switchboard/.venv/
 switchboard/_smoketest.py
@@ -39,6 +42,11 @@ cockpit/.webview/
 
 # Intent narration sidecars (D-010) — transient agent self-narration
 .claude/intent/*.txt
+# Mode markers (communication-protocol.md) + archived intent/mode sidecars —
+# transient per-session runtime, like state.ndjson (audit #8: were git-status
+# clobber-fuel; the already-tracked .mode need a one-time `git rm --cached`).
+.claude/intent/*.mode
+.claude/intent/archive/
 
 # Global narration sidecar (D-014) — system-voice broader-scope commentary
 .claude/narration.txt

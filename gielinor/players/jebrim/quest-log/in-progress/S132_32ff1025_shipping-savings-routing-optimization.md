@@ -45,5 +45,5 @@ EU: DHL Paket (intl+DE+Warenpost), DPD PL, GLS, UPS, Post Nord/Direct Link, Maer
 ## Next
 PARKED 2026-05-31 (daily limit). Resume: `inventory/shipping-savings-resume__32ff1025.md`.
 - Phase 1 gate DONE (green, live-verified). Population exported.
-- Phase 2: all 14 carrier engines BUILT on disk via workflow wf_11cf8aeb-833 (specs+engines+tests). Test-pass UNCONFIRMED (pytest collection timed out — likely an engine reading the 785k parquet at import; fix first).
-- Remaining: verify engines → validate_engines (ground-truth vs actual paid) → build_cost_matrix → Phase 5 constraints-aware savings synthesis (mirage guard) → Phase 6 HTML report.
+- Phase 2: all 14 carrier engines BUILT + PASSING via workflow wf_11cf8aeb-833 (134 tests pass in 2.1s). Phase 2 complete.
+- Remaining: validate_engines (ground-truth vs actual paid — the real trust gate) → build_cost_matrix → Phase 5 constraints-aware savings synthesis (mirage guard) → Phase 6 HTML report.

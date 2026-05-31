@@ -46,6 +46,14 @@ Auto-triggers (scheduled, on size-budget threshold, on draft-count threshold) ar
 
 The agent works through each item below in order. **Propose, never silently destroy.** Especially in the early phase, surface every move to the principal for confirmation rather than auto-executing.
 
+**Switchboard marker.** Bankstanding flags the session so the board renders a `bankstanding` flavor chip instead of a bare `BUSY` (mirrors alching's marker; see `alching.md` and `meta/communication-protocol.md` → *Mode marker sidecar*):
+
+- **On entry** (before Phase 0): write `bankstanding` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`).
+- **During Phase 0**: each per-player alching sub-pass writes `alching` per `alching.md`; **on Phase 0 exit, restore `bankstanding`** so the chip reflects the ritual you're back in.
+- **On close** (or if abandoned): overwrite with an empty line to clear it.
+
+Switchboard-only — not architecturally enforced; a missing marker just means no chip.
+
 ### 0. Alch each changed player first
 
 Before bankstanding's own work begins, walk the player roster. For each player, compare the most recent change in their namespace against `players/<name>/last-alched.md`.

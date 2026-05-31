@@ -17,10 +17,15 @@ const STATE_LABEL = {
 };
 
 // Flavor tags ride on the chip — small annotations, never their own state.
+// Ritual flavors (bankstanding/consultation/drafts) let a Guthix or housekeeping
+// session read as more than a bare BUSY chip. (S134)
 const TAG_LABEL = {
   alching: "alching",
   crew: "crew",
   wrapped: "wrapped",
+  bankstanding: "bankstanding",
+  consultation: "consulting",
+  drafts: "drafts",
 };
 
 function fmtAge(s) {
@@ -83,10 +88,14 @@ function Row({ s, selected, onSelect, onRename }) {
         ${(s.tags || []).map(
           (t) => html`<span class=${"flavor flavor-" + t}>${TAG_LABEL[t] || t}</span>`
         )}
-        ${s.stale
-          ? html`<span class="stale-age" title="no activity since — state may be out of date">${fmtAge(s.quiet_sec)} ago</span>`
-          : ""}
-        <span class="age">${fmtAge(s.age_sec)}</span>
+        ${/* The age chip shows time since last action (so the same-status sort —
+              most-recently-active on top — is legible), with session lifetime in
+              the hover title. Was age_sec (lifetime), which read 0s on fresh rows
+              and gave nothing to sort by. (S134) */ ""}
+        <span
+          class="age"
+          title=${fmtAge(s.age_sec) + " old · last active " + fmtAge(s.quiet_sec ?? s.age_sec) + " ago"}
+        >${fmtAge(s.quiet_sec ?? s.age_sec)}</span>
       </div>
       ${s.first_prompt && html`<div class="prompt">${s.first_prompt}</div>`}
       ${s.doing && html`<div class="doing">${s.doing}</div>`}
@@ -106,16 +115,10 @@ export function Board({
   soundOn, onToggleSound, feedOn, onToggleFeed,
   zoom, onZoomIn, onZoomOut, onZoomReset, onCollapseBoard, onToggleFocus, focused,
 }) {
-  const waiting = sessions.filter((s) => s.attention).length;
   return html`
     <aside class="board-col">
       <header class="topbar">
-        <h1>SWITCHBOARD<span style="font-size:9px;opacity:.45;font-weight:400;letter-spacing:0;margin-left:5px;" title="cockpit build tag — confirms fresh code loaded after relaunch">b91.0</span></h1>
-        <span class="count">
-          ${sessions.length} live${waiting
-            ? html` · <b class="warn">${waiting} need you</b>`
-            : ""}
-        </span>
+        <h1>SWITCHBOARD</h1>
         <span class="topbar-right">
           <button
             class=${"icon-btn" + (soundOn ? " on" : "")}

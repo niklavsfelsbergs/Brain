@@ -5,9 +5,10 @@
 # PostToolUse, Stop, and SessionEnd. The file records the session's current
 # state (working / waiting_for_user / waiting_for_subagents / alching /
 # wrapped_up / ended) so an aggregator view can show which terminals are idle,
-# working, mid-ritual, or parked on a Stop waiting for the principal. The last
-# two (alching / wrapped_up) ride a per-session `.mode` marker the agent writes
-# — see MODE_MARKER_SUFFIX below.
+# working, mid-ritual, or parked on a Stop waiting for the principal. Mid-ritual
+# flavors (alching / bankstanding / consultation / drafts) + the wrapped_up
+# lifecycle end ride a per-session `.mode` marker the agent writes — see
+# MODE_MARKER_SUFFIX / MODE_VALUES below.
 #
 # Idle is *not* stamped by this writer — readers derive it from
 # `state == "waiting_for_user" AND now - last_event_ts > 5 min`. The hook
@@ -209,8 +210,15 @@ def _is_rename_prompt(prompt) -> bool:
 # file, so the session's own next hook fire picks it up (≤1 fire of lag). The
 # agent owns writing it (alching.md, close-session.md); the hook reads it here
 # and tidies it (archive, never delete) on SessionEnd / wrapped-up resume.
+#   "bankstanding" / "consultation" / "drafts" (S134) — the same shape as alching:
+#                  a flavor *tag* on the base state (typically busy) so a Guthix
+#                  or drafts-triage session reads as more than a bare BUSY chip.
+#                  Written by the ritual md; never hides a needs_you/your_move block.
 MODE_MARKER_SUFFIX = ".mode"
-MODE_VALUES = {"alching", "wrapped_up"}
+MODE_VALUES = {"alching", "wrapped_up", "bankstanding", "consultation", "drafts"}
+# Ritual markers that are pure flavor tags (busy stays the base state). wrapped_up
+# is special-cased (it sets base state `done`); these just annotate.
+FLAVOR_MODES = {"alching", "bankstanding", "consultation", "drafts"}
 
 
 def _project_dir() -> Path | None:
@@ -1602,8 +1610,10 @@ def main() -> None:
     if mode == "wrapped_up" and state != "ended":
         state = "done"
         tags.append("wrapped")
-    elif mode == "alching":
-        tags.append("alching")
+    elif mode in FLAVOR_MODES:
+        # alching / bankstanding / consultation / drafts — flavor on the base
+        # state, never a competing state (the busy row just gets annotated). (S134)
+        tags.append(mode)
 
     # Crew tag: a foreground Task/Agent still out annotates a busy session. The
     # manifest per-row refresh re-derives this (and self-heals a missed Post),

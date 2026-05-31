@@ -89,14 +89,15 @@ IDLE_AFTER_SEC = 300
 # instantly (see term.js _interruptedAt / main.js termInterrupted). A busy session
 # otherwise stays BUSY and only greys (not relabels) once quiet past IDLE_AFTER_SEC.
 
-# Reserved (D-029) — NOT currently wired. The original two-axis plan derived a
-# `stalled` chip for a `busy` session whose action heartbeat went silent past this
-# window. S080 superseded that display-decay with stale-greying (see
-# build_session_model's `stale`): the row keeps its last real state + a quiet age
-# instead of being relabelled, which reads as more informative. Nothing assigns
-# `stalled` today; this constant + the `stalled` STATE_RANK/label/CSS are kept so
-# re-introducing a distinct STALLED signal is a one-liner if it's ever wanted.
-STALL_AFTER_SEC = 300  # unused — see note above
+# A `busy` session whose action heartbeat freezes past this window is escalated
+# to `stalled` (S134) — the crash / reopened-cockpit signal. Set GENEROUSLY: the
+# heartbeat (max of last_event_ts and the latest state.ndjson action) ticks on
+# every tool call, so only a single very long model generation or a genuinely
+# wedged turn freezes it. The S083 lesson (a 90s busy→idle decay false-tripped
+# live analytical turns) is why this is 15 min, not minutes — and why it escalates
+# to a still-surfaced STALLED chip rather than greying/hiding the row. The board's
+# rule is: a busy row never silently loses its highlight (it relabels, never dims).
+STALL_AFTER_SEC = 900
 STATE_NDJSON = STATE_DIR / "state.ndjson"
 
 # Legacy → D-029 token aliases. A session that hasn't fired a hook since the
@@ -265,17 +266,26 @@ def build_session_model():
         # turn freezes both. See _last_action_ts_map / STALL_AFTER_SEC.
         heartbeat = max(last, action_ts.get(sid8, 0))
         quiet_sec = max(0, int(now - heartbeat))
-        # Staleness (S080). A session quiet past the threshold may not reflect
-        # live reality — its hooks haven't fired recently (the cockpit was just
-        # reopened, or the session is genuinely parked). Rather than FLATTEN it
-        # to a generic idle/stalled — which made a reopened cockpit read all-idle
-        # and erased what each session was last doing — keep the last real state
-        # and mark it `stale`. The board greys a stale row and shows the quiet
-        # age; the row drops out of the attention tally so a parked session never
-        # inflates "N need you" (the S074 invariant); and it sinks in the sort.
-        # Supersedes D-029's your_move→idle / busy→stalled display decay — same
-        # intent (a quiet session reads as not-live), more informative.
-        stale = quiet_sec > IDLE_AFTER_SEC
+        # Reader-derived state decay/escalation (S134 rework of the S080 staleness).
+        # Hooks don't fire while a session sits, so the reader moves quiet rows —
+        # but NEVER by greying an active row. The board's rule: a row keeps its
+        # highlight until it is genuinely IDLE. Two transitions, both OUT of an
+        # active state rather than a dim-in-place:
+        #   your_move quiet past IDLE_AFTER_SEC  → idle    (un-returned end-of-turn park)
+        #   busy      quiet past STALL_AFTER_SEC → stalled (heartbeat frozen: crashed,
+        #                                          or a reopened cockpit — surfaced,
+        #                                          not greyed; see STALL_AFTER_SEC)
+        # needs_you never decays — a live mid-turn block stays hot.
+        # Supersedes S080's blanket quiet>IDLE greying, which dimmed busy sessions
+        # mid-work (the S083 long-turn false-trip, in display form).
+        if state == "your_move" and quiet_sec > IDLE_AFTER_SEC:
+            state = "idle"
+        elif state == "busy" and quiet_sec > STALL_AFTER_SEC:
+            state = "stalled"
+        # Greying is now reserved for genuinely not-live rows (idle/done/ended) —
+        # never an active state. An idle/done row quiet past the window dims + shows
+        # its quiet age; an active row (busy/stalled/needs_you/your_move) never dims.
+        stale = quiet_sec > IDLE_AFTER_SEC and state in ("idle", "done", "ended")
         sessions.append({
             "sid8": sid8,
             "session_id": s.get("session_id"),
@@ -289,6 +299,10 @@ def build_session_model():
             "host": s.get("host", "unknown"),
             "age_sec": max(0, int(now - started)),
             "idle_sec": idle_sec,
+            # Last action heartbeat (unix ts) — the same-status sort key: rows in
+            # one state order most-recently-active first. Sent to the client so the
+            # merged board (manifest + cockpit-own terminals) sorts on one axis. (S134)
+            "last_action_ts": heartbeat,
             "first_prompt": s.get("first_prompt", ""),
             "doing": s.get("latest_action") or s.get("subtitle") or s.get("intent") or "",
             "intent": s.get("intent", ""),
@@ -297,11 +311,15 @@ def build_session_model():
             # the tally (S074 invariant preserved without flattening the state).
             "attention": state in ("needs_you", "your_move") and not stale,
             "subagents": _pending_subagents(s.get("session_id")),
-            # Stale rows sink to the idle slot regardless of their last state, so
-            # live sessions stay on top; the real state still shows (greyed).
-            "rank": STATE_RANK.get("idle", 7) if stale else STATE_RANK.get(state, 99),
+            # Rank follows the (already-decayed) state — a your_move past the window
+            # is now `idle`, a frozen busy is now `stalled`, so the rank is honest
+            # without a separate stale→idle override.
+            "rank": STATE_RANK.get(state, 99),
         })
-    sessions.sort(key=lambda x: (x["rank"], x["age_sec"]))
+    # Sort: attention rank first; within a status, most-recently-active on top
+    # (last_action_ts desc — the S134 fix; was age_sec asc = oldest-launched first);
+    # age as the final stable tiebreaker.
+    sessions.sort(key=lambda x: (x["rank"], -x["last_action_ts"], x["age_sec"]))
     return {"generated_at": now, "sessions": sessions}
 
 
@@ -716,8 +734,28 @@ async def static_handler(request):
     return web.Response(body=target.read_bytes(), content_type=ctype, headers=NO_STORE)
 
 
-def make_app():
-    app = web.Application()
+# Read-only guard for the dev/preview backend (--dev). Lets you run a SECOND
+# backend on another port (e.g. 8771) that reads the SAME fleet state files as
+# the live cockpit on 8770 — so it mirrors the board/feed/brain map — but can
+# never mutate the live fleet: /pty (spawning a real claude session) and POST
+# /api/rename (writing the shared session-names file) are refused. Everything
+# read-only (sessions, feed, history, file, static, clipboard) works, so you get
+# a full visual preview of frontend/backend changes in isolation. No-op when not
+# in dev mode (the live cockpit passes through untouched).
+@web.middleware
+async def _dev_guard(request, handler):
+    if request.app.get("dev_mode"):
+        p = request.path
+        if p == "/pty" or (request.method == "POST" and p == "/api/rename"):
+            return web.json_response(
+                {"ok": False, "error": "read-only dev backend: session driving + state writes are disabled"},
+                status=403)
+    return await handler(request)
+
+
+def make_app(dev=False):
+    app = web.Application(middlewares=[_dev_guard])
+    app["dev_mode"] = dev
     # Per-process secret gating /pty (ptybridge reads request.app["cockpit_token"]).
     # Minted fresh each launch; baked into the served HTML by static_handler.
     app["cockpit_token"] = secrets.token_urlsafe(18)
@@ -736,9 +774,19 @@ def make_app():
     return app
 
 
-def run(port=8770):
-    web.run_app(make_app(), host="127.0.0.1", port=port, print=None)
+def run(port=8770, dev=False):
+    mode = "DEV (read-only preview)" if dev else "LIVE"
+    print(f"cockpit backend :{port}  mode={mode}  ->  http://127.0.0.1:{port}/", flush=True)
+    web.run_app(make_app(dev=dev), host="127.0.0.1", port=port, print=None)
 
 
 if __name__ == "__main__":
-    run()
+    import argparse
+    ap = argparse.ArgumentParser(
+        description="Cockpit backend. Default :8770 drives the live fleet; --dev runs an "
+                    "isolated read-only preview (use a different --port) that mirrors the live "
+                    "state but can't drive sessions or write names.")
+    ap.add_argument("--port", type=int, default=8770, help="port to bind (default 8770; e.g. 8771 for a dev preview)")
+    ap.add_argument("--dev", action="store_true", help="read-only preview: refuse /pty driving + /api/rename writes")
+    a = ap.parse_args()
+    run(port=a.port, dev=a.dev)

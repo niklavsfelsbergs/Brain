@@ -365,6 +365,11 @@ function App() {
           else if (fs.kind === "done") state = "idle";
           else if (age < 120) state = "busy";
         }
+        // last action = the freshest feed event for this terminal (fs.ts); 0 if
+        // it hasn't fired one yet. Real value (not the old hardcoded age_sec:0)
+        // so a cockpit-own row sorts among the manifest rows by last activity and
+        // its age chip shows a real "active Ns ago" instead of a frozen 0s. (S134)
+        const quiet = fs ? Math.max(0, Math.floor(Date.now() / 1000 - fs.ts)) : 0;
         return {
           sid8: t.sid8,
           session_id: t.sessionId,
@@ -372,8 +377,10 @@ function App() {
           instance: 1,
           state,
           tags: [],
-          age_sec: 0,
-          idle_sec: fs ? Math.max(0, Math.floor(Date.now() / 1000 - fs.ts)) : 0,
+          age_sec: quiet,
+          idle_sec: quiet,
+          quiet_sec: quiet,
+          last_action_ts: fs ? fs.ts : 0,
           first_prompt: "",
           doing: fs && fs.text ? fs.text : "running in this cockpit",
           intent: "",
@@ -384,6 +391,17 @@ function App() {
         };
       }),
   ];
+  // Re-sort the MERGED list (manifest rows are pre-sorted by the backend, but the
+  // cockpit-own rows are appended after — without this they'd pin to the bottom
+  // regardless of state/activity). One axis, matching the backend: attention rank
+  // first, then most-recently-active on top (last_action_ts desc), age as the
+  // stable tiebreaker. (S134)
+  sessions.sort(
+    (a, b) =>
+      (a.rank ?? 99) - (b.rank ?? 99) ||
+      (b.last_action_ts || 0) - (a.last_action_ts || 0) ||
+      (a.age_sec || 0) - (b.age_sec || 0),
+  );
 
   // D-029: two distinct pings, fired on a session's *transition* into an
   // attention state. needs_you (hot) takes priority over your_move (soft) when
@@ -526,25 +544,27 @@ function App() {
           ? html`<div class=${"term-col" + (termView === "transcript" ? " reading" : "")} style="display:flex;flex-direction:column;height:100%;">
               <div class="console-head">
                 <span class="console-title">${title}</span>
-                <span class="console-status">${
-                  termView === "transcript" ? "transcript · clean copy" : "terminal · on subscription"
-                }</span>
-                <div class="tv-toggle">
-                  <button
-                    class=${"tv-tab" + (termView === "terminal" ? " on" : "")}
-                    onClick=${() => setTermView("terminal")}
-                    title="drive the live PTY (interactive)"
-                  >terminal</button>
-                  <button
-                    class=${"tv-tab" + (termView === "transcript" ? " on" : "")}
-                    onClick=${() => setTermView("transcript")}
-                    title="clean, copyable text of this same session"
-                  >transcript</button>
+                ${/* subtitle dropped (S134) — the terminal/transcript toggle to the
+                      right already says which mode this is; "· on subscription" was
+                      redundant chrome. */ ""}
+                <div class="console-head-right">
+                  <div class="tv-toggle">
+                    <button
+                      class=${"tv-tab" + (termView === "terminal" ? " on" : "")}
+                      onClick=${() => setTermView("terminal")}
+                      title="drive the live PTY (interactive)"
+                    >terminal</button>
+                    <button
+                      class=${"tv-tab" + (termView === "transcript" ? " on" : "")}
+                      onClick=${() => setTermView("transcript")}
+                      title="clean, copyable text of this same session"
+                    >transcript</button>
+                  </div>
+                  <button class="release" title="end this session" onClick=${() => {
+                    sel.close();
+                    setSel(null);
+                  }}>release</button>
                 </div>
-                <button class="release" title="end this session" onClick=${() => {
-                  sel.close();
-                  setSel(null);
-                }}>release</button>
               </div>
               ${/* Term stays mounted across the toggle (hidden, not unmounted) so
                     the PTY/WebSocket never drops; the transcript view mounts over

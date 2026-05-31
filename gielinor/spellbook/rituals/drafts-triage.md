@@ -44,6 +44,8 @@ The agent never auto-runs drafts-triage.
 
 ## The procedure
 
+**Switchboard marker.** Flag the session so the board renders a `drafts` flavor chip instead of a bare `BUSY` (mirrors alching's marker; see `meta/communication-protocol.md` → *Mode marker sidecar*): **on entry**, write `drafts` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`); **on exit/report** (step 5, or if no drafts in scope), overwrite with an empty line to clear it. Switchboard-only — a missing marker just means no chip. When drafts-triage is delegated to a gnome, the principal's row reads `AWAITING CREW` and no `drafts` marker is written.
+
 ### 1. Survey
 
 List every draft across in-scope layers. Group by layer (player layers first if a player is active, then globals). Number consecutively across all groups so the principal can address by number in a flat list.

@@ -118,6 +118,7 @@ See `deities/guthix/proposals/_about.md` for the proposal shape, the full list o
 - **Float.** He floats roughly 48 pixels above his building, not standing on the ground. Continuous gentle bob (3.8s period, ±6px amplitude) — slower and deeper than the wisp's float.
 - **Movement.** Glides smoothly between buildings; no walk cycle, no dust trail. Chat lines say "drifts to" instead of "walks to."
 - **Spawn behavior.** Descends fully formed when the ritual begins; departs with a fade when it ends. Default building on first arrival is `lorebook-library` — he surveys the brain's decisions from there.
+- **Mode marker.** On entry, write the residence to `.claude/intent/<sid8>.mode` at the brain root so the board renders the right flavor chip (the event stream alone can't tell consultation/bankstanding from a plain busy session): `consultation` on a `Hey Guthix` consultation entry, `bankstanding` when the bankstanding ritual begins (per `spellbook/rituals/bankstanding.md`). Clear it (empty line) on **Returning** to a player or on close. Switchboard-only — a missing marker just means no chip. See `communication-protocol.md` → *Mode marker sidecar*.
 
 ## Related
 

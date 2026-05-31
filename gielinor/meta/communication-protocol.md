@@ -180,9 +180,12 @@ After stating the Plan, write the intent line **in the active actor's voice** (1
 Alongside the per-session intent file there is an optional **mode marker** at `.claude/intent/<sid8>.mode` (keyed by sid8 only — it's per-session, not per-actor). It carries a single token the event stream can't infer on its own, so the switchboard can render a ritual-lifecycle chip:
 
 - `alching` — written on entry to a principal-self alching pass, cleared on exit. Row reads `ALCHING`. See `spellbook/rituals/alching.md`.
+- `bankstanding` — written on entry to the bankstanding ritual, cleared on close. Row tags `bankstanding`. During Phase 0 the per-player alching sub-pass writes `alching`, then restores `bankstanding` on Phase 0 exit. See `spellbook/rituals/bankstanding.md`.
+- `consultation` — written on a `Hey Guthix` consultation entry, cleared on returning to a player or on close. Row tags `consulting`. See [[guthix]] → *Visualizer*.
+- `drafts` — written on entry to the drafts-triage ritual, cleared on report/exit. Row tags `drafts`. See `spellbook/rituals/drafts-triage.md`.
 - `wrapped_up` — written as the final action of close-session. Row reads `WRAPPED UP` ("done, terminal still open") until the process ends; a fresh prompt auto-clears it. See `spellbook/rituals/close-session.md`.
 
-`status-sidecar.py` reads the marker and overrides the event-derived state (precedence: `ended` > `waiting_for_user` > `waiting_for_subagents` > `alching` > `working`; `wrapped_up` holds across working/waiting). Like the intent file it's a hint, not a contract — no marker just means no chip. Written by the rituals, not narrated in the visible response.
+`status-sidecar.py` reads the marker. `wrapped_up` sets base state `done`; the ritual-flavor markers (`alching` / `bankstanding` / `consultation` / `drafts`) ride as a flavor *tag* on the base state (typically busy) and never hide a `needs_you` / `your_move` block. Like the intent file it's a hint, not a contract — no marker just means no chip. Written by the rituals, not narrated in the visible response.
 
 ## Narration channel (system voice)
 

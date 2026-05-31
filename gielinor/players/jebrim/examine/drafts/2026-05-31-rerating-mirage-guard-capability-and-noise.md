@@ -1,0 +1,10 @@
+# Re-rating savings: lane-aggregation alone doesn't kill the mirage — also guard capability + engine-noise floor
+
+**Observation ([[S132_32ff1025_shipping-savings-routing-optimization|S132]], 2026-05-31).** I built the savings synthesis with the per-parcel-mirage guard I "knew" from the EU tender (aggregate to lanes, never per-parcel cherry-pick). The first run still produced a €1.75M/yr headline that was ~50% mirage. Lane-aggregation was necessary but NOT sufficient. Two more guards were needed:
+
+1. **Capability.** Top lane was DB Schenker→UPS €601k. DB Schenker is palletized FREIGHT (€48/parcel real); the UPS parcel engine happily priced those at €12 because nothing told it they're freight-dimensioned. A freight→parcel swap is not like-for-like. Without a capability check the biggest "saving" was physically impossible.
+2. **Materiality vs the engine's own error.** DHL→UPS showed €234k across 191k parcels — but only €0.31/parcel (9%), well below ups_eu's ~15% median self-error. Summing sub-resolution deltas into a big lane number is the AGGREGATION mirage: noise that happens to lean one way × huge volume = a fake headline.
+
+**Rule for myself.** When re-rating for savings: (1) trust-gate every engine against its OWN actual before trusting it as an alternative; (2) lane-aggregate; (3) THEN strip lanes that fail capability (service/weight/dim/freight class) OR whose per-parcel saving is below the destination engine's self-error and below a euro floor. Report PAPER vs DEFENSIBLE explicitly — the gap is the mirage, and showing it is the credibility (drop-DPD was €726k paper / ~€0 real). The lesson generalizes past shipping: an unbiased-in-aggregate model still lies if you sum deltas finer than its resolution, or compare across an infeasible swap.
+
+**Also (process):** trust-gate-FIRST paid off — running validate_engines before any savings claim is what surfaced that 8/12 engines were untrustworthy, before I'd built a single fake number on them. Front-loading the honesty gate is the move.

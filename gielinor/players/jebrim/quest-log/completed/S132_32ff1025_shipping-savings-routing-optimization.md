@@ -79,6 +79,14 @@ Trusted-alternative set: postnord, usps, ups_eu, ontrac (+ fedex/asendia flagged
 
 **Engine-repair backlog (widens coverage if pursued — NOT a blocker):** 8 quarantined carriers carry large spend (DHL €0.97M, Maersk, DPD PL/UK, DB Schenker, Yodel). Tight systematic ratios ⇒ findable missing components. Top: the EU "contracted-through-Maersk" cluster (yodel/maersk_eu rate card = last-mile only; add injection/line-haul leg). dhl_paket/dpd_pl over-price (surcharge-stack or deeper-discount). DB Schenker needs a freight-to-parcel feasibility study, not a like-for-like swap.
 
+## Follow-on analysis (session fa1c55fd cont.) — OnTrac→USPS at routing-rule grain
+Principal asked what's actionable + which packagetype+weight cells to switch. Profiled `data/cost_matrix.parquet` (OnTrac parcels, USPS-eligible, USPS cheaper than actual paid):
+- **USPS beats OnTrac on only 37% of OnTrac parcels** (25,005 of 68,237) — per-parcel least-cost decision, NOT a lane swap. OnTrac wins the other 63% (€289k spend — keep).
+- Switchable ≈ €284k/yr. By weight: sweet spot **1–5 kg** (€182k, 21–32% margin); sub-1 kg adds €90k but thin (€1.74–1.82/parcel, near materiality floor).
+- **At packagetype+bracket grain:** only ~€52k separates into CLEAN blanket rules (USPS wins ≥80%) — biggest `PIZZA BOX 20x16x1 @0–0.5kg` (86%, €34k), + `40x30x2 @2–5`, `40x30x1 @0–0.5`, `MIXPIX BOX @0–0.5`, `12x8x1 @0–0.5`, small flats. + two `42x32x2` cells (~70%) → ~€80k.
+- **Key insight: packagetype+bracket is the WRONG axis for most of the saving.** Biggest cell `PIZZA BOX 40x30x1 @1–2kg` = €76k winners but USPS wins only 49% — coin-flip. Mixed cells: per-parcel cherry-pick €186k vs blanket-rule €107k. Deciding variable is **destination ZONE** (OnTrac West-coast regional/cheap in-footprint; USPS national/cheaper out-of-footprint). Real rule = **packagetype + bracket + zone**, or per-parcel least-cost routing.
+- **Open offer:** pull the packagetype+bracket+ZONE cut for implementable clean rules on the remaining ~€200k. Not yet done. (Throwaway scripts; not added to lib/; reproducible from cost_matrix.parquet.)
+
 ## Cascade.
 None — new standalone project (`NFE/projects/5_shipping_savings/`). No canonical NFE docs or per-carrier status tables to cascade; the HTML report IS the deliverable. EU-tender 2_analysis untouched (only CODE PATTERNS reused, per plan).
 

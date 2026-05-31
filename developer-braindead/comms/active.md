@@ -272,3 +272,8 @@
   Feedback: Niklavs corrected 'the principal' → call him Niklavs/'you' (memory updated).
   Leaving open: relaunch/F5 eyeball of the 5 map changes + invert/center (alt 'invert Y' reading = pitch, one-char flip); standing dev backlog unchanged. active-mode → unscoped.
   Live siblings at close: braindead-534ca735 (S136 cockpit polish), 5b18b6f6, 81f1509c — none in brain.js.
+
+[2026-05-31 14:25] braindead-534ca735 CLOSING
+  Completed: S136 - cockpit polish pass (feed/header/board), ~6 eyeball-iterated rounds, all cockpit/web/. filters-▾ dropdown (killed the 4 green checkboxes), dropped the console 'on subscription' subtitle + grouped toggle/release, feed cards 8px + comms calmed to --comms-calm lavender, headers slimmed 50→34px, draggable BRAIN↔FEED split (--brain-h var; overrides brain.js inline aspect-ratio from CSS, NO edit to 304c77fd's file), topbar version-stamp + live/need-you count removed + .newbtn nowrap (button-spill fix), corner rivets removed, feed stick-to-bottom ResizeObserver (S133's render-snap proved incomplete). Rounds 1-4 RUNTIME-VERIFIED by Niklavs; round-5 autoscroll RUNTIME-UNVERIFIED.
+  Co-edit resolution: 7311cd20's bac936c already swept my board.js+main.js hunks (in HEAD). I committed feed.js + styles.css; styles.css commit ALSO lands 7311cd20's 3 dormant .flavor-* pills it left as 'durability deferred' (consumers already in S134) - so that deferral is now resolved/attributed here. brain.js (304c77fd's) left untouched.
+  Leaving open: the round-5 autoscroll eyeball on next relaunch; standing backlog unchanged (Khaan item 9; §R.3 already landed; the 2 S128 ritual one-liners await sign-off). No NEW gielinor writes. active-mode → unscoped. No live overlapping siblings I'm blocking (304c77fd + 7311cd20 CLOSED).

@@ -21,6 +21,10 @@
   --crew: #5a9fe0;
   --ship: #46c8d8;
   --alching: #b07ad8;
+  /* feed comms edge — a calmed, desaturated lavender so the OPEN/CLOSING
+     housekeeping stream reads quiet, letting DONE/NEEDS-YOU lead the eye. Kept
+     separate from --alching (the board's saturated alching-state hue). (S136) */
+  --comms-calm: #9387a6;
   --wrapped: #34c0ad;
   --stalled: #e0673a;
   --idle: #8a7a55;
@@ -287,6 +291,10 @@ html, body {
 .flavor-alching { color: var(--alching); border-color: var(--alching); }
 .flavor-crew { color: var(--crew); border-color: var(--crew); }
 .flavor-wrapped { color: var(--wrapped); border-color: var(--wrapped); }
+/* ritual flavors (S134) — Guthix rituals in gold, drafts-housekeeping in alching purple */
+.flavor-bankstanding { color: var(--gold); border-color: var(--gold-dk); }
+.flavor-consultation { color: var(--gold); border-color: var(--gold-dk); }
+.flavor-drafts { color: var(--alching); border-color: var(--alching); }
 
 /* ---- attention ---- D-029: the row glow + pulse now live per-state above
    (tiered: needs_you & stalled pulse, your_move is a soft static glow). The
@@ -429,6 +437,9 @@ html, body {
   padding: 4px 10px;
   font-size: 12px;
   cursor: pointer;
+  /* keep "+ new" on one line — in the slimmed 34px topbar a wrapped two-line
+     button grew taller than the bar and spilled below its underline (S136). */
+  white-space: nowrap;
 }
 .newbtn:hover { color: var(--ink); border-color: var(--ink-faint); }
 
@@ -468,6 +479,17 @@ html, body {
 }
 .console-title { font-weight: 600; font-size: 14px; }
 .console-status { font-size: 12px; color: var(--ink-faint); }
+
+/* Group the terminal/transcript toggle + release as ONE right-pinned cluster
+   (S136). Before, both .tv-toggle and .release carried margin-left:auto, so the
+   leftover space split in two — the toggle floated at a random mid-right spot
+   with a gap before release. One wrapper with margin-left:auto pins the whole
+   group to the right; the children sit together in normal flow. Scoped to the
+   wrapper so the peek Console's lone release (which still relies on its own
+   margin-left:auto) is untouched. */
+.console-head-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.console-head-right .tv-toggle,
+.console-head-right .release { margin-left: 0; }
 
 /* Solid panel backing + clip for the terminal column. The header fills via
    width:100% above; this is belt-and-suspenders so even a sub-pixel seam shows
@@ -747,6 +769,43 @@ body.resizing * { user-select: none !important; }
 /* no width animation mid-drag — it must track the pointer exactly */
 body.resizing .board-col, body.resizing .feed-col { transition: none; }
 
+/* ---- BRAIN ↔ FEED vertical resize (S136) ---- the brain map docks above the
+   feed list in the right column; this gutter drags the split. The dock height is
+   var-driven so the divider just rewrites --brain-h (persisted by feed.js); the
+   !important overrides brain.js's inline `aspect-ratio:1` mount style without
+   editing that file (the canvas re-fits each frame off its own box, so a live
+   drag reflows the graph automatically). */
+.brain-dock {
+  flex: none;
+  height: var(--brain-h, 300px);
+  aspect-ratio: auto !important;
+}
+.brain-gutter {
+  flex: none;
+  height: 7px;
+  cursor: row-resize;
+  background: transparent;
+  position: relative;
+  z-index: 6;
+}
+/* faint center hairline so the grab target reads as a divider (mirrors .gutter) */
+.brain-gutter::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  transform: translateY(-0.5px);
+  background: color-mix(in srgb, var(--gold) 22%, transparent);
+}
+.brain-gutter:hover, body.brain-resizing .brain-gutter {
+  background: color-mix(in srgb, var(--gold) 26%, transparent);
+}
+/* dedicated drag class: row-resize cursor + no text-select, without the
+   col-resize the horizontal .resizing class forces. */
+body.brain-resizing { cursor: row-resize; user-select: none; }
+body.brain-resizing * { user-select: none !important; }
+body.brain-resizing .brain-dock { transition: none; }
+
 /* thin strip shown in place of a collapsed pillar; click anywhere to reopen */
 .rail {
   flex: none;
@@ -832,19 +891,54 @@ body.resizing .board-col, body.resizing .feed-col { transition: none; }
   color: var(--ink-dim);
   font-weight: 600;
 }
-.feed-toggle {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  letter-spacing: 0.03em;
-  color: var(--ink-faint);
-  font-weight: 400;
-  cursor: pointer;
-}
-.feed-toggle input { accent-color: var(--working); }
 .feed-head-right { display: flex; align-items: center; gap: 8px; }
 .feed-head-right .icon-btn { padding: 1px 7px; font-size: 14px; line-height: 1; }
+
+/* feed filters — the four view toggles (actions/prose/thinking/this session)
+   collapsed behind a single "filters ▾" stud (S136). The old four native green
+   checkboxes crowded the narrow header and were the last off-theme control; the
+   menu reclaims the space and reads as cockpit chrome. Gold accent on the boxes
+   inside, vs the old --working green. */
+.feed-filters { position: relative; }
+.feed-filters-btn { font-size: 11px; letter-spacing: 0.04em; white-space: nowrap; }
+.feed-filters-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 156px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  background-color: var(--panel);
+  background-image: var(--grain);
+  background-blend-mode: overlay;
+  border: 1px solid var(--gold-dk);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--gold) 24%, transparent),
+    0 10px 28px -10px rgba(0, 0, 0, 0.75);
+}
+.feed-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+.feed-filter-row:hover { background: var(--panel-2); color: var(--ink); }
+.feed-filter-row input {
+  accent-color: var(--gold);
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+}
 
 /* Brain panel titlebar layout. Visuals (grain+gradient bg, gold underline,
    bevel, corner rivets, gold text, 50px height) come from the shared header
@@ -899,13 +993,19 @@ body.resizing .board-col, body.resizing .feed-col { transition: none; }
   margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12.5px;
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace; color: var(--ink-dim);
 }
-.feed-items { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.feed-items { flex: 1; overflow-y: auto; padding: 10px; }
+/* the items live in an inner wrapper so a ResizeObserver can watch the real
+   content height for the stick-to-bottom snap (feed.js, S136); the flex column
+   + gap moved here from .feed-items. */
+.feed-items-inner { display: flex; flex-direction: column; gap: 6px; }
 .feed-empty { color: var(--ink-faint); font-size: 12px; text-align: center; padding: 20px; }
 
 .feed-item {
   border-left: 2px solid var(--line);
   padding: 5px 9px;
-  border-radius: 0 6px 6px 0;
+  /* full 8px radius matching the switchboard rows (.row) — the old squared-off
+     left edge read as a different language from the board cards. (S136) */
+  border-radius: 8px;
   cursor: pointer;
   background: var(--panel);
 }
@@ -931,8 +1031,8 @@ body.resizing .board-col, body.resizing .feed-col { transition: none; }
 .feed-item.k-needs_you .fi-kind { color: var(--waiting); }
 .feed-item.k-done { border-left-color: var(--wrapped); }
 .feed-item.k-done .fi-kind { color: var(--wrapped); }
-.feed-item.k-comms { border-left-color: var(--alching); }
-.feed-item.k-comms .fi-kind { color: var(--alching); }
+.feed-item.k-comms { border-left-color: var(--comms-calm); }
+.feed-item.k-comms .fi-kind { color: var(--comms-calm); }
 .feed-item.k-action { border-left-color: var(--line); opacity: 0.72; }
 .feed-item.k-action .fi-text {
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
@@ -1069,16 +1169,9 @@ html, body {
   box-shadow: inset 0 0 60px -10px rgba(0, 0, 0, 0.5);
 }
 .topbar, .console-head, .feed-head { position: relative; }
-.topbar::before, .topbar::after,
-.console-head::before, .console-head::after,
-.feed-head::before, .feed-head::after,
-.brain-head::before, .brain-head::after {
-  content: ""; position: absolute; top: 7px; width: 5px; height: 5px;
-  border-radius: 50%; background: radial-gradient(var(--gold) 30%, var(--gold-dk) 75%);
-  box-shadow: 0 0 2px #000;
-}
-.topbar::before, .console-head::before, .feed-head::before, .brain-head::before { left: 7px; }
-.topbar::after, .console-head::after, .feed-head::after, .brain-head::after { right: 7px; }
+/* corner rivets removed (S136) — both the top-left (read as a stray bullet
+   against the title) and top-right gold studs are gone; the headers keep their
+   gold underline + bevel, just with plain corners. */
 
 /* align the three column headers (S066, braindead-5294143e): topbar /
    console-head / feed-head had mismatched vertical padding (14/12/14) + align
@@ -1086,7 +1179,9 @@ html, body {
    the gold underlines didn't form one line. Fix the height + center the content
    so SWITCHBOARD · design · FEED all sit at the same level. */
 .topbar, .console-head, .feed-head, .brain-head {
-  min-height: 50px;
+  /* slimmed 50 → 34 (S136) — the bars ate a lot of vertical space for one line
+     of text; 34px keeps the title + rivets + buttons comfortably on one row. */
+  min-height: 34px;
   padding-top: 0;
   padding-bottom: 0;
   align-items: center;

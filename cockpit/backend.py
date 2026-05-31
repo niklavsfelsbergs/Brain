@@ -522,15 +522,38 @@ def _parse_comms(path, source, limit=25):
     return items[-limit:]
 
 
+# Per-kind reservation for the feed window. A flat tail-of-N let high-volume
+# `action` lines (tool calls fire far faster than prose) evict `say`/`intent`/
+# checkpoints before the client ever sees them — so the client-side `actions`
+# toggle couldn't bring the prose back; it was already gone. We instead read a
+# big raw tail, then keep the most-recent slice of EACH bucket independently so
+# prose survives an action flood. `think` (opt-in, off by default) gets its own
+# small bucket so it can't crowd `say`. Tunables — bump if a busy fleet still
+# evicts prose. (S132)
+FEED_RAW_TAIL = 1500
+FEED_KEEP = {"action": 110, "think": 70}   # noisy buckets — capped
+FEED_KEEP_PROSE = 220                       # say / intent / picked_up / needs_you / done — protected
+FEED_FINAL_CAP = 360
+
+
 async def api_feed(request):
     """Merged cross-fleet stream: chat.ndjson lifecycle + comms mirrors,
-    sorted by ts. The client filters raw actions off by default."""
-    items = _ndjson_tail(CHAT_NDJSON, 250)
+    sorted by ts. Per-kind reservation keeps prose from being evicted by action
+    spam; the client filters buckets on top (actions / prose / thinking)."""
+    raw = _ndjson_tail(CHAT_NDJSON, FEED_RAW_TAIL)
+    # Bucket by kind, newest-last preserved (raw is already chronological).
+    buckets: dict = {}
+    for it in raw:
+        buckets.setdefault(it.get("kind") or "", []).append(it)
+    items = []
+    for kind, lst in buckets.items():
+        cap = FEED_KEEP.get(kind, FEED_KEEP_PROSE)
+        items += lst[-cap:]
     for src, path in COMMS_FILES.items():
         items += _parse_comms(path, src)
     items = [i for i in items if i.get("ts")]
     items.sort(key=lambda x: x["ts"])
-    return web.json_response({"items": items[-300:]}, headers=NO_STORE)
+    return web.json_response({"items": items[-FEED_FINAL_CAP:]}, headers=NO_STORE)
 
 
 # ─── clipboard bridge ────────────────────────────────────────────────────────
@@ -649,30 +672,28 @@ async def api_clipboard_write(request):
     return web.json_response({"ok": bool(ok)}, headers=NO_STORE)
 
 
-# ─── transient terminal-fit diagnostic (issue #2: prompt below fold at open) ──
-# The client (term.js._diag) posts its xterm fit/scroll geometry here so a
-# relaunch + opening a session reproduces the cut-off straight to disk — no
-# DevTools needed. The numbers tell H1 (over-fit: overfit>0) from H2 (scroll-
-# desync: overfit~0 but viewportY/scrollTop disagree); the fix differs per case.
-# STRIP this handler + its route + the term.js POST once the bug is fixed
-# (S094 term-size-diag / S093 rename-diag precedent — debug-only, always-on
-# while debugging). Pairs with ptybridge's server-side term-size-diag.log.
-TERM_FIT_DIAG_PATH = BRAIN_ROOT / "switchboard" / "term-fit-diag.log"
+async def api_file(request):
+    """Read a brain-repo file as text, for the brain-graph node popup (brain.js).
 
-
-async def api_termdiag(request):
+    Path-safe: the requested path is repo-root-relative (matches graph.json node
+    ids); resolve() + relative_to(BRAIN_ROOT) rejects traversal/symlink escape, so
+    only files inside the brain repo are readable. Text only, size-capped. The
+    backend is 127.0.0.1-bound, so this exposes nothing the local user can't read.
+    """
+    rel = (request.query.get("path") or "").strip().replace("\\", "/")
+    if not rel:
+        return web.json_response({"ok": False, "error": "no path"}, status=400, headers=NO_STORE)
+    target = (BRAIN_ROOT / rel).resolve()
     try:
-        body = await request.json()
-    except Exception:
-        body = {}
-    line = (body or {}).get("line", "")
-    if line:
-        try:
-            with TERM_FIT_DIAG_PATH.open("a", encoding="utf-8") as f:
-                f.write(f"{time.strftime('%H:%M:%S')} {line}\n")
-        except Exception:
-            pass
-    return web.json_response({"ok": True}, headers=NO_STORE)
+        target.relative_to(BRAIN_ROOT)
+    except ValueError:
+        return web.json_response({"ok": False, "error": "outside brain root"}, status=403, headers=NO_STORE)
+    if not target.is_file():
+        return web.json_response({"ok": False, "error": "not a file"}, status=404, headers=NO_STORE)
+    if target.stat().st_size > 512 * 1024:
+        return web.json_response({"ok": False, "error": "too large"}, status=413, headers=NO_STORE)
+    text = target.read_text(encoding="utf-8", errors="replace")
+    return web.json_response({"ok": True, "path": rel, "text": text}, headers=NO_STORE)
 
 
 # ─── static files ───────────────────────────────────────────────────────────
@@ -706,7 +727,7 @@ def make_app():
     app.router.add_get("/api/feed", api_feed)
     app.router.add_get("/api/clipboard", api_clipboard)
     app.router.add_post("/api/clipboard", api_clipboard_write)
-    app.router.add_post("/api/termdiag", api_termdiag)  # transient (issue #2) — strip when fixed
+    app.router.add_get("/api/file", api_file)           # brain-graph node popup (path-safe, repo-scoped)
     from ptybridge import pty_handler  # real interactive claude over a PTY (S066 B)
     app.router.add_get("/pty", pty_handler)
     app.router.add_get("/history", history_handler)

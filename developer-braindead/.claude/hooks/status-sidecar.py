@@ -79,6 +79,13 @@ CHAT_TAIL_KEEP = 2000
 # offset (record["say_offset"]) marks how far we've already emitted.
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 SAY_TEXT_MAX = 600           # generous per-block cap — the prose is the point.
+# S132: the model's *thinking* blocks — emitted as a distinct kind:"think" so
+# the feed can surface "the steps of thinking" on an opt-in toggle. With Opus
+# 4.8 interleaved thinking, a lot of the genuine reasoning lands here rather
+# than in visible text blocks. Kept separate (own kind, own cap) so it never
+# crowds `say`, is off by default in the client, and is bucket-capped in the
+# backend feed reservation.
+THINK_TEXT_MAX = 600
 # Subtitle freshness — intent_text wins as the subtitle when updated within
 # this window, else latest_action prevails.
 SUBTITLE_INTENT_FRESH_SEC = 300
@@ -718,6 +725,27 @@ def _emit_chat_say(actor: str, sid8: str, instance: Optional[int], text: str) ->
         print(f"status-sidecar: chat say emit failed: {e}", file=sys.stderr)
 
 
+def _emit_chat_think(actor: str, sid8: str, instance: Optional[int], text: str) -> None:
+    """S132: append one `kind:"think"` line to chat.ndjson — a model thinking
+    block. Off by default in the feed client; backend buckets it under its own
+    cap. Same append/atomicity story as _emit_chat_say."""
+    text = text[:THINK_TEXT_MAX]
+    event = {
+        "ts": time.time(),
+        "actor": actor or "wisp",
+        "instance": instance,
+        "sid8": sid8 or "",
+        "kind": "think",
+        "text": text,
+    }
+    try:
+        CHAT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with CHAT_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(event, separators=(",", ":")) + "\n")
+    except Exception as e:
+        print(f"status-sidecar: chat think emit failed: {e}", file=sys.stderr)
+
+
 def _transcript_path(payload: dict, sid: str) -> Optional[Path]:
     """The session's on-disk transcript .jsonl. The hook payload carries it on
     most events; fall back to a glob by session id (mirrors backend.py)."""
@@ -736,10 +764,11 @@ def _emit_says_from_transcript(actor: str, sid8: str, instance: Optional[int],
                                transcript: Optional[Path], byte_offset: int) -> int:
     """S073: tail the transcript from byte_offset and emit each NEW
     principal-authored assistant text block to chat.ndjson as kind:"say". Skips
-    sub-agent (isSidechain) turns and thinking blocks — only the session actor's
-    visible prose. Returns the advanced byte offset; a trailing partial line (no
-    newline yet) is held for the next fire. Resilient: any read error leaves the
-    offset untouched so nothing is double-emitted or lost."""
+    sub-agent (isSidechain) turns. S132: also emits thinking blocks as
+    kind:"think" (own kind, opt-in in the feed). Returns the advanced byte
+    offset; a trailing partial line (no newline yet) is held for the next fire.
+    Resilient: any read error leaves the offset untouched so nothing is
+    double-emitted or lost."""
     if transcript is None:
         return byte_offset
     try:
@@ -769,10 +798,19 @@ def _emit_says_from_transcript(actor: str, sid8: str, instance: Optional[int],
         if not isinstance(content, list):
             continue
         for b in content:
-            if isinstance(b, dict) and b.get("type") == "text":
+            if not isinstance(b, dict):
+                continue
+            btype = b.get("type")
+            if btype == "text":
                 txt = (b.get("text") or "").strip()
                 if txt:
                     _emit_chat_say(actor, sid8, instance, txt)
+            elif btype == "thinking":
+                # Anthropic transcript carries the reasoning under "thinking";
+                # tolerate "text" as a fallback shape.
+                txt = (b.get("thinking") or b.get("text") or "").strip()
+                if txt:
+                    _emit_chat_think(actor, sid8, instance, txt)
     return byte_offset + len(complete)
 
 

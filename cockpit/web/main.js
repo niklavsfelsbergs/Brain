@@ -560,7 +560,7 @@ function App() {
       </div>
       ${feedOpen
         ? html`<${Resizer} side="feed" onResized=${refit} />
-            <${FeedPanel} onJump=${jumpTo} onCollapse=${() => setFeedOpen(false)} />`
+            <${FeedPanel} onJump=${jumpTo} onCollapse=${() => setFeedOpen(false)} selSid8=${selSid8} />`
         : html`<div class="rail rail-right" onClick=${() => setFeedOpen(true)} title="show feed (Ctrl+J)">
             <button title="show feed (Ctrl+J)" onClick=${(e) => { e.stopPropagation(); setFeedOpen(true); }}>‹</button>
           </div>`}

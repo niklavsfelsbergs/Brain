@@ -861,6 +861,44 @@ body.resizing .board-col, body.resizing .feed-col { transition: none; }
   font-weight: 400; font-size: 10.5px; letter-spacing: 0.04em;
   color: var(--ink-faint);
 }
+
+/* Brain-graph node popup (brain.js): a themed modal over the whole app showing
+   the clicked file. Backdrop dims; the panel uses the OSRS wood/gold frame. */
+.brain-pop-back {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(1.5px);
+}
+.brain-pop {
+  display: flex; flex-direction: column;
+  width: min(820px, 76vw); max-height: 80vh;
+  background: var(--panel); color: var(--ink);
+  border: 2px solid var(--gold-dk); border-radius: 6px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--gold) 30%, transparent), 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+.brain-pop-head {
+  display: flex; align-items: baseline; gap: 10px; flex: none;
+  padding: 10px 14px; border-bottom: 2px solid var(--gold-dk);
+  background: var(--panel-2);
+}
+.brain-pop-title { font-weight: 700; color: var(--gold); font-size: 14px; }
+.brain-pop-path { color: var(--ink-faint); font-size: 11px; font-family: ui-monospace, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.brain-pop-x {
+  flex: none; cursor: pointer; font-size: 13px; line-height: 1; padding: 2px 8px;
+  background: linear-gradient(#4a3c22, #342a17); color: var(--ink);
+  border: 1px solid var(--gold-dk); border-radius: 4px; text-shadow: 0 1px 0 #000;
+}
+.brain-pop-x:hover { filter: brightness(1.18); }
+.brain-pop-body {
+  overflow: auto; padding: 14px 18px; line-height: 1.5;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+.brain-pop-body .b-text { font-size: 14px; }
+.brain-pop-msg { color: var(--ink-faint); font-size: 13px; text-align: center; padding: 24px; }
+.brain-pop-code {
+  margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12.5px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace; color: var(--ink-dim);
+}
 .feed-items { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
 .feed-empty { color: var(--ink-faint); font-size: 12px; text-align: center; padding: 20px; }
 
@@ -900,6 +938,11 @@ body.resizing .board-col, body.resizing .feed-col { transition: none; }
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
   font-size: 11px;
 }
+/* S132: model reasoning — dim + italic so it reads as the quiet undertone it
+   is, distinct from authored prose (k-say). */
+.feed-item.k-think { border-left-color: var(--line); opacity: 0.66; }
+.feed-item.k-think .fi-kind { color: var(--ink-faint); }
+.feed-item.k-think .fi-text { font-style: italic; color: var(--ink-faint); }
 
 /* ====== Phase 5: topbar controls + density ====== */
 

@@ -1,0 +1,110 @@
+/* Mobile / phone layout for the cockpit.
+ *
+ * Loaded AFTER styles.css and scoped under `body.m-mobile` + a 760px breakpoint,
+ * so the desktop pywebview window (>= 960px) never activates any of it.
+ * Self-contained — does NOT modify styles.css or main.js (live-sibling surfaces);
+ * pairs with mobile.js, which adds `body.m-mobile`, a `body.m-tab-{board,console,
+ * feed}` class, and injects the `.m-tabbar`.
+ *
+ * Desktop is three columns side-by-side; on a phone each panel becomes a
+ * full-screen layer and a fixed bottom tab bar switches between them. (S-mobile)
+ */
+
+/* Tab bar hidden by default; shown only inside the mobile breakpoint. */
+.m-tabbar { display: none; }
+
+/* THE "doesn't fit" FIX. The desktop default is --zoom: 1.35, and many console
+ * elements do `zoom: var(--zoom)` (console-head, .term-composer, the peek
+ * .console, side columns). On a phone that scales the whole UI 35% past the
+ * viewport. Forcing --zoom: 1 on the mobile body makes every descendant inherit
+ * an unscaled value — one declaration neutralizes all of them. */
+body.m-mobile { --zoom: 1; }
+
+@media (max-width: 760px) {
+  /* The grid no longer lays out columns — each panel is positioned full-screen. */
+  body.m-mobile .app-grid { display: block; width: 100vw; height: 100vh; }
+
+  /* The three panels: full-screen layers above the tab bar, hidden until active. */
+  body.m-mobile .board-col,
+  body.m-mobile .console-col,
+  body.m-mobile .feed-col {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 52px;                 /* clear the tab bar */
+    width: 100% !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    display: none;
+    z-index: 1;
+  }
+
+  /* Reveal only the active tab's panel. */
+  body.m-mobile.m-tab-board .board-col,
+  body.m-mobile.m-tab-feed .feed-col { display: block; }
+  body.m-mobile.m-tab-console .console-col { display: flex; flex-direction: column; }
+
+  /* Desktop-only chrome that makes no sense on a phone. */
+  body.m-mobile .rail,
+  body.m-mobile .gutter { display: none !important; }
+
+  /* The session column fills its full-screen box; nothing overflows sideways. */
+  body.m-mobile .console-col .term-col {
+    height: 100% !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  body.m-mobile .transcript-view,
+  body.m-mobile .turns { max-width: 100vw; overflow-x: hidden; }
+  /* Long code/log lines wrap instead of forcing a wide horizontal scroll. */
+  body.m-mobile .transcript-view pre,
+  body.m-mobile .transcript-view code,
+  body.m-mobile .turns pre,
+  body.m-mobile .turns code {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  /* The header can wrap its title + toggle + release on a narrow screen. */
+  body.m-mobile .console-head { flex-wrap: wrap; padding: 8px 12px; }
+
+  /* "can't write" FIX: in transcript ("reading") mode the composer is dimmed to
+   * 0.4 until focus — on a phone that reads as disabled. Keep it fully visible. */
+  body.m-mobile .term-col.reading .term-composer { opacity: 1 !important; }
+
+  /* The bottom tab bar (injected by mobile.js). */
+  .m-tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    display: flex;
+    z-index: 50;
+    background: var(--panel, #2a2114);
+    border-top: 1px solid var(--gold-dk, #8f6d1e);
+    padding-bottom: env(safe-area-inset-bottom, 0px); /* iPhone home-indicator */
+  }
+  .m-tabbar button {
+    flex: 1 1 0;
+    background: transparent;
+    border: none;
+    color: var(--ink-faint, #9d8a5c);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .m-tabbar button.on {
+    color: var(--gold, #e3b73c);
+    box-shadow: inset 0 2px 0 var(--gold, #e3b73c);
+  }
+}

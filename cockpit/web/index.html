@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Switchboard</title>
   <link rel="stylesheet" href="styles.css" />
+  <!-- Phone layout: scoped under @media(max-width:760px) + body.m-mobile, so the
+       desktop window never activates it. Paired with mobile.js. -->
+  <link rel="stylesheet" href="mobile.css" />
   <!-- xterm.js (vendored, offline) for the embedded real-terminal view (S066 B).
        Classic UMD scripts → window.Terminal / window.FitAddon, available before
        the deferred main.js module runs. -->
@@ -26,5 +29,7 @@
 <body>
   <div id="app"></div>
   <script type="module" src="main.js"></script>
+  <!-- Mobile layout controller; runs after main.js so #app is populated. -->
+  <script type="module" src="mobile.js"></script>
 </body>
 </html>

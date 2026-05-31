@@ -40,12 +40,12 @@ def _port_serving(port: int) -> bool:
         s.close()
 
 
-def _start_backend():
+def _start_backend(host: str = "127.0.0.1"):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     runner = web.AppRunner(make_app())
     loop.run_until_complete(runner.setup())
-    loop.run_until_complete(web.TCPSite(runner, "127.0.0.1", PORT).start())
+    loop.run_until_complete(web.TCPSite(runner, host, PORT).start())
     loop.run_forever()
 
 
@@ -57,13 +57,24 @@ def _load_config() -> dict:
 
 
 def main():
-    if not _port_serving(PORT):
-        threading.Thread(target=_start_backend, daemon=True).start()
-        time.sleep(0.4)  # let the socket bind before the window loads
     cfg = _load_config()
+    # Bind host. Default 127.0.0.1 = localhost-only (the historical, fully-safe
+    # behavior — the cockpit's only security boundary is "loopback-bound", see
+    # backend.py). Opt in to remote access (e.g. from a phone over Tailscale) by
+    # setting config.json {"host": "0.0.0.0"} or {"host": "<this-PC-tailscale-ip>"}.
+    # ONLY widen this on a trusted network/VPN: anyone who can load the page gets
+    # the baked-in /pty token and can drive claude (== shell on this machine).
+    host = str(cfg.get("host", "127.0.0.1"))
+    if not _port_serving(PORT):
+        threading.Thread(target=_start_backend, args=(host,), daemon=True).start()
+        time.sleep(0.4)  # let the socket bind before the window loads
+    # The local pywebview window always reaches the backend on loopback when the
+    # bind host accepts loopback (127.0.0.1 / 0.0.0.0); for a specific non-loopback
+    # bind IP the window must use that IP instead.
+    window_host = "127.0.0.1" if host in ("127.0.0.1", "0.0.0.0") else host
     webview.create_window(
         "Switchboard",
-        f"http://127.0.0.1:{PORT}/",
+        f"http://{window_host}:{PORT}/",
         width=1500,
         height=920,          # fallback size if un-maximized
         min_size=(960, 640),

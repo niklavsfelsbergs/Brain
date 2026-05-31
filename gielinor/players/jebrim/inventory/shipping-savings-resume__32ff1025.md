@@ -17,6 +17,9 @@
 4. **Phase 5 — constraints-aware savings synthesis** (the deliverable's core, MINE not a dwarf): aggregate to actionable lane/segment patterns ranked by IMPLEMENTABLE annual savings. Apply volume-tier/minimum/lane constraints. GUARD the per-parcel mirage (tender lesson: drop-DPD €726k paper / ~€0 real). Each finding = concrete change + euro + constraint check.
 5. **Phase 6 — HTML report** + data in `report/`; ground-truth a sample of re-rated shipments vs real invoices; assert cost invariants.
 
+## STATUS AT PARK (corrected)
+Phase 1 DONE. **Phase 2 DONE — all 14 engines built + 134 tests passing.** Resume begins at step 1 above (validate_engines ground-truth gate), then Phases 3→6. Workflow wf_11cf8aeb-833 fully completed its build; no rebuild needed unless validate exposes a broken engine.
+
 ## Key locks (don't re-derive)
 - Picanova entity = `source_system IN ('Picturator','PicaAPI') AND shop NOT ILIKE '%sendmoments%' AND shop NOT ILIKE 'ORWO%'`. US=`production_site='PCS CMH'`, EU=rest. (No company_code column — that was a fabricated-gate error.)
 - Cost basis: settled-invoice only (orders ≥30d old), annualize ×~4. 'expected' rows excluded.

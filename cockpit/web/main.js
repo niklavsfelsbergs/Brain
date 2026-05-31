@@ -10,7 +10,7 @@ import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { openPeek, release } from "./fleet.js";
-import { openTerm, Term, TermComposer, termForSid8, termInterrupted, resumeTerm, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
+import { openTerm, Term, TermComposer, termForSid8, termInterrupted, resumeTerm, handoffAndResume, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
 import { TranscriptView } from "./transcript.js";
 import { nameFor, subscribeNames } from "./names.js";
 
@@ -454,6 +454,12 @@ function App() {
     // a cockpit-launched terminal hosting this session wins; else a read-only peek
     const t = termForSid8(s.sid8);
     const c = t || openPeek(s.session_id);
+    if (!t) {
+      // Carry host + the full session uuid onto the peek so the console can offer
+      // a handoff ("drive here") for a cockpit session driven on another client.
+      c.host = s.host;
+      c.sessionId = s.session_id;
+    }
     const label = nameFor(s.sid8) || s.name; // match the board's rename (S073)
     c.label = label || s.actor + (s.instance > 1 ? "·" + s.instance : "");
     setSel(c);
@@ -485,6 +491,17 @@ function App() {
   const doRelease = (id) => {
     release(id);
     if (sel && sel.id === id) setSel(null);
+  };
+  // Adopt a cockpit session driven on another client: terminate its PTY there,
+  // then resume the conversation here in a fresh driven terminal. Safe by
+  // construction (kill-then-resume — one claude per transcript); handoffAndResume
+  // returns null if no live cockpit PTY drove it, so we never double-write.
+  const doAdopt = async (conn) => {
+    const c = await handoffAndResume(conn.sessionId || conn.id);
+    if (c) {
+      c.label = conn.label;
+      setSel(c);
+    }
   };
   const jumpTo = (sid8) => {
     const s = sessions.find((x) => x.sid8 === sid8);
@@ -576,7 +593,7 @@ function App() {
               html`<${TranscriptView} key=${sel.cid + "-tv"} conn=${sel} live=${true} />`}
               <${TermComposer} key=${sel.cid + "-c"} conn=${sel} />
             </div>`
-          : html`<${Console} key=${sel.cid} conn=${sel} title=${title} onRelease=${doRelease} />`}
+          : html`<${Console} key=${sel.cid} conn=${sel} title=${title} onRelease=${doRelease} onAdopt=${doAdopt} />`}
       </div>
       ${feedOpen
         ? html`<${Resizer} side="feed" onResized=${refit} />

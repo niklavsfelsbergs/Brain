@@ -53,6 +53,29 @@ MANIFEST_PATH = BRAIN_ROOT / "switchboard" / "state-switchboard.json"
 NAMES_PATH = BRAIN_ROOT / "switchboard" / "state-names.json"
 SESSION_WATCH_SEC = 2.0  # how often to re-check the live session id (board cadence)
 
+# Registry of live cockpit PTYs, keyed by the session's CURRENT sid8 → a callable
+# that terminates that PTY. It lets a *different* client (e.g. a phone) request a
+# handoff: terminate the PTY driving a session here, so it can then resume the
+# conversation on its own connection. The kill-before-resume is the safety
+# invariant — one claude process per transcript, never two writers. All access is
+# from the single aiohttp event loop, so plain dict ops are atomic (no lock).
+_LIVE_PTYS: dict = {}
+
+
+def terminate_session(sid8: str) -> bool:
+    """Terminate the live cockpit PTY driving session `sid8`, if any. Returns True
+    if one was found and signalled. Used by the /api/handoff endpoint; a no-op
+    returning False when the session isn't a live cockpit PTY (e.g. a VS Code
+    session, or already gone) so the caller never resumes into a second writer."""
+    fn = _LIVE_PTYS.get(sid8)
+    if not fn:
+        return False
+    try:
+        fn()
+    except Exception:
+        pass
+    return True
+
 
 def _carry_disk_name(old_sid8: str, new_sid8: str) -> str:
     """Carry a board label across a session-id rotation. `claude --resume` (what a
@@ -231,6 +254,16 @@ async def pty_handler(request):
     queue: asyncio.Queue = asyncio.Queue()
     stop = threading.Event()
 
+    # Register this PTY so a handoff request from another client (POST /api/handoff
+    # → terminate_session) can kill it before resuming the conversation elsewhere.
+    def _terminate():
+        stop.set()
+        try:
+            proc.terminate(force=True)
+        except Exception:
+            pass
+    _LIVE_PTYS[announced["sid"][:8]] = _terminate
+
     def reader():
         try:
             while not stop.is_set():
@@ -280,6 +313,10 @@ async def pty_handler(request):
                 if cur and cur != announced["sid"]:
                     prev = announced["sid"]
                     announced["sid"] = cur
+                    # Re-key the handoff registry onto the rotated sid8.
+                    h = _LIVE_PTYS.pop(prev[:8], None)
+                    if h is not None:
+                        _LIVE_PTYS[cur[:8]] = h
                     # Carry the disk-backed board label → the new sid8 before the
                     # client swaps, so a rotated/resumed row keeps its name. Carry
                     # from BOTH the immediate predecessor AND the stable resume
@@ -322,6 +359,7 @@ async def pty_handler(request):
                     pass
     finally:
         stop.set()
+        _LIVE_PTYS.pop(announced["sid"][:8], None)  # deregister from the handoff registry
         try:
             proc.terminate(force=True)
         except Exception:

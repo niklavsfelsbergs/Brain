@@ -789,6 +789,32 @@ export function resumeTerm(uuid) {
   return new TermConn({ resumeId: uuid });
 }
 
+// Hand a cockpit session off to THIS client. Asks the backend to terminate the
+// PTY currently driving it (on whatever client owns it), then — only if one was
+// actually terminated — resumes the conversation here in a fresh PTY. The
+// `found` gate is the safety invariant: if no live cockpit PTY drove the session
+// (a VS Code session, or one already gone) we do NOT resume, so this never
+// becomes a second writer on the same transcript. Returns the new driven
+// TermConn, or null if the takeover could not be performed.
+export async function handoffAndResume(sessionId) {
+  if (!sessionId) return null;
+  const sid8 = sessionId.slice(0, 8);
+  const tok = window.__CT ? `&token=${encodeURIComponent(window.__CT)}` : "";
+  let found = false;
+  try {
+    const r = await fetch(`/api/handoff?sid8=${encodeURIComponent(sid8)}${tok}`, { method: "POST" });
+    const j = await r.json();
+    found = !!(j && j.ok && j.found);
+  } catch {
+    return null;
+  }
+  if (!found) return null;
+  // brief beat so the terminated claude exits + releases the transcript file
+  // before `claude --resume` reopens it.
+  await new Promise((res) => setTimeout(res, 400));
+  return resumeTerm(sessionId);
+}
+
 // The owned session uuids to restore on cockpit open.
 export function ownedTermIds() {
   return loadOwned();

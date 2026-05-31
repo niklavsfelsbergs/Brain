@@ -67,7 +67,7 @@ function Preview({ preview }) {
   </div>`;
 }
 
-export function Console({ conn, title, onRelease }) {
+export function Console({ conn, title, onRelease, onAdopt }) {
   const [, force] = useReducer((x) => x + 1, 0);
   const rafRef = useRef(0);
   const turnsRef = useRef(null);
@@ -149,6 +149,16 @@ export function Console({ conn, title, onRelease }) {
             ${model.busy
               ? html`<button class="stop" onClick=${() => conn.interrupt()}>Stop</button>`
               : html`<button class="send" onClick=${send}>Send</button>`}
+          </div>`
+        : conn.host === "cockpit" && onAdopt
+        ? html`<div class="composer readonly">
+            <span>read-only — driven on another device</span>
+            <button
+              class="adopt"
+              title="terminate it on the other device and resume it here"
+              onClick=${() => onAdopt(conn)}
+              style="margin-left:10px;padding:5px 12px;border:1px solid var(--gold-dk);border-radius:6px;background:transparent;color:var(--gold);cursor:pointer;font:inherit;"
+            >drive here</button>
           </div>`
         : html`<div class="composer readonly">read-only — this session runs in VS Code</div>`}
     </div>

@@ -10,27 +10,7 @@
 
 > **Rotated 2026-05-31 — 6 older entries bulk-moved to `active-2026-05-31.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
 
-[2026-05-29 13:30] braindead-03861733 OPEN
-  Entered mid-conversation via "lets develop gielinor". Discussion/triage only — principal asked "anything left from Khaan?". Re-checked the full 12-item HITL catalogue against §P (which only tracks the recommended sequence): recommended sequence CLOSED, but items 9 (skill scaffolder + doc rules, Med/Low) + 11 (structured invocation logs, Low/Low) were never triaged in §P. Surfacing the honest ledger; no build committed yet.
-  Targets IF we build: TBD (item 9/11 are gielinor spellbook/hook work; would scope first). For now: no file targets beyond this OPEN. Possible: developer-braindead/bank/plan.md §P triage note.
-  Steering clear of: cockpit/*, all jebrim/zezima player WIP, switchboard/*.log, state.ndjson, .claude/intent archive.
-  No live Braindead siblings (S112-S120 all CLOSED; no intent files in last 5min).
-
-[2026-05-29 11:34] braindead-86344868 CLOSING
-  Completed: S119 — Opus 4.8 substrate + dynamic-workflows research. Captured the model we run on (bank/research/2026-05-29-opus-4-8-and-workflows.md), parked workflows as plan §Q, and ANSWERED §Q.1 billing (rides the subscription quota, not separately metered, not the headless path; linear cost with agent count; all paid plans incl. Pro). §Q.2 (do our hooks fire inside a workflow) still open + sharpened (workflow subagents run acceptEdits → our PreToolUse hooks are the only in-workflow write guard). Added a cross-conversation memory so the principal gets workflows surfaced on fan-out tasks (he'll forget the capability exists). Recommendation: use-before-formalize, don't build workflow infra speculatively.
-  Note: S120/885d6702 already committed my initial §Q (it carried it while I was idle); this close adds only the later deltas (§Q.1/§Q.2, bank note, quest-log, build-lessons, respawn). NO gielinor writes.
-  Leaving open: §Q.2 verify (gates any workflow that writes brain content); meta/write-rules.md "enforced by hook" godly proposal at next bankstanding. active-mode → unscoped. No live Braindead siblings requiring hold (S118 closed; S120 closed).
-
-[2026-05-29 14:05] braindead-03861733 UPDATE — scoped → built (item 11)
-  Built Khaan item 11 (ritual analytics, Bands A+B). Actual targets: NEW switchboard/ritual_log.py + developer-braindead/verification/ritual-stats.py; wired 9 hooks (gielinor/.claude/hooks/{require-open-on-entry,block-confirmed-writes,block-deletes,block-sub-spawn,dwarf/gnome/penguin/shipping-agent-write-boundary,grounding-cue-reminder,close-cue-reminder}.py) with a try/except-guarded log_event; .gitignore += switchboard/ritual-events.ndjson; plan §P.9 [x]; quest-log S121.
-  Verified both ways (13/13 synthetic PASS, exit codes unchanged, live require-open allow captured, reporter Band B = 40 promote/6 reject). Commit PENDING principal OK.
-  Steering clear unchanged (cockpit/*, player WIP, state.ndjson). No live Braindead siblings.
-
-[2026-05-29 13:35] braindead-e291b8fc OPEN
-  Entered mid-conversation via "lets develop gielinor". Task: widen the cockpit transcript bubbles to fill the panel width (principal drew the target — near-full-width for both the user bubble and the assistant column; the 78ch reading-measure cap is what holds them short).
-  Targets: cockpit/web/styles.css (the .asst-bubble + .t-user .bubble max-width caps) ONLY. node --check N/A (CSS); visual relaunch verifies.
-  Steering clear of: switchboard/ritual_log.py, verification/ritual-stats.py, .claude/hooks/* (live sibling braindead-03861733's surface — Khaan item 11, commit pending), all jebrim/zezima player WIP, state.ndjson.
-  Sibling note: braindead-03861733 OPEN (intent fresh ~13:32, item 11 ritual analytics) — LIVE, zero overlap with cockpit/web. No other live siblings.
+> **Rotated 2026-05-31 — 4 older entries bulk-moved to `active-2026-05-31.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
 
 [2026-05-29 14:20] braindead-03861733 CLOSING
   Completed: S121 — Khaan item 11 (structured ritual analytics), built as Bands A+B. New switchboard/ritual_log.py (log_event → append-only switchboard/ritual-events.ndjson; atomic, never-raises, try/except-guarded import) + developer-braindead/verification/ritual-stats.py (Band A aggregates the ndjson; Band B derives promote/reject/pin from git -M renames). 9 hooks wired at decision points only (require-open block+allow; block-confirmed/deletes/sub-spawn + 4 write-boundary hooks block-only; grounding/close-cue nudge). Band C (hand-emitted markers) deliberately NOT built. .gitignore += ritual-events.ndjson; the .py are tracked.
@@ -277,3 +257,26 @@
   Completed: S136 - cockpit polish pass (feed/header/board), ~6 eyeball-iterated rounds, all cockpit/web/. filters-▾ dropdown (killed the 4 green checkboxes), dropped the console 'on subscription' subtitle + grouped toggle/release, feed cards 8px + comms calmed to --comms-calm lavender, headers slimmed 50→34px, draggable BRAIN↔FEED split (--brain-h var; overrides brain.js inline aspect-ratio from CSS, NO edit to 304c77fd's file), topbar version-stamp + live/need-you count removed + .newbtn nowrap (button-spill fix), corner rivets removed, feed stick-to-bottom ResizeObserver (S133's render-snap proved incomplete). Rounds 1-4 RUNTIME-VERIFIED by Niklavs; round-5 autoscroll RUNTIME-UNVERIFIED.
   Co-edit resolution: 7311cd20's bac936c already swept my board.js+main.js hunks (in HEAD). I committed feed.js + styles.css; styles.css commit ALSO lands 7311cd20's 3 dormant .flavor-* pills it left as 'durability deferred' (consumers already in S134) - so that deferral is now resolved/attributed here. brain.js (304c77fd's) left untouched.
   Leaving open: the round-5 autoscroll eyeball on next relaunch; standing backlog unchanged (Khaan item 9; §R.3 already landed; the 2 S128 ritual one-liners await sign-off). No NEW gielinor writes. active-mode → unscoped. No live overlapping siblings I'm blocking (304c77fd + 7311cd20 CLOSED).
+
+[2026-05-31 14:35] braindead-5b18b6f6 UPDATE — building the mobile cockpit layout (new files, collision-free)
+  Phone test verdict: transport works (reachable over Tailscale, HTTP 200) but the desktop 3-column layout is unusable on a phone (terminal only visible if feed hidden; renames absent = client-local localStorage, desktop state intact). Principal picked: build the mobile layout.
+  Surface = NEW cockpit/web/mobile.css + NEW cockpit/web/mobile.js + 2-line edit to cockpit/web/index.html (link both). DELIBERATELY NOT touching styles.css (534ca735) or main.js (534ca735 console-head + 7311cd20 board rows) — the mobile layer is self-contained: a body.m-mobile + m-tab-* class scheme, a JS-injected bottom tab bar OUTSIDE the Preact tree, @media(max-width:760px) show/hide. Zero clobber risk; index.html + the 2 new files are touched by no live sibling.
+  Mechanism: below 760px, stack the 3 panels full-screen, switch via a Board/Session/Feed bottom tab bar; console auto-prefers transcript view (clean text + the always-present compose bar) over the cramped xterm. Desktop (>=960px) never crosses the breakpoint = unaffected. web/ is no-store so a phone refresh picks it up; no relaunch, live sessions untouched.
+  node --check (mobile.js) + eyeball pre-commit; RUNTIME-UNVERIFIED till the phone reload. Not committing without principal go (ask-before-commit). Steering clear of brain.js (304c77fd), backend.py/board.js (7311cd20), styles.css/feed.js (534ca735).
+
+[2026-05-31 14:55] braindead-5b18b6f6 UPDATE — committed phone-access (8f677ab); now building cross-client session HANDOFF
+  Committed the mobile cockpit layout + config-driven bind by pathspec (8f677ab: app.py, web/mobile.css, web/mobile.js, index.html, .gitignore; config.json gitignored). No sibling files swept.
+  Now building HANDOFF (principal ask): from a 2nd client (phone) take over a cockpit-launched session live on another client. Design = kill-then-resume (safe: one claude process per transcript). Surface:
+   - cockpit/ptybridge.py: NEW _LIVE_PTYS registry by sid8 + terminate_session() (no sibling owns ptybridge; last touched 63750f50, committed).
+   - cockpit/backend.py: NEW route POST /api/handoff -> terminate_session (7311cd20's file — co-edit flag, mine is one route + one import in make_app, your sort/stale logic is build_session_model; different regions).
+   - cockpit/web/term.js: NEW handoffAndResume() helper (no sibling).
+   - cockpit/web/console.js: 'drive here' button in the read-only banner, gated host==='cockpit' (no sibling).
+   - cockpit/web/main.js: pass onAdopt to the peek Console + carry host/sessionId onto the peek conn (534ca735 console-head L545-567 + 7311cd20 board rows — mine is the doRelease-area handler + the Console render at L579; different regions; co-edit flag).
+  VS Code sessions can't be adopted (cockpit can't kill their claude) — button hidden for them.
+  py_compile + node --check pre-commit; cross-client runtime UNVERIFIED (needs 2 clients + live session) — will be explicit. Not committing without principal go.
+  Steering clear of: brain.js (304c77fd), styles.css/feed.js (534ca735), board.js/status-sidecar (7311cd20).
+
+[2026-05-31 15:20] braindead-5b18b6f6 CLOSING
+  Completed S137 — cockpit phone access + cross-client session handoff. (1) Remote access (committed 8f677ab): config-driven bind in app.py (config.json {"host"}, default 127.0.0.1; gitignored), Tailscale transport, phone reached it (200 on tailnet). (2) Mobile layout (8f677ab): new self-contained cockpit/web/{mobile.css,mobile.js} + index.html link, NOT touching styles.css/main.js; <760px tab-bar stack; fixed --zoom:1.35 overflow + the VS-Code-peek 'can't write' confusion + scroll/tab UX. (3) HANDOFF (S137 commit): kill-then-resume takeover — ptybridge _LIVE_PTYS + terminate_session, /api/handoff (token-gated, dev-blocked), term.js handoffAndResume (found:false guard), console.js 'drive here' button, main.js wiring. Backend layer verified empirically (no-token 403 / unknown found:false / dev 403 / reads 200) + py_compile x2 + node --check x3.
+  Leaving open: cross-client handoff runtime UNVERIFIED — needs a cockpit RELAUNCH (live :8770 holds pre-handoff code) + 2 devices + a real session; mobile layout is live now (web/ no-store, phone refresh). Company-laptop note: the 0.0.0.0 exposure is the principal's test-then-delete — teardown = drop config.json host line + relaunch + uninstall Tailscale. NO gielinor/ writes. Co-edit: did NOT touch backend.py regions owned by 7311cd20's S134 (closed) — my backend.py add is the /api/handoff route + dev-guard line + make_app register, distinct from build_session_model. active-mode -> unscoped.
+  Live siblings at close: braindead-04ef0adc (fun-features, discussion) — no overlap. S134/S135/S136 all CLOSED.

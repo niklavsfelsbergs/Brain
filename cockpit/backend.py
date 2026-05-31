@@ -373,6 +373,26 @@ async def api_rename(request):
     return web.json_response({"ok": True, "name": name}, headers=NO_STORE)
 
 
+async def api_handoff(request):
+    """Hand a cockpit-launched session off to the calling client: terminate the
+    PTY driving it (on whatever client currently owns it), so the caller can then
+    resume the conversation on its own connection. Token-gated like /pty since it
+    terminates a live process. Query: ?sid8=&token=. Returns {ok, found}; found is
+    False when no live cockpit PTY drives that session (a VS Code session, or one
+    already gone) — the client must NOT resume then, to avoid a second writer on
+    the same transcript."""
+    if request.query.get("token") != request.app.get("cockpit_token"):
+        return web.json_response({"ok": False, "error": "forbidden"}, status=403,
+                                 headers=NO_STORE)
+    sid8 = (request.query.get("sid8") or "").strip().lower()
+    if not _is_sid8(sid8):
+        return web.json_response({"ok": False, "error": "bad sid8"}, status=400,
+                                 headers=NO_STORE)
+    from ptybridge import terminate_session
+    return web.json_response({"ok": True, "found": terminate_session(sid8)},
+                             headers=NO_STORE)
+
+
 # ─── transcript replay: .jsonl → visual turns (Phase 2) ─────────────────────
 
 def _find_session_file(key: str):
@@ -746,7 +766,7 @@ async def static_handler(request):
 async def _dev_guard(request, handler):
     if request.app.get("dev_mode"):
         p = request.path
-        if p == "/pty" or (request.method == "POST" and p == "/api/rename"):
+        if p == "/pty" or (request.method == "POST" and p in ("/api/rename", "/api/handoff")):
             return web.json_response(
                 {"ok": False, "error": "read-only dev backend: session driving + state writes are disabled"},
                 status=403)
@@ -762,6 +782,7 @@ def make_app(dev=False):
     app.router.add_get("/api/sessions", api_sessions)
     app.router.add_get("/api/open-vscode", api_open_vscode)
     app.router.add_post("/api/rename", api_rename)
+    app.router.add_post("/api/handoff", api_handoff)  # cross-client session takeover (kill-then-resume)
     app.router.add_get("/api/feed", api_feed)
     app.router.add_get("/api/clipboard", api_clipboard)
     app.router.add_post("/api/clipboard", api_clipboard_write)

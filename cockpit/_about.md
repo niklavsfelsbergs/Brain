@@ -50,6 +50,26 @@ collides with the old board on 8765:
 cockpit\.venv\Scripts\python.exe cockpit\backend.py   # → http://127.0.0.1:8770/
 ```
 
+**Dev / preview backend (iterate without disturbing the live cockpit).** Run a
+SECOND backend on another port in read-only mode, open it in a browser, and
+iterate — the live cockpit keeps driving your agents untouched:
+
+```
+cockpit\run-dev.bat            # → :8771, read-only; opens the browser
+cockpit\run-dev.bat 8772       # any other port
+```
+
+`backend.py --port N --dev`: binds port `N` and the `_dev_guard` middleware
+**refuses `/pty` (session driving) and `POST /api/rename` (state writes)** with a
+403, so this instance can never mutate the live fleet. It reads the *same*
+`../switchboard/state-*.json` files, so the board / feed / brain map mirror the
+live cockpit. Restart it (Ctrl+C, re-run) to pick up **backend.py** edits; F5 the
+browser to pick up **web/** edits (assets are `no-store`). The live cockpit on
+8770 — and the agents you're talking to there — are completely insulated. (The
+terminal works in a browser too: `/pty` is WebSocket-over-`location.host` with
+the token baked into the page — but it's exactly what `--dev` blocks, since
+driving belongs in the live window.)
+
 ## Stack
 
 - **Backend:** Python + `aiohttp` (`backend.py`). Reads the hook state files in
@@ -78,6 +98,8 @@ cockpit\.venv\Scripts\python.exe cockpit\backend.py   # → http://127.0.0.1:877
   `md.js` — small markdown. `styles.css` — clean-modern theme.
 - `Switchboard.vbs` — windowless launcher. `make-icon.py` — generates `icon.ico`.
   `make-shortcut.ps1` — creates the Desktop/Start-menu shortcuts.
+- `run-dev.bat` — launches the read-only dev/preview backend on a separate port
+  (default 8771) for iterating without touching the live cockpit (see *How to run*).
 - `requirements.txt`, `run.bat`, `config.json` (optional).
 
 ## Build status (D-028 phases)

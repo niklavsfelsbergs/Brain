@@ -281,3 +281,14 @@
   Verified testable layers (py_compile x2, node --check x2). RUNTIME-UNVERIFIED till cockpit relaunch.
   Leaving open: relaunch-eyeball all four (tuning knobs = 15min stall threshold, gold/purple flavor colours); cockpit/web/styles.css (my 3 flavor pills) + brain.js left UNcommitted â€” both co-mingle live sibling braindead-304c77fd's WIP, durability deferred to that file's owner. Standing backlog unchanged. active-mode â†’ unscoped.
   Live siblings: braindead-304c77fd (brain map) + braindead-04ef0adc (fun-features) â€” no file overlap touched.
+
+[2026-05-31 14:15] braindead-81f1509c OPEN
+  Entered mid-conversation via "lets develop gielinor". Principal: research what "Hermes AI" is ("some new thing"). External recon task — the name is overloaded (multiple unrelated products/models carry it), so step 1 is disambiguation before any depth. Read-only web sweep this turn.
+  Targets IF a deliverable lands: developer-braindead/bank/research/2026-05-31-hermes-ai.md (or .html) ONLY, on sign-off. No gielinor writes, no code, no hooks.
+  Steering clear of: cockpit/* (live siblings 304c77fd brain.js + 534ca735 polish), backend.py/board.js, .claude/hooks/, all jebrim/zezima player WIP, switchboard/*.log, state.ndjson.
+  Live siblings: braindead-304c77fd (brain map BUILD ~13:09), braindead-534ca735 (cockpit polish BUILD ~13:28), braindead-5b18b6f6 (mobile-access discussion ~13:30) — all cockpit-adjacent, ZERO overlap with a research writeup.
+
+[2026-05-31 13:42] braindead-5b18b6f6 UPDATE — phone-access path picked (Tailscale + bind), real surface is app.py NOT backend.py
+  Principal picked 'try as-is first' (shrunk desktop cockpit on the phone via Tailscale, no mobile-layout build yet). The live cockpit binds in cockpit/app.py:48 (web.TCPSite host=127.0.0.1), NOT backend.py:780 (that's only the standalone/dev backend). So my surface is cockpit/app.py ONLY — a config-driven bind host (default 127.0.0.1 = today's behavior unchanged; opt-in widen via config.json {"host":...}). py_compile-verified, NOT committed (ask-before-commit).
+  Collision check: app.py is touched by NO live sibling — 7311cd20=backend.py/board.js, 534ca735=styles.css/feed.js/main.js console-head, 304c77fd=brain.js. Zero overlap. I do NOT touch backend.py after all, so the 7311cd20 co-edit risk I flagged at OPEN is void.
+  Steering clear of: everything else as before.

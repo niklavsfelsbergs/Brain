@@ -1,6 +1,6 @@
 # UPS ORWO bronze — FIF report data quirks
 
-Source: `bi-analytics-main/NFE/shipping_topics/42_fif_orwo_ups_invoice_file` (standalone pipeline) + the bi-etl DAG `dags/shipping_invoice_cost/fif_ups_orwo_monthly`. Table: `enterprise_bronze.ups_orwo`. Anchor: [[S116_7f67fe48_shipping-agent-fif-monthly-skill|S116]].
+Source: `bi-analytics-main/NFE/shipping_topics/42_fif_orwo_ups_invoice_file` (standalone pipeline) + the bi-etl DAG `dags/AI_Automations/shipping_nfe/fif_ups_orwo_monthly`. Table: `enterprise_bronze.ups_orwo`. Anchor: [[S116_7f67fe48_shipping-agent-fif-monthly-skill|S116]].
 
 **`invoicedate` is stored inconsistently.** Mostly ISO `YYYY-MM-DD`, but some rows are US `M/D/YYYY` — the off-cycle `838xxx` March invoices that came through a different ingestion path. String ops (`LIKE '2026-03%'`, `LEFT(...,7)`) mis-bucket / undercount these (March read 11 vs the true **20** invoices). **Always `invoicedate::date`** for bucketing/filtering/max. `::date` parses both. Real upstream DQ issue worth fixing at source.
 

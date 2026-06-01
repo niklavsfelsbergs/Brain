@@ -1,7 +1,7 @@
 ---
 quest: S116_shipping-agent-fif-monthly-skill
 sid8: 7f67fe48
-ts: 2026-05-29 16:44
+ts: 2026-05-29 17:00
 ---
 
 # Resume — FIF UPS-ORWO report DAG (S116)
@@ -24,7 +24,7 @@ Two principal actions, then verify:
 3. If the **SharePoint PUT** errors (folder perms / Variable shape), that's the one likely fix point — adjust `utils/sharepoint_upload.py` or the DAG env, rebuild + re-push image.
 
 ## Files to read first
-- `bi-etl/dags/shipping_invoice_cost/fif_ups_orwo_monthly/README.md`
+- `bi-etl/dags/AI_Automations/shipping_nfe/fif_ups_orwo_monthly/README.md`
 - `.../fif_ups_orwo_monthly.py` (DAG) + `docker/src/tasks/build_fif.py` (modes + transform + gate)
 - `.../docker/src/sql/{fif_pull,invoices_index,present_months}.sql`
 - source of truth: `bi-analytics-main/NFE/shipping_topics/42_fif_orwo_ups_invoice_file/{CLAUDE.md,pipeline.py}`

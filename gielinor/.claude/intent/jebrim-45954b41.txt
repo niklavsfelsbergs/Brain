@@ -1,0 +1,1 @@
+S124 build resumes — foundation locked (spine 1.94M rows/49MB, diff verified, refund map pushed). Now the durable artifact: drafting the analyst skill (weekly/daily playbook — snapshot cols, diff logic, noticing checklist, §1-§5 scaffold, scope gating, notebook discipline), then report builder + DQ canary.

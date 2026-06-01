@@ -189,3 +189,15 @@ Lane key = `production_site` (origin) × `destination_country_code` (dest) × `s
 **Quest stays in-progress** (multi-session build; `open_dep` = skill + report builder + DQ canary not yet built). Resume → `inventory/shipping-agent-report-resume__28d1f778.md` (prior `__8cb8f235` archived). Harvest: 1 examine draft (`2026-06-01-verify-diffs-both-ways-and-explicit-presence-flags`) + 1 cross-conv memory.
 
 **Stale-done scan (other Jebrim in-progress quests) — surfaced, not auto-moved (ambiguous):** [[S116_7f67fe48_shipping-agent-fif-monthly-skill|S116]] reads complete-ready (SharePoint PUT verified, DAG pushed) but its prior CLOSING deferred graduation and harvest drafts await — flagged for graduation. S-shipping-agent readiness-gate = orphan sub-agent trace ([[D-030_alching-sweeps-orphan-subagent-traces|D-030]] sweep candidate). Both left for principal call / next session.
+
+---
+
+## Session 4 — 2026-06-01 (sid 45954b41): BUILD step 2 — the analyst skill (durable artifact)
+
+Resumed on "continue with the shipping report." Clean resume from 28d1f778 (ended 7s before open; no unresolved pending). Grounded against the built foundation (read README, running-notebook, snapshot.sql, diff_snapshots.py, pull_snapshot.py + the calling-the-shipping-agent skill). Offered next-step branch (AskUserQuestion) → principal picked **draft the analyst skill** (the locked durable artifact).
+
+**Drafted** `players/jebrim/spellbook/drafts/skills/running-the-automated-shipping-report.md` — the weekly/daily senior-analyst playbook. Covers: what-it-is (analyst review, NOT a rules engine — harness preps evidence + ranks attention, zero verdicts) · the two event streams (moved vs cost-arrived) · two-tier cadence on one snapshot spine · the harness run commands + 25-col spine + diff event taxonomy (with the presence-flag + Decimal→f64 lessons) · segmentation/scope gating · the §1–§5 arc (descriptive→evaluative→prescriptive, §4 PAPER-vs-DEFENSIBLE, §5 re-estimation signal) · daily DQ canary · running-notebook discipline (5 seeded accepted states) · carrier-aware refund map · cost-basis caveats. Born-linked to S124/[[S132_32ff1025_shipping-savings-routing-optimization|S132]], calling-the-shipping-agent, the 2 harvest drafts.
+
+**Next:** report builder §1–§5 + daily DQ canary in project `lib/`; retention thinning; 2nd snapshot for a real T-vs-T-1 diff test. Skill stays in drafts/ → promotes via alching.
+
+**Pending external actions:** none (brain-side draft + quest-log + comms/intent only this turn).

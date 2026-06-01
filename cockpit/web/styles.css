@@ -301,6 +301,7 @@ html, body {
 .flavor-alching { color: var(--alching); border-color: var(--alching); }
 .flavor-crew { color: var(--crew); border-color: var(--crew); }
 .flavor-wrapped { color: var(--wrapped); border-color: var(--wrapped); }
+.flavor-closing { color: var(--wrapped); border-color: var(--wrapped); }  /* mid-wrap sub (S141) */
 /* liveness sub-bubbles (S139) — idle dim/grey, stalled in the alert orange */
 .flavor-idle { color: var(--ink-faint); border-color: var(--line); }
 .flavor-stalled { color: var(--stalled); border-color: var(--stalled); }

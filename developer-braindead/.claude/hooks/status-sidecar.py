@@ -97,6 +97,7 @@ SUBTITLE_MAX_LEN = 280       # S058: was 100 — longer in-voice narration (2–
 # switchboard row shows for tracking, independent of actor resolution (a
 # session still resolving to "unknown" is trackable by what it was asked).
 FIRST_PROMPT_MAX = 140
+AI_TITLE_MAX = 80  # Claude Code's auto-titles run ~40-50 chars; cap defensively.
 
 # S043 (D-024 visualizer wiring): mirror both comms channels into the viz dir
 # so the COMMS panel can render inter-session dialogue. Same sandbox reason as
@@ -201,11 +202,17 @@ def _is_rename_prompt(prompt) -> bool:
 #                  *tag* ("alching") on the base state — the session stays `busy`
 #                  and just gets annotated. No longer a competing state value, so
 #                  the old precedence ladder is gone.
+#   "closing"    — close-session has STARTED but isn't finished (the mid-wrap
+#                  phase). A flavor *tag* ("closing") on the base state, like
+#                  alching — but the board promotes it to a "WRAPPING UP" MAIN
+#                  chip (above busy, below the ball-states), so a session that's
+#                  actively winding down reads apart from ordinary BUSY. The
+#                  ritual overwrites it with "wrapped_up" as its final action.
 #   "wrapped_up" — close-session finished; the terminal lingers but there's
 #                  nothing left to do. This one genuinely sets a base state
-#                  (`done`) + a "wrapped" tag — it's a real lifecycle end, so it
-#                  wins over your_move. Auto-cleared on the next UserPromptSubmit
-#                  (a fresh prompt means work resumed).
+#                  (`done`, shown as "WRAPPED UP") + a "wrapped" tag — it's a real
+#                  lifecycle end, so it wins over your_move. Auto-cleared on the
+#                  next UserPromptSubmit (a fresh prompt means work resumed).
 # Absent/empty marker = normal event-derived state. The marker is a persistent
 # file, so the session's own next hook fire picks it up (≤1 fire of lag). The
 # agent owns writing it (alching.md, close-session.md); the hook reads it here
@@ -215,9 +222,11 @@ def _is_rename_prompt(prompt) -> bool:
 #                  or drafts-triage session reads as more than a bare BUSY chip.
 #                  Written by the ritual md; never hides a needs_you/your_move block.
 MODE_MARKER_SUFFIX = ".mode"
-MODE_VALUES = {"alching", "wrapped_up", "bankstanding", "consultation", "drafts"}
+MODE_VALUES = {"alching", "wrapped_up", "closing", "bankstanding", "consultation", "drafts"}
 # Ritual markers that are pure flavor tags (busy stays the base state). wrapped_up
-# is special-cased (it sets base state `done`); these just annotate.
+# is special-cased (it sets base state `done`); `closing` keeps the base state but
+# the board promotes it to a main chip (handled in the wrapped/closing block below,
+# not here); these just annotate.
 FLAVOR_MODES = {"alching", "bankstanding", "consultation", "drafts"}
 
 
@@ -943,6 +952,118 @@ def _latest_action_for(sid8: str, ndjson_path: Path, max_bytes: int = 256_000) -
         return None
 
 
+def _latest_ai_title(transcript: Optional[Path], max_bytes: int = 262_144) -> str:
+    """Tail the session transcript for Claude Code's most recent auto-title and
+    return its text. Claude Code writes/updates these as the session evolves —
+    {"type":"ai-title","aiTitle":"<short summary>","sessionId":...} — and it is
+    the SAME string VSCode shows in its session list. We surface it as the board
+    row's subheader (board.js), preferred over the first prompt. Capped tail-read
+    so a long transcript can't crater hook latency (mirrors _latest_action_for).
+    Returns "" if no title exists yet — a fresh session gets one only after a
+    turn or two, and the caller falls back to first_prompt until then."""
+    if transcript is None:
+        return ""
+    try:
+        with transcript.open("rb") as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            f.seek(max(0, size - max_bytes))
+            tail = f.read().decode("utf-8", errors="ignore")
+        for line in reversed(tail.splitlines()):
+            if '"type":"ai-title"' not in line:
+                continue
+            try:
+                rec = json.loads(line)
+            except Exception:
+                continue
+            if rec.get("type") != "ai-title":
+                continue
+            title = (rec.get("aiTitle") or "").strip()
+            if title:
+                return title[:AI_TITLE_MAX]
+        return ""
+    except Exception:
+        return ""
+
+
+# A detached Bash (run_in_background) / monitor records its launch as a
+# tool_result whose text begins with this marker. Claude Code re-invokes the agent
+# with a "<task-notification>" turn when it completes.
+_BG_LAUNCH_PREFIX = "Command running in background with ID:"
+
+
+def _is_turn_start(rec: dict) -> bool:
+    """A record that begins a turn: a genuine user prompt OR a `<task-notification>`
+    re-invoke (a completed background task delivering its result). Tool_result
+    records are mid-turn, NOT turn starts."""
+    if rec.get("type") != "user":
+        return False
+    if (rec.get("attachment") or {}).get("type") == "queued_command":
+        return True   # task-notification re-invoke (enqueued form)
+    content = (rec.get("message") or {}).get("content")
+    if isinstance(content, str):
+        return True   # typed prompt or "<task-notification>…" string form
+    if isinstance(content, list):
+        # A turn start iff it isn't a tool_result carrier (those are mid-turn).
+        return not any(isinstance(b, dict) and b.get("type") == "tool_result"
+                       for b in content)
+    return False
+
+
+def _is_bg_launch(rec: dict) -> bool:
+    """A tool_result reporting a background command was launched."""
+    if rec.get("type") != "user":
+        return False
+    content = (rec.get("message") or {}).get("content")
+    if not isinstance(content, list):
+        return False
+    for b in content:
+        if not (isinstance(b, dict) and b.get("type") == "tool_result"):
+            continue
+        tc = b.get("content")
+        if isinstance(tc, list):
+            tc = " ".join(x.get("text", "") for x in tc if isinstance(x, dict))
+        if isinstance(tc, str) and tc.lstrip().startswith(_BG_LAUNCH_PREFIX):
+            return True
+    return False
+
+
+def _current_turn_launched_bg(transcript: Optional[Path],
+                              max_bytes: int = 524_288, max_records: int = 400) -> bool:
+    """True when the CURRENT (most recent) turn launched a detached background
+    command — i.e. the agent ended this turn (Stop → your_move) only to WAIT on a
+    shell/monitor, not because it's the principal's move. Walks the transcript tail
+    backward: a launch tool_result before the current turn's start → True; hitting
+    the turn boundary (a prompt or a task-notification re-invoke) first → False.
+    Scoping to the current turn avoids both self-matching stray text and an old
+    abandoned background task pinning the row BUSY forever. Capped read + walk; any
+    error → False (fail safe to the normal your_move). The shell/monitor analogue
+    of the your_move+crew→busy fix. (S141)"""
+    if transcript is None:
+        return False
+    try:
+        with transcript.open("rb") as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            f.seek(max(0, size - max_bytes))
+            tail = f.read().decode("utf-8", errors="ignore")
+        lines = tail.splitlines()
+        for line in reversed(lines[-max_records:]):
+            if not line.strip():
+                continue
+            try:
+                rec = json.loads(line)
+            except Exception:
+                continue   # partial first line of a mid-file tail, etc.
+            if _is_bg_launch(rec):
+                return True
+            if _is_turn_start(rec):
+                return False   # reached the start of the current turn, no launch
+        return False
+    except Exception:
+        return False
+
+
 def _write_manifest() -> None:
     """Snapshot live status files into a single manifest at VIZ_DIR. Browser
     polls this one file (fetch is cheap for one file, expensive for a glob).
@@ -1603,17 +1724,34 @@ def main() -> None:
     mode = _read_mode_marker(project_dir, sid8)
     if hook_event == "SessionEnd":
         _clear_mode_marker(project_dir, sid8)          # process gone — tidy up
-    elif hook_event == "UserPromptSubmit" and mode == "wrapped_up":
+    elif hook_event == "UserPromptSubmit" and mode in ("wrapped_up", "closing"):
         _clear_mode_marker(project_dir, sid8)          # fresh prompt → resumed
         mode = ""
     tags: list[str] = []
     if mode == "wrapped_up" and state != "ended":
         state = "done"
         tags.append("wrapped")
+    elif mode == "closing" and state not in ("ended", "done"):
+        # Mid-wrap: base state stays (busy, or your_move when the close pauses for
+        # a commit nod). The board promotes "closing" to a WRAPPING UP main chip,
+        # or rides it as a sub when a ball-state holds the main chip.
+        tags.append("closing")
     elif mode in FLAVOR_MODES:
         # alching / bankstanding / consultation / drafts — flavor on the base
         # state, never a competing state (the busy row just gets annotated). (S134)
         tags.append(mode)
+
+    # Background-task wait (S141): a Stop fired your_move because the agent
+    # launched a detached command (run_in_background Bash / monitor) and ended the
+    # turn to WAIT on it — not because it's the principal's move. If a background
+    # task is still outstanding, keep the session `busy` so the board reads BUSY,
+    # not YOUR MOVE. The "monitoring" tag suppresses the busy→stalled escalation in
+    # the backend (an intentional quiet wait isn't a frozen heartbeat). Mirrors the
+    # your_move+crew→busy fix, for shell/monitor waits instead of sub-agents.
+    if state == "your_move" and _current_turn_launched_bg(_transcript_path(payload, sid)):
+        state = "busy"
+        if "monitoring" not in tags:
+            tags.append("monitoring")
 
     # Crew tag: a foreground Task/Agent still out annotates a busy session. The
     # manifest per-row refresh re-derives this (and self-heals a missed Post),
@@ -1714,6 +1852,12 @@ def main() -> None:
             print(f"status-sidecar: say dispatch failed: {e}", file=sys.stderr)
             say_offset = int(say_offset)
     record["say_offset"] = say_offset
+
+    # Claude Code's auto-generated session title (the same text VSCode shows in
+    # its session list) — surfaced as the board row's subheader. Re-read each
+    # fire so it tracks Claude Code's re-summarizing; carry prev forward on a
+    # read miss so a transient empty never blanks a title that already existed.
+    record["ai_title"] = _latest_ai_title(transcript) or (prev.get("ai_title") or "")
 
     try:
         _atomic_write_json(out_path, record)

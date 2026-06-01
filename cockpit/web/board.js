@@ -5,13 +5,15 @@ import { useState, useRef } from "preact/hooks";
 import { nameFor } from "./names.js";
 
 // S139 taxonomy. The MAIN status is the primary chip (one of a small set); the
-// rest are SUB-bubbles. ACTION NEEDED = blocked on a question list; WRAPPING UP =
-// session closed/lingering; ALCHING/BANKSTANDING = rituals promoted to main.
+// rest are SUB-bubbles. ACTION NEEDED = blocked on a question list; the close
+// ritual is two-phase (S141): WRAPPING UP = mid-wrap (closing started, not done),
+// WRAPPED UP = finished + lingering; ALCHING/BANKSTANDING = rituals promoted to main.
 const MAIN_LABEL = {
   busy: "BUSY",
   your_move: "YOUR MOVE",
   needs_you: "ACTION NEEDED",
-  done: "WRAPPING UP",
+  closing: "WRAPPING UP",
+  done: "WRAPPED UP",
   alching: "ALCHING",
   bankstanding: "BANKSTANDING",
   ended: "ENDED",        // filtered off the board; here for completeness
@@ -25,6 +27,7 @@ const MAIN_LABEL = {
 const SUB_LABEL = {
   idle: "idle",
   stalled: "stalled",
+  closing: "wrapping up",
   alching: "alching",
   bankstanding: "bankstanding",
   consultation: "consulting",
@@ -104,7 +107,10 @@ function Row({ s, selected, onSelect, onRename }) {
           title=${fmtAge(s.age_sec) + " old · last active " + fmtAge(s.quiet_sec ?? s.age_sec) + " ago"}
         >${fmtAge(s.quiet_sec ?? s.age_sec)}</span>
       </div>
-      ${s.first_prompt && html`<div class="prompt">${s.first_prompt}</div>`}
+      ${/* Subheader: Claude Code's auto-title (same text VSCode shows) once it
+            exists, else the first prompt until the title is generated. */ ""}
+      ${(s.ai_title || s.first_prompt) &&
+        html`<div class="prompt">${s.ai_title || s.first_prompt}</div>`}
       ${s.doing && html`<div class="doing">${s.doing}</div>`}
       ${s.subagents.length > 0 &&
       html`<div class="crew">

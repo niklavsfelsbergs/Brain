@@ -183,9 +183,10 @@ Alongside the per-session intent file there is an optional **mode marker** at `.
 - `bankstanding` — written on entry to the bankstanding ritual, cleared on close. Row tags `bankstanding`. During Phase 0 the per-player alching sub-pass writes `alching`, then restores `bankstanding` on Phase 0 exit. See `spellbook/rituals/bankstanding.md`.
 - `consultation` — written on a `Hey Guthix` consultation entry, cleared on returning to a player or on close. Row tags `consulting`. See [[guthix]] → *Visualizer*.
 - `drafts` — written on entry to the drafts-triage ritual, cleared on report/exit. Row tags `drafts`. See `spellbook/rituals/drafts-triage.md`.
+- `closing` — written as the *first* action of close-session, when the wrap starts. Row reads `WRAPPING UP` (the mid-wrap phase), or `YOUR MOVE · wrapping up` if the close pauses for a nod. Overwritten by `wrapped_up` as the final action. See `spellbook/rituals/close-session.md`. (S141.)
 - `wrapped_up` — written as the final action of close-session. Row reads `WRAPPED UP` ("done, terminal still open") until the process ends; a fresh prompt auto-clears it. See `spellbook/rituals/close-session.md`.
 
-`status-sidecar.py` reads the marker. `wrapped_up` sets base state `done`; the ritual-flavor markers (`alching` / `bankstanding` / `consultation` / `drafts`) ride as a flavor *tag* on the base state (typically busy) and never hide a `needs_you` / `your_move` block. Like the intent file it's a hint, not a contract — no marker just means no chip. Written by the rituals, not narrated in the visible response.
+`status-sidecar.py` reads the marker. `wrapped_up` sets base state `done` (shown `WRAPPED UP`); `closing` keeps the base state but the board promotes it to a `WRAPPING UP` main chip (or a sub when a ball-state holds the main); the ritual-flavor markers (`alching` / `bankstanding` / `consultation` / `drafts`) ride as a flavor *tag* on the base state (typically busy) and never hide a `needs_you` / `your_move` block. Like the intent file it's a hint, not a contract — no marker just means no chip. Written by the rituals, not narrated in the visible response.
 
 ## Narration channel (system voice)
 

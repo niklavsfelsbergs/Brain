@@ -226,6 +226,10 @@ def test_busy_stays_busy_when_quiet():
          "actor": "jebrim", "state": "busy", "last_event_ts": now - 200},   # 200s silent (long query/think)
         {"sid8": "f2000000", "session_id": "f2000000-0000-0000-0000-000000000000",
          "actor": "jebrim", "state": "busy", "last_event_ts": now - 9000},  # 2.5h quiet
+        # S141: a bg-task wait (hook flipped your_move->busy + `monitoring` tag) is
+        # intentionally quiet — it must NOT escalate to stalled even past 15 min.
+        {"sid8": "f3000000", "session_id": "f3000000-0000-0000-0000-000000000000",
+         "actor": "braindead", "state": "busy", "tags": ["monitoring"], "last_event_ts": now - 9000},
     ]}), encoding="utf-8")
     m = backend.build_session_model()
     by = {s["sid8"]: s for s in m["sessions"]}
@@ -239,6 +243,9 @@ def test_busy_stays_busy_when_quiet():
     check("2.5h-quiet busy keeps main BUSY", by["f2000000"]["main"] == "busy")
     check("2.5h-quiet busy gains a stalled sub-bubble", "stalled" in by["f2000000"]["subs"])
     check("2.5h-quiet busy is NOT greyed (active)", by["f2000000"]["stale"] is False)
+    # S141: a monitoring (bg-wait) row stays BUSY and never gains the stalled sub
+    check("monitoring bg-wait stays main BUSY", by["f3000000"]["main"] == "busy")
+    check("monitoring bg-wait NOT stalled despite 2.5h quiet", "stalled" not in by["f3000000"]["subs"])
 
 
 def test_your_move_with_crew_is_busy():
@@ -291,6 +298,15 @@ def test_main_status_taxonomy():
         # consultation is always a sub on a busy chip
         {"sid8": "e0000000", "session_id": "S-e", "actor": "guthix",
          "state": "busy", "tags": ["consultation"], "last_event_ts": now - 5},
+        # S141 two-phase close. mid-wrap (closing tag) -> main WRAPPING UP
+        {"sid8": "10000000", "session_id": "S-w1", "actor": "braindead",
+         "state": "busy", "tags": ["closing"], "last_event_ts": now - 5},
+        # close pauses for a commit nod -> ball-state wins, closing demoted to sub
+        {"sid8": "11000000", "session_id": "S-w2", "actor": "braindead",
+         "state": "your_move", "tags": ["closing"], "last_event_ts": now - 5},
+        # finished (wrapped_up sets base state done) -> main WRAPPED UP
+        {"sid8": "12000000", "session_id": "S-w3", "actor": "braindead",
+         "state": "done", "tags": ["wrapped"], "last_event_ts": now - 5},
     ]}), encoding="utf-8")
     m = backend.build_session_model()
     by = {s["sid8"]: s for s in m["sessions"]}
@@ -303,6 +319,12 @@ def test_main_status_taxonomy():
     check("question in bankstanding -> main ACTION NEEDED", by["d0000000"]["main"] == "needs_you")
     check("question in bankstanding -> ritual demoted to sub", "bankstanding" in by["d0000000"]["subs"])
     check("consultation is a sub on busy", by["e0000000"]["main"] == "busy" and "consultation" in by["e0000000"]["subs"])
+    # S141 two-phase close: WRAPPING UP (mid-wrap) -> WRAPPED UP (done)
+    check("mid-wrap (closing tag) -> main WRAPPING UP", by["10000000"]["main"] == "closing")
+    check("closing-while-busy is NOT demoted to sub", "closing" not in by["10000000"]["subs"])
+    check("close pauses on your_move -> ball-state wins", by["11000000"]["main"] == "your_move")
+    check("paused close keeps wrap context as a sub", "closing" in by["11000000"]["subs"])
+    check("wrapped_up -> main WRAPPED UP (done)", by["12000000"]["main"] == "done")
 
 
 async def _pty_auth_checks():

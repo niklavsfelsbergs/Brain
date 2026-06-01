@@ -80,10 +80,11 @@ STATE_RANK = {
 MAIN_RANK = {
     "needs_you": 0,      # ACTION NEEDED
     "your_move": 1,      # YOUR MOVE
+    "closing": 2,        # WRAPPING UP (mid-wrap) — per the documented precedence
     "alching": 3,        # ALCHING
     "bankstanding": 3,   # BANKSTANDING
     "busy": 4,           # BUSY
-    "done": 8,           # WRAPPING UP
+    "done": 8,           # WRAPPED UP (finished, lingering) — sinks below live work
     "ended": 9,
     "unknown": 10,
 }
@@ -308,7 +309,11 @@ def build_session_model():
         #                                          crashed, or a reopened cockpit)
         # needs_you never goes quiet-flagged — a live mid-turn block stays hot.
         is_idle = state == "your_move" and quiet_sec > IDLE_AFTER_SEC
-        is_stalled = state == "busy" and quiet_sec > STALL_AFTER_SEC
+        # A `monitoring` row (the hook flipped a bg-task wait from your_move→busy,
+        # S141) is intentionally quiet — it's waiting on a detached shell/monitor,
+        # not a frozen heartbeat — so it must NOT escalate to `stalled`.
+        is_stalled = (state == "busy" and quiet_sec > STALL_AFTER_SEC
+                      and "monitoring" not in (s.get("tags") or []))
 
         # Flavor flags off the hook's `.mode` tags (+ crew from the live pending
         # list). Rituals: alching/bankstanding promote to a MAIN chip; consultation/
@@ -318,6 +323,12 @@ def build_session_model():
         bankstanding = "bankstanding" in hook_tags
         consultation = "consultation" in hook_tags
         drafts = "drafts" in hook_tags
+        # Mid-wrap: close-session started but not finished. Promotes to the
+        # WRAPPING UP main chip below (above busy/rituals), or rides as a sub when
+        # the close pauses on a ball-state (e.g. your_move waiting for a commit
+        # nod). The finished state is `done` → WRAPPED UP, set via the wrapped_up
+        # marker. (S141 — finishes the two-phase the close rituals always documented.)
+        closing = "closing" in hook_tags
 
         # MAIN status (the primary chip) — ball-state wins over ritual (S139):
         # ACTION NEEDED > YOUR MOVE > WRAPPING UP > ALCHING/BANKSTANDING > BUSY.
@@ -329,6 +340,8 @@ def build_session_model():
             main = "your_move"
         elif state in ("done", "ended"):
             main = state
+        elif closing:
+            main = "closing"
         elif alching:
             main = "alching"
         elif bankstanding:
@@ -345,6 +358,8 @@ def build_session_model():
         if is_stalled:
             subs.append("stalled")
         if main in ("needs_you", "your_move"):
+            if closing:
+                subs.append("closing")   # keep the wrap context while close waits on you
             if alching:
                 subs.append("alching")
             if bankstanding:
@@ -378,6 +393,10 @@ def build_session_model():
             # merged board (manifest + cockpit-own terminals) sorts on one axis. (S134)
             "last_action_ts": heartbeat,
             "first_prompt": s.get("first_prompt", ""),
+            # Claude Code's auto-title (the VSCode session-list text); board.js
+            # prefers it over first_prompt for the row subheader. Written by the
+            # status-sidecar hook off the session transcript's ai-title records.
+            "ai_title": s.get("ai_title", ""),
             "doing": s.get("latest_action") or s.get("subtitle") or s.get("intent") or "",
             "intent": s.get("intent", ""),
             # ACTION NEEDED + YOUR MOVE drive the pings — but an idle (quiet-parked)

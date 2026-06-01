@@ -35,6 +35,8 @@ Each session that runs close-session gets a sequential ID: `S001`, `S002`, etc. 
 
 For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-12.
 
+**First, before any step (switchboard, S141).** As the *first* action of the close, write `closing` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`). This flips the session's switchboard row to `WRAPPING UP` for the duration of the wrap — the mid-wrap phase, distinct from the `WRAPPED UP` that the final *Switchboard marker* step sets once everything's done. If the close pauses for a graduation veto or commit nod, the row reads `YOUR MOVE · wrapping up`. Switchboard concern only, not architecturally enforced; if skipped, the row just stays `BUSY` until the final marker.
+
 ### 0. Spawn-decision — principal-self or gnome?
 
 Before walking the steps, evaluate the gnome spawn heuristic for session-close (per `spellbook/skills/spawning-gnomes.md`):
@@ -240,7 +242,7 @@ One or two sentences back to the principal. Include:
 
 Then wait. The principal closes the conversation.
 
-**Switchboard marker (visualizer concern).** As the **final action** — after the commit and the close statement, whether the close ran principal-self or via a gnome — write `wrapped_up` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`). This flips the session's switchboard row from `CLOSING` (mid-wrap, intent-derived) to `WRAPPED UP` — "done, terminal still open" — distinct from `ENDED` (process gone). `status-sidecar.py` reads the marker on this turn's `Stop` event and holds the `wrapped_up` state until the process actually ends. If the principal sends a fresh prompt instead of closing the conversation, the marker auto-clears and the session resumes as `working`. Not architecturally enforced — a missing marker just leaves the row reading `WAITING`/`IDLE` as before.
+**Switchboard marker (visualizer concern).** As the **final action** — after the commit and the close statement, whether the close ran principal-self or via a gnome — overwrite `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`) with `wrapped_up` (replacing the `closing` marker the *First, before any step* note wrote). This flips the session's switchboard row from `WRAPPING UP` (mid-wrap) to `WRAPPED UP` — "done, terminal still open" — distinct from `ENDED` (process gone). `status-sidecar.py` reads the marker on this turn's `Stop` event and holds the `wrapped_up` state until the process actually ends. If the principal sends a fresh prompt instead of closing the conversation, the marker auto-clears and the session resumes as `working`. Not architecturally enforced — a missing marker just leaves the row reading `WAITING`/`IDLE` as before.
 
 ### 12. Special case: unscoped session
 

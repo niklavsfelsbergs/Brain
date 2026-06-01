@@ -87,8 +87,10 @@ def test_pending_subagents_crashguard():
 
 
 def test_stale_greying_and_attention():
-    """S080: a quiet session keeps its real state (greyed), not flattened; it
-    drops out of the attention tally; live ball-in-court states stay hot."""
+    """S139: a quiet `your_move` keeps its main status (YOUR MOVE) and gains an
+    `idle` sub-bubble — it does NOT relabel to a main IDLE chip (that was the
+    short-lived S134 behaviour). It greys, drops out of the attention tally, and
+    sinks in the sort; live ball-in-court states stay hot and on top."""
     tmp = _sandbox()
     now = time.time()
     manifest = {"sessions": [
@@ -107,11 +109,14 @@ def test_stale_greying_and_attention():
 
     check("live your_move is attention", by["b0000000"]["attention"] is True)
     check("live needs_you is attention", by["d0000000"]["attention"] is True)
-    check("stale your_move is NOT attention", by["c0000000"]["attention"] is False)
+    check("idle your_move is NOT attention", by["c0000000"]["attention"] is False)
     check("stale flag set on the 2.5h-quiet row", by["c0000000"]["stale"] is True)
     check("live busy is NOT stale", by["a0000000"]["stale"] is False)
-    check("stale row keeps real state (your_move, not flattened)",
-          by["c0000000"]["state"] == "your_move")
+    # S139: a quiet your_move keeps main YOUR MOVE + gains an `idle` sub-bubble
+    # (was, briefly in S134, a relabel to a main IDLE state).
+    check("2.5h-quiet your_move keeps main your_move", by["c0000000"]["main"] == "your_move")
+    check("2.5h-quiet your_move gains an idle sub-bubble", "idle" in by["c0000000"]["subs"])
+    check("live needs_you main = needs_you (ACTION NEEDED)", by["d0000000"]["main"] == "needs_you")
 
     att = sum(1 for s in m["sessions"] if s["attention"])
     check("attention tally = 2 (live needs_you + live your_move; stale excluded)",
@@ -208,8 +213,10 @@ def test_busy_stays_busy_when_quiet():
     a long response — must STAY busy, never flip to idle. An earlier timeout-decay
     (BUSY_IDLE_AFTER_SEC=90) false-tripped real work and was REMOVED: there's no
     server-side way to tell 'cancelled' from 'quietly working'. The cancel case is
-    handled cockpit-side via the Esc keystroke, not here. A quiet busy session only
-    greys (keeps the BUSY chip) past IDLE_AFTER_SEC — never relabels to idle."""
+    handled cockpit-side via the Esc keystroke, not here. A quiet busy session
+    never greys or flips to idle; it keeps main BUSY, and only once its heartbeat
+    freezes past the generous STALL_AFTER_SEC (15 min) does it gain a `stalled`
+    sub-bubble (S139 — a sub-bubble, not a relabel of the main chip)."""
     tmp = _sandbox()
     now = time.time()
     backend.MANIFEST.write_text(json.dumps({"sessions": [
@@ -223,11 +230,79 @@ def test_busy_stays_busy_when_quiet():
     m = backend.build_session_model()
     by = {s["sid8"]: s for s in m["sessions"]}
 
-    check("fresh busy stays busy", by["f0000000"]["state"] == "busy")
-    check("200s-silent busy STILL busy (no false idle — the Jebrim regression)", by["f1000000"]["state"] == "busy")
-    check("200s-silent busy not yet greyed (<300s)", by["f1000000"]["stale"] is False)
-    check("2.5h-quiet busy still BUSY (greyed, not relabelled)", by["f2000000"]["state"] == "busy")
-    check("2.5h-quiet busy is greyed (stale)", by["f2000000"]["stale"] is True)
+    check("fresh busy stays busy", by["f0000000"]["main"] == "busy")
+    check("200s-silent busy STILL busy (no false idle — the Jebrim regression)", by["f1000000"]["main"] == "busy")
+    check("200s-silent busy not yet stalled (<15min)", "stalled" not in by["f1000000"]["subs"])
+    check("200s-silent busy never greyed", by["f1000000"]["stale"] is False)
+    # S139: a busy row whose heartbeat froze past STALL_AFTER_SEC keeps main BUSY
+    # and gains a `stalled` sub-bubble — never greyed, never relabelled.
+    check("2.5h-quiet busy keeps main BUSY", by["f2000000"]["main"] == "busy")
+    check("2.5h-quiet busy gains a stalled sub-bubble", "stalled" in by["f2000000"]["subs"])
+    check("2.5h-quiet busy is NOT greyed (active)", by["f2000000"]["stale"] is False)
+
+
+def test_your_move_with_crew_is_busy():
+    """S139: a session parked on a Stop (your_move) while a FOREGROUND subagent is
+    still out is waiting on its crew, not the principal — the board must read it
+    main BUSY, never YOUR MOVE. The crew shows via the kind-letter row
+    (`subagents`), not a sub-bubble. (The hook stamps your_move when a Stop fires
+    mid-spawn; the backend re-derives from the live pending list.)"""
+    tmp = _sandbox()
+    now = time.time()
+    # a0: your_move with a dwarf still out -> must be busy; b0: plain your_move
+    backend.MANIFEST.write_text(json.dumps({"sessions": [
+        {"sid8": "a0000000", "session_id": "S-crew", "actor": "jebrim",
+         "state": "your_move", "last_event_ts": now - 5},
+        {"sid8": "b0000000", "session_id": "S-bare", "actor": "zezima",
+         "state": "your_move", "last_event_ts": now - 5},
+    ]}), encoding="utf-8")
+    (tmp / "state-dwarves.json").write_text(
+        json.dumps({"bySession": {"S-crew": {"byToolUseId": {"tu1": {"id": "D1"}}}}}),
+        encoding="utf-8")
+    m = backend.build_session_model()
+    by = {s["sid8"]: s for s in m["sessions"]}
+
+    check("your_move + pending crew -> main busy", by["a0000000"]["main"] == "busy")
+    check("your_move + pending crew -> crew chip present", len(by["a0000000"]["subagents"]) == 1)
+    check("your_move + pending crew is NOT ball-in-court attention", by["a0000000"]["attention"] is False)
+    check("bare your_move (no crew) stays main your_move", by["b0000000"]["main"] == "your_move")
+    check("bare your_move has no crew chip", len(by["b0000000"]["subagents"]) == 0)
+
+
+def test_main_status_taxonomy():
+    """S139: rituals (alching/bankstanding) promote to a MAIN chip; but a ball-state
+    (ACTION NEEDED / YOUR MOVE) wins the chip and demotes the ritual to a sub-bubble.
+    consultation/drafts are always sub-bubbles."""
+    tmp = _sandbox()
+    now = time.time()
+    backend.MANIFEST.write_text(json.dumps({"sessions": [
+        # busy + alching marker -> main ALCHING
+        {"sid8": "a0000000", "session_id": "S-a", "actor": "jebrim",
+         "state": "busy", "tags": ["alching"], "last_event_ts": now - 5},
+        # busy + bankstanding -> main BANKSTANDING
+        {"sid8": "b0000000", "session_id": "S-b", "actor": "guthix",
+         "state": "busy", "tags": ["bankstanding"], "last_event_ts": now - 5},
+        # parked alching -> ball-state wins: main YOUR MOVE, alching demoted to sub
+        {"sid8": "c0000000", "session_id": "S-c", "actor": "jebrim",
+         "state": "your_move", "tags": ["alching"], "last_event_ts": now - 5},
+        # question during bankstanding -> main ACTION NEEDED, bankstanding sub
+        {"sid8": "d0000000", "session_id": "S-d", "actor": "guthix",
+         "state": "needs_you", "tags": ["bankstanding"], "last_event_ts": now - 5},
+        # consultation is always a sub on a busy chip
+        {"sid8": "e0000000", "session_id": "S-e", "actor": "guthix",
+         "state": "busy", "tags": ["consultation"], "last_event_ts": now - 5},
+    ]}), encoding="utf-8")
+    m = backend.build_session_model()
+    by = {s["sid8"]: s for s in m["sessions"]}
+
+    check("busy + alching -> main ALCHING", by["a0000000"]["main"] == "alching")
+    check("busy + alching -> no demoted ritual sub", "alching" not in by["a0000000"]["subs"])
+    check("busy + bankstanding -> main BANKSTANDING", by["b0000000"]["main"] == "bankstanding")
+    check("parked alching -> ball-state wins (main YOUR MOVE)", by["c0000000"]["main"] == "your_move")
+    check("parked alching -> ritual demoted to sub", "alching" in by["c0000000"]["subs"])
+    check("question in bankstanding -> main ACTION NEEDED", by["d0000000"]["main"] == "needs_you")
+    check("question in bankstanding -> ritual demoted to sub", "bankstanding" in by["d0000000"]["subs"])
+    check("consultation is a sub on busy", by["e0000000"]["main"] == "busy" and "consultation" in by["e0000000"]["subs"])
 
 
 async def _pty_auth_checks():
@@ -327,6 +402,8 @@ def main():
     test_legacy_token_aliasing()
     test_action_heartbeat()
     test_busy_stays_busy_when_quiet()
+    test_your_move_with_crew_is_busy()
+    test_main_status_taxonomy()
     test_robust_to_missing_and_malformed()
     test_pty_auth()
     test_result_cap()

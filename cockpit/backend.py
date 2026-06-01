@@ -70,6 +70,25 @@ STATE_RANK = {
     "unknown": 10,
 }
 
+# S139 taxonomy. The board has a small set of MAIN statuses (the primary chip)
+# and demotes liveness + secondary detail to SUB-bubbles. Rituals (alching /
+# bankstanding) are promoted to main statuses; idle / stalled are demoted to
+# sub-bubbles (a quiet row keeps its real main status + a sub, never relabels).
+# Precedence (ball-state wins over ritual): ACTION NEEDED > YOUR MOVE > WRAPPING
+# UP > ALCHING/BANKSTANDING > BUSY — so an urgent question is never buried under
+# a ritual label. The ritual then rides as a sub-bubble on the ball-state chip.
+MAIN_RANK = {
+    "needs_you": 0,      # ACTION NEEDED
+    "your_move": 1,      # YOUR MOVE
+    "alching": 3,        # ALCHING
+    "bankstanding": 3,   # BANKSTANDING
+    "busy": 4,           # BUSY
+    "done": 8,           # WRAPPING UP
+    "ended": 9,
+    "unknown": 10,
+}
+IDLE_SINK_RANK = 7       # an idle (quiet-parked) row sinks below live work
+
 # Reader-derived idle. The status sidecar deliberately never stamps "idle" — the
 # hook doesn't fire while a session sits parked, so the *reader* decays a stale
 # `your_move` into idle. A turn ends on Stop → your_move; once it's been quiet
@@ -266,36 +285,91 @@ def build_session_model():
         # turn freezes both. See _last_action_ts_map / STALL_AFTER_SEC.
         heartbeat = max(last, action_ts.get(sid8, 0))
         quiet_sec = max(0, int(now - heartbeat))
-        # Reader-derived state decay/escalation (S134 rework of the S080 staleness).
-        # Hooks don't fire while a session sits, so the reader moves quiet rows —
-        # but NEVER by greying an active row. The board's rule: a row keeps its
-        # highlight until it is genuinely IDLE. Two transitions, both OUT of an
-        # active state rather than a dim-in-place:
-        #   your_move quiet past IDLE_AFTER_SEC  → idle    (un-returned end-of-turn park)
-        #   busy      quiet past STALL_AFTER_SEC → stalled (heartbeat frozen: crashed,
-        #                                          or a reopened cockpit — surfaced,
-        #                                          not greyed; see STALL_AFTER_SEC)
-        # needs_you never decays — a live mid-turn block stays hot.
-        # Supersedes S080's blanket quiet>IDLE greying, which dimmed busy sessions
-        # mid-work (the S083 long-turn false-trip, in display form).
-        if state == "your_move" and quiet_sec > IDLE_AFTER_SEC:
-            state = "idle"
-        elif state == "busy" and quiet_sec > STALL_AFTER_SEC:
-            state = "stalled"
-        # Greying is now reserved for genuinely not-live rows (idle/done/ended) —
-        # never an active state. An idle/done row quiet past the window dims + shows
-        # its quiet age; an active row (busy/stalled/needs_you/your_move) never dims.
-        stale = quiet_sec > IDLE_AFTER_SEC and state in ("idle", "done", "ended")
+        # Foreground crew still out → never `your_move` (S139). A Stop stamps
+        # `your_move` (turn parked), but if the session spawned foreground
+        # subagents that haven't returned, the turn is waiting on its *crew*, not
+        # on the principal — the hook can't see that (the subagent→busy logic only
+        # runs on the Task Pre/Post events, so a Stop firing mid-spawn wins). The
+        # board already draws crew chips from this same pending list, so the
+        # invariant is: a row with crew out can't read ball-in-your-court. Keep it
+        # busy (and tagged crew below); it re-derives to your_move the poll after
+        # the last subagent returns and `pending` empties. Trusts the same source
+        # as the crew chip — a stale/orphaned trace would mislabel here exactly as
+        # it already would the chip (reap via tools/reap.py); busy>STALL still
+        # backstops a genuinely wedged row into `stalled`.
+        pending = _pending_subagents(s.get("session_id"))
+        if state == "your_move" and pending:
+            state = "busy"
+        # Liveness sub-flags (S139 — the S134 relabel is GONE). A quiet row keeps
+        # its real semantic state and gets a sub-bubble, instead of being
+        # relabelled to a main IDLE/STALLED chip:
+        #   your_move quiet past IDLE_AFTER_SEC  → `idle` sub   (un-returned park)
+        #   busy      quiet past STALL_AFTER_SEC → `stalled` sub (heartbeat frozen:
+        #                                          crashed, or a reopened cockpit)
+        # needs_you never goes quiet-flagged — a live mid-turn block stays hot.
+        is_idle = state == "your_move" and quiet_sec > IDLE_AFTER_SEC
+        is_stalled = state == "busy" and quiet_sec > STALL_AFTER_SEC
+
+        # Flavor flags off the hook's `.mode` tags (+ crew from the live pending
+        # list). Rituals: alching/bankstanding promote to a MAIN chip; consultation/
+        # drafts stay sub-bubbles. (S134/S139)
+        hook_tags = set(s.get("tags") or [])
+        alching = "alching" in hook_tags
+        bankstanding = "bankstanding" in hook_tags
+        consultation = "consultation" in hook_tags
+        drafts = "drafts" in hook_tags
+
+        # MAIN status (the primary chip) — ball-state wins over ritual (S139):
+        # ACTION NEEDED > YOUR MOVE > WRAPPING UP > ALCHING/BANKSTANDING > BUSY.
+        # An urgent question/park is never buried under a ritual label; the ritual
+        # rides as a sub-bubble in that case.
+        if state == "needs_you":
+            main = "needs_you"
+        elif state == "your_move":
+            main = "your_move"
+        elif state in ("done", "ended"):
+            main = state
+        elif alching:
+            main = "alching"
+        elif bankstanding:
+            main = "bankstanding"
+        else:
+            main = "busy"
+
+        # SUB-bubbles (secondary; can stack). Liveness first, then any ritual that
+        # got demoted because a ball-state took the main chip, then the always-sub
+        # rituals. Crew is shown via the kind-letter row (`subagents`), not here.
+        subs: list[str] = []
+        if is_idle:
+            subs.append("idle")
+        if is_stalled:
+            subs.append("stalled")
+        if main in ("needs_you", "your_move"):
+            if alching:
+                subs.append("alching")
+            if bankstanding:
+                subs.append("bankstanding")
+        if consultation:
+            subs.append("consultation")
+        if drafts:
+            subs.append("drafts")
+
+        # Greying: only an idle (quiet-parked) row dims — an active main never does.
+        stale = is_idle
+        # Sort rank follows the MAIN status, except an idle row sinks below live work.
+        rank = IDLE_SINK_RANK if is_idle else MAIN_RANK.get(main, 99)
         sessions.append({
             "sid8": sid8,
             "session_id": s.get("session_id"),
             "actor": s.get("actor", "unknown"),
             "name": names.get(sid8, ""),   # /rename label (S073)
             "instance": s.get("instance", 1),
-            "state": state,
-            "stale": stale,                # quiet past IDLE_AFTER_SEC → grey + age, not live (S080)
-            "quiet_sec": quiet_sec,        # seconds since the last heartbeat (for the stale age)
-            "tags": s.get("tags", []),     # flavor: alching / crew / wrapped (D-029)
+            "state": state,                # semantic state (busy/your_move/needs_you/done) — kept for compat + ping transitions
+            "main": main,                  # the primary chip token (S139 taxonomy)
+            "subs": subs,                  # sub-bubbles: idle / stalled / demoted-ritual / consultation / drafts (S139)
+            "stale": stale,                # an idle (quiet-parked) row dims (S139)
+            "quiet_sec": quiet_sec,        # seconds since the last heartbeat (for the age chip)
+            "tags": subs,                  # legacy alias → subs, so any old reader still gets the flavor list
             "host": s.get("host", "unknown"),
             "age_sec": max(0, int(now - started)),
             "idle_sec": idle_sec,
@@ -306,15 +380,13 @@ def build_session_model():
             "first_prompt": s.get("first_prompt", ""),
             "doing": s.get("latest_action") or s.get("subtitle") or s.get("intent") or "",
             "intent": s.get("intent", ""),
-            # The two ball-in-your-court states drive the count + the pings — but a
-            # stale (not-live) row never counts, so a parked session can't inflate
-            # the tally (S074 invariant preserved without flattening the state).
-            "attention": state in ("needs_you", "your_move") and not stale,
-            "subagents": _pending_subagents(s.get("session_id")),
-            # Rank follows the (already-decayed) state — a your_move past the window
-            # is now `idle`, a frozen busy is now `stalled`, so the rank is honest
-            # without a separate stale→idle override.
-            "rank": STATE_RANK.get(state, 99),
+            # ACTION NEEDED + YOUR MOVE drive the pings — but an idle (quiet-parked)
+            # row never counts, so a parked session can't inflate the tally (S074).
+            "attention": main in ("needs_you", "your_move") and not is_idle,
+            "subagents": pending,
+            # Rank follows the MAIN status (S139), with an idle row sunk below
+            # live work (computed above).
+            "rank": rank,
         })
     # Sort: attention rank first; within a status, most-recently-active on top
     # (last_action_ts desc — the S134 fix; was age_sec asc = oldest-launched first);

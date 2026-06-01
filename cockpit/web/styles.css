@@ -276,6 +276,16 @@ html, body {
 .state-done .dot { background: var(--wrapped); }
 .state-done .chip { color: var(--wrapped); }
 
+/* ALCHING / BANKSTANDING — rituals promoted to MAIN statuses (S139). A refined
+   BUSY (the session is working a ritual): coloured edge + dot + filled chip, no
+   pulse. alching purple, bankstanding gold. */
+.state-alching { border-left-color: var(--alching); }
+.state-alching .dot { background: var(--alching); }
+.state-alching .chip { color: var(--bg); background: var(--alching); }
+.state-bankstanding { border-left-color: var(--gold); }
+.state-bankstanding .dot { background: var(--gold); }
+.state-bankstanding .chip { color: var(--bg); background: var(--gold); }
+
 .state-idle, .state-ended { opacity: 0.62; }
 .state-ended .dot { background: var(--ended); }
 
@@ -291,6 +301,9 @@ html, body {
 .flavor-alching { color: var(--alching); border-color: var(--alching); }
 .flavor-crew { color: var(--crew); border-color: var(--crew); }
 .flavor-wrapped { color: var(--wrapped); border-color: var(--wrapped); }
+/* liveness sub-bubbles (S139) — idle dim/grey, stalled in the alert orange */
+.flavor-idle { color: var(--ink-faint); border-color: var(--line); }
+.flavor-stalled { color: var(--stalled); border-color: var(--stalled); }
 /* ritual flavors (S134) — Guthix rituals in gold, drafts-housekeeping in alching purple */
 .flavor-bankstanding { color: var(--gold); border-color: var(--gold-dk); }
 .flavor-consultation { color: var(--gold); border-color: var(--gold-dk); }

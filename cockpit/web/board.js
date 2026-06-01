@@ -4,25 +4,28 @@ import { html } from "htm/preact";
 import { useState, useRef } from "preact/hooks";
 import { nameFor } from "./names.js";
 
-// D-029 two-axis vocabulary: base state (the chip) + flavor tags (below).
-const STATE_LABEL = {
+// S139 taxonomy. The MAIN status is the primary chip (one of a small set); the
+// rest are SUB-bubbles. ACTION NEEDED = blocked on a question list; WRAPPING UP =
+// session closed/lingering; ALCHING/BANKSTANDING = rituals promoted to main.
+const MAIN_LABEL = {
   busy: "BUSY",
-  needs_you: "NEEDS YOU",
   your_move: "YOUR MOVE",
-  stalled: "STALLED",
-  idle: "IDLE",
-  done: "DONE",
+  needs_you: "ACTION NEEDED",
+  done: "WRAPPING UP",
+  alching: "ALCHING",
+  bankstanding: "BANKSTANDING",
   ended: "ENDED",        // filtered off the board; here for completeness
   unknown: "…",
 };
 
-// Flavor tags ride on the chip — small annotations, never their own state.
-// Ritual flavors (bankstanding/consultation/drafts) let a Guthix or housekeeping
-// session read as more than a bare BUSY chip. (S134)
-const TAG_LABEL = {
+// SUB-bubbles ride below/beside the chip — small secondary annotations, never
+// the primary status. Liveness (idle/stalled), demoted rituals, and the
+// always-secondary rituals (consulting/drafts). Crew rides its own kind-letter
+// row. (S139)
+const SUB_LABEL = {
+  idle: "idle",
+  stalled: "stalled",
   alching: "alching",
-  crew: "crew",
-  wrapped: "wrapped",
   bankstanding: "bankstanding",
   consultation: "consulting",
   drafts: "drafts",
@@ -35,8 +38,12 @@ function fmtAge(s) {
 }
 
 function Row({ s, selected, onSelect, onRename }) {
+  // The main status drives the chip + the row's colour class (S139). Fall back to
+  // the semantic state for any row that predates the main/subs fields.
+  const main = s.main || s.state;
+  const subs = s.subs || s.tags || [];
   const cls =
-    `row state-${s.state}` + (s.attention ? " attention" : "") +
+    `row state-${main}` + (s.attention ? " attention" : "") +
     (s.stale ? " stale" : "") + (selected ? " selected" : "");
   // Custom label: cockpit-terminal renames live in localStorage (nameFor),
   // VSCode-session renames come off disk via the model (s.name). Either wins
@@ -84,9 +91,9 @@ function Row({ s, selected, onSelect, onRename }) {
                 : ""}`}
         </span>
         ${s.host === "vscode" ? html`<span class="tag">vscode</span>` : ""}
-        <span class="chip">${STATE_LABEL[s.state] || (s.state || "").replace(/_/g, " ")}</span>
-        ${(s.tags || []).map(
-          (t) => html`<span class=${"flavor flavor-" + t}>${TAG_LABEL[t] || t}</span>`
+        <span class="chip">${MAIN_LABEL[main] || (main || "").replace(/_/g, " ")}</span>
+        ${subs.map(
+          (t) => html`<span class=${"flavor flavor-" + t}>${SUB_LABEL[t] || t}</span>`
         )}
         ${/* The age chip shows time since last action (so the same-status sort —
               most-recently-active on top — is legible), with session lifetime in

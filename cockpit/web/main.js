@@ -370,13 +370,25 @@ function App() {
         // so a cockpit-own row sorts among the manifest rows by last activity and
         // its age chip shows a real "active Ns ago" instead of a frozen 0s. (S134)
         const quiet = fs ? Math.max(0, Math.floor(Date.now() / 1000 - fs.ts)) : 0;
+        // S139 taxonomy: derive the main chip + sub-bubbles for this cockpit-own
+        // row, matching the backend. needs_you → ACTION NEEDED; recent → BUSY; a
+        // quiet/parked terminal → YOUR MOVE, with an `idle` sub once it's sat past
+        // the 5-min window. (These transient rows join the manifest on their first
+        // hook and get the backend's full treatment.)
+        let main, subs = [];
+        if (state === "needs_you") main = "needs_you";
+        else if (state === "busy") main = "busy";
+        else { main = "your_move"; if (quiet > 300) subs.push("idle"); }
+        const cockpitIdle = subs.includes("idle");
         return {
           sid8: t.sid8,
           session_id: t.sessionId,
           actor: t.label || "chat",
           instance: 1,
           state,
-          tags: [],
+          main,
+          subs,
+          tags: subs,
           age_sec: quiet,
           idle_sec: quiet,
           quiet_sec: quiet,
@@ -384,10 +396,11 @@ function App() {
           first_prompt: "",
           doing: fs && fs.text ? fs.text : "running in this cockpit",
           intent: "",
-          attention: state === "needs_you",
+          attention: main === "needs_you",
           subagents: [],
           host: "cockpit",
-          rank: state === "needs_you" ? 0 : state === "busy" ? 4 : 7,
+          stale: cockpitIdle,
+          rank: state === "needs_you" ? 0 : state === "busy" ? 4 : (cockpitIdle ? 7 : 1),
         };
       }),
   ];

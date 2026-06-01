@@ -12,29 +12,7 @@
 
 > **Rotated 2026-05-31 — 4 older entries bulk-moved to `active-2026-05-31.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
 
-[2026-05-29 14:20] braindead-03861733 CLOSING
-  Completed: S121 — Khaan item 11 (structured ritual analytics), built as Bands A+B. New switchboard/ritual_log.py (log_event → append-only switchboard/ritual-events.ndjson; atomic, never-raises, try/except-guarded import) + developer-braindead/verification/ritual-stats.py (Band A aggregates the ndjson; Band B derives promote/reject/pin from git -M renames). 9 hooks wired at decision points only (require-open block+allow; block-confirmed/deletes/sub-spawn + 4 write-boundary hooks block-only; grounding/close-cue nudge). Band C (hand-emitted markers) deliberately NOT built. .gitignore += ritual-events.ndjson; the .py are tracked.
-  Verified BOTH ways: py_compile clean; 13/13 synthetic harness (block→exit2+log, allow→exit0+no-log, nudge→log, enforcement exit codes UNCHANGED); live require-open allow rows captured; reporter Band B = 40 promote/6 reject/87%/5 pins.
-  Finding (build-lesson): §P tracks only the recommended sequence — the full 12-item catalogue still has items 9 + 11 (both Low). Item 11 now done.
-  Leaving open: item 9 (skill scaffolder, the other cheap carry); meta/write-rules.md "enforced by hook" godly proposal (next bankstanding); §Q.2 (do hooks fire inside a workflow). Untouched: all jebrim/zezima WIP, cockpit/*, state.ndjson. active-mode → unscoped (already; principal said leave the mid-session reset). No live Braindead siblings (S119 sibling closed during this session).
-
-[2026-05-29 17:41] braindead-a371f683 OPEN
-  Entered mid-conversation via "lets develop gielinor". Principal wants a FULL AUDIT of how the brain system is performing — and explicitly wants to DISCUSS the approach + checklist FIRST before any crew runs. Scoping/discussion pass this turn: read-only, no file targets locked. Precedent is S110 (144c0ca2, 2026-05-27) — the last full audit, a read-only 5-crew sweep (structure/routing, enforcement-reality, discipline, session-load bloat, plan-vs-reality). This one re-runs that ~2 days on, with the corpus grown (S111-S121 since).
-  Targets IF we proceed: TBD after we agree the dimensions — likely read-only recon crews + a findings artifact (HTML/MD in bank/research/, S110 precedent) + principal-cleared follow-ups. No writes committed without sign-off.
-  Steering clear of: cockpit/*, all jebrim/zezima player WIP (any live EU-tender resumes), switchboard/*.log, state.ndjson, .claude/intent archive.
-  No live Braindead siblings (S112-S121 all CLOSED; no braindead-*.txt intent files live).
-
-[2026-05-29 18:00] braindead-3cd9d646 OPEN (discussion/research only, no gielinor file targets yet)
-  Entered mid-conversation via "lets develop gielinor". Weekend build session — principal wants to STEP BACK and LEARN: research agentic operating systems online and connect the field to what's been built here, to build conversational/positioning knowledge ("discuss these topics with other people"). Principal explicitly wants to DISCUSS scope BEFORE any research runs. This turn = read-only orientation + discussion.
-  Key prior art: bank/research/2026-05-26-agentic-os-gap-survey.md (S102, 3 days old) ALREADY surveyed the agentic-OS field — BUT gap-focused ("what am I not utilizing"), not positioning/explainer-focused. The new deliverable is complementary, not a re-run: a landscape map + where-the-brain-sits framing for talking to people. Flagging so we build the complement, not a duplicate.
-  Targets IF we proceed: TBD after scope agreed — likely read-only research crews (penguin/web) + a positioning/explainer artifact in bank/research/ (HTML/MD). No writes committed without sign-off.
-  Steering clear of: cockpit/*, .claude/hooks/, all jebrim/zezima player WIP, switchboard/*.log, state.ndjson, .claude/intent archive.
-  No live Braindead siblings (S125/a371f683 committed; no braindead-*.txt intent files <30min).
-
-[2026-05-29 19:30] braindead-37975cd2 OPEN (discussion/design only, no file targets yet)
-  Entered mid-conversation via "lets develop gielinor". Principal asks: what HOOKS should this brain grow? Premise — over-reliance on text instructions where enforcement code would be more reliable. This turn = read-only survey of the existing hook surface + the text-only disciplines the meta files self-flag as unenforced ("reopen if discipline slips", "hooks could enforce, for now discipline"), then a ranked proposal. No build committed without sign-off.
-  Targets IF we build: TBD after scope agreed — likely new gielinor/.claude/hooks/*.py (bank/notes + spellbook/skills draft-gates are the leading candidates) + settings.json wiring + a D-NNN decision. No writes yet.
-  Steering clear of: cockpit/*, all jebrim/zezima player WIP, switchboard/*.log, state.ndjson, .claude/intent archive. Note sibling OPENs braindead-a371f683 (audit) + braindead-3cd9d646 (agentic-OS research) — both discussion-only, no hook/code targets; zero overlap.
+> **Rotated 2026-06-01 — 4 older entries bulk-moved to `active-2026-06-01.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
 
 [2026-05-29 21:18] braindead-c0dd1afb OPEN (brainstorm/discussion only, no file targets yet)
   Entered mid-conversation via "lets develop gielinor". Principal is bored, wants to play in the cockpit — ideas to make it feel more alive while staying functional. Explicitly recalls the parked "brain visual" (= the neuron-overlay v0 spec, bank/research/cockpit-neuron-overlay-design.md, S071) and that we now have Obsidian as a vault. This turn = read-only ideation + a ranked menu; no build committed without sign-off.
@@ -280,3 +258,25 @@
   Completed S137 — cockpit phone access + cross-client session handoff. (1) Remote access (committed 8f677ab): config-driven bind in app.py (config.json {"host"}, default 127.0.0.1; gitignored), Tailscale transport, phone reached it (200 on tailnet). (2) Mobile layout (8f677ab): new self-contained cockpit/web/{mobile.css,mobile.js} + index.html link, NOT touching styles.css/main.js; <760px tab-bar stack; fixed --zoom:1.35 overflow + the VS-Code-peek 'can't write' confusion + scroll/tab UX. (3) HANDOFF (S137 commit): kill-then-resume takeover — ptybridge _LIVE_PTYS + terminate_session, /api/handoff (token-gated, dev-blocked), term.js handoffAndResume (found:false guard), console.js 'drive here' button, main.js wiring. Backend layer verified empirically (no-token 403 / unknown found:false / dev 403 / reads 200) + py_compile x2 + node --check x3.
   Leaving open: cross-client handoff runtime UNVERIFIED — needs a cockpit RELAUNCH (live :8770 holds pre-handoff code) + 2 devices + a real session; mobile layout is live now (web/ no-store, phone refresh). Company-laptop note: the 0.0.0.0 exposure is the principal's test-then-delete — teardown = drop config.json host line + relaunch + uninstall Tailscale. NO gielinor/ writes. Co-edit: did NOT touch backend.py regions owned by 7311cd20's S134 (closed) — my backend.py add is the /api/handoff route + dev-guard line + make_app register, distinct from build_session_model. active-mode -> unscoped.
   Live siblings at close: braindead-04ef0adc (fun-features, discussion) — no overlap. S134/S135/S136 all CLOSED.
+
+[2026-05-31 16:00] braindead-codex001 OPEN
+  Codex harness assessment: sizing what it takes to let Codex operate this Claude-built brain cleanly.
+  Targets: read-only assessment now; possible proposal/docs only unless Niklavs asks to build.
+  Steering clear of: cockpit runtime files, player WIP, and all gielinor writes for this turn; stale unmatched OPENs 04ef0adc/81f1509c noted.
+
+[2026-05-31 15:35] braindead-codex001 UPDATE
+  Timestamp correction: the preceding Codex OPEN was written at 15:35; its 16:00 header is wrong.
+  Scope unchanged: read-only Codex harness assessment, no file edits planned in this turn.
+
+[2026-05-31 15:40] braindead-codex001 UPDATE
+  Codex harness is parked, not building: recorded as developer-braindead plan ?T.
+  Touched: developer-braindead/bank/plan.md only, plus this comms log; no gielinor or cockpit edits.
+
+[2026-05-31 16:30] braindead-5b18b6f6 CLOSING (2nd — post-handoff phone follow-ups)
+  After the S137 handoff close (a23b923), live iteration against the iPhone added two more mobile fixes + a parked idea, now committed in a 2nd close commit:
+   - term.js: an 'esc' button in the composer (no hardware Esc on a phone -> conn.sendEsc() -> \x1b), shown only on mobile via mobile.css.
+   - mobile.js + mobile.css: VisualViewport keyboard handling — the iOS soft keyboard was COVERING the fixed compose box ('can't write' round 2); now --kb + body.m-kb lift the session panel above the keyboard + hide the tab bar while typing.
+   - plan.md §U: parked shared/persistent-attach PTY (the proper fix for 'answer a laptop session from the phone' — PTY survives client disconnect, both clients on one live process). Niklavs-parked, not built.
+  Scoped commit to my files only (term.js, mobile.js, mobile.css, plan.md, quest-log S137, respawn, comms) — left the live-sibling M backend.py/main.js/board.js/styles.css/test_backend.py UNtouched, plus all the ?? probe/player files.
+  Leaving OPEN: the cockpit RELAUNCH Niklavs asked for was never completed (interrupted x3) — /api/handoff + esc + keyboard fix are on disk but :8770 holds pre-handoff code (web/ bits live on phone refresh; handoff needs the relaunch). Company-laptop 0.0.0.0 exposure is his test-then-delete. §U parked. NO gielinor/ writes. active-mode -> unscoped.
+  No overlapping live siblings on my surface.

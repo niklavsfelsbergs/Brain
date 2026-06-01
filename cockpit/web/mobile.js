@@ -119,4 +119,22 @@ if (root) {
 if (MQ.addEventListener) MQ.addEventListener("change", apply);
 else if (MQ.addListener) MQ.addListener(apply); // older WebKit
 
+// iOS soft-keyboard handling. The session panel is position:fixed, so when the
+// compose box is focused the keyboard slides up and COVERS it (the panel is
+// positioned against the layout viewport, which the keyboard doesn't shrink) —
+// the "can't write" trap. Track the keyboard height via the VisualViewport API
+// and expose it as --kb + a body.m-kb flag; mobile.css lifts the session panel
+// above the keyboard (and hides the tab bar) while it's open.
+const vv = window.visualViewport;
+function onViewport() {
+  if (!vv) return;
+  const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+  document.body.style.setProperty("--kb", kb + "px");
+  document.body.classList.toggle("m-kb", MQ.matches && kb > 80);
+}
+if (vv) {
+  vv.addEventListener("resize", onViewport);
+  vv.addEventListener("scroll", onViewport);
+}
+
 apply();

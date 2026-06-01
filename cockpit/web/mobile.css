@@ -13,6 +13,11 @@
 /* Tab bar hidden by default; shown only inside the mobile breakpoint. */
 .m-tabbar { display: none; }
 
+/* The composer "esc" button is desktop-hidden (hardware Esc works there) and
+ * shown only on a phone, which has no Escape key. It sends conn.sendEsc() (\x1b)
+ * to cancel the running turn. */
+.term-esc { display: none; }
+
 /* THE "doesn't fit" FIX. The desktop default is --zoom: 1.35, and many console
  * elements do `zoom: var(--zoom)` (console-head, .term-composer, the peek
  * .console, side columns). On a phone that scales the whole UI 35% past the
@@ -50,6 +55,12 @@ body.m-mobile { --zoom: 1; }
   body.m-mobile.m-tab-feed .feed-col { display: block; }
   body.m-mobile.m-tab-console .console-col { display: flex; flex-direction: column; }
 
+  /* iOS keyboard handling (see mobile.js onViewport): while the soft keyboard is
+   * up, lift the session panel to sit just above it (instead of behind it) and
+   * reclaim the tab-bar strip, so the compose box stays visible and usable. */
+  body.m-mobile.m-kb .console-col { bottom: var(--kb, 0px); }
+  body.m-mobile.m-kb .m-tabbar { display: none; }
+
   /* Desktop-only chrome that makes no sense on a phone. */
   body.m-mobile .rail,
   body.m-mobile .gutter { display: none !important; }
@@ -76,6 +87,9 @@ body.m-mobile { --zoom: 1; }
   /* "can't write" FIX: in transcript ("reading") mode the composer is dimmed to
    * 0.4 until focus — on a phone that reads as disabled. Keep it fully visible. */
   body.m-mobile .term-col.reading .term-composer { opacity: 1 !important; }
+
+  /* Surface the Esc/cancel button — no hardware Escape key on a phone. */
+  body.m-mobile .term-esc { display: inline-flex; align-items: center; }
 
   /* The bottom tab bar (injected by mobile.js). */
   .m-tabbar {

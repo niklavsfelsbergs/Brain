@@ -969,6 +969,12 @@ export function TermComposer({ conn }) {
       placeholder=""
       rows="1"
     ></textarea>
+    <button
+      class="term-esc"
+      onClick=${() => { conn.sendEsc(); setText(""); resetHeight(); }}
+      title="cancel the running turn (Esc)"
+      style="flex:none;padding:0 14px;border:1px solid var(--gold-dk);border-radius:6px;background:transparent;color:var(--ink-faint);cursor:pointer;font:inherit;"
+    >esc</button>
     <button class="term-send" onClick=${submit} title="send to the terminal (Enter)">send</button>
   </div>`;
 }

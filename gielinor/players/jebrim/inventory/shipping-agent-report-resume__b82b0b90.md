@@ -26,8 +26,8 @@ Senior-analyst shipping report (S124). This session (b82b0b90) built the **repor
 1. **Retention/thinning** — 49 MB/day ≈ 18 GB/yr if all kept → keep ~30 daily, thin to weekly. (Smallest remaining code piece.)
 2. **Real T-vs-T-1 test** — pull a 2nd daily snapshot tomorrow (`pull_snapshot.py`), then `build_report.py --prev <T-1>` + `dq_canary.py --prev <T-1>` for a live §2 + live coverage/stale checks.
 3. **Triggering** — deferred (design the approach first).
-4. **Open decision (principal):** version `reports/` in git, or gitignore it (generated/regenerable/accumulates)? — project `.gitignore` currently ignores only throwaway `reports/_*/`, leaving the real-folder call open.
-5. **Commit** — nothing committed this session; awaiting principal cue (new files: `lib/segments.py`, `lib/build_report.py`, `lib/dq_canary.py`, `tests/`, README, `.gitignore`).
+4. ~~Open decision: version `reports/`?~~ **RESOLVED** — gitignored (generated/regenerable/accumulates). `.gitignore` now ignores `reports/`, `snapshots/`, caches.
+5. ~~Commit NFE files~~ **DONE** — committed `b49d1ab` in bi-analytics-main (`lib/{segments,build_report,dq_canary,retention}.py`, `tests/`, README, `.gitignore`). Not pushed (separate cue).
 
 ## Files / paths to read first
 
@@ -48,4 +48,4 @@ Senior-analyst shipping report (S124). This session (b82b0b90) built the **repor
 
 - Skill draft `running-the-automated-shipping-report.md` (prior session, +null-mean gotcha this session) awaits alching promotion.
 - Examine drafts: `2026-06-01-cross-check-two-derivations-catches-self-bugs` (new, this session) + carried `2026-06-01-verify-diffs-both-ways-and-explicit-presence-flags`.
-- **Brain trace committed** at close (quest-log, resume, comms, intent, skill+examine drafts). **NFE project files NOT committed** (separate `bi-analytics-main` repo) — `lib/{segments,build_report,dq_canary,retention}.py`, `tests/make_synthetic_prev.py`, README, `.gitignore` await principal cue.
+- **Brain trace committed** at close (quest-log, resume, comms, intent, skill+examine drafts; `dd9a4b9`). **NFE project files committed** post-close in `bi-analytics-main` (`b49d1ab`): `lib/{segments,build_report,dq_canary,retention}.py`, `tests/make_synthetic_prev.py`, README, `.gitignore` (ignores `reports/` + `snapshots/`). Neither repo pushed.

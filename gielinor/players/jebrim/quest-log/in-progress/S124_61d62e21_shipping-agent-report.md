@@ -263,3 +263,7 @@ Continued on "retention/thinning now." Built `lib/retention.py` — keep every s
 **BUILD COMPLETE (functional):** snapshot spine OK · diff harness OK · report builder S1-S5 OK · DQ canary OK · retention OK. **Remaining:** real T-vs-T-1 test (tomorrow's 2nd snapshot) · triggering (deferred, design-first). Skill in drafts awaits alching. New files uncommitted (awaiting principal cue): `lib/{segments,build_report,dq_canary,retention}.py`, `tests/make_synthetic_prev.py`, README, `.gitignore`.
 
 **Pending external actions:** none (out-of-tree NFE writes + brain trace only; NOT committed).
+
+### Session 5 post-close — NFE commit + reports/ decision
+
+Principal cue after wrap: "gitignore reports/ and commit the NFE files." Resolved the open decision — `reports/` is gitignored (generated, regenerable, accumulates), alongside `snapshots/` + caches. Committed the NFE harness in `bi-analytics-main` (`b49d1ab`): `lib/{segments,build_report,dq_canary,retention}.py`, `tests/make_synthetic_prev.py`, README, `.gitignore` — staged set verified to exclude reports/snapshots/caches. Neither repo pushed (separate cue).

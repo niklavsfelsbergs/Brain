@@ -1,0 +1,1 @@
+B-014 complete. Phase 0: Jebrim partial-alch (3 settled examine→confirmed, skill held mid-quest); Zezima clean (1 niksis8c→confirmed). Globals all clean (inbox/drafts empty, budgets tiny, rejected empty). 1 lorebook draft (partial-alch-by-settledness). Awaiting your nod to commit (scoped to my pathspecs).

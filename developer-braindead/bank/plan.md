@@ -250,7 +250,7 @@ The brain is already an Obsidian-shaped vault (`.md` + `[[wikilinks]]`); Obsidia
 
 **Shape if unparked.** Decouple the PTY lifecycle from any single connection: a **persistent PTY registry** in the backend (the claude process lives in `backend`, survives client disconnects — do NOT `proc.terminate` on WS close, only on explicit release/idle-timeout); **reattach-by-sid8** so a client opens `/pty?attach=<sid8>` and joins an existing PTY instead of spawning one; **output fan-out** to all attached WS + a **replay-on-attach** buffer (last N KB of scrollback so a fresh client sees recent context, not a blank screen); **input fan-in** from any attached client. Then laptop + phone both attach to the *same* live session, either can answer a prompt, and it keeps running on the PC regardless of which client is connected. This *supersedes* the [[S137_5b18b6f6_cockpit-phone-access-and-handoff|S137]] handoff (kill-then-resume becomes unnecessary for same-conversation takeover) — keep handoff only as the cross-machine "move the process" case if still wanted. Sizeable redesign of the cockpit's core driver; verify with two real clients on one session. Sibling concern: idle-timeout / max-lifetime so abandoned persistent PTYs don't accumulate.
 
-## §V — Hermes Agent lessons (parked 2026-05-31, [[S136_81f1509c_hermes-ai-research|S136]])
+## §V — Hermes Agent lessons (parked 2026-05-31, [[S138_81f1509c_hermes-ai-research|S138]])
 
 **Status.** `[ ]` parked — surfaced researching Nous Research's **Hermes Agent** at Niklavs' request. Not a current build. Full recon + the gielinor-vs-Hermes parallel in `bank/research/2026-05-31-hermes-ai.md`.
 

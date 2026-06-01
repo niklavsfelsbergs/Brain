@@ -280,3 +280,9 @@
   Scoped commit to my files only (term.js, mobile.js, mobile.css, plan.md, quest-log S137, respawn, comms) — left the live-sibling M backend.py/main.js/board.js/styles.css/test_backend.py UNtouched, plus all the ?? probe/player files.
   Leaving OPEN: the cockpit RELAUNCH Niklavs asked for was never completed (interrupted x3) — /api/handoff + esc + keyboard fix are on disk but :8770 holds pre-handoff code (web/ bits live on phone refresh; handoff needs the relaunch). Company-laptop 0.0.0.0 exposure is his test-then-delete. §U parked. NO gielinor/ writes. active-mode -> unscoped.
   No overlapping live siblings on my surface.
+
+[2026-05-31 14:40] braindead-81f1509c CLOSING
+  Completed: S138 — Hermes AI recon. Disambiguated the overloaded name → Hermes Agent (Nous Research, open-source MIT, Feb 2026): autonomous agent w/ persistent memory + self-authored self-improving skills + subagents + MCP + 40 tools, local-first ($5 VPS→serverless). Pulled primary sources over contradictory SEO. Finding: closest sibling to gielinor in the wild — same architectural family forked at automate-vs-gate. Wrote bank/research/2026-05-31-hermes-ai.md + the gielinor-vs-Hermes parallel; synthesized 5 ranked lessons + 2 guardrails; PARKED all as plan §V. NO gielinor writes, no code.
+  Leaving open: §V is parked, nothing building (highest-value carry = lifecycle-hardening from their v0.13 Kanban, ties to the §S reaper/zombie-detection gap). Standing dev backlog unchanged (S137 cockpit relaunch still owed; the 2 S128 ritual one-liners; Khaan item 9). active-mode → unscoped.
+  Note: bumped my quest number S136→S138 — sibling braindead-534ca735 claimed S136 (cockpit polish) during this session; S135/S136/S137 all taken, S138 is next free.
+  No overlapping siblings touched (304c77fd brain map + 04ef0adc fun-features cockpit-only; my surface was bank/research + plan + quest-log).

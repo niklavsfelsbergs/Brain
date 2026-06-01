@@ -28,6 +28,24 @@ Then the rest of the grounding pass (lane-key feasibility, expected-vs-actual ga
 - `gielinor/players/jebrim/spellbook/skills/calling-the-shipping-agent.md` — how Jebrim spawns the agent.
 - `gielinor/players/jebrim/bank/notes/projects/2026-05-27-shipping-mart-gold-lineage-and-access-tiering.md` — mart lineage + access tiers.
 
+## Build progress (Session 3, sid 28d1f778, 2026-06-01)
+
+- **Step 1 DONE — per-carrier refund/credit map.** Investigated live mart; 3 mechanisms found (contractual discounts: fedex→discounts; genuine credits: ontrac/yodel→credit_note; surcharge reversals refund-in-place: ups/dpd_uk→original bucket). usps/maersk/dbs/direct_link/apg/dpd_poland = no observable channel. Written into `shipping-agent/reference/known-dq.md` (new "Refund / credit location by carrier" section). **PUSH PENDING principal nod** — file edited, not committed/pushed.
+- Full findings in S124 quest-log Session-3 section.
+- **MCP gotcha:** Redshift MCP validator rejects `DATEADD`/`CURRENT_DATE` — use literal dates.
+
+- **Grounding pass DONE** — gap profile (TCG expected +5–8% under-bias, fat tail; ORWO poorly calibrated but tiny-€), lane-key GREEN (92 lanes / 99.88%), segment baselines (table in quest-log Session-3 + seeded into running-notebook).
+- **Scaffold + snapshot spine + diff harness BUILT & VERIFIED** in `bi-analytics-main/NFE/projects/4_automated_shipping_report/`. First snapshot proven (1.94M rows, 49 MB). Diff self-tested clean + synthetic-tested. Connection = full-access `tcg_nfe` from `NFE/.env`. Files: `lib/db.py`, `sql/snapshot.sql`, `lib/pull_snapshot.py`, `lib/diff_snapshots.py`, `notebook/running-notebook.md`, `README.md`. NOT committed (NFE = principal repo).
+
+## Next concrete step (remaining build)
+
+1. **Draft the skill** — the weekly/daily analyst playbook (snapshot cols, diff logic, noticing checklist, §1–§5 scaffold, scope gating, the running-notebook discipline) → `players/jebrim/spellbook/drafts/skills/`. The real durable artifact.
+2. **Report builder** §1–§5 + **daily DQ canary** (zero-row segment = silent load fail, coverage regress, null spike) in the project `lib/`.
+3. **Retention policy** — 49 MB/day ≈ 18 GB/yr if all kept → thin (keep ~30 daily, weekly thereafter).
+4. **Real diff test** needs a 2nd daily snapshot (tomorrow). Triggering deferred.
+
+**Gotchas:** Redshift MCP validator rejects `DATEADD`/`CURRENT_DATE` (use literals); connectorx needs `protocol="cursor"` on Redshift; cast EUR Decimal cols to f64 before ratio math.
+
 ## Pending drafts
 
 None held in chat (all design persisted to the quest-log).

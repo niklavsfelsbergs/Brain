@@ -99,3 +99,93 @@ Resumed on "where do we stand on the shipping report." Discussion-only, no mart 
 
 ## Pending external actions
 No pending external actions. (Design discussion; no mart access, brain-side writes only.)
+
+---
+
+## Session 3 — 2026-06-01 (sid 28d1f778): BUILD step 1 — per-carrier refund/credit investigation
+
+Resumed on "continue with the shipping report." Build started. Mart verified LIVE (VPN up). First locked build step executed: mapped where refunds/credits actually live per carrier, against the live mart (`shipping_mart`, 6-mo window `invoice_date >= 2025-12-01`).
+
+**Schema fact:** `fact_shipment_invoice_lines` has **no** `credit_note` column — only `charge_bucket` + `charge_amount_eur`. The `credit_note_eur` / `discounts_eur` columns are two of the **buckets on `fact_shipment_cost_summary`**, derived as sums of the invoice lines. So the line-level analysis is the complete picture; the summary buckets mirror it.
+
+**Three structurally distinct refund/credit mechanisms found (ground-truthed via `charge_description_english`):**
+
+1. **Contractual discounts (recurring, structural — NOT an event):** `fedex` → `discounts` bucket. 34,405 neg lines / −€367,200 in 6mo, all "Performance Pricing" (−€223k) + "Discount" (−€144k). Present on ~every FedEx invoice. Canary must NOT flag a large-negative `discounts_eur` as anomaly — its *presence* is normal; a *rate change* is the signal.
+2. **Genuine credits/refunds:** `ontrac` → `credit_note` bucket (204 lines / −€47,187, "Credit Amount"); `yodel` → small `credit_note` (3 lines / −€67). Negative `credit_note_eur` = a refund event.
+3. **Surcharge reversals / corrections (refund-in-place — the dangerous one):** `ups` (6,853 lines / −€500,621) and `dpd_uk` (4,208 lines / −€18,870). Negative line **keeps its original cost bucket** — e.g. UPS "Fuel Surcharge" −€64k, "Large Package Surcharge" −€63k, "Transportation Charge" −€63k land in fuel_surcharge/oversize_overweight/base_rate. Same description as the positive charge → it's a reversal. Canary must treat a negative in a NORMAL bucket (oversize/fuel/base) as a possible legit reversal, not corruption.
+
+**Negligible:** `dhl`/`dhl_orwo` (972/689 tiny base_rate+other corrections, −€188/−€105). **No observable channel** (zero neg lines, high volume): `maersk`, `usps`, `db_schenker`, `direct_link`, `apg`, `dpd_poland*`. Caveat: these may net refunds at source (reduced positive amounts) → invisible in the mart.
+
+**Validates the principal's model:** UPS refunds = negative invoice lines NOT `credit_note` (confirmed — they're surcharge reversals in-place); "some carriers do use credit_note" (confirmed — OnTrac, tiny Yodel).
+
+**MCP note:** the Redshift MCP query validator rejects `DATEADD`/`CURRENT_DATE` — use literal dates.
+
+**Next:** write this map into `shipping-agent/reference/known-dq.md` (maintainer edit, principal-gated push) — proposed entry surfaced in chat, awaiting nod.
+
+**Refund map WRITTEN** to `shipping-agent/reference/known-dq.md` (new "Refund / credit location by carrier" section) on principal nod. Push still gated.
+
+### Grounding sub-step 2 — expected-vs-actual gap profile (the §5 premise)
+
+Mart persists `expected_shipping_cost_eur` alongside `real_shipping_cost_eur`; measured the gap on invoiced rows with expected populated (~99.8% coverage), window `shop_order_created_date >= 2026-02-01`, by `source_system`.
+
+**Aggregate gap is modest, but per-shipment dispersion is the real story:**
+
+| segment | n | avg expected € | net gap % | MAE € | % real>1.5× exp | % real<0.67× exp | % off>€3 |
+|---|---|---|---|---|---|---|---|
+| Picturator (TCG) | 718,805 | 6.04 | **+7.6%** | 1.95 | 10.8% | 4.7% | 8.2% |
+| PicaAPI (TCG) | 211,137 | 5.59 | +5.2% | 1.20 | 9.2% | 3.2% | 5.6% |
+| ORWO | 555,419 | 0.96 | +2.2% | 0.52 | 16.9% | **42.3%** | 1.9% |
+| PCS | 859 | 6.45 | −5.2% | 1.66 | 5.1% | 7.6% | 11.6% |
+
+**Reframe of "expected is very off":** it's NOT a wild aggregate error — it's (a) a systematic **under-estimate bias** on TCG (+5–8%; actuals exceed expected, fat upper tail — ~15% of TCG shipments materially mis-estimated), and (b) **poor per-shipment calibration on ORWO** (42% of shipments come in <0.67× expected) that barely matters in € because ORWO POST costs ~€1. MAE is 20–55% of the mean depending on segment. §5 should read as a *re-estimation signal* (lift the TCG expected baseline + widen surcharge allowance; reshape the ORWO model) — not an operational alarm. This dispersion IS the relevant noise floor for any expected-based §4 opportunity sizing ([[S132_32ff1025_shipping-savings-routing-optimization|S132]] mirage-guard lesson).
+**Assumption:** `expected_shipping_cost_eur` on an invoiced row reflects the current-model estimate (mart truncate-reloads recompute it) → gap = current-model error, which is what §5 wants. Flagged to confirm.
+
+### Grounding sub-step 3a — lane-key feasibility (GREEN)
+
+Lane key = `production_site` (origin) × `destination_country_code` (dest) × `shipping_provider_group` (carrier). Coverage (window `shop_order_created_date >= 2026-02-01`, n=1,942,424): production_site 0% null, destination_country_code 0% null, shipping_provider_group 0.3% null. **279 distinct lanes total; 92 lanes with ≥100 shipments cover 1,940,046 = 99.88% of volume.** Clean, low-cardinality, tractable for §4 opportunity analysis + segment baselines. Long tail (187 thin lanes) = 0.12% → bucket as "other." No `service`/`zone` column beyond `shippingprovider_extkey` (service granularity lives in extkey if needed later).
+
+**Remaining grounding:** segment baselines ("what's normal" per segment — cost/parcel, % invoiced, carrier mix, bucket shares) — shades into defining the daily snapshot-spine columns.
+
+**known-dq.md refund map PUSHED** to picanova/shipping-agent main (`98593ee`) on principal cue. Step 1 fully closed.
+
+### Grounding sub-step 3b — segment baselines (trailing 120d, shop_order_created_date >= 2026-02-01)
+
+| segment | shipments | % invoiced | €/parcel (final) | total € |
+|---|---|---|---|---|
+| TCG: PCS PL | 821,500 | 83.2% | 5.77 | 4.70M |
+| ORWO | 774,199 | 71.9% | 1.25 | 0.90M |
+| TCG: PCS CMH (US) | 202,822 | 90.8% | 10.13 | 2.05M |
+| TCG: Wolfen | 120,772 | 54.2% | 4.38 | 0.53M |
+| TCG: Other (Allcop 13k/€34k, PCS PX 4.4k/€38k, PL, MerchRocket, …) | ~21k | mixed | 3–9 | ~0.09M |
+
+**Findings:**
+- **Locked 4-bucket TCG split (PCS PL / PCS CMH / Wolfen / Other) holds** against real production_site values. "Other" cleanly absorbs the tail (~1% of TCG cost; biggest contributors Allcop + PCS PX). production_site literal `PL` (1,442) is distinct from `PCS PL` → folds to Other.
+- **ORWO is 72% invoiced, NOT ~0%.** The design's "ORWO POST structurally ~0% cost-covered" caveat is about the **POST carrier slice within ORWO**, not the segment — ORWO DHL/UPS volume (`dhl_orwo`/`ups_orwo`) IS invoiced. **Correction to apply:** the %-invoiced canary for ORWO must track by-carrier-within-segment, else the POST-driven uninvoiced chunk reads as instability. Wolfen's 54% is also a segment-normal to bake in (not a regression).
+
+**Grounding pass COMPLETE** (refund map ✓pushed · gap profile ✓ · lane-key ✓ · segment baselines ✓). Next = propose locked snapshot-spine column list → scaffold `NFE\projects\4_automated_shipping_report\` → snapshot puller + diff → draft skill.
+
+### Scaffold + snapshot spine + diff harness — BUILT & VERIFIED (sid 28d1f778)
+
+**Snapshot spine locked** (principal-approved): 25 cols = 8 keys/dims (`shipment_id`, `shop_order_created_date`, `source_system`, `production_site`, `destination_country_code`, `shipping_provider_group`, `shippingprovider_extkey`, `cost_source`) + 5 cost/weight (`expected`/`real`/`final`_shipping_cost_eur, `net_revenue_eur`, `billed_weight`) + 12 buckets (excl `truck_charges_eur`). Segment label derived in harness, not stored (segmentation change won't reshape history).
+
+**Harness seam pinned (principal):** self-contained in the NFE project (`lib/`), connects with **full-access `tcg_nfe` creds from `NFE/.env`** (gold by default, raw layers reachable for §5) — NOT gold-only `ship_mart_ro`. `NFE/.env` carries only USER/PASSWORD; host/port/db default in `lib/db.py` (`bi...redshift.amazonaws.com:5439`/`bi_stage_dev`).
+
+**Built in `bi-analytics-main/NFE/projects/4_automated_shipping_report/`:**
+- `lib/db.py` — full-access connection URI (connectorx).
+- `sql/snapshot.sql` — 25-col snapshot, `{window_days}` param, gold-only, `shop_order_created_date` anchor.
+- `lib/pull_snapshot.py` — polars + connectorx (`protocol="cursor"`; Redshift rejects connectorx's default `COPY (SELECT…)`). **First snapshot proven: 1,942,424 rows × 25 cols, 49.01 MB zstd** (`snapshot_2026-06-01.parquet`).
+- `lib/diff_snapshots.py` — T-1→T event taxonomy (COST_ARRIVED / COST_RESTATED / CREDIT_REFUND / COVERAGE_REGRESS / NEW / AGED_OUT). **Verified:** self-diff = 0 events (after fixing a presence-flag bug that mislabeled 62,743 uncosted rows as NEW); synthetic test caught COST_ARRIVED=100, NEW=10, COST_RESTATED=65 (35 sub-€0.50 moves correctly filtered). Also fixed a Decimal-division scale overflow (cast EUR cols to f64).
+- `notebook/running-notebook.md` — seeded "what's normal" (baselines, accepted states: ORWO-by-carrier, Wolfen 54%, FedEx discounts structural, DBS unclassified, UPS/DPD-UK refund-in-place; gap-profile normals; lane key).
+- `README.md` — project overview + run + retention note.
+
+**Open / next build:** (1) **retention policy** — 49 MB/day daily spine ≈ 18 GB/yr if all kept → thin (keep ~30 daily, weekly thereafter). (2) **draft the skill** (the weekly/daily analyst playbook — the real durable artifact) into `players/jebrim/spellbook/drafts/skills/`. (3) **report builder** §1–§5 + the **daily DQ canary** (zero-row segment = silent load failure, coverage regress, null spikes). (4) triggering (deferred). The diff's real T-vs-T-1 test needs a second daily snapshot (tomorrow).
+
+### Session-3 close (sid 28d1f778)
+
+**Pending external actions — reconciled, both completed:**
+- `known-dq.md` refund map → committed + **pushed** to picanova/shipping-agent main (`98593ee`). ✓ completed.
+- NFE project scaffold (6 files) → committed + **pushed** to picanova/bi-analytics main (`a632653`); snapshot parquet gitignored. ✓ completed.
+
+**Quest stays in-progress** (multi-session build; `open_dep` = skill + report builder + DQ canary not yet built). Resume → `inventory/shipping-agent-report-resume__28d1f778.md` (prior `__8cb8f235` archived). Harvest: 1 examine draft (`2026-06-01-verify-diffs-both-ways-and-explicit-presence-flags`) + 1 cross-conv memory.
+
+**Stale-done scan (other Jebrim in-progress quests) — surfaced, not auto-moved (ambiguous):** [[S116_7f67fe48_shipping-agent-fif-monthly-skill|S116]] reads complete-ready (SharePoint PUT verified, DAG pushed) but its prior CLOSING deferred graduation and harvest drafts await — flagged for graduation. S-shipping-agent readiness-gate = orphan sub-agent trace ([[D-030_alching-sweeps-orphan-subagent-traces|D-030]] sweep candidate). Both left for principal call / next session.

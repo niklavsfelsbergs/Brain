@@ -71,3 +71,31 @@ No pending external actions. (Session was read-only against the mart + brain-sid
 - Pulled the agent's own knowledge (`mart-contract.md`, `query-patterns.md`, `known-dq.md`, `sources.md`) + live Redshift probes to ground anchor, scope mapping, and sizing.
 - AskUserQuestion → TCG 4-bucket split + 120-day window.
 - Proposed diff taxonomy + §1/§2/§3 scaffold; parked at principal's cue as "Shipping Agent Report."
+
+---
+
+## Session 2 — 2026-06-01 (sid 8cb8f235): reframe to a senior-analyst review
+
+Resumed on "where do we stand on the shipping report." Discussion-only, no mart access — advanced the design substantially and re-parked for a fresh build session. Changes from the S1 (2026-05-29) design:
+
+1. **Rules engine → senior-analyst review.** S1 leaned toward threshold/baseline-driven regression detection. Principal corrected: too much varies in shipping (mix, weight, zone, fuel, season, one-offs) for thresholds to decide "what's an issue" — it needs human reasoning on top. New model: the report **is** a senior data analyst checking if everything is in order. The deterministic harness **stops making verdicts** — it *prepares evidence* (standard analytical cuts) and *ranks attention* (biggest movers, outliers, mix shifts); the "is this an issue" call is mine, every run, fresh. False positives gated by judgment + a **running notebook** (accumulating "what's normal here" + accepted states) + a materiality bar.
+
+2. **Scope grew: hunt regressions + one opportunity.** Beyond noticing costs arriving, the report (a) flags things moving in a bad direction (e.g. a parcel shifted to a pricier carrier) and (b) surfaces **exactly one** sized cost-reduction lead per run — PAPER vs DEFENSIBLE honesty-tagged (the [[S132_32ff1025_shipping-savings-routing-optimization]] re-rating mirage discipline applies).
+
+3. **Report arc: descriptive → evaluative → prescriptive.** §1 state of play (orientation) → §2 costs that arrived (the diff) → §3 the review "is everything in order?" (my reasoning; each concern carries reasoning + a recommended look-into, hedged honestly) → §4 the one opportunity → §5 **expected-cost health, at the END** — expected costs are "very off", so the systematic expected-vs-actual gap is a signal to **re-estimate the model**, not an operational alarm.
+
+4. **Two-tier cadence (principal pick).** Weekly **big** report (the full analyst memo) + daily **small** report (what costs arrived + a **DQ canary** — coverage regression, zero-row segments = a load silently failed, null spikes, stale reload). One daily **snapshot spine** feeds both; the weekly reasons over the week's accumulated snapshots. "One opportunity" is weekly-only (keeps daily cheap + non-naggy). The daily tier is the more-automatable one for later triggering.
+
+5. **Knowledge home.** Accumulated knowledge (running notebook, snapshots, findings) lives in the **project folder** `NFE\projects\4_automated_shipping_report\`; the brain keeps only **lean references** (the skill, a keepsake pin, a bank pointer). Each run gets its own dated standalone folder: `...\reports\YYYY-MM-DD\`.
+
+6. **Shipping agent is first-class.** It holds the mart knowledge; it drives the pulls now (grounding) and the skill calls it every run. The snapshot-diff still needs reproducible **code** — model: the shipping agent (holding the contract + DQ quirks) **operates** the harness, which lives in/beside the shipping-agent repo. Exact seam pinned during grounding.
+
+**Vessel verdict:** skill (the analyst's method — the real value) + thin deterministic view-builder + running notebook. Nothing heavier. The reframe *shrank* the deterministic ambition and *grew* the judgment layer.
+
+**Mart-knowledge to teach the agent (principal-flagged this session, NOT yet written):**
+- UPS refunds are **not** in the `credit_note` column — they show as **negative-amount invoice lines**. **Some** carriers *do* use `credit_note`. Refund location varies per carrier and is unknown/messy → must be **investigated** and the per-carrier map written into the shipping agent's `reference/known-dq.md`. The daily DQ canary depends on this (a legit refund must not be mis-flagged as a cost anomaly).
+
+**Locked this session (additive to S1's list, don't re-litigate):** senior-analyst (not rules-engine) framing; descriptive→evaluative→prescriptive arc; two-tier cadence (weekly big + daily small/DQ-canary); one snapshot spine; knowledge in project folder w/ dated per-run subfolders; shipping-agent operates the harness; expected-cost health at the end as a re-estimation signal.
+
+## Pending external actions
+No pending external actions. (Design discussion; no mart access, brain-side writes only.)

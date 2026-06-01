@@ -209,14 +209,14 @@ function drawSphere() {
   };
   const SEG = 48, RINGS = 6;
   ctx.globalCompositeOperation = "source-over";
-  ctx.lineWidth = 0.6;
+  ctx.lineWidth = 0.85;
   const arc = (fn) => {
     let prev = null;
     for (let i = 0; i <= SEG; i++) {
       const p = fn(i / SEG);
       if (prev) {
         const depth = Math.max(0, Math.min(1, ((p.z + prev.z) / 2) / R * 0.5 + 0.5));
-        ctx.strokeStyle = rgba(PAL.gold, 0.03 + 0.13 * depth);
+        ctx.strokeStyle = rgba(PAL.gold, 0.08 + 0.30 * depth);
         ctx.beginPath(); ctx.moveTo(prev.sx, prev.sy); ctx.lineTo(p.sx, p.sy); ctx.stroke();
       }
       prev = p;

@@ -197,7 +197,7 @@ async def pty_handler(request):
     loop = asyncio.get_running_loop()
 
     try:
-        from winpty import PtyProcess
+        from winpty import PtyProcess, Backend
     except Exception as exc:  # pywinpty missing — tell the client, don't 500
         await _ws_send(ws, {"t": "out", "d": f"\r\n[cockpit] pywinpty not installed: {exc}\r\n"})
         await ws.close()
@@ -226,7 +226,15 @@ async def pty_handler(request):
     env["CLAUDE_COCKPIT"] = "1"
 
     try:
-        proc = PtyProcess.spawn(DEFAULT_SHELL, cwd=str(BRAIN_ROOT), env=env, dimensions=(rows, cols))
+        # Pin the modern ConPTY backend (headless OpenConsole host) over pywinpty's
+        # auto-detect, which can fall back to the legacy WinPTY agent. NOTE: the
+        # stray terminal window seen on cockpit-open (S140) was NOT the backend —
+        # it was Windows 11's "default terminal application" (Windows Terminal)
+        # activating to host these pseudoconsoles from the windowless pythonw
+        # process. The real fix was setting that to Windows Console Host. ConPTY is
+        # kept regardless as the correct, headless backend.
+        proc = PtyProcess.spawn(DEFAULT_SHELL, cwd=str(BRAIN_ROOT), env=env,
+                                dimensions=(rows, cols), backend=Backend.ConPTY)
     except Exception as exc:
         await _ws_send(ws, {"t": "out", "d": f"\r\n[cockpit] failed to start shell: {exc}\r\n"})
         await ws.close()

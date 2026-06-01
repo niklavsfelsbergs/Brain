@@ -42,6 +42,10 @@ cockpit/.webview/
 # Cockpit per-machine local config (on_top, bind host) — never shared; a committed
 # {"host":"0.0.0.0"} would ship a wide bind as the default.
 cockpit/config.json
+# Cockpit icon artifacts: runtime diag log (rewritten each launch) + regenerable
+# preview (both produced by make-icon.py / app.py; icon.ico is the committed asset).
+cockpit/icon-apply.log
+cockpit/icon-preview.png
 
 # Intent narration sidecars (D-010) — transient agent self-narration
 .claude/intent/*.txt

@@ -1,0 +1,1 @@
+Phase 0 done — Jebrim 3 promotions. Now globals: inbox empty, global drafts empty (B-012 reconciled). Working step 3 cross-player synthesis (N=2), then budgets/rejections/cadence.

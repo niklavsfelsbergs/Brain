@@ -201,3 +201,65 @@ Resumed on "continue with the shipping report." Clean resume from 28d1f778 (ende
 **Next:** report builder §1–§5 + daily DQ canary in project `lib/`; retention thinning; 2nd snapshot for a real T-vs-T-1 diff test. Skill stays in drafts/ → promotes via alching.
 
 **Pending external actions:** none (brain-side draft + quest-log + comms/intent only this turn).
+
+---
+
+## Session 5 — 2026-06-01 (sid b82b0b90): BUILD step 3 — the report builder evidence layer
+
+Resumed on "continue with the shipping report." Clean resume from sid 45954b41 (clean CLOSING; foundation + skill done). Offered the build branch (AskUserQuestion) → principal picked **report builder first**. Built the §1–§5 deterministic evidence layer against the skill contract.
+
+**Built in `bi-analytics-main/NFE/projects/4_automated_shipping_report/`:**
+- `lib/segments.py` — shared segment derivation (`segment_expr`/`add_segment`) + snapshot-load + EUR-f64-cast helpers. Reused by report builder and (next) the DQ canary. Segment sizes verified exact vs baselines: PCS PL 821,500 / ORWO 774,199 / PCS CMH 202,822 / Wolfen 120,772 / Other 21,062 / PCS 2,069.
+- `lib/build_report.py` — the evidence layer, **zero verdicts** (analyst-judgment slots marked `> _Analyst judgment…_`). §1 state-of-play (per-segment vol/%inv/€-per-parcel/total/carrier-mix + ORWO-by-carrier coverage), §2 costs-arrived (per-segment headline + by-event detail, off the verified `diff()`), §3 ranked attention (lane €/parcel outliers; top COST_ARRIVED/COST_RESTATED/CREDIT_REFUND when a diff exists), §4 opportunity slot (weekly), §5 expected-cost health. Writes markdown to `reports/<label>/report.md`; `--tier weekly|daily`, `--prev` enables §2+diff-§3.
+- `tests/make_synthetic_prev.py` — reusable synthetic-T-1 generator with KNOWN injected event counts (until a real 2nd-day snapshot exists). Negative-int aged ids keep `shipment_id` i64.
+
+**Bug caught + fixed (nullable-column trap — the brain's recurring lesson):** `(cost_source == 'invoice').mean()` propagates NULL on the 62,743 NULL-cost_source rows, and polars' `.mean()` **drops nulls from the denominator** → %-invoiced inflated (ORWO read 77.2% vs true 71.9%). Caught by an internal-consistency check (§1 ORWO 77.2% contradicted the by-carrier weighted ~72%). Fix: `.fill_null(False)` before `.mean()` in `section1_state_of_play` + `orwo_coverage_by_carrier`. Post-fix §1 reconciles exactly with baselines (PCS PL 83.2%, CMH 90.8%, Wolfen 54.2%, ORWO 71.9%); also corrected TCG Other 98.8→85.4% and POST 0.8→0.5%. (Same family as [[2026-06-01-verify-diffs-both-ways-and-explicit-presence-flags]].)
+
+**Verified:**
+- §1/§5 vs the existing snapshot → segment vols/totals/€-per-parcel + §5 gap profile (TCG +bias, ORWO 42% under-0.67×) all reconcile with the Session-3 baselines.
+- §2/§3 via synthetic T-1 → diff event counts match injected: COST_ARRIVED 200, COVERAGE_REGRESS 50, CREDIT_REFUND 30, NEW 20, AGED_OUT 10, COST_RESTATED 69/100 (31 sub-€0.50 moves correctly threshold-filtered). Per-segment headline reconciles with by-event detail. §3 lane-outlier ranking surfaces real freight structure (DB Schenker €42–158/parcel vs €5.72 segment mean).
+
+**Known limitation (noted, not fixed):** AGED_OUT rows attribute to "Unclassified" segment — `diff()` carries only a few prev-side cols, so curr-side segment dims are null for rows absent in T. Acceptable: AGED_OUT is informational only.
+
+**Next:** (1) daily **DQ canary** in `lib/` (zero-row segment, coverage-regress by-carrier, null spikes, stale reload) — reuses `segments.py`. (2) **retention/thinning** (49 MB/day). (3) real **T-vs-T-1** diff/report test on tomorrow's 2nd snapshot. (4) triggering (deferred). Small open decision for principal: whether to version `reports/` in git or gitignore it (generated, regenerable, accumulates).
+
+**Pending external actions:** none (brain-side trace + out-of-tree NFE project writes only; NOT committed — awaiting principal cue).
+
+### Session 5 cont. — BUILD step 4: the daily DQ canary
+
+Continued same session on "keep going with the DQ canary." Built `lib/dq_canary.py` — the daily load-integrity check, deliberately **distinct from §3** (canary = "is the data trustworthy," mechanical/threshold-able; §3 = "is the picture in order," judgment, never mechanized).
+
+**Checks (thresholds are DQ-alarm knobs, tunable, NOT analytical verdict gates):**
+- `ZERO_ROW_SEGMENT` — a headline segment (PCS PL/CMH/Wolfen/Other, ORWO) at 0 rows = silent load fail (FAIL).
+- `VOLUME_DROP` — segment volume fell ≥50% vs T-1 (WARN). [needs --prev]
+- `COVERAGE_REGRESS` — % invoiced dropped ≥10pp within a (segment, carrier) cell with ≥200 shipments both days (WARN). By carrier-within-segment per the ORWO note. [needs --prev]
+- `NULL_SPIKE` — key dim/cost null rate over its bar (production_site/dest/shop_order_created_date ~0; shipping_provider_group ~0.3%; cost_source ~3% accepted), or a jump vs T-1.
+- `STALE_RELOAD` — snapshot fingerprint (rows + invoiced count + total €) identical to T-1 = truncate-reload may not have run (FAIL). [needs --prev]
+
+**Design choice that kills false positives:** coverage/volume/stale are all **delta-vs-T-1**, so structural accepted states (ORWO POST ~0% invoiced, FedEx discounts, db_schenker unclassified) never trip them — only a *change* fires, not a standing condition. Reuses `segments.py` (incl. the `.fill_null(False)` %-invoiced fix). Exit code 2 on FAIL / 1 on WARN so a scheduled job can gate on it.
+
+**Verified all four scenarios:**
+- (a) clean snapshot, no prev → 0 FAIL/0 WARN, exit 0 (zero-row + null all pass).
+- (b) vs synthetic prev → coverage/volume/stale paths run clean (379 shifted rows immaterial — correct).
+- (c) snapshot vs itself → `STALE_RELOAD` FAIL, exit 2.
+- (d) doctored prev (ORWO/OTHER forced 100% invoiced) → `COVERAGE_REGRESS` WARN (100%→13.7%, 86.3pp, n=55,972); injected 5% production_site nulls → `NULL_SPIKE` FAIL (5.03% > 1% bar).
+
+**Also:** updated README (lib inventory + run commands + built/not-built status); added project `.gitignore` (ignores `snapshots/`, throwaway `reports/_*/`, `__pycache__` — leaves the real `reports/<date>/` versioning decision open).
+
+**Build status now:** snapshot spine ✓ · diff harness ✓ · report builder §1–§5 ✓ · DQ canary ✓. **Remaining:** retention/thinning · real T-vs-T-1 test (tomorrow's 2nd snapshot) · triggering (deferred). Skill still in drafts (awaits alching).
+
+**Pending external actions:** none (out-of-tree NFE writes + brain trace only; NOT committed — awaiting principal cue).
+
+### Session 5 cont. — BUILD step 5: retention/thinning
+
+Continued on "retention/thinning now." Built `lib/retention.py` — keep every snapshot inside a daily window (default 30d), then thin older to **one per ISO week** (the latest in each week — most cost-settled anchor). Bounds growth ~18 GB/yr to ~4 GB/yr steady state.
+
+**SAFE BY DEFAULT:** dry-run unless `--apply`; never prunes the most-recent snapshot; only touches files matching the strict `snapshot_YYYY-MM-DD.parquet` name (synthetic/ad-hoc parquets ignored). Run `--apply` after each daily pull as part of the (deferred) triggering job.
+
+**Verified:** `plan()` logic in-memory over 90 fabricated daily dates -> keep 40 (31 daily + 9 weekly anchors) / prune 50; all invariants pass (partition exact, most-recent kept, full daily window kept, exactly one latest-per-week beyond 30d, single-snapshot guard 1/0). Real CLI dry-run on the live dir -> 1 snapshot, nothing to thin, exit 0; correctly ignored `_synthetic_prev.parquet`. Did NOT run `--apply` (nothing to prune; only 1 real snapshot). README updated.
+
+**Hook note:** the brain's `block-deletes.py` pattern-matched a delete keyword in a *bash test command string* targeting an out-of-brain NFE path — over-broad (it scans command text, not the target). Worked around by testing `plan()` in-memory (no fs fixtures). `retention.py`'s own file-delete call runs inside python so the hook never sees it; `--apply` is unaffected. Minor dev-brain friction worth noting, not fixing here.
+
+**BUILD COMPLETE (functional):** snapshot spine OK · diff harness OK · report builder S1-S5 OK · DQ canary OK · retention OK. **Remaining:** real T-vs-T-1 test (tomorrow's 2nd snapshot) · triggering (deferred, design-first). Skill in drafts awaits alching. New files uncommitted (awaiting principal cue): `lib/{segments,build_report,dq_canary,retention}.py`, `tests/make_synthetic_prev.py`, README, `.gitignore`.
+
+**Pending external actions:** none (out-of-tree NFE writes + brain trace only; NOT committed).

@@ -47,6 +47,8 @@ python lib/diff_snapshots.py --prev snapshots/snapshot_<T-1>.parquet \
 
 Use **explicit presence flags** in the diff — never infer row existence from a nullable cost column (uncosted rows have NULL `cost_source`/`real`). Cast EUR cols to Float64 before ratio/delta math (Decimal scale overflow). Both lessons cost a bug each — see [[2026-06-01-verify-diffs-both-ways-and-explicit-presence-flags]].
 
+**Nullable-column aggregate trap (cost a third bug, S124-S5):** `(cost_source == 'invoice').mean()` is **not** "% invoiced" — `cost_source` is nullable (~3% NULL uncosted rows), the equality propagates NULL, and polars' `.mean()` drops nulls from the denominator → the % inflates (ORWO read 77.2% vs true 71.9%). Always `.fill_null(False)` before aggregating a boolean over a nullable column. Caught only because §1 and the by-carrier table computed the same number two ways and disagreed — **render load-bearing figures two ways and check they agree** ([[2026-06-01-cross-check-two-derivations-catches-self-bugs]]).
+
 ## Segmentation (scope gating)
 
 - **ORWO** = `source_system='ORWO'` (own segment; always `production_site='Wolfen'`).

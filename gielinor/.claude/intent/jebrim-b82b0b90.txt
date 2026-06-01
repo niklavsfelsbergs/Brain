@@ -1,0 +1,1 @@
+S124 retention BUILT + verified (90-date in-memory test: keep 40 / prune 50, all invariants pass; CLI dry-run clean, no apply run). Harness now functionally COMPLETE: spine + diff + report builder + DQ canary + retention. Remaining = real T-1 test (tomorrow) + triggering (deferred). Uncommitted, awaiting cue.

@@ -1,12 +1,12 @@
 ---
 quest: S116_shipping-agent-fif-monthly-skill
 sid8: 7f67fe48
-ts: 2026-05-29 17:00
+ts: 2026-06-01 11:00
 ---
 
 # Resume — FIF UPS-ORWO report DAG (S116)
 
-**Status:** in-progress (parked). Code complete, deployed (image + branch), live-validated. Awaiting principal: PR merge + first DAG run.
+**Status:** SHIPPED. PR merged, DAG ran, **SharePoint PUT verified live 2026-06-01** — downloaded `UPS_FiF_report_2026-04.xlsx` from SharePoint diffs byte-equivalent (content-wise) to the standalone April reference: 149 pivot groups, net €104,312.29 / VAT €13,889.34 / gross €118,201.63, 0 group-level mismatches. SharePoint auto-created the `UPS_FiF_reports/{invoice_level,month_summary}/` subfolders on first PUT. Quest left in-progress for tail monitoring; ready to graduate to completed/ next session.
 
 ## Where we are
 Built a **daily bi-etl DAG** `fif_ups_orwo_monthly` that delivers the FIF (UPS ORWO) report to SharePoint in two forms under `Share/InvoiceDataShipping/UPS_FiF_reports/`:
@@ -15,13 +15,13 @@ Built a **daily bi-etl DAG** `fif_ups_orwo_monthly` that delivers the FIF (UPS O
 
 Transform ported verbatim from the validated NFE standalone pipeline. Fixed a real bronze DQ bug (invoicedate mixed ISO + US M/D/YYYY → normalize `::date`).
 
-**Deployed + validated 2026-05-28:** ECR image `fif_ups_orwo:latest` pushed (digest ebfe767). Brain-side bi-etl commits on branch `feat/fif-ups-orwo-monthly`: `39a1d9d42` (v1 monthly) + `de3e74f87` (daily redesign), pushed. Live smoke (tcg_nfe → local, no SharePoint): invoice_level 75 files, month_summary built Jan–Apr (May held, no June); Mar=20 invoices (date-fix payoff), Apr exact €104,312.29. Only the SharePoint PUT is unexercised (needs in-cluster `sharepoint_credentials` Variable).
+**Deployed + verified end-to-end:** ECR image `fif_ups_orwo:latest` (digest ebfe767). bi-etl branch `feat/fif-ups-orwo-monthly` commits `39a1d9d42` + `de3e74f87` + `9f7c241fd` (relocation to `AI_Automations/shipping_nfe/`), pushed. Live smoke 2026-05-28 (tcg_nfe → local): invoice_level 75 files, month_summary Jan–Apr, Mar=20 / Apr exact. **Live DAG run 2026-06-01: April month_summary downloaded from SharePoint matches standalone reference exactly (149 groups, totals to the cent, 0 mismatches).** SharePoint folder auto-creation confirmed working.
 
 ## Next concrete step
-Two principal actions, then verify:
-1. **Open + merge the PR** — https://github.com/picanova/bi-etl/pull/new/feat/fif-ups-orwo-monthly (gh CLI absent here, so it wasn't auto-created). Branch = both commits; net = the daily two-folder design.
-2. **Run the DAG** `fif_ups_orwo_monthly` (first run backfills 75 invoice files + Jan–Apr summaries). Watch the `month_summary → upload_sharepoint` path land files under `Share/InvoiceDataShipping/UPS_FiF_reports/`.
-3. If the **SharePoint PUT** errors (folder perms / Variable shape), that's the one likely fix point — adjust `utils/sharepoint_upload.py` or the DAG env, rebuild + re-push image.
+None required to ship — the DAG is live and verified. For next session:
+1. **Graduate S116 → completed/** (no open dependency; PR merged, DAG running, SharePoint PUT verified).
+2. **Triage the harvest drafts** via `/drafts` — examine `fixture-vs-live-data-claim` + bank `ups-orwo-fif-data-quirks`. (Note: B-010 already promoted the bank draft to confirmed mid-flight.)
+3. (Optional, not urgent) Monitor a few daily runs to confirm steady-state behaviour: invoice_level idempotency holds, month_summary regenerates a closed month when a late invoice arrives.
 
 ## Files to read first
 - `bi-etl/dags/AI_Automations/shipping_nfe/fif_ups_orwo_monthly/README.md`

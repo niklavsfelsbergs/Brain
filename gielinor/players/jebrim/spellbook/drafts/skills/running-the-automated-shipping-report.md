@@ -32,7 +32,9 @@ python lib/diff_snapshots.py --prev snapshots/snapshot_<T-1>.parquet \
                              --curr snapshots/snapshot_<T>.parquet
 ```
 
-**Snapshot spine** = 25 cols, 1 row/shipment, trailing 120d by `shop_order_created_date`: 8 keys/dims (`shipment_id`, `shop_order_created_date`, `source_system`, `production_site`, `destination_country_code`, `shipping_provider_group`, `shippingprovider_extkey`, `cost_source`) + `expected`/`real`/`final`_shipping_cost_eur + `net_revenue_eur` + `billed_weight` + 12 charge buckets (excl `truck_charges_eur`). ~49 MB/day. **Segment is derived in the harness, not stored** — so a segmentation change never reshapes history.
+**Snapshot spine** = 26 cols, 1 row/shipment, trailing 120d by `shop_order_created_date`: 9 keys/dims (`shipment_id`, `trackingnumber`, `shop_order_created_date`, `source_system`, `production_site`, `destination_country_code`, `shipping_provider_group`, `shippingprovider_extkey`, `cost_source`) + `expected`/`real`/`final`_shipping_cost_eur + `net_revenue_eur` + `billed_weight` + 12 charge buckets (excl `truck_charges_eur`). ~49 MB/day. **Segment is derived in the harness, not stored** — so a segmentation change never reshapes history.
+
+`trackingnumber` is the **real carrier tracking number** (the mart's identity field — `shipment_id` is hashed from it), carried for per-shipment cost-outlier lookup. Note `shippingprovider_extkey` is **not** a tracking number — it's a **service/rate code** (`UPS04STD`, `DBSCHENKERPLEUHOME`), shared across shipments. Synthetic `trackingnumber` values (`''`, `'untracked'`, `'temp_*'`) never carry an invoice, so any *invoiced* outlier has a real tracking number to look up (shipping-agent `mart-contract.md`).
 
 **Diff event taxonomy** (per `shipment_id`, T-1 → T; default flags `--restate-abs 0.50 --restate-pct 0.05`):
 
@@ -59,7 +61,8 @@ Use **explicit presence flags** in the diff — never infer row existence from a
 
 - **§1 — State of play (orientation).** Last period's new shipments per segment: volume, % invoiced, final cost, cost/parcel, carrier mix, WoW delta.
 - **§2 — Costs that arrived (the diff, the valuable half).** € newly invoiced, `expected→invoice` flip count, net € restatement, refunds/credits, coverage change. From the diff event table.
-- **§3 — Is everything in order? (the review — the analyst's judgment).** The biggest movers/outliers the harness ranked, each carrying *reasoning* + a *recommended look-into*, hedged honestly. This is judgment, not a verdict the harness produced. Gated by the running notebook + materiality.
+- **§3 — Is everything in order? (the review — the analyst's judgment).** The biggest movers/outliers the harness ranked, each carrying *reasoning* + a *recommended look-into*, hedged honestly. This is judgment, not a verdict the harness produced. Gated by the running notebook + materiality. Includes **standing cost outliers by tracking number** (invoiced rows where real ≥ 2× expected and ≥ €10 over — bar above the §5 noise floor) for case-by-case carrier lookup, plus lane €/parcel outliers.
+- **§2 also carries "expensive arrivals — check by tracking number"**: the costs that newly invoiced/restated this run AND landed materially over expected — "a cost appeared and it's higher than usual," the actionable per-period list (runs daily + weekly). The standing §3 sweep is the whole-cohort version.
 - **§4 — One opportunity (weekly only).** Exactly **one** sized cost-reduction lead per run, **PAPER vs DEFENSIBLE** honesty-tagged. Size it against the expected-cost noise floor (§5) — don't sell a mirage ([[S132_32ff1025_shipping-savings-routing-optimization|S132]] re-rating discipline: trust-gate, capability-check, engine-noise-floor before claiming a number).
 - **§5 — Expected-cost health (at the END).** Expected vs actual gap as a **re-estimation signal**, not an operational alarm. Current normals: TCG under-estimates +5–8% (fat upper tail, ~15% materially mis-estimated); ORWO poorly per-shipment calibrated but near-irrelevant in € (~€1/parcel). §5 reads "lift the TCG expected baseline + widen surcharge allowance; reshape the ORWO model."
 

@@ -20,6 +20,7 @@ Senior-analyst shipping report (S124). This session (b82b0b90) built the **repor
 - `tests/make_synthetic_prev.py` — reusable synthetic-T-1 generator (known injected counts) for §2/§3 + canary testing until a real 2nd snapshot exists.
 - Fixed a null-cost_source %-invoiced inflation bug (`.fill_null(False)` before `.mean()`); §1 now reconciles exactly with baselines.
 - README updated (lib inventory + run commands); added project `.gitignore`.
+- **Post-close refinement (principal cue):** added `trackingnumber` to the spine (snapshot.sql, 25→26 cols, re-pulled 60 MB) — `shippingprovider_extkey` is only a service code, not a tracking number. `build_report.cost_outliers()` surfaces invoiced cost outliers (real ≥ 2× expected & ≥ €10 over, above §5 noise floor) **by tracking number**: §2 "Expensive arrivals" (this-period appeared+high) + §3 "Standing cost outliers" (whole-cohort sweep). Verified rendering real UPS/DB-Schenker tracking numbers.
 
 ## Next concrete step
 

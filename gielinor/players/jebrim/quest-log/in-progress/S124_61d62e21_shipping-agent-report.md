@@ -267,3 +267,21 @@ Continued on "retention/thinning now." Built `lib/retention.py` — keep every s
 ### Session 5 post-close — NFE commit + reports/ decision
 
 Principal cue after wrap: "gitignore reports/ and commit the NFE files." Resolved the open decision — `reports/` is gitignored (generated, regenerable, accumulates), alongside `snapshots/` + caches. Committed the NFE harness in `bi-analytics-main` (`b49d1ab`): `lib/{segments,build_report,dq_canary,retention}.py`, `tests/make_synthetic_prev.py`, README, `.gitignore` — staged set verified to exclude reports/snapshots/caches. Neither repo pushed (separate cue).
+
+### Session 5 post-close — §2/§3 refinement: cost outliers by tracking number
+
+Principal cue: "focus also on invoiced costs which appear and are higher than usual" + "outlier cases to check by tracking number should pop up." Added two ranked-attention cuts (both fit §3's prep-evidence-not-verdict role).
+
+**Grounding correction (read domain knowledge first):** `shippingprovider_extkey` is NOT a tracking number — it's a **service/rate code** (`UPS04STD`, `DBSCHENKERPLEUHOME`), shared across shipments. The mart's real per-shipment identifier is `fact_shipments.trackingnumber` (the field `shipment_id` is hashed from). Per shipping-agent `mart-contract.md`: synthetic values (`''`/`untracked`/`temp_*`) never carry an invoice → any INVOICED outlier has a real carrier tracking number. **Added `trackingnumber` to the spine** (snapshot.sql, 25→26 cols) and re-pulled (1.94M rows × 26 cols, 60 MB; verified 0 nulls, 0 synthetic-tracking rows invoiced).
+
+**Built in build_report.py — `cost_outliers()`**, bar `real ≥ 2× expected AND ≥ €10 over` (deliberately **above the §5 noise floor** — TCG normally +5–8%, so this is genuine surprise, not standing dispersion):
+- **§2 "Expensive arrivals — check by tracking number"** — the subset that newly invoiced/restated THIS run AND cleared the outlier bar = "a cost appeared and it's higher than usual." Actionable per-period list (runs daily + weekly).
+- **§3 "Standing cost outliers — check by tracking number"** — worst invoiced-vs-expected outliers across the whole cohort, ranked by € over expected, for a periodic case-by-case sweep.
+
+Each row carries `trackingnumber` (real, lookup-able) + `service` (extkey) + segment/carrier/dest/exp/real/over_eur/x_exp.
+
+**Verified:** re-pulled 26-col snapshot; regenerated synthetic prev; report renders both tables with real tracking numbers (UPS `1Z698W…` exp €5–6 → ~€1,320 real, up to 260×; DB Schenker `00390110…` €94→€1,680). Real signal — these are the "look it up with the carrier" cases.
+
+**Process note:** first background re-pull reported exit 0 but never overwrote the parquet (mtime unchanged) — `python … | tail` returns *tail's* exit code, masking a python failure. Re-ran in foreground; succeeded. Lesson: don't trust a piped pull's exit code; check the artifact mtime.
+
+**Pending external actions:** none (NFE writes + brain trace; committing this increment).

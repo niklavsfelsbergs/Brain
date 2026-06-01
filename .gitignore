@@ -28,6 +28,8 @@ switchboard/state-comms-*.md
 switchboard/chat.ndjson
 switchboard/ritual-events.ndjson
 switchboard/ritual-events.ndjson.tmp.*
+switchboard/state-shipping-agents.json
+developer-braindead/experiments/visualizer/state.ndjson
 
 # Transient cockpit diagnostic logs (debug-only writers removed; files regenerable)
 switchboard/*-diag.log
@@ -88,3 +90,23 @@ tools/out/
 # comms_append.py lockfiles (runtime, per-vault)
 comms/active.md.lock
 */comms/active.md.lock
+
+# Per-vault intent/mode sidecars (D-010/D-018) — same transient per-session
+# runtime as the root .claude/intent/* block above, but for NESTED vaults
+# (gielinor/.claude/intent/). The root-anchored patterns above don't match
+# nested paths; these **/ forms do. (2026-06-01 S142 health audit — the gielinor
+# sidecars were leaking into `git status`; the already-TRACKED ones still need a
+# one-time `git rm --cached` run from a non-hooked shell — block-deletes catches
+# `git rm`. See audit #8 note above.)
+**/.claude/intent/*.txt
+**/.claude/intent/*.mode
+**/.claude/intent/archive/
+
+# Repo-root probe/scratch debris (debug pulls — shipping-agent yodel/schema
+# probes, service-profile dumps). Root-anchored (leading /) so nested _about.md
+# and any other _*-prefixed brain files are NOT matched. (2026-06-01 S142 audit.)
+/_*.txt
+/_*.csv
+/_*.json
+/_*.py
+/_*.log

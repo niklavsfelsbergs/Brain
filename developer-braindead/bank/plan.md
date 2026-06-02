@@ -265,3 +265,13 @@ The brain is already an Obsidian-shaped vault (`.md` + `[[wikilinks]]`); Obsidia
 5. **VPS substrate de-risked.** A $5-VPS-to-serverless agent with persistent local memory runs at scale today — an existence proof for the parked ascension/VPS path ([[death-and-spawn]] / §G). Lowers the perceived risk on §G when it's revisited.
 
 **What NOT to copy (the guardrails).** (a) **Free self-modification** — their no-HITL auto-skill-write / auto-memory-curate is exactly what our draft/approve gate exists to prevent; "Hermes does it automatically" is not an argument to loosen the gate, the gate *is* the product. (b) **Generality** — Hermes owns the generic-installable-agent slot; gielinor's moat is being one un-genericizable deep self. Direct counter-argument to the de-theming/product-shape idea ([[S134_7311cd20_cockpit-board-ux-sort-highlight-ritual-chips|prior 234a9b87 product discussion]]).
+
+## §W — Domain-knowledge grounding registry (built 2026-06-02, [[S144_9b67aceb_domain_grounding_cue_registry|S144]])
+
+**Status.** `[x]` mechanism shipped (live-fire hand-off pending). The generalization of S124's shipping-cue into a registry-driven hook.
+
+**Diagnosis (the durable one).** The brain is **library-rich, reflex-poor**: knowledge (and even *lessons about its own failures*) accumulate as passive notes that nothing forces the agent to load on-topic. Proof: the S124 confirmed note *"read the domain reference before proposing"* was already in memory and the failure recurred. **Smartness here = making the right knowledge fire at the right moment, not adding more notes.** The only mechanism the brain has that actually changes behavior is the hook (it's not optional); discipline-only rules fire ~30%.
+
+**Built.** `gielinor/.claude/hooks/cue_registry.py` (the `DOMAINS` table — shipping is entry #1, ported verbatim from S124) + `domain-cue-reminder.py` (reads the registry, per-entry actor-skip, one combined nudge, exit 0 always). The Nth domain (EU tender / FIF / SCM — all have canonical homes in `players/jebrim/bank/notes/projects/`) is **one row**. Distinct from `grounding-cue-reminder.py` (identity reflex, own past work, [[D-028_grounding-precondition-needs-a-trigger|D-028]]) — left untouched.
+
+**Open / next (NOT done — surfaced for Jebrim sessions).** The two other roots from the same diagnosis: **(W.1)** the report-as-analyst redesign (delta/exception-driven not level-driven; bottom-line-first; builder=evidence-pack, shipping-agent=investigate + judge-against-contract; don't mechanize the judgment per S124). **(W.2)** capture the LPS/OML band/trigger/refund knowledge into `shipping-agent/reference/` (capture gap — it's in Niklavs' head, not the brain). Both are player work, not dev-buildable.

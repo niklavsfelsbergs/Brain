@@ -36,4 +36,19 @@ for VAULT in gielinor developer-braindead; do
     fi
 done
 
+# §Y.1 — keep the AGENTS.md mirror in sync with the CLAUDE.md chain.
+# Codex (and other non-Claude agents) read AGENTS.md but do NOT resolve @import,
+# so the rulebook must be inlined physically there. sync_agents_md.py flattens
+# each CLAUDE.md's @import chain into its sibling AGENTS.md. If THIS commit stages
+# any CLAUDE.md or gielinor meta/*.md (the imported sources), regenerate the
+# mirror and re-stage the AGENTS.md so it travels in the same commit (no drift).
+# Editing a source by pathspec? Include the AGENTS.md path(s) in your pathspec.
+if git diff --cached --name-only --diff-filter=ACM \
+   | grep -Eq '(^|/)CLAUDE\.md$|(^|/)meta/.*\.md$'; then
+    python "$ROOT/tools/sync_agents_md.py" >/dev/null 2>&1 || true
+    for A in AGENTS.md gielinor/AGENTS.md developer-braindead/AGENTS.md; do
+        git add "$A" 2>/dev/null || true
+    done
+fi
+
 exit $FAIL

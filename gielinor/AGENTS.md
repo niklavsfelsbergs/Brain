@@ -1,22 +1,10 @@
-<!-- GENERATED from CLAUDE.md by tools/sync_agents_md.py — DO NOT EDIT.
+<!-- GENERATED from gielinor/CLAUDE.md by tools/sync_agents_md.py — DO NOT EDIT.
      AGENTS.md is the non-Claude-agent (e.g. Codex) mirror of the CLAUDE.md
      rulebook. Codex composes by directory-walk layering and does NOT resolve
-     @import, so the rulebook must be inlined physically here. Edit CLAUDE.md
+     @import, so the rulebook must be inlined physically here. Edit gielinor/CLAUDE.md
      (or the files it imports) and re-run the sync — the pre-commit hook does
      this automatically. -->
 
-# brain/ — top-level router
-
-This folder houses **two brain systems**:
-
-- **`gielinor/`** — the **main brain**. The world the agent inhabits. The cognitive system Niklavs operates as.
-- **`developer-braindead/`** — the **dev brain**. The construction log for building the main brain. A working notebook, not a cognitive system.
-
-## Default behavior at brain root
-
-Sessions opened with the working directory at this folder default to the **main brain**. The full master rulebook from `gielinor/CLAUDE.md` applies — including address-based player routing (`Hey Jebrim, ...`, `Hey Zezima, ...`, `Hey unscoped, ...`), the Understanding/Plan preamble protocol, and the four enforced hooks.
-
-<!-- begin inlined import: gielinor/CLAUDE.md -->
 # Gielinor — master CLAUDE.md
 
 > You are operating inside **gielinor/**, Niklavs' personal AI agent. Born 2026-05-20. This file loads at session start; it is the entry point into the brain.
@@ -468,35 +456,3 @@ Default to short responses. Expand only when the task warrants it. Don't recite.
 - Reread the relevant `_about.md`.
 - Reread the relevant `meta/*.md`.
 - Ask the principal. Asking is cheaper than guessing wrong on identity-shaped work.
-<!-- end inlined import: gielinor/CLAUDE.md -->
-
-## Entering dev-brain mode
-
-Dev-brain mode is entered only when a message **starts with** `Lets develop gielinor` (or `Let's develop gielinor`). Matching rules — same strictness as player address in `gielinor/CLAUDE.md`:
-
-- Must be at the **very start** of the message. A mention mid-sentence does not trigger.
-- Case-insensitive on the phrase. Followed by a comma, whitespace, punctuation, or end-of-message.
-- A typo or near-miss ("Lets dev gielinor", "Let us develop gielinor") is treated as no cue — stay in current state.
-
-On entry, run the dev-brain entry sequence per `developer-braindead/CLAUDE.md`: read `developer-braindead/respawn.md` first, then operate under dev-brain conventions (`developer-braindead/_about.md`, dev-brain `spellbook/`, `quest-log/`, etc.). This is a mini-respawn — symmetric to mid-session player switching in gielinor. If a player was activated in this session, their `quest-log/in-progress/` gets a hand-off note per the mini-respawn procedure in `gielinor/spellbook/rituals/respawn.md`. If no player was active this session, nothing is handed off — prior-session in-progress quests are not this session's to mark.
-
-**The entry sequence includes sibling-detection and posting an `OPEN` to `developer-braindead/comms/active.md`** (`respawn-ritual.md` steps 6–8). A mid-conversation pivot via this cue is **not** exempt — it runs the same ritual a clean respawn does. This is the system's most common discipline leak: the recurring *"did not post an OPEN — dev-brain entered mid-conversation"* note across `comms/active.md` meant ~70% of sessions skipped it (as of the 2026-05-27 S110 audit that leak is largely closed — recent dev-brain OPEN-posting is ~100%; keep it that way). **Scope note (2026-05-29 S125 audit): that ~100% is dev-brain-specific — gielinor *player*-session OPEN-posting still leaked (≥3 sessions post-S110), traced to the require-open gate failing open on an unresolved-actor race, now fixed.** `OPEN` is the half that *prevents* collisions (announce your files, check for live siblings before editing); `CLOSING` only records them after. Fire it on every entry.
-
-## Returning to the main brain from dev-brain mode
-
-Address a player at the start of a message — `Hey Jebrim, ...`, `Hey Zezima, ...`, or `Hey unscoped, ...`. This re-enters gielinor and routes per `gielinor/CLAUDE.md`. Without an address at the start, dev-brain mode is **sticky**.
-
-## Working directory below brain root
-
-Sessions opened with the working directory inside `gielinor/` or `developer-braindead/` are governed by that subfolder's own `CLAUDE.md`, loaded by Claude Code's directory walk. The mode-switch rule above is for brain-root sessions only; in subfolder sessions the local CLAUDE.md is authoritative.
-
-## Cross-reference allowance
-
-The main brain may read from the dev brain **only on explicit principal cue** — e.g., "check the dev brain for why we structured X this way." The dev brain has no equivalent default read access to `gielinor/`; it is a construction record, not a participant.
-
-Modifying `gielinor/` happens in dev-brain mode (or a session opened in `gielinor/`). The dev brain may modify dev-brain files freely per its own conventions.
-
-## What each brain is for
-
-- `gielinor/_about.md` / `gielinor/CLAUDE.md` for the main brain's purpose and operating rules.
-- `developer-braindead/_about.md` / `developer-braindead/CLAUDE.md` for the dev brain's purpose and conventions.

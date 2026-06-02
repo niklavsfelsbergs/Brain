@@ -8,8 +8,11 @@ The shipping agent (`Documents/GitHub/shipping-agent/`, repo `picanova/shipping-
 
 ## When to call it
 
+**Default for mart work, not a last resort.** Spawning the shipping-agent is the *reflex* for any shipping-mart pull beyond a one-line lookup — because the agent's config loads `how_to.md` + `reference/` by construction, so the mart contract (schema incl. dims / `length_plus_girth_cm`, cost-basis rules, DQ quirks) is guaranteed present. Doing mart work as Jebrim-principal without that knowledge is the failure this skill exists to prevent (S-2026-06-02: the shipping-report build speculated about whether the mart even carries dimensions — `tables.md` answers it in one line). The `shipping-cue-reminder.py` hook nudges on shipping/mart cues as a backstop.
+
 - A `shipping_topics` / dashboard / project task needs a mart pull where the agent's hardened methodology earns its keep: cost-basis discipline, **charge-bucket-first** cost-movement decomposition, scope-gating, coverage/DQ caveats, carrier/lane/origin analysis, chart deliverables.
 - Anything talk-to-your-data-shaped over the mart that's more than a one-liner.
+- **If you genuinely must work inline** (quick check, or editing report-harness code rather than querying): load `shipping-agent/how_to.md` §0 + the relevant `reference/` file *first* — never reason about the mart from memory.
 
 ## When NOT to call it
 

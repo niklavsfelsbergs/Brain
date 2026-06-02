@@ -96,7 +96,8 @@ Disclose **% invoiced per segment every run** — an uninvoiced segment's "no mo
 
 ## Output + cadence open items
 
-- **Output form:** dated per-run folder `reports/YYYY-MM-DD/`, markdown default; email/Slack delivery folds into the (deferred) triggering conversation.
+- **Output form: HTML** (S124, 2026-06-02 — principal cue "it's supposed to be an HTML report"). Each run writes a **self-contained, styled `.html`** (embedded CSS, no external assets — opens in a browser, pastes into an email cleanly) to the dated folder `reports/YYYY-MM-DD/`, rendered by `lib/render_html.py` (`markdown` lib + `tables` extension). The look is the brain's **golden document theme** — warm near-black ground, gold section heads, parchment ink, amber code — stolen from the dev-brain dark+gold doc skin (`developer-braindead/bank/research/2026-05-29-agentic-os-field-primer.html`). The `.md` is kept alongside as the render *source* + a diff-friendly artefact — HTML is the deliverable, md is the substrate. Both `build_report.py` and `dq_canary.py` emit `.html` + `.md`. **Per-tier filenames** so a same-day daily+weekly run doesn't clobber: weekly → `report.html`, daily → `report_daily.html` (pass `--out reports/<date>/report_daily.md`), canary → `dq_canary.html`. Email/Slack delivery folds into the (deferred) triggering conversation.
+- **Analyst-judgment caveat for the builder:** `build_report.py` emits §3/§4 as empty *judgment slots* — the analyst fills them in the generated `report.md`, THEN renders to HTML. **Re-running the builder overwrites those edits**, so once judgment is written, render md→html directly (`render_html.md_to_html`) rather than re-running the builder (S124, 2026-06-02 — learned the first real run).
 - **Triggering** is deliberately deferred — design the approach first.
 - **Noticing thresholds** for ranking attention are empirical — tune from accumulated snapshots, kept as harness *ranking* inputs, never as verdict gates.
 

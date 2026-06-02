@@ -285,3 +285,73 @@ Each row carries `trackingnumber` (real, lookup-able) + `service` (extkey) + seg
 **Process note:** first background re-pull reported exit 0 but never overwrote the parquet (mtime unchanged) — `python … | tail` returns *tail's* exit code, masking a python failure. Re-ran in foreground; succeeded. Lesson: don't trust a piped pull's exit code; check the artifact mtime.
 
 **Pending external actions:** none (NFE writes + brain trace; committing this increment).
+
+---
+
+## Session 6 (e3bb38c4) — 2026-06-02 — first real T-vs-T-1 run: BLOCKED on VPN
+
+Niklavs: "its the next day, lets generate the shipping report" → the live two-day test step 2 teed up (real T-1 = `snapshot_2026-06-01`, no longer synthetic). Tier: **Both** (daily small + weekly memo) per principal cue.
+
+- Posted OPEN (jebrim-e3bb38c4); no live siblings (sidecars all stale from 06-01).
+- `pull_snapshot.py --window-days 120` → **FAILED** `RuntimeError: timed out waiting for connection`.
+- Diagnosed (verified, not inferred): host `bi.c5lrs7vtwcpl...redshift.amazonaws.com` resolves to **private IP 10.144.75.109**; TCP :5439 times out. DNS OK + TCP timeout to a 10.x address = **corporate VPN not connected**. Creds present in `NFE/.env`; harness code fine.
+- **Blocked.** Resume the moment VPN is up: pull T=06-02 → `build_report --prev 06-01` (daily + weekly) + `dq_canary --prev 06-01`.
+
+### Session 6 cont. — VPN up, full run executed (daily + weekly + canary)
+
+- Pulled `snapshot_2026-06-02.parquet` (1,942,287 rows, 60.85 MB).
+- Diff 06-01→06-02: **159,052 changed shipments** (first REAL T-1 diff; prior runs used synthetic prev).
+- `build_report` weekly → `reports/2026-06-02/report.md`; daily → `report_daily.md` (`--out`, so the two tiers don't clobber the default path); `dq_canary` → `dq_canary.md` (**0 FAIL / 0 WARN / 11 checks, clean**).
+- **Analyst read (filled §3/§4 in the weekly):**
+  - §3 finding: **UPS `UPS04STD` PCS PL mis-billing** — batch of standard parcels invoiced at ~€1,320 (exp €5–8, up to 260×). 5,591 rows self-correcting this run (−€91.6k restated down); ~dozen+ still standing uncorrected. Recurring €1,319.64 = systematic mis-charge. Action: audit real>€1k, claw back. The diff caught a silent restatement a naive query never would — first real proof of the snapshot-diff premise.
+  - PCS PL §2 gross €91.8k arrived ≈ €0 net once the UPS correction nets out — read net not gross.
+  - §4 opportunity: DB Schenker PCS PL intl home-delivery lanes, gross PAPER ≈€230k/cohort, **tagged PAPER + likely disqualified by weight** (segment avg billed wt 88.6 kg = heavy-freight tail; needs weight/dim check before any number).
+  - Everything else in order; segments within baseline.
+- Notebook: added UPS anomaly under "observed / under investigation".
+- **Remaining (unchanged):** retention/thinning (smallest code piece), triggering (deferred). Skill draft still awaits alching promotion (held by [[B-014_2026-06-01_fourteenth-bankstanding|B-014]] until S124 closes).
+
+### Session 6 cont. — HTML deliverable (principal cue: "it's supposed to be an HTML report")
+
+- New `lib/render_html.py`: `md_to_html(md, title)` → self-contained styled HTML (embedded CSS, `markdown` lib + tables ext). HTML = deliverable, md = render source/diff substrate.
+- Wired into `build_report.py` + `dq_canary.py`: both now emit `.html` + `.md`. Per-tier names avoid same-day clobber (weekly `report.html`, daily `report_daily.html`, `dq_canary.html`).
+- Regenerated 06-02: daily + canary via the new code path (validates wiring); weekly rendered md→html directly to **preserve the hand-written §3/§4 judgment** (re-running the builder would overwrite the slots — logged as a gotcha).
+- Verified HTML: 11 tables as real `<table>`, §3 tracking-number rows + §4 PAPER/88.6kg prose present, valid doc, canary 🟢.
+- Docs synced: skill draft `running-the-automated-shipping-report.md` Output-form section rewritten (HTML deliverable + the builder-overwrite caveat); README layout/run/builder notes updated.
+- **Deliverable:** `reports/2026-06-02/report.html` (weekly), `report_daily.html`, `dq_canary.html`.
+
+### Session 6 cont. — golden theme (principal cue: "steal the golden one we use sometimes")
+
+- Surveyed brain HTML themes; the recurring "golden" one = dark warm + gold document skin (dev-brain research HTMLs, brain-docs). Picked the cleanest report-shaped variant: `developer-braindead/bank/research/2026-05-29-agentic-os-field-primer.html` (bg #1b1a17, gold #d8a838, ink #e9e4d8, amber code #e7c97a). Explicit principal cross-read cue.
+- Reworked `lib/render_html.py` CSS to that palette (warm near-black ground, gold h2 section heads, parchment ink, uppercase-dim table headers, gold-bordered blockquote callouts), kept tabular-nums for the number-dense tables.
+- Re-rendered all three 06-02 reports from existing md → golden HTML; palette verified in output (#1b1a17 / #d8a838 / color-scheme dark).
+- Skill draft Output-form note records the theme provenance.
+
+### Session 6 cont. — fix: ensure shipping-agent knowledge loads on mart work
+
+Root cause (principal-surfaced): did the report build as Jebrim-PRINCIPAL without loading shipping-agent/reference — speculated whether the mart carries dims when tables.md answers in one line. Knowledge guarantee is baked into the shipping-agent SUB-AGENT config ("Read first: how_to.md in full"); the principal path had no trigger; keepsake pointer is passive.
+
+Built (principal-authorized "lets build the hook and delegation now"):
+- **Hook** `gielinor/.claude/hooks/shipping-cue-reminder.py` — UserPromptSubmit advisory, sibling of grounding-cue-reminder. Fires on shipping/mart cues (shipping/mart/carrier/shipment/parcel/freight/surcharge/tender/LPS/OML + carrier names; bare report/cost excluded), injects "load how_to.md §0 + reference, or spawn the shipping-agent". Skips dev-brain. Boundary-verified on 5 payloads (cue→emit, carrier→emit, non-shipping→silent, bare-report→silent, malformed→exit 0).
+- **Wiring** `.claude/settings.json` (brain-root, where advisory cue hooks live) — added to UserPromptSubmit (now 5), + `_comment_shipping_cue`. JSON validated.
+- **Delegation default** — `players/jebrim/CLAUDE.md` new "Shipping / mart work" section (spawn the shipping-agent by default; load how_to.md inline otherwise; never reason from memory) + `calling-the-shipping-agent` skill reframed "default for mart work, not last resort".
+
+Mart knowledge now loaded for the report redesign: dims ARE in the mart (`length_cm/width/height`, `volume_cm3`, **`length_plus_girth_cm`**) → LPS(>325)/OML(>419) verifiable from data, not just charge text. `charge_description`/`charge_description_english` + `oversize_overweight` bucket confirm the band + track refund-in-place reversals. `is_returned` populated but semantics unconfirmed → don't use for return-rate. Corridor cuts all present: packagetype(235), weight+dims bands, destination_country/zip, provider_group/extkey, production_site(origin).
+
+NEXT: redesign the report — delta/exception-driven (not 120d Groundhog Day), OML/LPS interpretation, corridor-movement detection, contract cross-check. Discuss approach before building.
+
+### Session 6 close (S366) — 2026-06-02
+
+**No pending external actions.** Decision this session: **rebuild the report from concepts** (next session) — current output judged near-useless ("tells nothing"). Quest stays in-progress.
+
+Shipped this session: first real T-vs-T-1 run (clean); HTML + golden theme; the knowledge-loading fix (domain-cue hook + spawn-the-agent default — generalized from my shipping-cue prototype by a parallel dev change); taught the agent the LPS/OML refund logic in `shipping-agent/reference/known-dq.md`.
+
+Correction to my earlier turn notes: the `shipping-cue-reminder.py` I built was generalized into the registry-driven `domain-cue-reminder.py` (+ `cue_registry.py`); references aligned. My standalone hook file is now superseded/orphaned (archive candidate).
+
+**Rebuild brief (the handoff):** `inventory/shipping-agent-report-resume__e3bb38c4.md` — load order, the 4-point critique, mart facts, and step 1 = verify the OML/LPS headline on live data before rebuilding.
+
+**Cross-repo changes (committed this close, scoped, not pushed):**
+- brain: this quest-log, the rebuild brief, Jebrim CLAUDE.md, calling-the-shipping-agent skill, running-the-automated-shipping-report skill-draft, comms.
+- `bi-analytics-main/NFE/projects/4_automated_shipping_report/`: lib/render_html.py (new), build_report.py, dq_canary.py, README, notebook.
+- `shipping-agent`: reference/known-dq.md (LPS/OML — maintainer edit; NOT pushed, principal-gated).
+
+**Harvest:** examine-draft candidate (the load-the-domain-knowledge-before-mart-work lesson) is already mechanized as the domain-cue hook + memory; no new draft needed beyond that.

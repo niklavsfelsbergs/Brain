@@ -1,13 +1,13 @@
 ---
 quest: S145_transit-time-sla-build
 sid8: 7ac0cf07
-ts: 2026-06-02 11:50
+ts: 2026-06-02 17:10 (cont. session ac30095a)
 open_dep: principal review of dim_carrier_sla v1 + 3 judgement calls (Switzerland-PL standard blank / PCS-PL→US zone collapse / low-coverage directional lanes)
 ---
 
 # Resume — transit-time SLA build (S145, 7ac0cf07)
 
-**Where we are:** dim_carrier_sla DRAFT v1 BUILT (`44_transit_time_sla/outputs/dim_carrier_sla_v1.xlsx`). Awaiting Niklavs' review + judgement edits. Steps done: grounding, core transit pull, US clustering, site-grain re-agg, dim Excel build.
+**Where we are:** dim_carrier_sla DRAFT v1 BUILT (`44_transit_time_sla/outputs/dim_carrier_sla_v1.xlsx`). Awaiting Niklavs' review + judgement edits. Steps done: grounding, core transit pull, US clustering, site-grain re-agg, dim Excel build. **+ STATE-JOIN deliverable (cont. session ac30095a):** the dim's US `destination_region` is the 4-zone cluster, not joinable to mart `shipping_region` (state name) — fixed two ways: (a) standalone `region_zone_crosswalk.{xlsx,csv,parquet}` (state→zone bridge), and (b) **per principal, two new sheets folded into `dim_carrier_sla_v1.xlsx`** — `dim_carrier_sla_by_state` + `sla_summary_by_state` (each US zone row exploded to its states; destination_region = state name; states inherit the zone selected SLA). Workbook now 5 sheets. Alias rows for MN/OH/PA/NY/NJ 2-letter codes; volume/stats are ZONE-level copied across states (don't sum); `selected` authoritative from the dim (CMH zones 1/2/3/4 = 3/4/5/8, zone-4 floored). `build_dim_carrier_sla.py` extended + re-runnable.
 
 **Build artifacts (outside brain):** `bi-analytics-main/NFE/shipping_topics/44_transit_time_sla/` — `build_dim_carrier_sla.py`, `outputs/dim_carrier_sla_v1.xlsx`, `data/*` (per-shipment v2 + evidence tables), `sql/*`.
 

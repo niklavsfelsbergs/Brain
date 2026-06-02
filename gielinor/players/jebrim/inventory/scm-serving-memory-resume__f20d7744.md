@@ -12,6 +12,14 @@ open_dep: principal merges fix/scm-serving-memory → checks live; deploy-side e
 **Where we are:** Branch `fix/scm-serving-memory` (`abfbcdb`) merged + deployed (`:latest`). Confirmed LIVE via kubectl: the 502s were OOMKills (exit 137, 3 restarts, pod limit 1536Mi) — DuckDB ran on the code's 4GB default because the env var was unset. **Applied `kubectl set env DUCKDB_MEMORY_LIMIT=512MB`** → new pod 2/2 Running 0 restarts, OOM resolved. (bd_cache race did NOT fire — logs clean — it's a real but secondary issue.)
 
 **Open items:**
+- **★ NEXT SESSION (principal-requested 2026-06-02) — general SPEED/PERFORMANCE audit of the SCM dashboard.** Hypothesis: the gold-mart cutover left things non-optimal → slow loads that can be tuned. This is the headline next quest (likely its own SNNN). Scope to investigate:
+  - **Request fan-out:** how many API calls fire on a tab/page load, concurrency, and whether they serialize on the single shared DuckDB connection (a per-request connection — also the bd_cache fix — would parallelize). Count them in the network tab + `page.tsx`.
+  - **Repeat/double scans:** `trends`/`country-trends` re-scan via `attachCountryShares`; `shifts.ts` emits `fromExpr` 4× per request; `completeness`/`avg-costs` scan twice (period_list + main). Compute-once-into-CTE candidates.
+  - **Tier selection + parquet layout:** is the processed tier hit more than needed? Parquet row-group / sort-order / partitioning of `daily`/`daily_product`/`processed` for pushdown; pre-aggregations that could be added to the pipeline so the serving layer never touches per-shipment.
+  - **Spill vs RAM tradeoff** now that DuckDB is capped at 512MB — heavy queries spill to disk (slower). Weigh raising pod limit (1.5Gi→2-3Gi) + cap → fewer spills. Measure first.
+  - **Cold start:** ~770MB S3 sync on every pod start (entrypoint) blocks readiness — slow restarts/scale.
+  - **Client caching:** `Cache-Control: private, max-age=30` is short; no SWR/stale-while-revalidate; cache is server-side only (60s, post-fix byte-capped).
+  - **Starting corpus:** the 4 dwarf findings `S146_d{1,2,3,4}_*.md` already catalog many Medium/Low perf items — start there, then go deeper (frontend + parquet + pipeline pre-agg). Consider fan-out dwarves again (perf dimensions) or a Workflow.
 - **Durability:** the `kubectl set env` lives in the cluster deployment spec (survives CI `rollout restart`) but is NOT version-controlled. To make permanent, add `ENV DUCKDB_MEMORY_LIMIT=512MB` to `docker/Dockerfile` (or the out-of-repo manifest) — offered to principal.
 - **Perf tuning (if breakdown feels slow from spilling):** raise pod mem limit 1536Mi→2-3Gi AND `DUCKDB_MEMORY_LIMIT`→~1.5GB. `kubectl set env` + `kubectl set resources` (need creds + cluster access).
 - **bd_cache structural fix (still queued):** per-request `db.connect()` so the temp table is connection-local — see below.

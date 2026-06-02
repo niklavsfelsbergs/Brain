@@ -1,0 +1,51 @@
+# [[S147_dcb495a7_scm-perf-audit|S147]] D2 — redundant scans within a request
+
+**Verdict:** Confirmed — the redundancy is real but **almost entirely concentrated on the `processed` tier** (the ~241MB raw per-shipment parquet that `processedAsDaily`/`processedPruned` inline as a subquery). On the `daily`/`daily_product` tiers the repeated `${fromExpr}` references are a quoted file path and DuckDB's CTE de-dup + filter pushdown make them cheap-to-free. The highest-leverage fix is `shifts.ts`: on the processed tier it inlines the heavy aggregation subquery **4×** in a single statement. The breakdown route already demonstrates the correct pattern (materialize once into `bd_cache` TEMP TABLE, reference many times) — the other heavy routes should converge on it.
+
+Read root: `_scm-mem-fix/NFE/dashboards/shipping_costs_monitoring_nextjs/src` (== deployed main). Read-only audit.
+
+---
+
+## Ranked findings
+
+### F1 — `shifts.ts`: `cfg.fromExpr` inlined 4× → up to 4 scans of `processed` (HIGHEST)
+**Evidence:** `src/lib/shifts.ts:152` (tagged CTE), `:240` (baseline_weeks CTE), `:281` (baseline_period_count CTE), `:290` (baseline_weekly_vol CTE). `fromExpr` is set at `:33-35`: when `hasProcessedOnly` (production_site / shop / order_source filter active) it is `processedAsDaily(params.from, params.to)` — the full GROUP-BY aggregation over `processed` parquet (`db.ts:234-263`). Each of the 4 textual inlines is a **separate scan + re-aggregation** of the raw processed files; DuckDB does **not** de-dup identical inline subqueries the way it de-dups a named CTE referenced twice.
+- **Redundant scans:** 4× on processed tier (the tagged/baseline_weeks/baseline_period_count/baseline_weekly_vol CTEs all read the same source over overlapping date windows). On daily/daily_product: 4 references to a quoted path — cheap (DuckDB reads parquet metadata + pushdown each time; not 4 full materializations).
+- **Effort:** **M.** Promote the source to a named CTE once and have all 4 CTEs read from it: `WITH src AS (SELECT ... FROM ${cfg.fromExpr} WHERE order_date in [union of current+baseline window] ${sidebarFilter}), tagged AS (SELECT * FROM src ...), baseline_weeks AS (... FROM src WHERE baseline ...), ...`. A named CTE referenced 4× is materialized/de-duped once by DuckDB. Caveat: tagged scans current∪baseline, the 3 baseline CTEs scan baseline-only — `src` must span the union (it already would via the tagged WHERE), and the baseline CTEs filter down with a cheap predicate on the already-scanned `src`. Param order in `allValues` (`:356-368`) must be rebuilt — that's the bulk of the effort and the test surface (`shifts.test.ts` exists, exercise it).
+- **Even cheaper alternative:** when `hasProcessedOnly`, materialize the `processedAsDaily` result into a request-scoped TEMP TABLE (à la breakdown's `bd_cache`) once, then point `cfg.fromExpr` at the temp table name. Turns 4 raw scans into 1 scan + 4 temp-table reads, and is reusable across the 3 grains if a request computes several.
+
+### F2 — `breakdown-sparklines.ts`: `processedPruned` scanned twice at level=0 (HIGH)
+**Evidence:** `src/app/api/breakdown-sparklines/route.ts:140` / `:164` (per-dimension sparklines, one of the two branches runs) and `:191` (`__TOTAL__` sparkline, level=0 only). Same `pqPath` (`:115`), same window, same `extraWhere` filter, same `costExpr` — two full scans of the pruned `processed` files, differing only in `GROUP BY <dimCol>, month` vs `GROUP BY month`.
+- **Redundant scans:** 2× on processed tier (only when `level === 0`).
+- **Effort:** **S.** Compute the per-dim monthly CTE once, then derive `__TOTAL__` from it: either re-aggregate the already-grouped `monthly` rows in JS (sum cost-weighted by count per month — needs count carried), or use SQL `GROUP BY GROUPING SETS ((dim_val, m), (m))` in one scan and split the rollup rows out. The JS path is simplest if `monthly` also returns a per-month shipment count to weight the total correctly; otherwise GROUPING SETS keeps it exact in one pass.
+
+### F3 — `breakdown.ts` `buildTotalQuery`: `processedPruned` scanned twice (HIGH)
+**Evidence:** `src/app/api/breakdown/route.ts:406` (`src` CTE) and `:448` (`real_pct_all` CTE) both `FROM ${pqPath}` (`processedPruned(outerFrom, outerTo)`, `:387`) with the same filter. The `src` CTE already carries `role` and a `has_real` flag (`:402`); `real_pct_all` recomputes the real-coverage % from a fresh scan instead of from `src`.
+- **Redundant scans:** 2× on processed tier (the `level=total` path and the bulk-fetch path both call this).
+- **Effort:** **S.** `real_pct` over the *current* role is derivable from `src`: `SELECT ROUND(SUM(CASE WHEN role='current' AND has_real=1 THEN 1 END)*100.0/NULLIF(SUM(CASE WHEN role='current' THEN 1 END),0),1) FROM src`. Fold `real_pct_all` into a `src`-based CTE and drop the second `${pqPath}` scan. Verify the existing `real_pct_all` WHERE (`:449-451`) matches the current-role subset of `src` (it filters `order_date BETWEEN current from/to` — equivalent to role='current').
+
+### F4 — `overview.ts` mode=full: `daily` tier scanned ~5-7× (MEDIUM — small source)
+**Evidence:** `src/app/api/overview/route.ts` — main agg (`:197-221`), `shareSQL("destination_country")` (`:222`), `shareSQL("shippingprovider")` (`:223`), `rangeAgg(current)` (`:247`), optional `rangeAgg(prior/yoy)` (`:249-252`), coverage (`:367-373`). All hit `{{PARQUET}}` = the active tier (usually `daily.parquet`) with the same sidebar filter, differing only in GROUP BY / date window. The 3 chart queries (main + 2 shares) share an identical base aggregation that could be computed once.
+- **Redundant scans:** up to 5-7× — **but** Tier 1 `daily.parquet` is the pre-aggregated rollup (small), so per-scan cost is low; this is a latency/CPU smell, not an OOM driver. Drops to the heavy `processed` tier only when both packagetype + SOG filters are active (`dailyTier` → "processed"), where it becomes a genuine multi-scan of the big source.
+- **Effort:** **M.** Collapse main + country-share + provider-share into one scan: a single base CTE grouped by `(period, country, provider)`, then derive the period totals, country shares, and provider shares as downstream aggregations over that CTE. The KPI `rangeAgg` calls are different date windows so they're legitimately separate (can't fold), though `current` overlaps the chart range. Lower priority than F1-F3 because the source is small on the common path.
+
+### F5 — `completeness.ts` / `avg-costs.ts`: `period_list` + main scan twice (MEDIUM, confirmed prior note)
+**Evidence:** `completeness/route.ts:81` (`period_list` CTE) + `:96` (main) + `:110` (`latestComplete`, a *third* scan via separate `rawQuery`); `avg-costs/route.ts:78` (`period_list`) + `:95` (main). Both inline `${fromSQL}`/`${fromExpr}` for `period_list` (DISTINCT trailing periods) and again for the main grid.
+- **Redundant scans:** completeness 3× (2 in the main statement + 1 separate `latestComplete` query, `:106`); avg-costs 2×. On daily tier these are quoted-path references (cheap). On processed tier `fromSQL`/`fromExpr` is the `processedAsDaily` subquery → genuine repeat aggregation, but already **window-pruned** to the trailing `periods` (the [[S146_f20d7744_scm-serving-memory-review|S146]] fix, `completeness:29-33` / `avg-costs:30-35`), so the blast radius is bounded.
+- **Effort:** **S-M.** `period_list` only needs DISTINCT truncated dates ≤ `to`; it could read a cheap pre-aggregated period list rather than re-scanning the grain source. Or materialize the windowed processed aggregation into a temp table once and reference it for both `period_list` and the main grid (and, in completeness, for `latestComplete`). On daily tier, not worth it.
+
+---
+
+## Not redundant (checked, ruled out)
+- **breakdown level/tooltip queries** (`buildLevelQuery`, `buildTooltipQueries`) reference `${srcTable}` 5-7×, but `srcTable` is the `bd_cache` **TEMP TABLE** (`:194`), not parquet. This is the *target* compute-once pattern — the repeated reads are cheap in-memory table scans. F1-F5 should converge on this design.
+- **deviations.ts** 3 `rawQuery` calls (`:85` main, `:149` packages, `:213` trends) read **different scopes/sources** — main from `fromExpr`, dev_pcts from `deviations_summary.parquet` (a different, pre-aggregated parquet), trends from `processedPruned`. Not the same source re-scanned for the same rows. The main query's `main` + `dev_pcts` CTEs hit two *different* parquets — legitimately two scans.
+- **db.ts FC_TABLE** — `filter_combos.parquet` is loaded once into a persistent in-memory table at connect (`:44`); filter-options reads the table, not the file. Correct.
+- Per-call **query cache** (`db.ts:70-135`) de-dups *identical* `(sql, params)` across requests, but does NOT help within a single request where the SQL differs per CTE/query — so the within-request redundancy here is not masked by the cache.
+
+---
+
+## Needs live measurement
+1. **DuckDB CTE de-dup reality check.** The whole ranking assumes DuckDB materializes a named CTE referenced N× once, but re-scans an *inline* subquery written N×. Confirm with `EXPLAIN ANALYZE` on the F1 shifts SQL (processed tier, processed-only filter active) before and after the named-CTE refactor — count `READ_PARQUET`/scan operators. If DuckDB already CSEs identical inline subqueries, F1's win shrinks to the param-reorder risk with no payoff.
+2. **Per-tier hit rate.** F1/F4/F5 only bite on the `processed` tier (packagetype + SOG, or processed-only filters). Need request-log telemetry on how often the deployed app actually lands on the processed tier vs Tier 1 — that sets the real priority order. If processed-tier requests are <5% of traffic, F2/F3 (always processed) outrank F1/F4/F5.
+3. **F1 absolute cost.** Time a processed-tier shift request (product/routing/carrier grain) end-to-end now, then with the src-CTE or temp-table fix. Confirms whether 4×→1× scan is the dominant term or whether the window-function-heavy CTEs (early_max, baseline_weeks) dominate regardless of scan count.
+4. **F2/F3 row-count sanity.** Verify the GROUPING SETS / src-derived rollup produces byte-identical totals to the current double-scan (the `__TOTAL__` sparkline and breakdown total row are user-visible and reconcile against the overview chart — a count-weighting bug would silently skew them).

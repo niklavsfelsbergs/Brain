@@ -28,6 +28,7 @@ switchboard/state-comms-*.md
 switchboard/chat.ndjson
 switchboard/ritual-events.ndjson
 switchboard/ritual-events.ndjson.tmp.*
+switchboard/adherence-snapshots.ndjson
 switchboard/state-shipping-agents.json
 developer-braindead/experiments/visualizer/state.ndjson
 

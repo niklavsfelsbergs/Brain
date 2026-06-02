@@ -17,6 +17,11 @@ Quantifies how the brain's rituals actually behave, two ways:
 Band C (hand-emitted ritual markers) is deliberately NOT built — it would depend
 on the very discipline the gates exist to backstop.
 
+For session-grouped COMPLIANCE RATES (% of sessions that posted an OPEN, etc.)
+rather than raw event counts, see the sibling adherence-rates.py (plan §X.7) —
+it reads the same event stream through an obedience lens and persists a rate
+time-series for pre-leak drift detection.
+
 Usage:
     python developer-braindead/verification/ritual-stats.py [--days N] [--events PATH]
 

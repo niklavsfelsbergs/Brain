@@ -220,7 +220,12 @@ def run_dev(sid8: str) -> int:
 # ===================== gielinor player close ritual =====================
 # Keyed by sid8 across players/*/. A single session may touch >1 player; the
 # sid8 is the join key (it is embedded in quest filenames SNNN_<sid8>_<slug>.md
-# and inventory resume filenames <slug>-resume__<sid8>.md).
+# and inventory resume filenames <slug>-resume__<sid8>.md). A CONTINUATION
+# session has no filename match (the parent quest carries the parent's sid8), so
+# the checks join on _session_quest_files = own (filename) + continued (lineage:
+# body-stamp or a sid8-keyed resume's `quest:` header) -- see the lineage block
+# above. This keeps the false-FAIL fix and the no-going-blind guarantee in ONE
+# place that every downstream check shares.
 
 def _player_quest_files(sid8: str, stages=("in-progress", "completed")):
     """[(player, path)] for every players/*/quest-log/<stage>/*<sid8>*.md."""
@@ -256,6 +261,98 @@ def _player_resume_files(player: str, sid8: str):
     return [f for f in inv.glob(f"*resume*{sid8}*.md")]
 
 
+# --- continuation lineage (the X.2-precondition fix) ----------------------
+# A CONTINUATION session gets a fresh sid8 but appends to a parent quest born
+# under a DIFFERENT sid8 -- so the parent's filename carries the parent's sid8,
+# not this session's. Joining the player checks on the literal sid8 alone then
+# false-FAILs a legitimate continuation (the work IS on disk, under the parent's
+# name) and -- worse for the Stop-gate -- lets the downstream resume/freshness/
+# committed checks go vacuously blind (they're gated on the same lookup). The
+# two signals below recognize the lineage WITHOUT going blind to a genuinely
+# missing quest-log: a session that left no own quest, no stamped append, and no
+# resume naming an existing parent still FAILs.
+
+_CONT_CACHE: dict = {}  # keyed incl. GIELINOR_PLAYERS so monkeypatched test trees never collide
+
+
+def _resume_parent_quest(resume_path: Path):
+    """The `quest:` freshness-header value of a resume file (e.g. 'S147_scm-perf-audit'),
+    or None. Parse-lenient -- a substring scan of the first lines, same spirit as
+    _missing_header_keys, so format drift never breaks it."""
+    try:
+        for line in resume_path.read_text(encoding="utf-8", errors="replace").splitlines()[:15]:
+            s = line.strip()
+            if s.lower().startswith("quest:"):
+                return s.split(":", 1)[1].strip() or None
+    except Exception:
+        return None
+    return None
+
+
+def _quest_field_matches(quest_field: str, stem: str) -> bool:
+    """True if a resume `quest:` value (SNNN_slug) names the quest file `stem`
+    (SNNN_<parent_sid8>_slug). Matches on the SNNN prefix + trailing slug, so the
+    parent's sid8 in the middle is irrelevant; an SNNN-only value matches on the
+    prefix. The after-SNNN '_' guard stops 'S14' from prefixing 'S147_...'."""
+    qf = (quest_field or "").strip()
+    if not qf:
+        return False
+    snnn, _, slug = qf.partition("_")
+    if not stem.startswith(snnn):
+        return False
+    after = stem[len(snnn):]
+    if after and not after.startswith("_"):
+        return False
+    return stem.endswith(slug) if slug else True
+
+
+def _continuation_quest_files(sid8: str, stages=("in-progress", "completed")):
+    """[(player, path)] for quest files this session CONTINUED but did not create.
+
+    Two lineage signals (the picked design -- resume-header + body-stamp):
+      (a) the quest file's BODY carries this sid8 (an explicitly stamped append); or
+      (b) a sid8-keyed resume file's `quest:` header names this quest (the robust
+          signal -- present even when the continuation append is unstamped, as in
+          the real S147/3bb042ff case).
+    Files attributable by FILENAME (*{sid8}*.md) are excluded -- those are this
+    session's OWN quests, already handled by _player_quest_files."""
+    key = (str(GIELINOR_PLAYERS), sid8, tuple(stages))
+    if key in _CONT_CACHE:
+        return _CONT_CACHE[key]
+    out = []
+    if GIELINOR_PLAYERS.exists():
+        for player_dir in GIELINOR_PLAYERS.iterdir():
+            ql = player_dir / "quest-log"
+            if not ql.is_dir():
+                continue
+            resume_targets = [q for q in (_resume_parent_quest(rf)
+                              for rf in _player_resume_files(player_dir.name, sid8)) if q]
+            for stage in stages:
+                base = ql / stage
+                if not base.is_dir():
+                    continue
+                for f in base.glob("*.md"):
+                    if sid8 in f.name:
+                        continue  # own quest (filename match) -- not a continuation
+                    body = f.read_text(encoding="utf-8", errors="replace")
+                    if sid8 in body or any(_quest_field_matches(q, f.stem) for q in resume_targets):
+                        out.append((player_dir.name, f))
+    _CONT_CACHE[key] = out
+    return out
+
+
+def _session_quest_files(sid8: str, stages=("in-progress", "completed")):
+    """Own (filename-keyed) + continued (lineage) quest files for this session,
+    deduped by path. The single join the player checks should use so a continuation
+    is recognized everywhere the literal-sid8 lookup used to go blind."""
+    seen, out = set(), []
+    for player, f in _player_quest_files(sid8, stages) + _continuation_quest_files(sid8, stages):
+        if f not in seen:
+            seen.add(f)
+            out.append((player, f))
+    return out
+
+
 def check_closing_player(sid8):
     name = "CLOSING posted"
     try:
@@ -274,15 +371,20 @@ def check_closing_player(sid8):
 def check_questlog_player(sid8):
     name = "quest-log present"
     try:
-        qf = _player_quest_files(sid8)
+        own = _player_quest_files(sid8)
+        cont = _continuation_quest_files(sid8)
         inbox = _inbox_files(sid8)
-        if qf:
-            players = sorted({p for p, _ in qf})
-            return (name, True, f"{len(qf)} quest file(s) for this sid8 ({', '.join(players)})")
+        if own or cont:
+            players = sorted({p for p, _ in own + cont})
+            note = f"{len(own)} own"
+            if cont:
+                note += f" + {len(cont)} continued (lineage)"
+            return (name, True, f"{note} quest file(s) for this sid8 ({', '.join(players)})")
         if inbox:
             return (name, True, f"{len(inbox)} inbox entry/entries for this sid8 (unscoped, step 11)")
         return (name, False,
-                f"no players/*/quest-log or players/inbox entry matching *{sid8}*.md (step 2/11)")
+                f"no quest-log/inbox entry for *{sid8}*.md, no stamped append, and no "
+                f"resume naming an existing parent quest (step 2/11)")
     except Exception as e:
         return (name, False, f"exception: {e}")
 
@@ -290,7 +392,7 @@ def check_questlog_player(sid8):
 def check_resume_player(sid8):
     name = "inventory resume present"
     try:
-        inprog = _player_quest_files(sid8, stages=("in-progress",))
+        inprog = _session_quest_files(sid8, stages=("in-progress",))
         if not inprog:
             return (name, True, "no in-progress quest for this sid8; resume file not required")
         missing = []
@@ -321,7 +423,7 @@ def _missing_header_keys(path: Path):
 def check_freshness_header_player(sid8):
     name = "resume freshness header"
     try:
-        inprog = _player_quest_files(sid8, stages=("in-progress",))
+        inprog = _session_quest_files(sid8, stages=("in-progress",))
         if not inprog:
             return (name, True, "no in-progress quest for this sid8; no resume header required")
         bad, any_file = [], False
@@ -346,8 +448,8 @@ def check_freshness_header_player(sid8):
 def check_committed_player(sid8):
     name = "core artifacts committed"
     try:
-        files = [f for _, f in _player_quest_files(sid8)] + list(_inbox_files(sid8))
-        for player in sorted({p for p, _ in _player_quest_files(sid8, stages=("in-progress",))}):
+        files = [f for _, f in _session_quest_files(sid8)] + list(_inbox_files(sid8))
+        for player in sorted({p for p, _ in _session_quest_files(sid8, stages=("in-progress",))}):
             files += _player_resume_files(player, sid8)
         dirty = [f for f in files if not _git_clean(f)]
         if dirty:

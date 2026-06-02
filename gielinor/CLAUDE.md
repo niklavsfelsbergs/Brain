@@ -99,13 +99,16 @@ The conventions you operate by:
 @meta/write-rules.md
 @meta/modes.md
 @meta/communication-protocol.md
-@meta/archive-discipline.md
-@meta/drafts-mechanics.md
-@meta/death-and-spawn.md
 @meta/layer-routing.md
 @meta/task-lists.md
 
 These are in-force every session.
+
+**Loaded just-in-time, not eagerly (Phase-1 trim, §X Stage A — see `developer-braindead/bank/plan.md` and [[D-032_braindead_full_access|D-032]]).** Three files left the eager `@import` chain — their load-bearing rules are re-triggered where they apply, so loading them every turn was dead weight (the constraint-count / context-rot tax). Read the file when its trigger fires:
+
+- `meta/archive-discipline.md` — never delete, only move to `archive/`. **Enforced by `block-deletes.py`**, so the rule holds without the prose; read the file for archive-structure detail when reorganizing.
+- `meta/drafts-mechanics.md` — the drafts → confirmed flow + the observation-backed rule. Read at **alching / drafts-triage / close-session** (those rituals point to it, and the observation rule is echoed inline there).
+- `meta/death-and-spawn.md` — what survives a crash/reset + the reconciliation model. Read at **respawn** when an in-progress quest needs crash-recovery (the respawn ritual instructs the read).
 
 ## The six architectural guarantees
 

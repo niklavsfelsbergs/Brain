@@ -101,7 +101,7 @@ The resume foreground for each in-flight quest lives in `inventory/<quest-slug>-
    - **Reconcile the pending action externally first** — the principal checks whether the last `pending` action actually completed on the outside world (e.g., a file was written, a message was sent), then tells the agent to mark it `completed` or `failed` by hand before resuming.
 4. **Do not auto-resume.** Do not start new work until the principal has chosen. Auto-resuming risks re-running an action that already completed and re-doubling its side effect.
 
-See `meta/death-and-spawn.md` for the full crash-recovery model.
+**Read `meta/death-and-spawn.md` now** for the full crash-recovery + reset model before presenting the options — it is no longer loaded eagerly (Phase-1 §X-A trim), so this reconciliation step is its trigger.
 
 ## Mini-respawn — mid-session player switch
 

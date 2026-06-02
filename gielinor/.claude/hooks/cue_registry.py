@@ -77,6 +77,47 @@ DOMAINS = [
         "skip_actors": DEFAULT_SKIP_ACTORS,
     },
 
+    # --- entry #2: deploy / schema -------------------------------------------
+    # Closes knowledge-miss regression cases 8 + 9 (the cheap sibling §X.4 left
+    # open). Both are deploy-time hazards whose knowledge home is jebrim's deploy
+    # bank notes, never loaded at the moment of the change:
+    #   case 8 (S098): a serving change filtered on a NEW column before the data
+    #     was regenerated -> filtered views 500'd while "All" worked. Rule: when a
+    #     change adds a column the serving filters on, regenerate the data
+    #     before/with the serving deploy.
+    #   case 9 (S143): a deploy-critical FIF lookup caught by a blanket *.csv/data
+    #     .gitignore was nearly architected-around. Rule: a gitignored deploy-
+    #     critical config is a DEFECT to fix (scoped !negation), not a constraint.
+    # Patterns are deploy-domain-specific (deploy/schema/migration/DAG/FIF/
+    # gitignore/column-add) -- not bare "config"/"data" (wallpaper risk).
+    {
+        "name": "deploy-schema",
+        "patterns": [
+            r"\bdeploy",                          # deploy, deployment, deploying, deployed
+            r"\bschema\b",
+            r"\bmigration\b", r"\bmigrate",
+            r"\bbackfill", r"\bregenerate\b",
+            r"\bDAG\b",
+            r"\bgitignore", r"\.gitignore\b",
+            r"\bFIF\b",
+            r"\bnew column\b", r"add(?:ing|ed)?\s+(?:a\s+)?column",
+        ],
+        "message": (
+            "Deploy/schema topic detected (\"{matched}\"). Before changing a serving "
+            "schema, adding a column a view filters on, scheduling a DAG, or touching "
+            "a deploy-time config: load jebrim's deploy bank notes — "
+            "`players/jebrim/bank/notes/projects/{{bi_analytics_deploy_topology,"
+            "scm_alerts_entity_split}}.md` + `2026-05-28-ups-orwo-fif-data-quirks.md`. "
+            "Two load-bearing rules they hold: (1) when a change adds a column the "
+            "serving FILTERS on, regenerate the data before/with the serving deploy, "
+            "else filtered views 500 while 'All' works (S098); (2) a deploy-critical "
+            "config/lookup caught by a blanket *.csv/data .gitignore is a DEFECT to fix "
+            "with a scoped !negation, not a constraint to architect around (S143 FIF). "
+            "Don't reason about deploy ordering from memory."
+        ),
+        "skip_actors": DEFAULT_SKIP_ACTORS,
+    },
+
     # --- add the next domain here as one row ---------------------------------
     # Worked example (commented = inert until a real knowledge home is confirmed):
     #

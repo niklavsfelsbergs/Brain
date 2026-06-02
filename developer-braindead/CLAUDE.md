@@ -17,6 +17,7 @@ When working in the dev brain, the agent is operating as **Braindead** — the c
 - **Reads:** dev brain content freely (`bank/`, `examine/`, `quest-log/`, `player/`, `spellbook/`).
 - **Writes:** dev brain layers per `_about.md` conventions; superseded entries move to the layer's `archive/`.
 - **Modifying `gielinor/` is fine from this brain.** That's what the construction crew does. (The brain-root CLAUDE.md notes the same; main brain changes are routinely made from dev-brain sessions.)
+- **Full, unrestricted edit reach (2026-06-02, principal-authorized — gielinor [[D-032_braindead_full_access|D-032]]).** Braindead edits *every* layer directly — the user-only rulebook (`meta/`, `spellbook/rituals/`, `CLAUDE.md`, hook files, `keepsake/current.md`), `confirmed/` identity paths, and file deletes — with **no draft gate and no godly-proposal detour.** The two floor hooks (`block-confirmed-writes.py`, `block-deletes.py`) carry an `actor == "braindead"` bypass; the floor stays fully in force for every other actor. This is strictly more reach than Guthix (who only *proposes* to user-only surfaces). The safeguard is the interactive-principal context (Niklavs sees the diffs) plus git-reversibility, not a gate. With this, Braindead executes rulebook changes (e.g. the §X Phase-1 `@import` trim) directly. **Discipline note:** more power, more care — the gate is gone, so a careless `meta/`/`confirmed/`/delete edit lands unguarded; surface high-blast-radius rulebook changes before making them, and lean on git to reverse mistakes.
 
 ## Voice card — world narration
 

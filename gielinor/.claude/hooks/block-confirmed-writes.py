@@ -17,6 +17,18 @@ except Exception:
     def log_event(*a, **k): pass
     def classify_path(p): return ""
 
+# Braindead full-access grant (2026-06-02, principal-authorized): the dev-brain
+# construction crew may write confirmed/ paths directly (full rulebook + identity
+# authorship is his role). The gate stays for every other actor. Resolve via the
+# hardened helper; bypass logged for audit. See write-rules.md.
+_HOOK_DIR = Path(__file__).resolve().parent
+if str(_HOOK_DIR) not in sys.path:
+    sys.path.insert(0, str(_HOOK_DIR))
+try:
+    from _actor import resolve_actor
+except Exception:
+    def resolve_actor(sid8, brain_root=None): return ""
+
 BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
@@ -47,6 +59,11 @@ def main() -> None:
     p = Path(file_path)
     if not is_in_brain(p):
         sys.exit(0)
+
+    sid8 = (payload.get("session_id") or "")[:8]
+    if resolve_actor(sid8) == "braindead":
+        log_event("block-confirmed", "bypass-braindead", sid8=sid8, detail=str(p))
+        sys.exit(0)  # construction crew: unrestricted (principal-authorized)
 
     parts_lower = [part.lower() for part in p.parts]
     if "confirmed" in parts_lower:

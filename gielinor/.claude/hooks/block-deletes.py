@@ -18,6 +18,19 @@ try:
 except Exception:
     def log_event(*a, **k): pass
 
+# Braindead full-access grant (2026-06-02, principal-authorized): the dev-brain
+# construction crew has UNRESTRICTED edit reach — including deletes — because
+# building/maintaining the brain is his role. The floor stays for every other
+# actor (players, Guthix, wisp). Resolve via the hardened helper (status->intent
+# anti-race); bypass logged so every override is auditable. See write-rules.md.
+_HOOK_DIR = Path(__file__).resolve().parent
+if str(_HOOK_DIR) not in sys.path:
+    sys.path.insert(0, str(_HOOK_DIR))
+try:
+    from _actor import resolve_actor
+except Exception:
+    def resolve_actor(sid8, brain_root=None): return ""
+
 DELETE_PATTERNS = [
     re.compile(r"(?<![A-Za-z0-9_-])rm(?:\s+-[A-Za-z]+)*\s", re.IGNORECASE),
     re.compile(r"\bremove-item\b", re.IGNORECASE),
@@ -47,6 +60,11 @@ def main() -> None:
     command = tool_input.get("command", "")
     if not command:
         sys.exit(0)
+
+    sid8 = (payload.get("session_id") or "")[:8]
+    if resolve_actor(sid8) == "braindead":
+        log_event("block-deletes", "bypass-braindead", sid8=sid8, detail=command[:120])
+        sys.exit(0)  # construction crew: unrestricted (principal-authorized)
 
     for pat in DELETE_PATTERNS:
         if pat.search(command):

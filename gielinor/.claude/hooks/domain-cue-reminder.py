@@ -55,6 +55,22 @@ except Exception:
 
 STATUS_DIR = Path(os.path.expanduser("~")) / ".claude" / "status"
 
+# Hardened actor resolution (S125 _actor.py): status file first, intent-file
+# anchor as the anti-race fallback. _actor.py's contract MANDATES that any new
+# actor-needing hook use resolve_actor rather than a status-only read — reading
+# status alone re-introduces the S124 sidecar-lag race (during the lag window
+# actor=='' so the braindead skip wouldn't apply and a dev session would wrongly
+# get a domain nudge). Defensive import: fall back to the local status-only read
+# if _actor.py is somehow unavailable, so the hook never breaks.
+_HOOK_DIR = Path(__file__).resolve().parent
+if str(_HOOK_DIR) not in sys.path:
+    sys.path.insert(0, str(_HOOK_DIR))
+try:
+    from _actor import resolve_actor
+except Exception:
+    def resolve_actor(sid8, brain_root=None):
+        return _actor_for(sid8)
+
 
 def _compiled():
     """Compile each domain's patterns once. Bad patterns drop that entry, not the hook."""
@@ -108,7 +124,7 @@ def main() -> int:
 
     sid = payload.get("session_id") or os.environ.get("CLAUDE_CODE_SESSION_ID") or ""
     sid8 = sid[:8].lower()
-    actor = _actor_for(sid8)
+    actor = resolve_actor(sid8)
 
     blocks = []
     for d, rx in _compiled():

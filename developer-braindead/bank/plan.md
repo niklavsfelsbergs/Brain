@@ -268,10 +268,29 @@ The brain is already an Obsidian-shaped vault (`.md` + `[[wikilinks]]`); Obsidia
 
 ## §W — Domain-knowledge grounding registry (built 2026-06-02, [[S144_9b67aceb_domain_grounding_cue_registry|S144]])
 
-**Status.** `[x]` mechanism shipped (live-fire hand-off pending). The generalization of S124's shipping-cue into a registry-driven hook.
+**Status.** `[x]` mechanism shipped (live-fire hand-off pending). The generalization of S124's shipping-cue into a registry-driven hook. **[[S145_543c6caf_knowledge_loading_and_rule_adherence_audit|S145]] update:** re-verified 7/7 boundary cases + **hardened** `domain-cue-reminder.py` to resolve the actor via the shared `resolve_actor` (status→intent anti-race fallback) instead of the status-only `_actor_for` it shipped with — [[S144_9b67aceb_domain_grounding_cue_registry|S144]] missed `_actor.py`'s contract (status-only re-opens the S124 sidecar-lag race). Verified `py_compile` + boundary suite + 4-case intent-fallback unit test.
 
 **Diagnosis (the durable one).** The brain is **library-rich, reflex-poor**: knowledge (and even *lessons about its own failures*) accumulate as passive notes that nothing forces the agent to load on-topic. Proof: the S124 confirmed note *"read the domain reference before proposing"* was already in memory and the failure recurred. **Smartness here = making the right knowledge fire at the right moment, not adding more notes.** The only mechanism the brain has that actually changes behavior is the hook (it's not optional); discipline-only rules fire ~30%.
 
 **Built.** `gielinor/.claude/hooks/cue_registry.py` (the `DOMAINS` table — shipping is entry #1, ported verbatim from S124) + `domain-cue-reminder.py` (reads the registry, per-entry actor-skip, one combined nudge, exit 0 always). The Nth domain (EU tender / FIF / SCM — all have canonical homes in `players/jebrim/bank/notes/projects/`) is **one row**. Distinct from `grounding-cue-reminder.py` (identity reflex, own past work, [[D-028_grounding-precondition-needs-a-trigger|D-028]]) — left untouched.
 
 **Open / next (NOT done — surfaced for Jebrim sessions).** The two other roots from the same diagnosis: **(W.1)** the report-as-analyst redesign (delta/exception-driven not level-driven; bottom-line-first; builder=evidence-pack, shipping-agent=investigate + judge-against-contract; don't mechanize the judgment per S124). **(W.2)** capture the LPS/OML band/trigger/refund knowledge into `shipping-agent/reference/` (capture gap — it's in Niklavs' head, not the brain). Both are player work, not dev-buildable.
+
+## §X — Knowledge-loading & rule-adherence intervention backlog (research-backed, 2026-06-02, [[S145_543c6caf_knowledge_loading_and_rule_adherence_audit|S145]])
+
+**Source.** Full audit + online research: `bank/research/2026-06-02-knowledge-loading-and-rule-adherence.md`. Widens §W's single-hook fix into the whole-brain picture, backed by the field SOTA (Anthropic context-engineering & hooks docs, MemGPT/mem0/Generative-Agents, lost-in-the-middle, constraint-count collapse, context rot). **Unifying diagnosis** (confirmed internally + externally): *knowledge/rules bound to a deterministic trigger hold; those depending on the agent deciding to act drift.* Corollary worth holding — adding eagerly-loaded prose makes **every** rule less followed; the fix is move-to-trigger + remove-from-eager-load, not another note.
+
+**Done.** Rec #1 = §W domain-cue registry (shipped [[S144_9b67aceb_domain_grounding_cue_registry|S144]], hardened + re-verified [[S145_543c6caf_knowledge_loading_and_rule_adherence_audit|S145]]).
+
+**Backlog, ranked by leverage:**
+
+- **(X.2) Stop-hook ritual gate** `[ ]` — bind `close_check.py --ritual` to the `Stop` event; a session can't end with an unposted OPEN / unresolved `pending`. Kills the #1 leak class. **PRECONDITION: fix `close_check`'s known continuation false-FAIL first** (a Stop hook that false-blocks > an advisory that false-warns). Dev-buildable.
+- **(X.3) Draft-gate as `PreToolUse` input-rewrite** `[ ]` — auto-redirect `bank/notes/` → `bank/drafts/notes/` (and skills equiv) via `updatedInput`; turns two guided-only gates into guarantees. Dev-buildable.
+- **(X.4) `SessionStart` forced-read injection** `[ ]` — inject "read `keepsake/current.md` + relevant `inventory/*-resume` before substantive work" (+39% memory-tool forcing analog). **Also: fill `keepsake/current.md`** (empty today). Dev-buildable hook; keepsake is principal/alching work.
+- **(X.5) Trim the `@import` chain → thin router + JIT layer-index** `[ ]` — **highest-leverage non-hook; contrarian.** Stop eagerly expanding all `meta/`; thin always-on core + `layer-routing.md` as map; load specific rule JIT (delivered by topic-cue hook). Attacks the constraint-count/lost-in-the-middle root. User-only (`CLAUDE.md`/`meta/`) → **Guthix godly proposal**, scope first.
+- **(X.6) Critic sub-agent at close** `[ ]` — judgment rules can't be hooked; a reviewer gnome for analytical deliverables (register, definition-reconciliation). Process, not a hook.
+- **(X.7) Adherence telemetry upgrade** `[ ]` — make `ritual_log` persist + compute compliance *rates* (% sessions posting OPEN), not just event counts. Makes drift visible pre-leak. Dev-buildable.
+- **(X.8) mem0-style ADD/UPDATE/DELETE/NOOP reconciliation in alching** `[ ]` — force the explicit supersede/merge/reject decision when an alching candidate overlaps an existing bank note. Ritual refinement (user-only ritual edit).
+- **(X.9) Two-bucket rule audit** `[ ]` — one pass over `meta/` + `communication-protocol.md`: bright-line → migrate to hook + stop restating in prose; judgment → keep/strengthen the *why*. Bankstanding/godly-proposal work.
+
+**Sequencing note.** X.2/X.3/X.7 are clean standalone dev builds. X.5 is the big strategic win but high-blast-radius (load order + user-only meta) — design + godly proposal before touching. X.4/X.6/X.8/X.9 lean on principal/ritual surfaces. None is urgent; surfaced for Niklavs to steer.

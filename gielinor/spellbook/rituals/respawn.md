@@ -129,6 +129,7 @@ After respawn, the agent maintains the in-progress quest-log entry **every turn*
 
 - Append a brief narrative line for what happened this turn.
 - For any external action: log `pending` before the call, update to `completed` or `failed` after.
+- Write the in-voice **intent line** to the visualizer sidecar after stating the Plan (the speech bubble). **Read `meta/intent-narration.md` now** for the full sidecar mechanics — the intent file path + per-actor voice, the `.mode` ritual marker, the narration channel, and the intent-vs-action discipline. It is no longer loaded eagerly (Phase-1 §X-C trim); this per-turn discipline is its trigger, so read it once at session start, before writing the first intent line.
 
 This is the crash-recovery substrate. Without it, death-as-crash recovery is impossible. See `meta/death-and-spawn.md`.
 

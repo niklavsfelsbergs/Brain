@@ -38,4 +38,6 @@ The same shipping session built the whole shipping reflex and left it uncommitte
 - **Roots 3 & 4 from the diagnosis are NOT done** — the report-as-analyst redesign (delta/exception-driven, bottom-line-first, builder=evidence / shipping-agent=judge-against-contract) and capturing the LPS/OML band/refund knowledge into `shipping-agent/reference/`. Both are Jebrim-session work, surfaced for Niklavs.
 - S124's Jebrim analysis files (report skill, `summarizing-discussions` draft, S124/[[S034_guthix_consultation_mode|S034]] quest-logs) left uncommitted for a Jebrim session / alching per Niklavs' "mechanism only" scope.
 
-Commit: mechanism only, scoped by pathspec.
+**Cascade.** Dev-brain side: this quest-log (S144), `bank/plan.md` §W, `bank/build-lessons.md` (+1 line), `comms/active.md` (OPEN→UPDATE→CLOSING). Commit `7f7606c` (mechanism) + the close commit.
+
+**Main-brain changes.** Yes — the grounding mechanism crossed into gielinor: new `gielinor/.claude/hooks/cue_registry.py` + `domain-cue-reminder.py`, `gielinor/.claude/hooks/archive/shipping-cue-reminder.py` (archived standalone), `gielinor/players/jebrim/CLAUDE.md` (hook ref), brain-root `.claude/settings.json` (registration repoint + comment). S124's Jebrim analysis files (report skill, `summarizing-discussions` draft, S124/[[S034_guthix_consultation_mode|S034]] quest-logs) deliberately NOT landed — left for a Jebrim session per the "mechanism only" scope.

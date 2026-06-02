@@ -19,6 +19,12 @@ Two short lines. Bold labels. Each line terse — single sentence each, no multi
 
 The preamble exists to **catch misunderstandings before the agent commits to the wrong task.** A wrong restatement is a cheap correction; a wrong implementation is not.
 
+## The `Reading:` line — name the grounding plan
+
+On **substantive, ambiguous, or knowledge-dependent** turns, add a third preamble line naming the **concrete files/layers** you'll ground in *before* answering — `Reading:` followed by the paths (e.g. `Reading: players/jebrim/bank/notes/projects/eu-tender.md + the shipping-agent reference/`). This is the *Recall-shaped* lens (below) made visible, and the read-side sibling of the dwarf-spawn / task-list-surfacing annotations: an invisible decision — *what context am I loading?* — surfaced at the Plan line where a wrong read-plan is still cheap to correct. **Omit it on trivial turns** — the compression rule governs here too, and a `Reading:` line on "show me file X" is list-theater; gate it on the same test as the five-lens read.
+
+**It's visible, not enforced (R3-tier).** Naming a read doesn't force the read, and you can read a file and still ignore it — so this *complements, never replaces*, the hooks that actually push knowledge into view (the domain-/grounding-cue nudges, any forced-read gate). Its payoff is **observability**: a stated `Reading:` line makes cue-obedience legible — when a domain/grounding cue fires, did the right knowledge actually get loaded before the answer landed?
+
 ## Compression for trivial requests
 
 When the ask is unambiguous and small (e.g., "what was that number," "show me file X," routine acknowledgments), compress to a single action line instead of the full Understanding/Plan format.

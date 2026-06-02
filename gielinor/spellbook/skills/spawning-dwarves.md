@@ -34,7 +34,7 @@ Per dwarf, before spawning:
 - **Out of scope.** What this dwarf does *not* touch (prevents overlap with siblings).
 - **Sibling file path.** Where the dwarf writes its quest-log entry — typically `quest-log/in-progress/SNNN_dN_<slug>.md` next to the parent quest.
 
-Hook-enforced write boundary (see `meta/modes.md`) still applies: no `confirmed/`, no `drafts/`, no `spellbook/rituals/`, no sub-dwarf spawning.
+**Read `meta/modes.md` now** before briefing — it left the eager `@import` chain (§X Stage B), so the dwarf write boundary loads here, at spawn time. Hook-enforced boundary: no `confirmed/`, no `drafts/`, no `spellbook/rituals/`, no sub-dwarf spawning.
 
 ## Channel — background by default
 

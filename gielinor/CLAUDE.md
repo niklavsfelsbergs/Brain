@@ -96,19 +96,21 @@ When the principal asks *"what ideas have I had"* / *"list my ideas"* / *"show i
 
 The conventions you operate by:
 
-@meta/write-rules.md
-@meta/modes.md
 @meta/communication-protocol.md
 @meta/layer-routing.md
 @meta/task-lists.md
 
 These are in-force every session.
 
-**Loaded just-in-time, not eagerly (Phase-1 trim, §X Stage A — see `developer-braindead/bank/plan.md` and [[D-032_braindead_full_access|D-032]]).** Three files left the eager `@import` chain — their load-bearing rules are re-triggered where they apply, so loading them every turn was dead weight (the constraint-count / context-rot tax). Read the file when its trigger fires:
+**Loaded just-in-time, not eagerly (Phase-1 trim, §X Stages A–B — see `developer-braindead/bank/plan.md` and [[D-032_braindead_full_access|D-032]]).** Five files left the eager `@import` chain — their load-bearing rules are re-triggered where they apply (a ritual step that reads them, or a hook that enforces them at the governed action), so loading them every turn was dead weight (the constraint-count / context-rot tax). The everyday summary stays in this file; read the full file when its trigger fires:
 
+- `meta/modes.md` — the five session modes + the four sub-agent roles (dwarf / gnome / penguin / shipping-agent) and their write boundaries. Those boundaries are **hook-enforced** (`{dwarf,gnome,penguin,shipping-agent}-write-boundary.py`, `block-sub-spawn.py`) and summarized in *The six architectural guarantees* below, so the prose is reference. Read the full file at the moment of **spawning a sub-agent** (the three `spawning-*` skills instruct the read) or when **entering a ritual** whose write-reach you need to confirm. (Stage B.)
+- `meta/write-rules.md` — the full per-layer write-discipline table + the ritual write-reach table. The everyday rule is the draft→approve one-liner below, and `confirmed/` writes are hook-blocked; read the full file at **alching / drafts-triage / bankstanding / close-session** (those rituals instruct the read), or when you need the exact discipline for a specific layer. (Stage B.)
 - `meta/archive-discipline.md` — never delete, only move to `archive/`. **Enforced by `block-deletes.py`**, so the rule holds without the prose; read the file for archive-structure detail when reorganizing.
 - `meta/drafts-mechanics.md` — the drafts → confirmed flow + the observation-backed rule. Read at **alching / drafts-triage / close-session** (those rituals point to it, and the observation rule is echoed inline there).
 - `meta/death-and-spawn.md` — what survives a crash/reset + the reconciliation model. Read at **respawn** when an in-progress quest needs crash-recovery (the respawn ritual instructs the read).
+
+**The draft→approve one-liner (everyday `write-rules.md` core).** Observations enter the brain freely as **drafts**; promotion to canonical knowledge — identity (`examine/`, `niksis8*/`), decisions (`lorebook/`), and per-player `bank/notes/` — is **gated behind your sign-off** (alching / drafts-triage / bankstanding). Write to the `drafts/` path (`bank/drafts/notes/`, `spellbook/drafts/skills/`, `examine/drafts/`, …); let the ritual promote. `confirmed/` writes and all deletes are hook-blocked. `layer-routing.md` (still always-on) already routes each content shape to its `drafts/` home; the full discipline + ritual write-reach table is in `meta/write-rules.md`.
 
 ## The six architectural guarantees
 

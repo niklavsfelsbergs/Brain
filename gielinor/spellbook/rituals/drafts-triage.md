@@ -44,6 +44,8 @@ The agent never auto-runs drafts-triage.
 
 ## The procedure
 
+**Before the survey, read `meta/write-rules.md`** — it left the eager `@import` chain (§X Stage B), and this ritual is one of its re-triggers. It carries the per-layer draft→approve discipline and which layers are user-only (keepsake `current.md`, lorebook) vs. agent-promotable — the exact knowledge the execute step (§4) depends on.
+
 **Switchboard marker.** Flag the session so the board renders a `drafts` flavor chip instead of a bare `BUSY` (mirrors alching's marker; see `meta/communication-protocol.md` → *Mode marker sidecar*): **on entry**, write `drafts` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`); **on exit/report** (step 5, or if no drafts in scope), overwrite with an empty line to clear it. Switchboard-only — a missing marker just means no chip. When drafts-triage is delegated to a gnome, the principal's row reads `AWAITING CREW` and no `drafts` marker is written.
 
 ### 1. Survey

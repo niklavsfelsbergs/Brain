@@ -2,7 +2,7 @@
 
 > The operating spec for **gnomes**: when to spawn one, how to brief one, where they're allowed to write, and what their report back to the principal looks like. Single source of truth for the spawn heuristic numbers — `close-session.md` and `alching.md` reference this file at their step 0 spawn-decision rather than carrying the thresholds themselves.
 
-See [[D-016]] (dev brain) for the founding decision and `gielinor/meta/modes.md` for the principal/dwarf/gnome axis.
+See [[D-016]] (dev brain) for the founding decision. **Read `gielinor/meta/modes.md` when you spawn a gnome** — it left the eager `@import` chain (§X Stage B), so the principal/dwarf/gnome axis and the gnome role-framing load here, at spawn time. The full gnome write surface is also restated inline below.
 
 ## What a gnome is
 

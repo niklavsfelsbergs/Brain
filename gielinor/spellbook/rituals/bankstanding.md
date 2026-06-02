@@ -44,6 +44,8 @@ Auto-triggers (scheduled, on size-budget threshold, on draft-count threshold) ar
 
 ## The procedure
 
+**Before Phase 0, read `meta/write-rules.md` and `meta/modes.md`** — both left the eager `@import` chain (§X Stage B), and bankstanding is one of their re-triggers. `write-rules.md` carries the ritual write-reach table (bankstanding = globals only; the Phase 0 mid-ritual mode transition to per-player alching and back); `modes.md` carries the bankstanding-mode framing and the gnome surface for Phase 0 delegation.
+
 The agent works through each item below in order. **Propose, never silently destroy.** Especially in the early phase, surface every move to the principal for confirmation rather than auto-executing.
 
 **Switchboard marker.** Bankstanding flags the session so the board renders a `bankstanding` flavor chip instead of a bare `BUSY` (mirrors alching's marker; see `alching.md` and `meta/communication-protocol.md` → *Mode marker sidecar*):

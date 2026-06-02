@@ -46,7 +46,7 @@ Per penguin, before spawning:
 - **Out of scope.** What this penguin does *not* touch (prevents overlap with siblings).
 - **Sibling file path.** Where the penguin writes its quest-log entry — `players/<player>/quest-log/in-progress/SNNN_pN_<slug>.md` (pN = penguin 1, 2, ...).
 
-Hook-enforced write boundary (see `meta/modes.md`) still applies: `research/`, `quest-log/`, `inventory/` only. No `bank/`, no `drafts/`, no sub-spawning.
+**Read `meta/modes.md` now** before briefing — it left the eager `@import` chain (§X Stage B), so the penguin write boundary loads here, at spawn time. Hook-enforced boundary: `research/`, `quest-log/`, `inventory/` only. No `bank/`, no `drafts/`, no sub-spawning.
 
 ## Channel — background by default
 

@@ -35,6 +35,8 @@ Each session that runs close-session gets a sequential ID: `S001`, `S002`, etc. 
 
 For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-12.
 
+**Read `meta/write-rules.md` before the harvest pump (steps 2 / 6 / 7).** It left the eager `@import` chain (§X Stage B), and close-session is one of its re-triggers — the harvest writes only to `drafts/` and `proposals/` (no `confirmed/` promotions, no `keepsake/current.md` pins), which is exactly the discipline the write-reach table fixes.
+
 **First, before any step (switchboard, S141).** As the *first* action of the close, write `closing` to `.claude/intent/<sid8>.mode` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`). This flips the session's switchboard row to `WRAPPING UP` for the duration of the wrap — the mid-wrap phase, distinct from the `WRAPPED UP` that the final *Switchboard marker* step sets once everything's done. If the close pauses for a graduation veto or commit nod, the row reads `YOUR MOVE · wrapping up`. Switchboard concern only, not architecturally enforced; if skipped, the row just stays `BUSY` until the final marker.
 
 ### 0. Spawn-decision — principal-self or gnome?

@@ -79,6 +79,8 @@ This is a switchboard concern only — **not architecturally enforced**; a missi
 
 ## The procedure
 
+**Before step 0, read `meta/write-rules.md` and `meta/modes.md`** — both left the eager `@import` chain (§X Stage B), and this ritual is one of their re-triggers. `write-rules.md` carries the per-layer draft→approve discipline and the ritual write-reach table you operate under (alching = active player's layers only); `modes.md` carries the alching-mode framing and the gnome write surface if step 0 delegates.
+
 The agent works through each item below in order, restricted to the active player's namespace. **Propose, never silently destroy.** Surface every move to the principal for confirmation rather than auto-executing.
 
 ### 0. Spawn-decision — principal-self or gnome?

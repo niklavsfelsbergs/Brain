@@ -1,0 +1,7 @@
+# A gitignored deploy-critical config file is a defect to fix, not a constraint to route around
+
+**Observation ([[S143_51f034e4_fif-report-accounting-fixes|S143]], 2026-06-02).** The FIF lookup `keyaccountid_refprefix.csv` (the prefix→key-account mapping) was caught by a repo-wide `*.csv` gitignore in bi-etl. I reported this as a *limitation to work around* — "the lookup is gitignored, so it ships via the image rebuild, not git" — and moved on, treating the ignore rule as a fixed constraint. Niklavs pushed back: *"why gitignore the lookup? That's important, leave it in."* The fix was trivial (a scoped `!` negation, which both repos already used elsewhere) and I should have proposed it immediately instead of designing around it.
+
+**Rule.** When a file that is *needed to build/run* (config, lookup, mapping, small reference table) is excluded by a blanket data-ignore rule, that is a **defect** — surface it as "this should be tracked, here's the one-line fix," don't accept it as a boundary and architect a workaround ("ships via image"). The blanket `*.csv`/`*.json` ignore is for *regenerated data*; config that the deploy depends on is not data. Default to flagging the un-ignore.
+
+Anchor: [[S143_51f034e4_fif-report-accounting-fixes|S143]].

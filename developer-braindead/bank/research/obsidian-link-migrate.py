@@ -200,10 +200,14 @@ SKIP_SRC_RE = re.compile(
 # Body / rulebook / ritual files: user-only governance read as INSTRUCTIONS, not
 # curated knowledge. Wikilink syntax adds noise there for marginal graph value, so
 # they're out of the prose-wrap scope (§O.6 sign-off was knowledge + quest-log).
-# Covers: CLAUDE.md, gielinor meta/ + spellbook/rituals/, dev-brain spellbook/ root
-# rituals (respawn-ritual.md, session-close.md live directly in spellbook/).
+# Covers: CLAUDE.md, AGENTS.md, gielinor meta/ + spellbook/rituals/, dev-brain
+# spellbook/ root rituals (respawn-ritual.md, session-close.md live directly in
+# spellbook/). AGENTS.md is the GENERATED non-Claude mirror of the CLAUDE.md chain
+# (tools/sync_agents_md.py, §Y.1) — its generator is its sole authority, so the
+# linter must NOT independently wrap it or the mirror drifts from generation output.
 BODY_RULEBOOK_RE = re.compile(
     r"(^|/)CLAUDE\.md$"
+    r"|(^|/)AGENTS\.md$"
     r"|(^|/)meta/"
     r"|(^|/)spellbook/rituals/"
     r"|^spellbook/[^/]+\.md$"

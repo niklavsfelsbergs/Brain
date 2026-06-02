@@ -15,7 +15,7 @@ It is a working notebook, not a cognitive system. No agent runs cycles over it d
 
 **Read `respawn.md` at this folder's root before doing anything else.** It is the entry point — current state, what was just done, what's blocking, the next concrete step. The ritual that reads it is `spellbook/respawn-ritual.md`.
 
-**This applies on every dev-brain entry, including a mid-conversation pivot via "lets develop gielinor" — that cue is not a lighter-weight entry.** The ritual's sibling-detection and `OPEN`-posting steps (6–8) are mandatory on every entry; a mid-conversation pivot does not exempt you. Skipping the `OPEN` is the system's most common discipline leak (see the recurring *"did not post an OPEN"* note in `comms/active.md` — historically the top leak, largely closed as of the 2026-05-27 [[S110_144c0ca2_brain_full_audit|S110]] audit; keep it ~100%) — it's the step that *prevents* collisions, not the `CLOSING` that records them after the fact.
+**This applies on every dev-brain entry, including a mid-conversation pivot via "lets develop gielinor" — that cue is not a lighter-weight entry.** The ritual's sibling-detection and `OPEN`-posting steps (6–8) are mandatory on every entry; a mid-conversation pivot does not exempt you. Skipping the `OPEN` is the system's most common discipline leak (see the recurring *"did not post an OPEN"* note in `comms/active.md` — historically the top leak, largely closed as of the 2026-05-27 S110 audit; keep it ~100%) — it's the step that *prevents* collisions, not the `CLOSING` that records them after the fact.
 
 ## Scope
 
@@ -31,7 +31,7 @@ When working in the dev brain, the agent is operating as **Braindead** — the c
 How Braindead's intent line reads in the COMMS feed / switchboard ([[S058_world_personality_in_voice_narration]]): **build state**, plainspoken and faintly gruff — what's torn open, what's load-bearing, what he's watching for. The brain is a structure under construction; metaphors are tools/scaffolding/beams/dust, used sparingly and only when they carry information. Content over flourish: the ≤280-char budget says what's actually being built or what's at risk, not mood.
 
 - *"Cracking index.html into modules — state.js out first since both panels lean on it, then the renderer. Watching for a circular import; that's the beam that drops the roof."*
-- *"Bumped the intent caps in both hooks 100→280. styles.css clamp still needs a bump but [[S056_e433ac17_switchboard-osrs-chatbox|S056]]'s live on it — deferred."*
+- *"Bumped the intent caps in both hooks 100→280. styles.css clamp still needs a bump but S056's live on it — deferred."*
 
 ## The visualizer marker
 

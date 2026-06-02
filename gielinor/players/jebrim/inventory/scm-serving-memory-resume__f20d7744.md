@@ -7,9 +7,14 @@ open_dep: principal merges fix/scm-serving-memory → checks live; deploy-side e
 
 # S146 — SCM serving-node memory review — resume
 
-**Status:** in-progress (code fix shipped; live validation + deploy-side items open).
+**Status:** in-progress (OOM crash-loop FIXED live; durability + optional perf-tuning + bd_cache structural fix open).
 
-**Where we are:** Reviewed the SCM serving node (4 dwarves), found the 502 is a container OOM-kill from an uncapped serving DuckDB connection. Full fix pass committed + pushed: branch `fix/scm-serving-memory` (commit `abfbcdb`) on `picanova/bi-analytics`. tsc clean; next build compiles + passes lint/type (page-data collection blocked locally only by the missing duckdb native binary — node-25 vs node:20 Docker). Principal will merge to main (auto-deploys) and check live.
+**Where we are:** Branch `fix/scm-serving-memory` (`abfbcdb`) merged + deployed (`:latest`). Confirmed LIVE via kubectl: the 502s were OOMKills (exit 137, 3 restarts, pod limit 1536Mi) — DuckDB ran on the code's 4GB default because the env var was unset. **Applied `kubectl set env DUCKDB_MEMORY_LIMIT=512MB`** → new pod 2/2 Running 0 restarts, OOM resolved. (bd_cache race did NOT fire — logs clean — it's a real but secondary issue.)
+
+**Open items:**
+- **Durability:** the `kubectl set env` lives in the cluster deployment spec (survives CI `rollout restart`) but is NOT version-controlled. To make permanent, add `ENV DUCKDB_MEMORY_LIMIT=512MB` to `docker/Dockerfile` (or the out-of-repo manifest) — offered to principal.
+- **Perf tuning (if breakdown feels slow from spilling):** raise pod mem limit 1536Mi→2-3Gi AND `DUCKDB_MEMORY_LIMIT`→~1.5GB. `kubectl set env` + `kubectl set resources` (need creds + cluster access).
+- **bd_cache structural fix (still queued):** per-request `db.connect()` so the temp table is connection-local — see below.
 
 **Next concrete step (NEW, prioritized — reported live 2026-06-02):** the Breakdown tab intermittently shows no-data → "failed to load data" → works only on hard reload. Diagnosed as the **`bd_cache` shared-connection race**: `bd_cache` is one global temp table on the single shared DuckDB connection keyed by a module-global `cachedFingerprint` (`breakdown/route.ts:64`); DuckDB temp tables are connection-scoped, so concurrent/rapid breakdown requests with different filters stomp each other's `CREATE OR REPLACE` (the route already has `bd_cache does not exist` retry blocks at :700/:740 — proof it recurs). The alert→breakdown path triggers it (fires several panel fetches at once; a 2nd alert click overlaps). **This is the C2/C4 "proper" fix DEFERRED in the shipped branch — my fix only bounded the temp-table window, not the race.** Fix: give `bd_cache` a per-request identity — cleanest is a fresh `db.connect()` per request (temp tables become connection-local), or `bd_cache_<fp>` dropped after use, or inline the now-pruned glob as a CTE. Confirm via `kubectl logs deploy/shipping-costs-monitoring -n shipping-dashboard | grep bd_cache`.
 

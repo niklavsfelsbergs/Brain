@@ -257,3 +257,16 @@
   Fan-out: D1 dwarf (ODA lookup, done) + P1 penguin (Q1 fuel %s + CH customs, done) — both clean, own quest-log siblings + (P1) research file.
   Leaving open: UNCOMMITTED, principal-gated (commit plan in resume). 2 decisions to confirm: customs lane scope (CH-only vs extend NO/GB) + fuel basis (Q1-avg flat vs monthly/forward). Non-blocking residuals: Jan/Feb Intl fuel RECONSTRUCTED→PULLED upgrade; GB ODA outward-code matcher; PLAN.md §B.26 minor doc-sync. S148 stays in-progress. Resume: inventory/eu-tender-fedex-round2-resume__e59202cf.md.
   Brain commit scoped to my own e59202cf pathspecs (S131 #1 hazard); NOT broad-tree dirty items. bi-analytics commit pathspec-scoped on main @ 750e00d, NOT pushed. No live siblings this window.
+
+[2026-06-03 ~late] jebrim-ebe0a532 OPEN (late â€” SCM Transit Times tab rework) â€” S149
+  Note: OPEN posted at close (substantive work already shipped) â€” discipline leak, flagging per CLAUDE.md. Different sid8 / different work from the S148 EU-tender sessions above.
+  Did: reworked the Transit Times tab of shipping_costs_monitoring_nextjs â€” corridors table fills cell height (absolute-fill), histogram %-default + density/count toggle + p85/p95 lines (drop p99) + cumulative-share tooltip, trend strip own stat switch (default p85, +p90) + point labels, business-days + p85 defaults, 2nd KPI card -> Shipments. Added p90 to the trend data layer.
+  Targets (bi-analytics-main, SEPARATE repo, on main â€” COMMITTED ef71812 + PUSHED on explicit principal go): NFE/dashboards/shipping_costs_monitoring_nextjs/src/{lib/types.ts,app/page.tsx,app/api/transit/trend/route.ts,components/Transit*.tsx}.
+  Brain targets (this repo): jebrim quest-log completed/S149_ebe0a532 + examine draft + this comms + intent marker. git commit -- <pathspec> ONLY (shared tree dirty from sibling sessions).
+  Idle-time corridor column raised + parked (no produced ts in the dashboard pull); principal chose transit-only.
+  Live siblings: none detected live this window (recent comms 2026-06-03 are CLOSED 104c786b/e59202cf). READ-only elsewhere.
+
+[2026-06-03 ~late] jebrim-ebe0a532 CLOSING (S149 â€” SCM Transit Times tab rework)
+  Completed: shipped the Transit Times rework to picanova/bi-analytics main @ ef71812 (+pushed, explicit principal go). Corridors table absolute-fill height-match; histogram %-default + density/count toggle + p85/p95 marker lines (p99 dropped) + cumulative-share tooltip; trend strip own stat switch (default p85) + p90 added to the trend data layer + point labels; business-days + p85 tab defaults; 2nd KPI card â†’ Shipments. tsc clean throughout.
+  Leaving open: nothing blocking. Idle-time corridor column raised + parked by principal choice (no produced/carrier-received ts in the dashboard pull â€” would need pipeline + parquet-regen + deploy). Quest graduated â†’ completed/ (shipped+committed+pushed, open_dep none).
+  Harvest: 1 examine draft (css-height-match-needs-absolute-fill-not-flex1 â€” first flex-1 attempt grew the table unbounded, principal caught the missing scrollbar). Brain commit scoped to my own ebe0a532 pathspecs only (shared tree dirty from sibling sessions). No live siblings this window.

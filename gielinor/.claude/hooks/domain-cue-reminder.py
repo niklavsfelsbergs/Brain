@@ -95,13 +95,40 @@ def _actor_for(sid8: str) -> str:
         return ""
 
 
+def _render(d: dict, matched: str) -> str:
+    """Compose the nudge text for one matched domain from its structured fields.
+
+    The lead `message` carries topic + why; the structured fields (canonical_files /
+    specialist / freshness / read_before) carry the file list, loader, drift note,
+    and read-before directive. Backward-compatible: an entry with only `message`
+    renders just that line (every field below is optional)."""
+    try:
+        lead = (d.get("message") or "").format(matched=matched)
+    except Exception:
+        lead = d.get("message") or ""
+    lines = [lead] if lead else []
+    files = d.get("canonical_files") or []
+    if files:
+        lines.append("  - Canonical knowledge home: " + "; ".join(files))
+    specialist = d.get("specialist")
+    if specialist:
+        lines.append(f"  - Or spawn: {specialist} (loads the home by construction)")
+    freshness = d.get("freshness")
+    if freshness:
+        lines.append("  - Freshness: " + freshness)
+    read_before = d.get("read_before")
+    if read_before:
+        lines.append("  - Read before answering: " + read_before)
+    return "\n".join(lines)
+
+
 def _emit(blocks: list) -> None:
-    """blocks: list of (name, message). Emit ONE combined additionalContext."""
+    """blocks: list of (name, text). Emit ONE combined additionalContext."""
     if len(blocks) == 1:
         msg = blocks[0][1]
     else:
-        msg = "Multiple knowledge-home topics detected — ground each before reasoning:\n" + \
-              "\n".join(f"- [{name}] {message}" for name, message in blocks)
+        msg = "Multiple knowledge-home topics detected — ground each before reasoning:\n\n" + \
+              "\n\n".join(f"[{name}]\n{text}" for name, text in blocks)
     out = {
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
@@ -136,11 +163,7 @@ def main() -> int:
             continue
         matched = m.group(0).strip()
         name = d.get("name", "domain")
-        try:
-            message = d["message"].format(matched=matched)
-        except Exception:
-            message = d.get("message", "")
-        blocks.append((name, message))
+        blocks.append((name, _render(d, matched)))
         log_event(f"domain-cue:{name}", "nudge", sid8=sid8, detail=matched)
 
     if not blocks:

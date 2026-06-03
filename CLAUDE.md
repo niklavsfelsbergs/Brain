@@ -37,6 +37,12 @@ The main brain may read from the dev brain **only on explicit principal cue** �
 
 Modifying `gielinor/` happens in dev-brain mode (or a session opened in `gielinor/`). The dev brain may modify dev-brain files freely per its own conventions.
 
+## Commit policy
+
+One policy, brain-wide, both systems. **Commits require explicit principal authorization — always ask before committing** (the principal's standing rule, also in `~/.claude/CLAUDE.md`). The **single standing exception** is the **session-close ritual**: by making the end-of-session commit part of the ritual, the principal has pre-authorized *that* commit, so no separate ask is needed inside it (gielinor `spellbook/rituals/close-session.md` step 9; dev-brain `developer-braindead/spellbook/session-close.md` step 8). The override is scoped to the close commit alone; always-ask holds for every other commit. **Never push** — push is always a separate, explicit principal action.
+
+This section is the canonical statement; the two close rituals reference it rather than restating it. It is mirrored into `AGENTS.md` (the non-Claude-agent entrypoint) by `tools/sync_agents_md.py`, so a Codex session that never reads the Claude global still gets the policy.
+
 ## What each brain is for
 
 - `gielinor/_about.md` / `gielinor/CLAUDE.md` for the main brain's purpose and operating rules.

@@ -210,7 +210,7 @@ Always commit at session close (unless the working tree is genuinely clean — i
 - **Never `--no-verify` or `--no-gpg-sign`.** If a hook fails, fix and create a new commit — do not amend the rejected one.
 - **Never push.** Push is a separate, explicit principal action.
 
-The principal has authorised the close-session commit by making it part of this ritual. The standing rule "always ask before committing" (`~/.claude/CLAUDE.md`) is **overridden inside this step**. It still applies outside.
+This close commit is pre-authorized — see the brain-wide **Commit policy** (`CLAUDE.md` → *Commit policy*, the canonical statement). The principal authorised it by making it part of this ritual, so **don't ask before committing here**; the standing "always ask before committing" rule applies everywhere outside this step.
 
 If the tree is clean — read-only session, audit, discussion — skip the commit silently and note "no commit; tree clean" in the close.
 

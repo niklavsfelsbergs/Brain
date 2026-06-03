@@ -23,14 +23,39 @@
 # Different semantics, kept separate on purpose. grounding-cue is untouched.
 #
 # SCHEMA — each entry is a dict:
-#   name         str        short id; used in the ritual-log event + the nudge header.
-#   patterns     list[str]  raw regex strings (compiled case-insensitively by the hook).
-#                           Narrow on purpose: a false positive costs one advisory
-#                           line, but over-firing turns the nudge into wallpaper.
-#   message      str        the nudge body injected as additionalContext.
-#   skip_actors  tuple[str] per-session actors for whom this entry does NOT fire
-#                           (read from the status sidecar). Default skips braindead
-#                           (the dev brain builds the brain, not domain analysis).
+#   name            str        short id; used in the ritual-log event + the nudge header.
+#   patterns        list[str]  raw regex strings (compiled case-insensitively by the hook).
+#                              Narrow on purpose: a false positive costs one advisory
+#                              line, but over-firing turns the nudge into wallpaper.
+#   message         str        the nudge LEAD line — topic + the one-line "why ground."
+#                              `{matched}` is substituted with the cue that fired. Keep it
+#                              short: the file list / loader / drift note live in the
+#                              structured fields below, not here (avoids prose<->field drift).
+#   canonical_files list[str]  the authoritative knowledge home — the files to read before
+#                              reasoning. May be in-brain paths (deploy notes) or EXTERNAL-
+#                              repo paths (shipping: the picanova/shipping-agent repo). Label
+#                              external ones so the reader knows they're not in this tree.
+#   specialist      str|None   the sub-agent that loads this home BY CONSTRUCTION (e.g.
+#                              shipping-agent). Omit when the home is just files to read
+#                              (deploy notes have no specialist). [optional]
+#   freshness       str        how drift-prone the home is + the revalidate trigger — when
+#                              a remembered version is stale and you must re-read. [optional]
+#   read_before     str        the concrete read-before-answering directive: what NOT to do
+#                              from memory, and the load-bearing rules the home carries.
+#   skip_actors     tuple[str] per-session actors for whom this entry does NOT fire
+#                              (read from the status sidecar). Default skips braindead
+#                              (the dev brain builds the brain, not domain analysis).
+#
+# WHY the structured fields (Y.5, 2026-06-03 — the Codex-audit enrichment):
+#   Codex asked for a cue -> {canonical files, source repos, agents, freshness,
+#   read-before-answering} manifest. Rather than a NEW parallel structure (which
+#   would trip the brain's most-repeated failure mode — over-formalizing a reachable
+#   capability), those dimensions are added as fields on THIS table: it was already
+#   the cue->knowledge-home router, so it's the right home for "which files, how
+#   fresh, read-before." `domain-cue-reminder.py` renders the nudge FROM these
+#   fields (single source of truth; the lead `message` no longer re-states the
+#   paths). Fields are optional + the renderer degrades gracefully, so an entry can
+#   still carry message alone.
 #
 # To add a domain: append one dict. No hook edit, no new settings.json line.
 # A commented EU-tender stub is at the bottom as the worked example.
@@ -66,11 +91,26 @@ DOMAINS = [
             r"\b(UPS|DHL|DPD|GLS|USPS|FedEx|Maersk|Asendia|OnTrac|Yodel|Hermes|Schenker|ORWO|Picturator|PicaAPI)\b",
         ],
         "message": (
-            "Shipping/mart topic detected (\"{matched}\"). Before writing SQL or "
-            "interpreting any shipping_mart figure: load `shipping-agent/how_to.md` §0 "
-            "+ `reference/{{mart-contract,tables}}.md`, OR spawn the shipping-agent "
-            "(subagent_type: shipping-agent), which loads the rulebook by construction. "
-            "Don't reason about the mart from memory — the contract holds the cost-basis "
+            "Shipping/mart topic detected (\"{matched}\"). The mart's contract is "
+            "authoritative — don't reason about the shipping_mart from memory."
+        ),
+        # External knowledge home: these live in the picanova/shipping-agent repo,
+        # NOT this brain tree. The reliable loader is the specialist (it loads the
+        # rulebook by construction), so prefer spawning it over hand-reading paths.
+        "canonical_files": [
+            "picanova/shipping-agent repo: how_to.md §0",
+            "picanova/shipping-agent repo: reference/mart-contract.md",
+            "picanova/shipping-agent repo: reference/tables.md",
+        ],
+        "specialist": "shipping-agent (subagent_type: shipping-agent)",
+        "freshness": (
+            "Home is an external repo, not this tree — a remembered schema is the "
+            "stale-by-default case; spawn the specialist (or re-read the reference) "
+            "rather than trusting recall of the mart shape or cost-basis rules."
+        ),
+        "read_before": (
+            "Load the canonical files (or spawn the specialist) before writing SQL or "
+            "interpreting any shipping_mart figure — the contract holds the cost-basis "
             "rules, schema (incl. dims / length_plus_girth_cm), and DQ quirks. "
             "(sibling of grounding-cue; see skill calling-the-shipping-agent.)"
         ),
@@ -103,17 +143,29 @@ DOMAINS = [
             r"\bnew column\b", r"add(?:ing|ed)?\s+(?:a\s+)?column",
         ],
         "message": (
-            "Deploy/schema topic detected (\"{matched}\"). Before changing a serving "
-            "schema, adding a column a view filters on, scheduling a DAG, or touching "
-            "a deploy-time config: load jebrim's deploy bank notes — "
-            "`players/jebrim/bank/notes/projects/{{bi_analytics_deploy_topology,"
-            "scm_alerts_entity_split}}.md` + `2026-05-28-ups-orwo-fif-data-quirks.md`. "
-            "Two load-bearing rules they hold: (1) when a change adds a column the "
-            "serving FILTERS on, regenerate the data before/with the serving deploy, "
-            "else filtered views 500 while 'All' works (S098); (2) a deploy-critical "
-            "config/lookup caught by a blanket *.csv/data .gitignore is a DEFECT to fix "
-            "with a scoped !negation, not a constraint to architect around (S143 FIF). "
-            "Don't reason about deploy ordering from memory."
+            "Deploy/schema topic detected (\"{matched}\"). Don't reason about deploy "
+            "ordering from memory — jebrim's deploy bank notes are authoritative."
+        ),
+        # In-brain knowledge home (verified paths under this tree). No specialist —
+        # these are notes to read, not a sub-agent's domain.
+        "canonical_files": [
+            "players/jebrim/bank/notes/projects/bi_analytics_deploy_topology.md",
+            "players/jebrim/bank/notes/projects/scm_alerts_entity_split.md",
+            "players/jebrim/bank/notes/projects/2026-05-28-ups-orwo-fif-data-quirks.md",
+        ],
+        "freshness": (
+            "Deploy topology evolves with each serving change — re-read before a "
+            "schema/serving deploy rather than trusting a remembered ordering."
+        ),
+        "read_before": (
+            "Before changing a serving schema, adding a column a view filters on, "
+            "scheduling a DAG, or touching a deploy-time config, load the canonical "
+            "notes. Two load-bearing rules they hold: (1) when a change adds a column "
+            "the serving FILTERS on, regenerate the data before/with the serving "
+            "deploy, else filtered views 500 while 'All' works (S098); (2) a deploy-"
+            "critical config/lookup caught by a blanket *.csv/data .gitignore is a "
+            "DEFECT to fix with a scoped !negation, not a constraint to architect "
+            "around (S143 FIF)."
         ),
         "skip_actors": DEFAULT_SKIP_ACTORS,
     },
@@ -125,10 +177,21 @@ DOMAINS = [
     #     "name": "eu-tender",
     #     "patterns": [r"\beu[_ -]?tender\b", r"\btender 2026\b", r"\bincumbent\b"],
     #     "message": (
-    #         "EU tender topic detected (\"{matched}\"). Load the canonical docs/ "
-    #         "+ players/jebrim/bank/notes/projects/eu_tender_2026.md before "
-    #         "reasoning about carrier status — the per-carrier tables drift; "
-    #         "run the Step-8 cascade if you touch them."
+    #         "EU tender topic detected (\"{matched}\"). The canonical tender docs are "
+    #         "authoritative — don't reason about carrier status from memory."
+    #     ),
+    #     "canonical_files": [
+    #         "docs/ (the canonical tender doc set)",
+    #         "players/jebrim/bank/notes/projects/eu_tender_2026.md",
+    #     ],
+    #     # no specialist — files to read, not a sub-agent's domain.
+    #     "freshness": (
+    #         "Per-carrier status tables DRIFT as replies land — re-read before "
+    #         "stating any carrier's status; run the Step-8 cascade if you touch them."
+    #     ),
+    #     "read_before": (
+    #         "Load the canonical docs + tender bank note before reasoning about "
+    #         "carrier status, pricing, or round state."
     #     ),
     #     "skip_actors": DEFAULT_SKIP_ACTORS,
     # },

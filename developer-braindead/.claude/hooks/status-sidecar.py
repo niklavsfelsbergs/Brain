@@ -277,6 +277,35 @@ def _actor_from_instances(session_id_full: str) -> str:
     return candidates[0][1]
 
 
+DEV_COMMS = BRAIN_ROOT / "developer-braindead" / "comms" / "active.md"
+
+
+def _is_dev_session(sid8: str) -> bool:
+    """Per-session dev-brain signal: this sid8 has posted a `braindead-<sid8>`
+    entry to dev comms.
+
+    Authoritative and PARALLEL-SAFE — a player session never writes to dev
+    comms, so this can never mis-tag a live player running alongside a dev
+    session. That is the trap a GLOBAL `active-mode.txt` discriminator falls
+    into (a player closing in parallel with a live dev session reads
+    `dev-brain` and mis-resolves to braindead — the S155 lesson); a per-session
+    comms anchor avoids it.
+
+    Used only as the fallback when no `braindead-<sid8>.txt` intent anchor
+    exists yet (a fresh dev session that hasn't written its intent bubble).
+    Without it, _detect_actor drops straight to the instance-map heuristic and
+    mis-attributes the session to the most-recently-allocated player — the S157
+    misfire that made X.4's forced-read inline the WRONG player's keepsake and
+    mis-gated require-open-on-entry against the wrong comms file."""
+    if not sid8:
+        return False
+    try:
+        text = DEV_COMMS.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    return f"braindead-{sid8}" in text
+
+
 def _detect_actor(project_dir: Path | None, sid8: str, session_id_full: str = "") -> tuple[str, str]:
     """Resolve `(actor, intent_first_line)` for a session, in priority order:
 
@@ -285,11 +314,15 @@ def _detect_actor(project_dir: Path | None, sid8: str, session_id_full: str = ""
     2. Multiple intent files → newest by mtime wins. Covers the window
        between a mid-session player switch and the mini-respawn's intent
        archive step (or the next periodic GC sweep).
-    3. No intent file → fall back to `state-instances.json` byId lookup
+    3. No intent file but a `braindead-<sid8>` dev-comms anchor → braindead.
+       The per-session, parallel-safe dev-brain signal (`_is_dev_session`),
+       checked BEFORE the instance heuristic so a fresh dev session that hasn't
+       written its intent bubble doesn't get mis-attributed to a player.
+    4. Still nothing → fall back to `state-instances.json` byId lookup
        (`_actor_from_instances`). emit-event.py registers an instance on
        every action, so any session that's done any work is reachable from
        here even when intent narration is missing.
-    4. Nothing matches anywhere → ("unknown", "").
+    5. Nothing matches anywhere → ("unknown", "").
 
     Empty `session_id_full` skips step 3 (the lookup needs the full id; sid8
     isn't enough). Callers that have only sid8 still benefit from steps 1+2.
@@ -337,6 +370,13 @@ def _detect_actor(project_dir: Path | None, sid8: str, session_id_full: str = ""
                 cut = cut[:sp]
             first = cut.rstrip() + "…"
         return (actor, first)
+
+    # No intent file. Before the instance-map heuristic (which guesses the
+    # most-recently-allocated actor and can mis-pick a player for a fresh dev
+    # session — the S157 misfire), honor the per-session dev-brain signal: a
+    # `braindead-<sid8>` entry in dev comms means this IS a dev session.
+    if _is_dev_session(sid8):
+        return ("braindead", "")
 
     # No intent file — try the instance map as the last resort.
     if session_id_full:

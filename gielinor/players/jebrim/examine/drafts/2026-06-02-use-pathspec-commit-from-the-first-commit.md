@@ -8,4 +8,6 @@
 
 **Second, smaller miss.** I checked for live siblings only in `gielinor/comms` at entry; the live sibling was a **dev-brain** session in `developer-braindead/comms`. The hazard surface is cross-brain because the git tree is shared — a sibling-check that matters for commits must consider both comms logs, not just the active brain's.
 
-Anchor: [[S144_bd1a6513_picaapi-us-fathers-day-2025|S144]].
+**Recurrence + a second mechanism ([[S147_dcb495a7_scm-perf-audit|S147]], 2026-06-02).** Same rule, different way to break it. Checking out `bi-analytics-main` to main, I read `git status --porcelain`, counted ~91 lines, described the change as "playground deletions + CLAUDE.md," then ran `git add -A`. It staged **693 adds** — including four untracked *project* dirs (S124 shipping-report, S145 transit-SLA, etc.). Cause: porcelain **collapses an untracked directory to a single line**, so the line count badly undercounts what `-A` will stage. Push was hook-rejected on the big artifacts; I reset and re-committed scoped (`git add NFE/CLAUDE.md NFE/playground/`, verified 1 M + 41 D). Lesson on top of the shared-index one: **porcelain line-count ≠ file count; never `git add -A` off a glanced status — name the paths, and verify the staged set before committing.**
+
+Anchor: [[S144_bd1a6513_picaapi-us-fathers-day-2025|S144]], [[S147_dcb495a7_scm-perf-audit|S147]].

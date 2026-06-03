@@ -1,17 +1,30 @@
 # Jebrim — last alched
 
-2026-06-01 (B-014 Phase 0, bankstanding — principal-self, Guthix-run). **Partial-alch** (mid-quest: S124 build live-in-progress; flag-and-ask → principal chose partial).
+2026-06-03 (B-017 Phase 0, bankstanding — gnome-run g1, principal-approved). **Near-full alch** (settled backlog cleared; 2 items deferred on live-sibling collision).
 
-**Spawn-decision:** principal-self (3 settled drafts <10, no never-alched, no 20+ harvest turns).
+**Spawn-decision:** gnome (>10 pending drafts: 13 = 9 examine + 3 bank + 1 skill).
 
-**Step 1 — identity drafts → confirmed (3 examine, all settled S124-build self-obs, build-independent):**
-- `2026-06-01-cross-check-two-derivations-catches-self-bugs.md` (S124) — render a load-bearing figure two independent ways; the disagreement is a free correctness probe (caught the ORWO 77.2→71.9 null-mean inflation). Pairs with the nullable-column family.
-- `2026-06-01-verify-diffs-both-ways-and-explicit-presence-flags.md` (S124) — verify a diff with a self-diff (zero) AND a synthetic-positive test; never infer record existence from a nullable business column (the 62,743 phantom-NEW).
-- `2026-06-01-dont-mechanize-judgment-in-analytical-reports.md` (S124) — for a monitoring/report task, the deterministic layer prepares evidence + ranks attention and makes zero verdicts; the is-this-an-issue call stays judgment. Same family as mirage-guard + D-029.
+**Step 1 — identity drafts → confirmed (8 examine promoted):**
+- `2026-06-02-live-evidence-beats-a-confident-chat-diagnosis.md` (S146/S147)
+- `2026-06-02-revalidate-borrowed-constants-for-new-use.md` (S147)
+- `2026-06-02-static-audit-ranking-is-a-hypothesis-until-measured.md` (S147)
+- `2026-06-02-surface-and-fix-gitignored-config.md` (S143, verbatim correction)
+- `2026-06-02-synthetic-pass-hides-population-and-small-n-bugs.md` (S147)
+- `2026-06-02-use-pathspec-commit-from-the-first-commit.md` (S144/S147) — **promoted as sharper successor; archived predecessor** `2026-05-22-git-add-scoping-with-parallel-sessions.md` → `examine/archive/confirmed/` (principal chose replace-not-fold). Adds cross-brain shared-index sweep + porcelain-collapses-untracked-dir mechanisms.
+- `2026-06-02-verify-the-toolchain-actually-ran.md` (S146)
+- `2026-06-03-rescan-for-companion-files-in-a-multi-file-drop.md` (S148, verbatim correction)
 
-**Held (NOT promoted — mid-quest evolving artifact):**
-- `spellbook/drafts/skills/running-the-automated-shipping-report.md` — the analyst playbook / S124 build contract. S124 is functionally-complete-but-open (real T-vs-T-1 test pending a 2nd snapshot; triggering deferred); the contract will likely still take edits. Promote at S124 close.
+**Step 2 — bank drafts → notes (3 promoted):**
+- `bank/notes/projects/2026-06-02-fif-vat-subtotal-grain.md` (S143)
+- `bank/notes/projects/2026-06-02-scm-serving-node-oom-mode.md` (S146; date-prefix renamed on promote)
+- `bank/notes/shipping/merchone-us-holiday-volume-peaks.md` (S144)
 
-**Steps 2-6:** bank drafts empty (no new domain notes — S124 knowledge lives in NFE project, brain keeps lean refs per the design). current.md budgets fine. Rejected folders unchanged. **Skill-watch still flagged** (from B-013): "trust-gate every rate engine against its own actuals; report PAPER vs DEFENSIBLE" — one more recurrence earns a skill.
+Bank staleness scan (26 notes): no archive moves. Watch carried: `eu_tender_2026*.md` defensive numbers may be superseded by the S148 DHL Paket→2.0.0 / FedEx→2.0.0 rebuilds — re-verify-before-quote, not stale (canonical tender knowledge lives in bi-analytics docs by design).
 
-**Stale in-progress (left for reconciliation):** S124 (active build — NOT stale), S-shipping-agent readiness-gate (orphan trace, D-030 sweep candidate, subsumed by S132). S116 graduated → completed/ this cycle (sid 45954b41).
+**Steps 3 / 3a:** 0 graduation drafts, 0 new self-obs — every recent correction already captured by the step-1 drafts; tender/engine domain knowledge kept in bi-analytics docs per the bank-growth convention. **Step 4:** all three current.md under budget. **Step 5:** rejected folders settled (probe-design + wrong-layer clusters, old). **Step 6:** skill draft `running-the-automated-shipping-report.md` **HELD** (S124 in-progress; live sibling editing it). Re-rating skill-watch carried forward (no S143–S149 recurrence; one more earns the skill).
+
+**DEFERRED (live-idle sibling `e59202cf` had these dirty):**
+- `examine/drafts/2026-06-03-css-height-match-needs-absolute-fill-not-flex1.md` (#8) — also a layer-call (frontend technique → arguably `bank/drafts/notes/`, not examine). Revisit after `e59202cf` closes.
+- `spellbook/drafts/skills/running-the-automated-shipping-report.md` — held until S124 close.
+
+**Stale in-progress (left for reconciliation):** S124 (active build), S145 (transit-SLA), S148 (FedEx queued + d1/p1 siblings), S142 (UPS SFTP). Not bankstanding's reach — owning-player close/alch.

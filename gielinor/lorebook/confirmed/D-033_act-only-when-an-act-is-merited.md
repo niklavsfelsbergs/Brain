@@ -1,6 +1,6 @@
 # Act only when an act is clearly merited — a question is for thinking, not dispatching
 
-**Status:** draft (awaiting principal approval → `lorebook/confirmed/D-NNN_*`)
+**Status:** confirmed as D-033 ([[B-017_2026-06-03_seventeenth-bankstanding|B-017]], 2026-06-03).
 
 ## The rule
 

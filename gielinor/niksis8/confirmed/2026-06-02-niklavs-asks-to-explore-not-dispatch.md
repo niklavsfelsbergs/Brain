@@ -1,6 +1,6 @@
 # Niklavs asks questions to explore the approach, not to dispatch work
 
-**Status:** draft (awaiting principal approval → `niksis8/confirmed/`)
+**Status:** confirmed ([[B-017_2026-06-03_seventeenth-bankstanding|B-017]], 2026-06-03). Sibling of [[2026-05-25-niklavs-keeps-the-final-call]] (adjudicator trait).
 
 ## Observation (anchor)
 

@@ -563,6 +563,12 @@ html, body {
 .b-text hr { border: none; border-top: 1px solid var(--line); margin: 10px 0; }
 .b-text a { color: var(--crew); }
 
+/* Clickable file-path tokens (S160). Gold dotted underline so they read as live
+   without shouting; the cursor + solid underline on hover confirm they're clickable.
+   Anchors carry no href — a document-level delegate (links.js) opens them. */
+.pathlink { color: var(--gold); text-decoration: underline dotted; text-underline-offset: 2px; cursor: pointer; }
+.pathlink:hover { text-decoration: underline; }
+
 .b-think {
   margin: 6px 0;
   font-size: 12.5px;

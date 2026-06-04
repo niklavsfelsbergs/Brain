@@ -293,6 +293,30 @@ function App() {
     for (const uuid of ownedTermIds()) resumeTerm(uuid);
   }, []);
 
+  // Resume cockpit terminals after the laptop wakes from sleep (S160). On sleep
+  // the PTY WebSockets drop and ptybridge terminates each claude (its WS-close
+  // finally → proc.terminate), so the terminals come back dead — you "can't type
+  // in them" — and the resume-on-open effect above only runs at page LOAD, never
+  // on wake. JS timers don't fire while the machine is suspended, so a large gap
+  // between ticks is a reliable wake signal; on a detected wake with owned
+  // terminals to restore, reload. Reload re-runs resume-on-open (claude --resume
+  // from disk) — the exact path a manual restart uses, so recovery is guaranteed-
+  // correct and lossless for sessions (only unsent compose-bar text is dropped —
+  // the accepted trade-off). No reload loop: the fresh page resets `last`, so only
+  // a subsequent sleep can trigger it again.
+  useEffect(() => {
+    const GAP_MS = 60000; // a >60s gap between ticks ≈ a sleep, not a timer hiccup
+    const TICK_MS = 10000;
+    let last = Date.now();
+    const id = setInterval(() => {
+      const now = Date.now();
+      const gap = now - last;
+      last = now;
+      if (gap > GAP_MS && ownedTermIds().length) location.reload();
+    }, TICK_MS);
+    return () => clearInterval(id);
+  }, []);
+
   useEffect(() => {
     let alive = true;
     async function poll() {

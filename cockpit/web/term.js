@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { html } from "htm/preact";
 import { setName, nameFor } from "./names.js";
+import { registerTermLinks } from "./links.js";
 
 // xterm + fit addon are UMD globals from web/vendor/*, loaded in index.html.
 const XTerm = window.Terminal;
@@ -149,6 +150,9 @@ class TermConn {
     this.fit = FitAddonNS ? new FitAddonNS.FitAddon() : null;
     if (this.fit) this.term.loadAddon(this.fit);
     this.term.open(this.container);
+    // Make path tokens in the terminal grid clickable → open the file / reveal the
+    // folder on the host (S160). Built-in link provider, no addon needed.
+    registerTermLinks(this.term);
 
     // Paste in WebView2 (pywebview). Two things conspire against the normal path:
     // the .term-host CSS transform makes xterm's textarea-paste handler unreliable

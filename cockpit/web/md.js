@@ -1,5 +1,7 @@
 // Minimal, safe markdown → HTML. Escapes first, then a small block + inline subset.
 
+import { linkifyPaths } from "./links.js";
+
 function esc(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -110,5 +112,8 @@ export function mdToHtml(text) {
   }
   if (inCode) out.push(`<pre><code>${codeBuf.join("\n")}</code></pre>`);
   flushList();
-  return out.join("");
+  // Final pass: make file-path tokens clickable (S160). Runs on the assembled,
+  // already-escaped HTML and skips text inside existing tags/anchors, so it never
+  // double-links a markdown link or breaks the markup.
+  return linkifyPaths(out.join(""));
 }

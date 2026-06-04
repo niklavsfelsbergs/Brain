@@ -439,6 +439,52 @@ async def api_open_vscode(request):
     return web.json_response({"ok": True}, headers=NO_STORE)
 
 
+async def api_open_path(request):
+    """Open a brain-repo file/folder on the host from a cockpit click (S160).
+
+    Sibling of api_open_vscode (the server-side os.startfile click→host-action
+    bridge) + api_file (the repo-scoped path-safety envelope). A path token in the
+    transcript prose or the terminal grid becomes clickable; clicking it opens the
+    file in its default app (HTML→browser, …) — or, with reveal=1, opens the
+    containing folder in Explorer with the file selected — so you never hand-
+    navigate to it.
+
+    Path-safe: the requested path (repo-relative, or absolute already inside the
+    repo) is resolved and required to sit under BRAIN_ROOT; resolve()+relative_to
+    rejects traversal/symlink escape. A trailing :line[:col] (the file_path:line
+    shape) is stripped. The backend is 127.0.0.1-bound by default, so this opens
+    only what the local user could already open. Windows-only (os.startfile /
+    explorer); a clean no-op error elsewhere.
+    """
+    raw = (request.query.get("path") or "").strip().strip('"')
+    reveal = request.query.get("reveal") in ("1", "true", "yes")
+    if not raw:
+        return web.json_response({"ok": False, "error": "no path"}, status=400, headers=NO_STORE)
+    # Drop a trailing :line[:col] (file_path:line) and normalize separators.
+    cleaned = re.sub(r":\d+(?::\d+)?$", "", raw).replace("\\", "/").strip()
+    p = Path(cleaned)
+    target = p if p.is_absolute() else (BRAIN_ROOT / cleaned)
+    try:
+        target = target.resolve()
+        target.relative_to(BRAIN_ROOT)
+    except (ValueError, OSError):
+        return web.json_response({"ok": False, "error": "outside brain root"}, status=403, headers=NO_STORE)
+    if not target.exists():
+        return web.json_response({"ok": False, "error": "not found"}, status=404, headers=NO_STORE)
+    try:
+        if reveal and target.is_file():
+            # explorer /select,<path> opens the folder with the file highlighted.
+            # explorer returns exit 1 even on success — don't check the return code.
+            import subprocess
+            subprocess.run(["explorer", "/select,", str(target)])
+        else:
+            # A file → its default app (HTML→browser); a directory → Explorer there.
+            os.startfile(str(target))  # noqa: S606 — Windows ShellExecute, repo-scoped
+    except (OSError, AttributeError) as e:  # AttributeError: os.startfile is Windows-only
+        return web.json_response({"ok": False, "error": str(e)}, status=500, headers=NO_STORE)
+    return web.json_response({"ok": True, "path": str(target)}, headers=NO_STORE)
+
+
 async def api_rename(request):
     """Set/clear a session's board label from the board UI (double-click a row).
 
@@ -872,6 +918,7 @@ def make_app(dev=False):
     app["cockpit_token"] = secrets.token_urlsafe(18)
     app.router.add_get("/api/sessions", api_sessions)
     app.router.add_get("/api/open-vscode", api_open_vscode)
+    app.router.add_get("/api/open-path", api_open_path)   # click a path → open file/reveal folder (S160)
     app.router.add_post("/api/rename", api_rename)
     app.router.add_post("/api/handoff", api_handoff)  # cross-client session takeover (kill-then-resume)
     app.router.add_get("/api/feed", api_feed)

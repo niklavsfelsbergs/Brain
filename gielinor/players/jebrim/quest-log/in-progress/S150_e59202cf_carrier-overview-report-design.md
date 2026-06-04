@@ -27,3 +27,25 @@ None — this is a new-deliverable design session; no engine/matrix/decision-doc
 
 ## Main-brain changes.
 None — player work session over the tender repo; no gielinor architecture/meta/ritual changes.
+
+---
+
+## Session 2 — BUILD (sid d691c033, 2026-06-03)
+
+Built the report end-to-end from the locked spec. Order per kickoff: lib/ → fan-out → synthesis → 2 HTML.
+
+**lib/ foundation (single source of lane + cost-position math):**
+- `lib/lane_taxonomy.py` — 9-lane map (DE/FR/Benelux/AT/IT/Iberia/CH/Nordics/ROW, ROW = fallthrough, UK absent) + neutral 3-profile lens (Compact/Bulky-standard/Large) + Q1-2025 head-to-head basis. Verified lane shares match PLAN §1 (DE 66.6%, side>60cm = 38.3%).
+- `lib/cost_slices.py` — materialises shared `_data/` slices so every dwarf + synthesis read identical math: lane_position (vol-wtd avg €/parcel, Q1 avg, coverage, contender/cheapest/within-10%), profile_position, cheapest_share (per-parcel count-of-cheapest), incumbent_baseline (UPS/DB Schenker invoice), envelope_overlay (cliff %), carrier_vs_invoice (incumbents). Contender gate: coverage ≥30% AND ≥200 parcels.
+
+**BUG caught + fixed (verify-the-thing):** first cut of the "neutral" profile lens used the matrix's `dim_weight_kg`, which is **carrier-specific** (gross-only carriers report a low one) → profiles leaked per-carrier (coverage >100% artefacts, flagged by the Güll dwarf). Fixed to carrier-agnostic `max(weight_kg, volume_cm3/5000)`; rebuilt slices (coverage now ≤100); surgically refreshed the 5 affected sections' profile numbers (dhl_paket/hermes/gls/austrian_post/guell). Lane-level headline numbers were never affected.
+
+**Fan-out:** 9 carrier dwarves (d1–d9), each the §4 6-element deep-dive into `sections/<carrier>.md` from constants + engine-doc + REVIEW_CONCLUSIONS + cost_slices. Dwarves corrected 3 of my briefing priors against the data: FedEx is NOT the ROW winner (DHL Paket wins ROW €28.09; FedEx dearest); Austrian Post wins CH not AT (€8.66, beats UPS incumbent); Güll wins AT (€4.33 ceiling).
+
+**Synthesis:** `build_report.py` recomputes the master lane×carrier matrix + lane×profile flip lens + flip narrative FRESH from `_data/` (not from section prose), hand-authored exec one-liners (the rolled-up Analyst take), embeds the 9 sections (markdown→HTML), confidence badges (firm/provisional-Hermes/held-Güll, flagged inline at the matrix winner). → `carrier_overview.html` (173 KB) + `exec_brief.html` (26 KB), decision_report house style.
+
+**Validation (verify-the-thing):** independent recompute straight off the raw cost matrix (bypassing cost_slices) for DE/IT/CH/AT — matches cost_slices to the digit (DE Hermes €4.165, IT Maersk €6.206, CH Austrian Post €8.656, AT Güll €4.328). HTML: all 9 sections embedded, 0 raw-markdown leak, winners badge-flagged, 41 tables rendered.
+
+**Headline cross-carrier story:** DE (67%) → Hermes cheapest avg (provisional; today's DHL invoice €3.28 is below it), but DHL Paket is per-parcel cheapest on ~1.49M DE Compact parcels; profile flips: DHL Paket Compact / Hermes Bulky / GLS Large. FR→GLS. Benelux+Nordics→DPD PL. AT→Güll (held). IT+Iberia→Maersk (gross-weight edge). CH→Austrian Post (beats UPS). ROW→DHL Paket. FedEx/DHL Express never lead on €/parcel (coverage/reach plays).
+
+**Status:** BUILD COMPLETE. UNCOMMITTED (principal-gated). Remaining: principal review of the 2 HTML + commit decision.

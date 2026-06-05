@@ -41,6 +41,11 @@ spec = importlib.util.spec_from_file_location("dcr", HOOK)
 dcr = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(dcr)
 
+# Isolate any sentinel writes (the inline arm burns a per-session sentinel) to a tmp
+# dir so this harness never touches the real ~/.claude/status.
+import tempfile  # noqa: E402
+dcr.STATUS_DIR = Path(tempfile.mkdtemp(prefix="dcue_registry_test_"))
+
 results = []
 
 

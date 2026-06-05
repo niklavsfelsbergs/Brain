@@ -55,6 +55,15 @@ except Exception:
 
 STATUS_DIR = Path(os.path.expanduser("~")) / ".claude" / "status"
 
+# gielinor/.claude/hooks -> gielinor (for resolving a domain's inline_homes paths).
+GIELINOR_ROOT = Path(__file__).resolve().parents[2]
+
+# Total byte ceiling for a domain's force-inlined homes. Over this, the hook falls
+# back to NAMING the files (the original nudge) — the mechanical guard that keeps a
+# large/external reference set out of every prompt (context-rot is the thing the whole
+# §X arc fights). ~12 KB ≈ a few small in-tree notes; deploy-schema's set is ~7.5 KB.
+INLINE_BYTE_CAP = 12000
+
 # Hardened actor resolution (S125 _actor.py): status file first, intent-file
 # anchor as the anti-race fallback. _actor.py's contract MANDATES that any new
 # actor-needing hook use resolve_actor rather than a status-only read — reading
@@ -122,6 +131,55 @@ def _render(d: dict, matched: str) -> str:
     return "\n".join(lines)
 
 
+def _read_gielinor(rel: str) -> str:
+    """Read a gielinor-relative file's contents, '' on any IO error."""
+    try:
+        return (GIELINOR_ROOT / rel).read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def _maybe_inline(d: dict, sid8: str) -> str:
+    """Force-inline a domain's inline_homes CONTENTS, once per session per domain.
+
+    Returns the inlined block, or '' to fall back to the name-only nudge. '' happens
+    when: the domain declares no inline_homes; the per-(session,domain) sentinel is
+    already set (contents are in context from an earlier prompt this session); nothing
+    readable; or the total exceeds INLINE_BYTE_CAP (the keep-large-homes-out guard).
+    The sentinel is burned ONLY on a real inline, so an over-cap/empty set keeps
+    surfacing the name-nudge rather than going silent."""
+    homes = d.get("inline_homes") or []
+    if not homes:
+        return ""
+    name = d.get("name", "domain")
+    sentinel = (STATUS_DIR / f"{sid8}.dcue-{name}") if sid8 else None
+    if sentinel and sentinel.exists():
+        return ""  # already inlined this session -> lighter name-nudge from here on
+
+    parts, total = [], 0
+    for rel in homes:
+        body = _read_gielinor(rel)
+        if not body:
+            continue
+        total += len(body.encode("utf-8"))
+        parts.append((rel, body))
+    if not parts or total > INLINE_BYTE_CAP:
+        return ""  # nothing readable, or too big -> name-only (don't burn the sentinel)
+
+    try:
+        if sentinel:
+            sentinel.parent.mkdir(parents=True, exist_ok=True)
+            sentinel.write_text("1", encoding="utf-8")
+    except OSError:
+        pass
+
+    out = ["  --- Knowledge-home contents, force-loaded once this session "
+           "(don't re-derive these from memory) ---"]
+    for rel, body in parts:
+        out.append(f"  [{rel}]\n{body}")
+    return "\n\n".join(out)
+
+
 def _emit(blocks: list) -> None:
     """blocks: list of (name, text). Emit ONE combined additionalContext."""
     if len(blocks) == 1:
@@ -153,6 +211,11 @@ def main() -> int:
     sid8 = sid[:8].lower()
     actor = resolve_actor(sid8)
 
+    # Sub-agents read their brief (and the specialist loads its own reference by
+    # construction), so the heavier force-inline is principal-path only — they still
+    # get the lighter name-nudge, exactly like keepsake-forced-read skips sub-agents.
+    is_subagent = bool(payload.get("agent_type"))
+
     blocks = []
     for d, rx in _compiled():
         skip = tuple(d.get("skip_actors", ("braindead",)))
@@ -163,8 +226,14 @@ def main() -> int:
             continue
         matched = m.group(0).strip()
         name = d.get("name", "domain")
-        blocks.append((name, _render(d, matched)))
-        log_event(f"domain-cue:{name}", "nudge", sid8=sid8, detail=matched)
+        text = _render(d, matched)
+        inline = "" if is_subagent else _maybe_inline(d, sid8)
+        if inline:
+            text = text + "\n\n" + inline
+            log_event(f"domain-cue:{name}", "inline", sid8=sid8, detail=matched)
+        else:
+            log_event(f"domain-cue:{name}", "nudge", sid8=sid8, detail=matched)
+        blocks.append((name, text))
 
     if not blocks:
         return 0  # ordinary prompt — fast, silent pass-through

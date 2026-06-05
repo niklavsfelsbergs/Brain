@@ -42,6 +42,14 @@
 #                              a remembered version is stale and you must re-read. [optional]
 #   read_before     str        the concrete read-before-answering directive: what NOT to do
 #                              from memory, and the load-bearing rules the home carries.
+#   inline_homes    list[str]  gielinor-relative paths whose CONTENTS get force-INLINED into
+#                              context (not just named), ONCE per session per domain. This is
+#                              the §X.4 keepsake move applied to domain knowledge: a directive
+#                              only NAMES a read; inlining FORCES it. Use ONLY for small,
+#                              in-tree homes — the hook caps total bytes (INLINE_BYTE_CAP) and
+#                              falls back to naming if the set is too big, so an external repo
+#                              or a large reference set must stay out of this list (name it in
+#                              canonical_files / point at the specialist instead). [optional]
 #   skip_actors     tuple[str] per-session actors for whom this entry does NOT fire
 #                              (read from the status sidecar). Default skips braindead
 #                              (the dev brain builds the brain, not domain analysis).
@@ -167,6 +175,16 @@ DOMAINS = [
             "DEFECT to fix with a scoped !negation, not a constraint to architect "
             "around (S143 FIF)."
         ),
+        # These three notes are small + in-tree (~7.5 KB total), so their CONTENTS
+        # are force-inlined once per session per domain — the §X.4 keepsake move
+        # applied to domain knowledge. (Shipping deliberately has NO inline_homes:
+        # its home is an external repo / large reference set; it stays name-only and
+        # routes to the specialist instead.)
+        "inline_homes": [
+            "players/jebrim/bank/notes/projects/bi_analytics_deploy_topology.md",
+            "players/jebrim/bank/notes/projects/scm_alerts_entity_split.md",
+            "players/jebrim/bank/notes/projects/2026-05-28-ups-orwo-fif-data-quirks.md",
+        ],
         "skip_actors": DEFAULT_SKIP_ACTORS,
     },
 

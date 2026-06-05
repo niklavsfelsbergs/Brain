@@ -10,7 +10,7 @@ import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { openPeek, release } from "./fleet.js";
-import { openTerm, Term, TermComposer, termForSid8, termInterrupted, resumeTerm, handoffAndResume, ownedTermIds, liveTerms, applyTermZoom, fitTerms } from "./term.js";
+import { openTerm, Term, TermComposer, termForSid8, termInterrupted, resumeTerm, handoffAndResume, ownedTermIds, liveTerms, applyTermZoom, fitTerms, reconnectTermsAfterWake } from "./term.js";
 import { TranscriptView } from "./transcript.js";
 import { nameFor, subscribeNames } from "./names.js";
 
@@ -293,17 +293,18 @@ function App() {
     for (const uuid of ownedTermIds()) resumeTerm(uuid);
   }, []);
 
-  // Resume cockpit terminals after the laptop wakes from sleep (S160). On sleep
-  // the PTY WebSockets drop and ptybridge terminates each claude (its WS-close
-  // finally → proc.terminate), so the terminals come back dead — you "can't type
-  // in them" — and the resume-on-open effect above only runs at page LOAD, never
-  // on wake. JS timers don't fire while the machine is suspended, so a large gap
-  // between ticks is a reliable wake signal; on a detected wake with owned
-  // terminals to restore, reload. Reload re-runs resume-on-open (claude --resume
-  // from disk) — the exact path a manual restart uses, so recovery is guaranteed-
-  // correct and lossless for sessions (only unsent compose-bar text is dropped —
-  // the accepted trade-off). No reload loop: the fresh page resets `last`, so only
-  // a subsequent sleep can trigger it again.
+  // Resume cockpit terminals after the laptop wakes from sleep (S160/S161). On
+  // sleep the PTY WebSockets drop and ptybridge terminates each claude (its
+  // WS-close finally → proc.terminate), so terminals come back dead — you "can't
+  // type in them" — and the resume-on-open effect above only runs at page LOAD,
+  // never on wake. JS timers don't fire while the machine is suspended, so a large
+  // gap between ticks is a reliable wake signal. On a detected wake we reconnect
+  // the terminals that are IN MEMORY (reconnectTermsAfterWake — scoped to the live
+  // map = what was actually open), NOT a page reload. The reload (S160's first cut)
+  // wiped memory and let resume-on-open rebuild from the whole owned history, which
+  // resurrected old/closed sessions as fresh "0s / YOUR MOVE" rows (S161 fix). In-
+  // place reconnect resumes each open conversation (claude --resume) on its
+  // existing pane; old owned sessions stay gone until a genuine reopen.
   useEffect(() => {
     const GAP_MS = 60000; // a >60s gap between ticks ≈ a sleep, not a timer hiccup
     const TICK_MS = 10000;
@@ -312,7 +313,7 @@ function App() {
       const now = Date.now();
       const gap = now - last;
       last = now;
-      if (gap > GAP_MS && ownedTermIds().length) location.reload();
+      if (gap > GAP_MS) reconnectTermsAfterWake();
     }, TICK_MS);
     return () => clearInterval(id);
   }, []);

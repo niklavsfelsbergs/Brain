@@ -748,6 +748,26 @@ class TermConn {
     return 0;
   }
 
+  // Reconnect this terminal in place after a wake-from-sleep (S161). The sleep
+  // dropped the WS, so ptybridge ran its finally and terminated the old claude;
+  // we force-close our (possibly half-open) socket so the server is sure to tear
+  // it down, then resume the SAME conversation in a fresh PTY (claude --resume) on
+  // the existing xterm + board identity — NO page reload, so only terminals that
+  // were actually open get revived (the full owned-history resume stays a reopen-
+  // only thing; that's what was resurrecting old "0s" sessions). Safe against a
+  // double-writer: the old proc is already gone, and the short delay lets the
+  // server's terminate + transcript release land before --resume reopens it.
+  reconnect() {
+    const uuid = this.sessionId || this.resumeId;
+    if (!uuid) return; // never announced a session — nothing to resume onto
+    this.resumeId = uuid; // _connect reads resumeId → resume mode (claude --resume)
+    this._interruptedAt = 0;
+    try { if (this.ws) this.ws.close(); } catch {}
+    this.ws = null;
+    this.term.write("\r\n\x1b[2m[reconnecting after wake…]\x1b[0m\r\n");
+    setTimeout(() => this._connect(), 1000);
+  }
+
   close() {
     if (this._wraf) {
       cancelAnimationFrame(this._wraf);
@@ -822,6 +842,21 @@ export async function handoffAndResume(sessionId) {
 // The owned session uuids to restore on cockpit open.
 export function ownedTermIds() {
   return loadOwned();
+}
+
+// Reconnect every IN-MEMORY terminal after a wake from sleep (S161). Scoped to the
+// `live` map — terminals actually open in THIS page — so old/closed owned sessions
+// are NOT resurrected (the full owned-set resume only happens via resume-on-open on
+// a genuine reopen). Returns the count reconnected. Called by main.js's wake-gap
+// detector instead of a page reload (reload wiped this map and rebuilt it from the
+// whole owned history — the "old sessions pop up at 0s" bug).
+export function reconnectTermsAfterWake() {
+  let n = 0;
+  for (const c of live.values()) {
+    c.reconnect();
+    n++;
+  }
+  return n;
 }
 
 // Live cockpit-driven terminals (announced, has an sid8). The board merges these

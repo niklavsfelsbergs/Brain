@@ -39,5 +39,7 @@ All mart pulls completed; all commits landed; nothing awaiting an external syste
 ## Main-brain changes
 None. All writes were to `bi-analytics-main` (separate repo) + this brain quest-log/inventory/comms. No `gielinor/meta`, ritual, or hook changes.
 
-## Open / next phase
-**Final carrier setups (portfolio scoring)** — combine the per-segment best-new-offer + beats-today into signable 4–6-carrier portfolios; respect keep-Maersk-FR + the new-carrier irreducible-risk; the companion *decision report* does the scoring, this overview is its input. Plus the small report fixes (new-carrier caveat rewording per confirmation #1). See resume.
+## Open / next phase — PLANNED + LOCKED (handover ready)
+**Final carrier setups (portfolio scoring) on a 2026-Q1 actuals basis.** End of session: discovered the **decision report already scores portfolios** (`decision_scorer.py` §B.13 state model INCUMBENT/NEW_OFFER/OFF, cap 6, savings vs Σ real invoices) — but on the stale 2025 basis. Wrote the authoritative phase plan: **`bi-analytics .../2_analysis/decision_report/PLAN_final_setups_2026q1.md`** (committed `17c0249`, decisions `4478c73`). Phases A (2026-Q1 cost matrix, full pull → engines + real invoices, OML-netted; Maersk-FR fix falls out) → B (re-point scorer, drop [[S120_3760e65b_eu-tender-full-year-build|S120]] reprice hack) → C (reconcile) → D (score setups) → E (summarize in overview).
+**Decisions LOCKED (principal):** (1) Maersk = two carriers (`maersk_current_fr` incumbent + `maersk_eu_new`); (2) NO bias correction — tender engines firm/face-value (the 20-35% under-pricing was the SAVINGS re-rate engines, not the tender engines; Güll alone HELD); (3) volume basis = 2026-Q1.
+A detailed handover prompt was delivered to the principal (chat) for the fresh session. Also queued: the new-carrier-caveat reword across the overview. Resume points to the PLAN.

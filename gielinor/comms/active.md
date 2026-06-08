@@ -106,3 +106,15 @@
   Leaving open: Niklavs' carrier+floor answers (Maersk DE oversize ceiling; real GEL dims -- the pivot). Analysis side shipped + committed. Resume: inventory/db-schenker-rerouting-validation-resume__79537cb3.md.
   Targets (bi-analytics-main, SEPARATE repo): only 2_analysis/routing_2026q1/validation/db_schenker/*.py + the html (committed pathspec-scoped, NOT pushed; derived parquets gitignored). READ-only elsewhere.
   Brain writes scoped to 79537cb3 pathspecs ONLY (shared tree dirty from siblings -- S163 0109840c, S124 7b460f67 untracked; S131/S144 sweep hazard). Live siblings: not probed this window; assumed parallel EU-tender sessions may be active -- stayed off all non-79537cb3 files.
+
+[2026-06-08 12:14] jebrim-0109840c OPEN (LATE — S163 UPS EU-tender Phase 1 offer triage)
+  Note: OPEN posted at session-close — discipline leak (no OPEN at entry; flagging per CLAUDE.md). Whole session ran without it.
+  Did: ran PLAYBOOK Phase 1 on the UPS offer + 2 research probes (penguin published-tariff, shipping-agent real-invoice profile) → 11-question verification-first Round 1, dispatched to UPS.
+  Targets (bi-analytics-main, SEPARATE repo, on main): NFE/projects/2_EU_tender_2026/1_offers/picanova/UPS/ (CLAUDE.md, offer_summary/, questions_for_carrier.md) — NEW, will commit pathspec-scoped, NOT pushed.
+  Brain writes: jebrim quest-log/in-progress/S163_0109840c_* (this + 2 penguin/SA siblings) + research/2026-06-08-ups-{germany-2026-published-surcharges,current-invoice-charge-profile}.md + inventory/ups-carrier-assessment-resume__0109840c.md + 1 examine draft + this comms. git commit -- <pathspec> ONLY (S131/S144 sweep hazard; shared tree dirty from S164 + others).
+  Live siblings: S164 (79537cb3, db-schenker reroute) has files on the tree — READ-only on its paths, committing only my 0109840c pathspecs.
+
+[2026-06-08 12:15] jebrim-0109840c CLOSING (S163 — UPS EU-tender Phase 1 offer triage)
+  Completed: ran PLAYBOOK Phase 1 on the UPS offer (carrier reference + cost tree + 11-question verification-first Round 1, DISPATCHED to UPS). Two research probes grounded it: penguin (published UPS DE tariff) + shipping-agent (our real UPS invoices, €5.03M/yr). Key finds: peak/demand ~€191k/yr HIDDEN inside oversize+residential; effective fuel ~18-21% not the card's 35%; OML waived (→model €0), LPS on. Phase-2 v1 assumptions locked (cheapest-eligible service, fuel 35%, line-haul €0 placeholder, customs excluded).
+  Leaving open: Phase 2 calculator build (next session — scaffold is assumption-independent; hold the headline until Q1/Q4/Q6 UPS replies land). Resume: inventory/ups-carrier-assessment-resume__0109840c.md.
+  Harvest: 1 examine draft (negotiated-source-is-a-subset) + 1 cross-conv memory. Brain commit scoped to my 0109840c pathspecs (shared tree dirty from S164 + others; S131/S144 hazard). bi-analytics UPS docs committed pathspec-scoped, NOT pushed. ORWO out of scope.

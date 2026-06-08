@@ -21,6 +21,20 @@ function safeUrl(u) {
   return t;
 }
 
+// GFM table support. A table is a `|`-bearing header row immediately followed
+// by a separator row of dash-cells (`| --- | :--: |`), then body rows. SEP_RE
+// matches the separator (optional outer pipes, optional alignment colons); the
+// bare-`---` hr case never reaches here because a table requires the |-header
+// directly above the separator.
+const SEP_RE = /^\s*\|?\s*:?-{1,}:?\s*(\|\s*:?-{1,}:?\s*)*\|?\s*$/;
+
+function splitRow(ln) {
+  let s = ln.trim();
+  if (s.startsWith("|")) s = s.slice(1);
+  if (s.endsWith("|")) s = s.slice(0, -1);
+  return s.split("|").map((c) => c.trim());
+}
+
 function inline(s) {
   return s
     .replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`)
@@ -55,7 +69,8 @@ export function mdToHtml(text) {
     }
     pendingBlank = false;
   };
-  for (const ln of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const ln = lines[i];
     if (/^```/.test(ln)) {
       if (inCode) {
         out.push(`<pre><code>${codeBuf.join("\n")}</code></pre>`);
@@ -75,6 +90,40 @@ export function mdToHtml(text) {
     if (h) {
       flushList();
       out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`);
+      continue;
+    }
+    // GFM table: |-bearing header row + a separator row on the next line.
+    if (ln.includes("|") && i + 1 < lines.length && SEP_RE.test(lines[i + 1])) {
+      flushList();
+      const headers = splitRow(ln);
+      const aligns = splitRow(lines[i + 1]).map((c) => {
+        const l = c.startsWith(":");
+        const r = c.endsWith(":");
+        return l && r ? "center" : r ? "right" : l ? "left" : "";
+      });
+      const alignAttr = (idx) => (aligns[idx] ? ` style="text-align:${aligns[idx]}"` : "");
+      i += 1; // consume the separator row
+      const rows = [];
+      while (i + 1 < lines.length && lines[i + 1].trim() !== "" && lines[i + 1].includes("|")) {
+        rows.push(splitRow(lines[i + 1]));
+        i += 1;
+      }
+      const thead =
+        "<thead><tr>" +
+        headers.map((hd, idx) => `<th${alignAttr(idx)}>${inline(hd)}</th>`).join("") +
+        "</tr></thead>";
+      const tbody =
+        "<tbody>" +
+        rows
+          .map(
+            (r) =>
+              "<tr>" +
+              headers.map((_, idx) => `<td${alignAttr(idx)}>${inline(r[idx] || "")}</td>`).join("") +
+              "</tr>",
+          )
+          .join("") +
+        "</tbody>";
+      out.push(`<table>${thead}${tbody}</table>`);
       continue;
     }
     const ul = ln.match(/^\s*[-*]\s+(.*)$/);

@@ -562,6 +562,24 @@ html, body {
 }
 .b-text hr { border: none; border-top: 1px solid var(--line); margin: 10px 0; }
 .b-text a { color: var(--crew); }
+.b-text table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.95em;
+  max-width: 100%;
+}
+.b-text th, .b-text td {
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+.b-text thead th {
+  background: var(--panel-2);
+  color: var(--ink);
+  font-weight: 600;
+}
+.b-text tbody tr:nth-child(even) td { background: rgba(255, 255, 255, 0.03); }
 
 /* Clickable file-path tokens (S160). Gold dotted underline so they read as live
    without shouting; the cursor + solid underline on hover confirm they're clickable.

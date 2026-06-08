@@ -18,6 +18,16 @@ Sized the Warenpost exclusion (~169k parcels / 5.9% book / ~€0.5M/yr DHL overs
 ## ⚠ Stale-downstream flag (needs S150 coordination)
 The cost_matrix is shared. I re-ran it, so **decision_report/ (S150) + routing_2026q1/ now reflect PRE-Warenpost DHL costs** — stale vs the matrix. I did NOT re-run them (avoid clobbering live S150). DHL's light-EU position improved (~€0.5M); the decision report must be re-run in a coordinated S150 pass to pick it up. The EU-tender keepsake "track doc updates / Step-8 cascade" applies.
 
+## NEXT SESSION — routing report service-split (PLANNED, not built)
+Full handoff spec written: **`bi-analytics .../2_analysis/routing_2026q1/PLAN_routing_service_split.md`** — read it top-to-bottom first. Summary of the 5-part change:
+1. Regenerate `cost_matrix_2026q1` (Warenpost flows in automatically — routing's Q1 matrix is currently pre-Warenpost/stale) + re-run derive_envelope.
+2. Remove the **residual/"Direct Link"** bucket: drop out-of-scope incumbents from build_final's `keep` candidate → those re-route to the cheapest of the 6. ⚠ Quantify the 7,794 residual first (≥1 in-scope bid vs none); surface the genuinely-unserved remainder, don't freight them.
+3. Carry `service` through build_final → routing_rules.csv + routing_assignment.parquet (per-parcel service from the matrix; band-merge on (carrier, service)).
+4. New `2_analysis/service_labels.py` (verify keys vs live matrix `service` values).
+5. Display: full service split in carrier_envelopes + routing_report (routing table, what-each-takes, dim table, portfolio); remove Direct Link; use labels.
+6. (lighter, optional) carrier-overview v2: annotate the winning service per segment (NOT re-key).
+Decisions locked: residual→reroute-to-next-active; full split routing-report-only; overview=annotate-only; UPS/DBS carrier-only; author labels. No pre-routing commit (revert point = d54836d).
+
 ## Where we are (cost-structure card)
 Built and verified. Each of the 9 carrier pages in
 `bi-analytics-main/NFE/projects/2_EU_tender_2026/2_analysis/carrier_overview_v2/carrier_overview.html`

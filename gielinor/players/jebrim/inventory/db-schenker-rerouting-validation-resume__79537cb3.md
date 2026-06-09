@@ -1,14 +1,17 @@
 ---
 quest: S164_db-schenker-rerouting-validation
 sid8: 79537cb3
-ts: 2026-06-08 12:50
+ts: 2026-06-08 13:40
 open_dep: awaiting Niklavs' carrier/floor answers (Maersk DE oversize ceiling; real GEL dims) — analysis side is shipped + committed
 ---
 
 # Resume — DB Schenker re-routing contract validation
 
 ## Where we are
-Deliverable shipped + committed to bi-analytics: `2_analysis/routing_2026q1/validation/db_schenker/DB_schenker_rerouting.html` (self-contained, contract-cited) + pipeline `build_population.py → validate.py → report.py`. Verified: all 7,593 parcels moved off DB Schenker → Hermes (4,746) + Maersk (2,847) are eligible under the assigned carrier. Hermes is contract-clean; Maersk's 1,291 extreme-oversize parcels (esp. DE GEL tubes 200 cm/560 girth) rest on an unstated per-country oversize ceiling. Report's Section D carries the three question sets (Maersk / Hermes / production floor).
+Deliverable shipped + committed to bi-analytics: `2_analysis/routing_2026q1/validation/db_schenker/DB_schenker_rerouting.html` (self-contained, contract-cited) + pipeline `build_population.py → validate.py → report.py`. Verified: all 7,593 parcels moved off DB Schenker → Hermes (4,746) + Maersk (2,847) are eligible under the assigned carrier. Hermes is contract-clean; Maersk's 1,291 extreme-oversize parcels (esp. DE GEL tubes 200 cm/560 girth) rest on an unstated per-country oversize ceiling. Report's Section D carries the three question sets (Maersk / Hermes / production floor). **Section E** (added this session) covers the mirror — what STAYS on DB Schenker: 1,076 = 165 must-freight + 240 not-in-6 (incl. all CH) + 671 price (97% FR+PL; FR slice = the FR-extend readout).
+
+## Possible next (offered, not started)
+Size the FR-extend flip: the 510 FR price-retained parcels, DB Schenker cost vs Maersk FR @ €4.72.
 
 ## Next concrete step (mostly Niklavs-gated)
 1. **Niklavs** puts the three question sets to Maersk, Hermes, and the production floor (Section D of the report). The floor measurement of real GEL dimensions is the pivot — it either dissolves the Maersk oversize concern or makes Maersk's explicit acceptance mandatory.

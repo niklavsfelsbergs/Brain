@@ -25,7 +25,10 @@ Opened as a discussion ("talk about the EU tender again… the routing report").
 - Path resolution made depth-robust (name-walk to `cost_matrix_2026q1.py`) after Niklavs nested the folder under `validation/db_schenker/` for future sibling validations.
 
 ## Pending external actions
-No pending external actions. Deliverable built + (this close) committed to bi-analytics. The three question sets are for Niklavs to put to Maersk / Hermes / the floor — his action, not a queued send.
+No pending external actions. Deliverable built + committed to bi-analytics. The three question sets are for Niklavs to put to Maersk / Hermes / the floor — his action, not a queued send.
+
+## Follow-up (same session, post first close)
+Niklavs reopened to ask the mirror question — what STAYS on DB Schenker and why. Added the stay-side analysis to the pipeline + a **Section E** to the report. The final DB Schenker book = 1,076 parcels, three reasons: **165 must-freight** (no carrier anywhere — GEL tubes up to 66 kg/200 cm, heavy CUSTOM_OVERSIZED up to ~100 kg, PALLET-XXL), **240 not-in-6** (eligible only on a carrier outside the chosen 6 — incl. all 143 CH, since Hermes excludes CH and Güll/Austrian Post aren't in the 6), **671 price** (a final-6 carrier could take it but DB Schenker's invoice is cheaper, 90.9% of the time). The price bucket is 97% **FR (510) + PL (142)** — the FR slice is a direct readout of the open FR-extend decision. Only the must-freight cluster is a hard constraint; the other two are levers. Second bi-analytics commit for the Section E change.
 
 Cascade: none (no gielinor meta/ritual/hook changes this session).
 Main-brain changes: none beyond this quest-log + inventory resume + one bank draft (harvest).

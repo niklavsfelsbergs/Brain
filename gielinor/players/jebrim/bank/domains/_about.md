@@ -17,6 +17,17 @@ The fix is the brain's own `research → bank` *picking* pattern, applied one le
 
 **Never all-digests-always-on** — that rebuilds the always-on bloat the §X `@import` trim fought. Index always-on (a map); digests on topic.
 
+## Relationship to `bank/notes/projects/` (the corpus)
+
+A digest does **not** replace project notes — it sits **on top** of them. `bank/notes/projects/*.md` stays the corpus: the source of truth, one note per thing, **written during the work** exactly as today (`eu_tender_2026.md`, `2026-06-09-ups-old-vs-new-rate-card-diff.md`, …). A `bank/domains/<slug>.md` digest is the synthesized ~2 KB view that points *down* at those notes. This is the same `research → bank` *picking* the brain already does, one level up.
+
+- **Direction of travel is project → digest.** You write facts into `projects/` while working; the digest is **downstream** — alching picks from the corpus into the digest. You never hand-write *into* a digest mid-work; you write the project note, and the digest catches up at the next alch.
+- **The `corpus:` frontmatter is the seam** (not just prose): it lists which `projects/*.md` notes the digest distils, and the body cross-links each with `[[wikilinks]]`. It does double duty as the **re-synthesis trigger** — alching compares each corpus file's mtime against `synthesized:`; a project note edited after the digest was built is the signal to regenerate. So adding/editing a project note makes its digest provably stale, on purpose.
+- **A domain spans many project notes**, and a note may be cited by **more than one** digest (`corpus:` lists are allowed to overlap — e.g. a FIF/dimension note that belongs to both *EU Tender 2026* and *Carrier contracts & invoices*). The domain is the topic; the projects are the pieces. Split a domain (don't grow one digest) when its load-bearing surface won't fit the budget — and prefer splitting a *time-boxed* domain (a tender event) from the *durable* reference it draws on (carrier contracts), so the event can be archived later without taking the permanent knowledge with it.
+- **Don't reorganize `projects/` into per-domain subfolders.** The `corpus:` list maps the relationship without moving files; a folder reshuffle is churn against a working layer. Revisit only if `projects/` itself becomes unwieldy — a separate call, not part of this layer.
+
+The digest *duplicates* (distilled) claims that also live in the notes — intentionally, the same way the keepsake duplicates bank facts: the digest is the loaded surface, the note is the verifiable anchor. The budget forces distillation, not copying; the source links keep every claim checkable and catch drift.
+
 ## Digest frontmatter schema
 
 Every digest carries this frontmatter. The §Z.C loader **auto-discovers** the active player's `bank/domains/*.md`, reads `patterns`, and inlines the matching digest — so **adding a domain = alching drops a digest file** (no hook/registry edit).

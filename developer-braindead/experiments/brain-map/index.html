@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Brain — a Map of Gielinor</title>
+<!--
+  Top-down 2D world render of the brain's architecture.
+  Art: Ninja Adventure © pixel-boy (CC0), sliced by prep_ninja.py into
+  sprites_ready/. Each PLAYER is a bush-hedged cul-de-sac: a manor (their home)
+  + a hut per OWN layer. Shared layers sit in the Commons; Braindead's Workshop
+  is the dev brain. Roads = rituals, characters = sessions. Region identity =
+  banner colour + a coloured flag on the manor.
+  Drag to pan · wheel to zoom · F to fit · hover a building for its name.
+-->
+<style>
+  html,body{margin:0;height:100%;background:#0c160a;overflow:hidden;font-family:'Trebuchet MS',Verdana,sans-serif;}
+  #c{display:block;image-rendering:pixelated;image-rendering:crisp-edges;cursor:grab;}
+  #c:active{cursor:grabbing;}
+  #hud{position:fixed;left:16px;top:13px;z-index:5;color:#f1e7c4;text-shadow:0 2px 6px #000;pointer-events:none;}
+  #hud .t{font-size:21px;font-weight:700;letter-spacing:.04em;color:#ffe9a8;}
+  #hud .s{font-size:12px;opacity:.7;}
+  #tip{position:fixed;z-index:6;pointer-events:none;display:none;background:rgba(20,14,8,.92);color:#ffe9a8;
+    border:1px solid #8f6d1e;border-radius:5px;padding:3px 8px;font-size:12px;text-shadow:0 1px 2px #000;white-space:nowrap;}
+  #credit{position:fixed;right:10px;bottom:8px;z-index:5;color:#cdb985;opacity:.4;font-size:10px;}
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"><div class="t">The Brain — a Map of Gielinor</div>
+  <div class="s">cul-de-sacs are players · the commons is shared · roads are rituals · drag · wheel · F to fit</div></div>
+<div id="tip"></div>
+<div id="credit">Art — Ninja Adventure by pixel-boy (CC0)</div>
+<script>
+const T=16, ASSET="sprites_ready/";
+const SPRITES=["grass","grass_v0","grass_v1","grass_v2","grass_v3","grass_v4","tuft0","tuft1","tuft2","tuft3",
+  "path","water","manor","hut","ruin","tree_big","bush","bush2","rock",
+  "char_down_0","char_down_1","char_down_2","char_down_3","char_up_0","char_up_1","char_up_2","char_up_3",
+  "char_side_0","char_side_1","char_side_2","char_side_3"];
+const img={};
+const GRASS_V=["grass_v0","grass_v1","grass_v2","grass_v3","grass_v4"];
+
+// ── world model: manor (4x5t) per player + hut (3x3t) per layer ────────────
+const MANOR={key:"manor",w:4,h:5}, HUT={key:"hut",w:3,h:3};
+const CELLW=4, CELLH=4, COLS=3;
+const CLUSTERS=[
+  {name:"THE COMMONS", role:"shared layers", region:"civic", anchor:[26,3], manor:false,
+   layers:["meta","lorebook","niksis8","comms","spellbook","examine","keepsake"]},
+  {name:"Braindead's Workshop", role:"the dev brain", region:"dev", anchor:[3,3], manor:false,
+   layers:["decisions","plan","quest-log","build-lessons"]},
+  {name:"JEBRIM", role:"the analyst", region:"jebrim", anchor:[4,24], manor:true,
+   layers:["bank","research","quest-log","spellbook","inventory","examine","niksis8·char","keepsake","domains"]},
+  {name:"ZEZIMA", role:"the partner", region:"zezima", anchor:[27,25], manor:true,
+   layers:["bank","research","quest-log","examine","niksis8·char","keepsake"]},
+  {name:"GUTHIX", role:"the caretaker god", region:"guthix", anchor:[48,24], manor:true,
+   layers:["bank","quest-log","proposals","keepsake"]},
+];
+let WORLD_W=10, WORLD_H=10; const AV=20;
+
+function layout(){
+  const buildings=[],banners=[],hedges=[],lanterns=[],gardens=[],roadPts=[];
+  for(const cl of CLUSTERS){
+    const [ax,ay]=cl.anchor, rows=Math.ceil(cl.layers.length/COLS);
+    const contentW=Math.max(MANOR.w, COLS*CELLW-1);
+    const gridY=ay+(cl.manor?MANOR.h+1:0);
+    if(cl.manor){ const mx=ax+Math.floor((contentW-MANOR.w)/2);
+      buildings.push({key:MANOR.key,tx:mx,ty:ay,w:MANOR.w,h:MANOR.h,name:cl.name,manor:true,region:cl.region}); }
+    cl.layers.forEach((lab,i)=>{const c=i%COLS,r=Math.floor(i/COLS);
+      buildings.push({key:HUT.key,tx:ax+c*CELLW,ty:gridY+r*CELLH,w:HUT.w,h:HUT.h,name:lab,region:cl.region});});
+    const bottom=gridY+rows*CELLH;
+    const box={x:ax-2,y:ay-2,w:contentW+3,h:(bottom-ay)+3}; cl.box=box;
+    const gateX=box.x+Math.floor(box.w/2); cl.gate={x:gateX,y:box.y+box.h};
+    for(let x=box.x;x<=box.x+box.w;x+=2){ hedges.push({x,y:box.y}); if(Math.abs(x-gateX)>2) hedges.push({x,y:box.y+box.h}); }
+    for(let y=box.y;y<=box.y+box.h;y+=2){ hedges.push({x:box.x,y}); hedges.push({x:box.x+box.w,y}); }
+    lanterns.push({x:gateX-1,y:box.y+box.h},{x:gateX+1,y:box.y+box.h});
+    banners.push({x:box.x+box.w/2,y:box.y-0.2,name:cl.name,role:cl.role,region:cl.region});
+    gardens.push({key:"bush2",x:box.x+1,y:bottom-1},{key:"bush2",x:box.x+box.w-1,y:bottom-1});
+    roadPts.push(cl.gate);
+    WORLD_W=Math.max(WORLD_W,box.x+box.w+4); WORLD_H=Math.max(WORLD_H,box.y+box.h+4);
+  }
+  return {buildings,banners,hedges,lanterns,gardens,roadPts};
+}
+function roads(pts){const r=Array.from({length:WORLD_H},()=>new Array(WORLD_W).fill(false));
+  const set=(x,y)=>{if(y>=0&&y<WORLD_H&&x>=0&&x<WORLD_W)r[y][x]=true;};
+  for(let x=5;x<WORLD_W-5;x++) set(x,AV);
+  for(const p of pts){const y0=Math.min(p.y,AV),y1=Math.max(p.y,AV);for(let y=y0;y<=y1;y++)set(p.x,y);}
+  return r;}
+function occGrid(B,road,H){const o=Array.from({length:WORLD_H},()=>new Array(WORLD_W).fill(false));
+  const m=(x,y)=>{if(y>=0&&y<WORLD_H&&x>=0&&x<WORLD_W)o[y][x]=true;};
+  for(const b of B) for(let dy=-1;dy<b.h;dy++) for(let dx=0;dx<b.w;dx++) m(b.tx+dx,b.ty+dy);
+  for(const h of H) for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++) m(h.x+dx,h.y+dy);
+  for(let y=0;y<WORLD_H;y++)for(let x=0;x<WORLD_W;x++) if(road[y][x]) m(x,y);
+  return o;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hash(x,y){let h=(x*374761393+y*668265263)>>>0;h=(h^(h>>>13))*1274126177>>>0;return(h>>>0)/4294967296;}
+function scatter(occ){const rng=mulberry32(20260609),props=[];const pick=a=>a[Math.floor(rng()*a.length)];
+  // keep scatter in the WILDERNESS: reject any tile inside a cul-de-sac plot (box + 1 margin)
+  const inPlot=(x,y)=>CLUSTERS.some(c=>c.box&&x>=c.box.x-1&&x<=c.box.x+c.box.w+1&&y>=c.box.y-1&&y<=c.box.y+c.box.h+1);
+  const place=(x,y,k)=>{if(y<0||y>=WORLD_H||x<0||x>=WORLD_W||occ[y][x]||inPlot(x,y))return;occ[y][x]=true;props.push({key:k,x,y});};
+  for(let g=0;g<22;g++){const gx=Math.floor(rng()*WORLD_W),gy=Math.floor(rng()*WORLD_H),n=2+Math.floor(rng()*3);
+    for(let i=0;i<n;i++) place(gx+Math.floor((rng()-0.5)*5),gy+Math.floor((rng()-0.5)*4),pick(["tree_big","tree_big","tree_big","bush"]));}
+  for(let i=0;i<10;i++) place(Math.floor(rng()*WORLD_W),Math.floor(rng()*WORLD_H),"bush2");
+  const tufts=[];for(let y=0;y<WORLD_H;y++)for(let x=0;x<WORLD_W;x++){if(occ[y][x])continue;const h=hash(x,y);
+    if(h>0.9) tufts.push({key:"tuft"+(Math.floor(h*40)%4),x,y});}
+  props.sort((a,b)=>a.y-b.y);return{props,tufts};}
+
+function mkChar(wp,speed=2.2){return {wp,i:0,x:wp[0].x*T+T/2,y:wp[0].y*T+T,speed,face:"down",flip:false,anim:0,frame:0,moving:false};}
+let CHARS=[];
+function stepChar(ch,dt){const t=ch.wp[(ch.i+1)%ch.wp.length],tx=t.x*T+T/2,ty=t.y*T+T;
+  let dx=tx-ch.x,dy=ty-ch.y;const d=Math.hypot(dx,dy)||1;
+  if(d<ch.speed){ch.x=tx;ch.y=ty;ch.i=(ch.i+1)%ch.wp.length;}else{ch.x+=dx/d*ch.speed;ch.y+=dy/d*ch.speed;}
+  ch.moving=true;if(Math.abs(dx)>Math.abs(dy)){ch.face="side";ch.flip=dx>0;}else{ch.face=dy>0?"down":"up";ch.flip=false;}
+  ch.anim+=dt;if(ch.anim>0.16){ch.anim=0;ch.frame=(ch.frame+1)%4;}}
+
+const cnv=document.getElementById("c"),ctx=cnv.getContext("2d"),tip=document.getElementById("tip");
+const cam={scale:3,x:0,y:0};let mouse={x:-1,y:-1};
+function resize(){cnv.width=innerWidth;cnv.height=innerHeight;ctx.imageSmoothingEnabled=false;}
+function centerOn(wx,wy){cam.x=innerWidth/2-wx*cam.scale;cam.y=innerHeight/2-wy*cam.scale;}
+function fitAll(){cam.scale=Math.max(1,Math.min(innerWidth/(WORLD_W*T),innerHeight/(WORLD_H*T)));centerOn(WORLD_W*T/2,WORLD_H*T/2);}
+addEventListener("resize",resize);
+let drag=null;
+cnv.addEventListener("pointerdown",e=>{drag={mx:e.clientX,my:e.clientY,cx:cam.x,cy:cam.y};});
+addEventListener("pointerup",()=>{drag=null;});
+addEventListener("pointermove",e=>{mouse={x:e.clientX,y:e.clientY};if(drag){cam.x=drag.cx+(e.clientX-drag.mx);cam.y=drag.cy+(e.clientY-drag.my);}});
+cnv.addEventListener("wheel",e=>{e.preventDefault();const k=e.deltaY<0?1.15:0.87,ns=Math.max(1,Math.min(8,cam.scale*k));
+  cam.x=e.clientX-(e.clientX-cam.x)*(ns/cam.scale);cam.y=e.clientY-(e.clientY-cam.y)*(ns/cam.scale);cam.scale=ns;},{passive:false});
+addEventListener("keydown",e=>{if(e.key==="f"||e.key==="F")fitAll();});
+
+let ROAD,PROPS,TUFTS,BUILDINGS,BANNERS,HEDGES,LANTERNS,GARDENS;
+function spr(k,px,py){const im=img[k];if(im&&im.width)ctx.drawImage(im,px,py);}
+function sprB(k,px,baseY){const im=img[k];if(im&&im.width)ctx.drawImage(im,px,baseY-im.height);}  // base-anchored
+function shadow(cx,by,rw){ctx.fillStyle="rgba(8,12,6,.3)";ctx.beginPath();ctx.ellipse(cx,by,rw,rw*0.32,0,0,6.2832);ctx.fill();}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+const REGCOL={civic:"#caa64a",jebrim:"#6f9fcf",zezima:"#cf86b3",guthix:"#74b58c",dev:"#bb9255"};
+function glow(cx,cy,r,col,a){const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,col);g.addColorStop(1,"rgba(0,0,0,0)");ctx.globalAlpha=a;ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,6.2832);ctx.fill();ctx.globalAlpha=1;}
+function flag(b){const px=(b.tx+b.w-0.5)*T,py=(b.ty)*T-8;ctx.strokeStyle="#3a2c18";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py+12);ctx.stroke();
+  ctx.fillStyle=REGCOL[b.region];ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+9,py+3);ctx.lineTo(px,py+6);ctx.closePath();ctx.fill();}
+function banner(b){const cx=b.x*T;ctx.textAlign="center";ctx.font="bold 9px 'Trebuchet MS',sans-serif";
+  const w=Math.max(ctx.measureText(b.name).width,ctx.measureText(b.role).width)+16,y=b.y*T-2;
+  ctx.fillStyle="rgba(22,15,8,.9)";rr(cx-w/2,y-18,w,19,4);ctx.fill();ctx.strokeStyle=REGCOL[b.region];ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle=REGCOL[b.region];ctx.fillText(b.name,cx,y-9);ctx.fillStyle="#cdb985";ctx.font="7px 'Trebuchet MS',sans-serif";ctx.fillText(b.role,cx,y-1);}
+function drawChar(ch){const im=img[`char_${ch.face}_${ch.moving?ch.frame:0}`];if(!im||!im.width)return;
+  const w=im.width*2,h=im.height*2,dx=Math.round(ch.x-w/2),dy=Math.round(ch.y-h+4);shadow(ch.x,ch.y,7);
+  if(ch.flip){ctx.save();ctx.translate(dx+w,dy);ctx.scale(-1,1);ctx.drawImage(im,0,0,w,h);ctx.restore();}else ctx.drawImage(im,dx,dy,w,h);}
+
+let last=0;
+function frame(ts){const dt=Math.min(0.05,(ts-last)/1000||0);last=ts;
+  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle="#0c160a";ctx.fillRect(0,0,cnv.width,cnv.height);
+  ctx.setTransform(cam.scale,0,0,cam.scale,cam.x,cam.y);
+  for(let y=0;y<WORLD_H;y++)for(let x=0;x<WORLD_W;x++) spr("grass",x*T,y*T);   // uniform grass — variants were different biomes (quilt); texture comes from tufts
+  for(let y=0;y<WORLD_H;y++)for(let x=0;x<WORLD_W;x++) if(ROAD[y][x]) spr("path",x*T,y*T);
+  for(const t of TUFTS) spr(t.key,t.x*T,t.y*T);
+  ctx.fillStyle="rgba(34,30,66,.24)";ctx.fillRect(0,0,WORLD_W*T,WORLD_H*T);    // dusk
+
+  const draw=[];
+  for(const g of GARDENS) draw.push({y:(g.y+1)*T,fn:()=>sprB(g.key,g.x*T,(g.y+1)*T)});
+  for(const h of HEDGES) draw.push({y:(h.y+1)*T,fn:()=>{shadow((h.x+1)*T,(h.y+1)*T-2,8);sprB("bush",h.x*T,(h.y+2)*T);}});
+  for(const p of PROPS) draw.push({y:(p.y+1)*T,fn:()=>{shadow((p.x+0.5)*T,(p.y+1)*T-2,p.key.startsWith("tree")?9:6);sprB(p.key,p.x*T,(p.y+1)*T);}});
+  for(const b of BUILDINGS) draw.push({y:(b.ty+b.h)*T,fn:()=>{shadow((b.tx+b.w/2)*T,(b.ty+b.h)*T-1,b.w*T*0.42);spr(b.key,b.tx*T,b.ty*T);if(b.manor)flag(b);}});
+  for(const ch of CHARS){stepChar(ch,dt);draw.push({y:ch.y,fn:()=>drawChar(ch)});}
+  draw.sort((a,b)=>a.y-b.y);for(const d of draw) d.fn();
+
+  ctx.globalCompositeOperation="lighter";
+  for(const b of BUILDINGS) glow((b.tx+b.w/2)*T,(b.ty+b.h*0.6)*T,b.w*T*0.5,"rgba(255,196,92,.42)",0.45);
+  for(const l of LANTERNS) glow((l.x+0.5)*T,(l.y+0.5)*T,12,"rgba(255,180,80,.8)",0.7);
+  ctx.globalCompositeOperation="source-over";
+  for(const b of BANNERS) banner(b);
+
+  ctx.setTransform(1,0,0,1,0,0);
+  const vg=ctx.createRadialGradient(cnv.width/2,cnv.height/2,Math.min(cnv.width,cnv.height)*0.3,cnv.width/2,cnv.height/2,Math.max(cnv.width,cnv.height)*0.72);
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(5,8,3,.58)");ctx.fillStyle=vg;ctx.fillRect(0,0,cnv.width,cnv.height);
+  hover();requestAnimationFrame(frame);
+}
+function hover(){if(drag||mouse.x<0){tip.style.display="none";return;}
+  const wx=(mouse.x-cam.x)/cam.scale,wy=(mouse.y-cam.y)/cam.scale;let hit=null;
+  for(const b of BUILDINGS) if(wx>=b.tx*T&&wx<(b.tx+b.w)*T&&wy>=b.ty*T&&wy<(b.ty+b.h)*T){hit=b;break;}
+  if(hit){tip.style.display="block";tip.style.left=(mouse.x+14)+"px";tip.style.top=(mouse.y+12)+"px";tip.innerHTML=`<b>${hit.name}</b>`;}
+  else tip.style.display="none";}
+
+let loaded=0;
+SPRITES.forEach(k=>{const im=new Image();im.onload=()=>{if(++loaded===SPRITES.length)start();};
+  im.onerror=()=>{if(++loaded===SPRITES.length)start();};im.src=ASSET+k+".png";img[k]=im;});
+function start(){const L=layout();BUILDINGS=L.buildings;BANNERS=L.banners;HEDGES=L.hedges;LANTERNS=L.lanterns;GARDENS=L.gardens;
+  ROAD=roads(L.roadPts);const occ=occGrid(BUILDINGS,ROAD,HEDGES);const s=scatter(occ);PROPS=s.props;TUFTS=s.tufts;
+  CHARS=[mkChar([{x:8,y:AV},{x:WORLD_W-8,y:AV}],2.6),mkChar([{x:10,y:32},{x:10,y:AV},{x:32,y:AV},{x:33,y:33}],2.0)];
+  resize();centerOn(WORLD_W*T/2,AV*T);requestAnimationFrame(frame);}
+</script></body></html>

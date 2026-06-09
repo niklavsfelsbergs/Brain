@@ -1,0 +1,36 @@
+# Vendored sprite source — NOT committed (14M). Re-fetch to regenerate sprites:
+#   Ninja Adventure (CC0, pixel-boy): clone the pack into assets/ninja-src
+#   Sprout Lands Basic (Cup Nooble, non-commercial+credit): into assets/Sprout Lands - Sprites - Basic pack
+# Then: python prep_ninja.py  (writes the CC0 sprites below)
+assets/
+
+# Only the Ninja-Adventure (CC0) sprites the current renderer uses are committed.
+# Everything else in sprites_ready/ is Sprout-Lands-derived scratch (non-commercial
+# license — do NOT redistribute) or regenerable, so it stays ignored.
+sprites_ready/*
+!sprites_ready/grass.png
+!sprites_ready/path.png
+!sprites_ready/water.png
+!sprites_ready/manor.png
+!sprites_ready/hut.png
+!sprites_ready/ruin.png
+!sprites_ready/tree_big.png
+!sprites_ready/tree2.png
+!sprites_ready/bush.png
+!sprites_ready/bush2.png
+!sprites_ready/tuft0.png
+!sprites_ready/tuft1.png
+!sprites_ready/tuft2.png
+!sprites_ready/tuft3.png
+!sprites_ready/char_down_0.png
+!sprites_ready/char_down_1.png
+!sprites_ready/char_down_2.png
+!sprites_ready/char_down_3.png
+!sprites_ready/char_up_0.png
+!sprites_ready/char_up_1.png
+!sprites_ready/char_up_2.png
+!sprites_ready/char_up_3.png
+!sprites_ready/char_side_0.png
+!sprites_ready/char_side_1.png
+!sprites_ready/char_side_2.png
+!sprites_ready/char_side_3.png

@@ -1627,7 +1627,7 @@ html, body {
   border: none;
   border-radius: 0;
   color: #ececee;
-  max-width: 50rem;
+  max-width: none;   /* bubble-less → span the full window (principal); the user pill stays capped */
   padding: 0 0 0 20px;
   position: relative;
   line-height: 1.6;
@@ -1642,7 +1642,7 @@ html, body {
   border-radius: 50%;
   background: var(--waiting);
 }
-.transcript-view .t-asst { line-height: 1.6; position: relative; }
+.transcript-view .t-asst { line-height: 1.6; position: relative; max-width: none; }
 
 /* Drop the uppercase speaker labels — the dot + the user pill carry the speaker
    (desktop has none). Float the per-turn copy to the turn's top-right so it

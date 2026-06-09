@@ -130,6 +130,7 @@ After respawn, the agent maintains the in-progress quest-log entry **every turn*
 - Append a brief narrative line for what happened this turn.
 - For any external action: log `pending` before the call, update to `completed` or `failed` after.
 - Write the in-voice **intent line** to the visualizer sidecar after stating the Plan (the speech bubble). **Read `meta/intent-narration.md` now** for the full sidecar mechanics — the intent file path + per-actor voice, the `.mode` ritual marker, the narration channel, and the intent-vs-action discipline. It is no longer loaded eagerly (Phase-1 §X-C trim); this per-turn discipline is its trigger, so read it once at session start, before writing the first intent line.
+  - **On the FIRST turn, write the intent bubble *before* your first brain write — not just "after the Plan, eventually."** The `<actor>-<sid8>.txt` bubble is the on-disk **actor anchor**: `require-open-on-entry.py` + the keepsake/domain forced-reads resolve *who you are* from it (`_actor.py` → intent-first). Skip it and a fresh session has no anchor, so actor-resolution falls to the sidecar's heuristic — which mis-stamped a "Hey Jebrim" session as `braindead` and blocked its writes against the wrong comms (S181). Writing the bubble first makes the heuristic a non-issue. (Braindead's dev respawn already does this "first action.")
 
 This is the crash-recovery substrate. Without it, death-as-crash recovery is impossible. See `meta/death-and-spawn.md`.
 

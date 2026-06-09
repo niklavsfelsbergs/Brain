@@ -125,6 +125,22 @@ A draft that contradicts an existing `bank/notes/` entry triggers the "overturni
 
 **Then, review `bank/notes/` for staleness.** Walk the player's existing notes. Look for entries that are no longer relevant — superseded by newer notes, about work that's done and won't come back, contradicted by current state. Propose moves to `bank/archive/notes/<same path>`.
 
+### 2b. Domain-digest synthesis & tending (`bank/domains/`)
+
+The per-player **domain-knowledge layer** (§Z; spec in `bank/domains/_about.md`) is alching's to keep current — it sits beside `bank/notes/` as the *digest* tier (distilled, budgeted, cue-loaded) over the raw note corpus, and it has no other tending loop. This step is the lifecycle's **born** (synthesize a digest for an uncovered cluster) and **tended** (re-synthesize when the corpus drifts) halves. Run the detector for the active player:
+
+```
+python developer-braindead/verification/domain-coverage.py --player <active>
+```
+
+It reports three signals; act on each. **All light-gate** — a digest is advisory, fully source-linked context, gnome-draftable, principal spot-checks; it is **not** a `confirmed/` identity write:
+
+- **STALE** (a `corpus[]` note's mtime is newer than the digest's `synthesized:` date) → **re-synthesize that digest** from its current corpus. Keep it ≤~2 KB; if the load-bearing surface no longer fits, that's the signal to **split the domain**, not grow the digest. Update `synthesized:` (and `freshness:`) on landing.
+- **UNCOVERED note-clusters** (notes in no digest's corpus) → judge whether a cluster is a real **work domain** (a topic the player reasons about repeatedly) versus a one-off note or a cross-cutting technique. If it's a domain, **synthesize a new digest** (copy the frontmatter schema `domain/title/patterns/corpus/specialist/freshness/synthesized` from an existing one) and move it into the `_index.md` table. **Bias to less** — most uncovered notes are *not* domains; like the bank-note and skill caps, only a genuine recurring cluster earns a digest. Don't manufacture digests to clear the list.
+- **NO-LAYER / MISSING** → a player with notes but no digests is a whole-player bootstrap (the §Z.bootstrap pass, e.g. via a Guthix-bankstanding Phase 0); a digest citing a vanished note gets its `corpus[]` corrected.
+
+**Discipline.** Synthesis is *picking* — the same move as research→bank and quest→bank: distil the load-bearing claims, map the corpus, link the sources; never restate the live source (point at the `specialist:` for that). Show each new/changed digest before it lands. The always-read `_index.md` stays a one-line-per-domain *map*, never a digest-of-digests. **Cap.** 0–2 new digests + the due re-syntheses per pass; bias to less.
+
 ### 3. Quest-log compression — graduate **completed** episodes to bank
 
 Walk the player's `quest-log/completed/` **only** (per principal rule: harvest from finished quests, not in-flight). Look for entries whose value has **crystallized into a lasting lesson** — a single quest whose insight should outlive the quest itself.

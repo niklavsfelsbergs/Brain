@@ -112,8 +112,14 @@ code, out = run("schema deploy ordering?", sid="sessTWO00002")
 ctx = emitted_context(out)
 check("per-session: fresh session re-inlines", INLINE_MARKER in ctx and TOK_TOPOLOGY in ctx)
 
-# --- 4. shipping (no inline_homes) -> name-only, never inlined ------------------
-code, out = run("pull the DHL surcharge from the shipping mart", sid="sessSHIP0003")
+# --- 4. shipping (cue_registry, no inline_homes) -> name-only, never inlined ----
+# Run as zezima, NOT jebrim: since the §Z domain layer landed (S181), jebrim owns
+# a `bank/domains/shipping-mart.md` digest whose `shipping mart` pattern would
+# force-inline via the per-player digest-discovery arm (covered separately by
+# test_domain_digest_discovery.py). zezima has no such digest, so this isolates
+# the cue_registry `shipping` row's no-inline_homes name-only behavior — the thing
+# this case is actually asserting.
+code, out = run("pull the DHL surcharge from the shipping mart", actor="zezima", sid="sessSHIP0003")
 ctx = emitted_context(out)
 check("shipping: exit 0", code == 0)
 check("shipping: name nudge emitted", "Read before answering:" in ctx)

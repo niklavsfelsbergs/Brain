@@ -47,23 +47,52 @@ def actor_from_status(sid8: str) -> str:
 
 
 def actor_from_intent(sid8: str, brain_root: Path = BRAIN_ROOT) -> str:
-    """Disk fallback -- the per-session intent file is the on-disk session
-    anchor. Actor names carry no hyphen, so rsplit on the trailing -<sid8> is
-    safe."""
+    """The on-disk session anchor -- the `<actor>-<sid8>.txt` intent bubble the
+    agent writes. Actor names carry no hyphen, so rsplit on the trailing -<sid8>
+    is safe.
+
+    Reads BOTH intent dirs (S181 fix): intent `.txt` files scatter between
+    brain-root `.claude/intent` (dev/Braindead, written with CWD=brain root) and
+    `gielinor/.claude/intent` (gielinor player markers) exactly as the `.mode`
+    markers do -- status-sidecar.py already learned this with MODE_INTENT_DIRS
+    (S155). Reading one dir silently missed a bubble in the other, leaving the
+    intent fallback half-dead. **Freshest by mtime wins** across both dirs: a
+    mid-session actor switch (jebrim -> braindead pivot) leaves two bubbles for
+    one sid8, and the newest one is the CURRENT actor."""
     if not sid8:
         return ""
-    try:
-        intent_dir = brain_root / ".claude" / "intent"
-        for f in intent_dir.glob(f"*-{sid8}.txt"):
-            actor = f.name[:-4].rsplit("-", 1)[0].lower()  # drop '.txt', take prefix
-            if actor:
-                return actor
-    except OSError:
-        return ""
-    return ""
+    dirs = (brain_root / ".claude" / "intent",
+            brain_root / "gielinor" / ".claude" / "intent")
+    best_actor, best_mtime = "", -1.0
+    for intent_dir in dirs:
+        try:
+            for f in intent_dir.glob(f"*-{sid8}.txt"):
+                actor = f.name[:-4].rsplit("-", 1)[0].lower()  # drop '.txt', take prefix
+                if not actor:
+                    continue
+                try:
+                    mt = f.stat().st_mtime
+                except OSError:
+                    mt = 0.0
+                if mt > best_mtime:
+                    best_actor, best_mtime = actor, mt
+        except OSError:
+            continue
+    return best_actor
 
 
 def resolve_actor(sid8: str, brain_root: Path = BRAIN_ROOT) -> str:
-    """Status file first (authoritative when settled), intent-file anchor as the
-    anti-race fallback. Returns '' only when genuinely unresolved."""
-    return actor_from_status(sid8) or actor_from_intent(sid8, brain_root)
+    """Intent-anchor first, status file as the fallback. Returns '' only when
+    genuinely unresolved.
+
+    **Flipped from status-first 2026-06-09 (S181).** The sidecar-written status
+    is a lagging heuristic: when a session has no intent bubble yet, the sidecar
+    falls to a `state-instances.json` byId lookup whose tiebreaker is *highest
+    instance number*, which mis-picked `braindead`(4) over `jebrim`(3) for a
+    "Hey Jebrim" session that had pivoted -- then the gate trusted that wrong
+    status over the agent's own intent declaration and blocked writes against
+    the wrong comms. The intent bubble is the agent's authoritative, real-time
+    self-identification; status only fills the gap before the bubble is written.
+    This aligns the shared resolver WITH status-sidecar.py's own intent-first
+    `_detect_actor` ordering rather than diverging from it."""
+    return actor_from_intent(sid8, brain_root) or actor_from_status(sid8)

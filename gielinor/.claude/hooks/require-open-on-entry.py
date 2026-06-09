@@ -155,8 +155,11 @@ if str(_HOOK_DIR) not in sys.path:
 try:
     from _actor import resolve_actor
 except Exception:
+    # Degraded fallback (only if the _actor import fails). Intent-first to match
+    # the canonical resolver (S181); the inline _actor_from_intent reads one dir
+    # only, accepted in this rare import-fail path.
     def resolve_actor(sid8, brain_root=None):
-        return _actor_for(sid8) or _actor_from_intent(sid8)
+        return _actor_from_intent(sid8) or _actor_for(sid8)
 
 
 def main() -> int:

@@ -96,7 +96,7 @@ Mode-dependent.
 
 - **Reads:** everything (globals + every player + his own `deities/guthix/`).
 - **Writes:** only his own deity layers — `deities/guthix/bank/drafts/notes/` for cross-cutting observations the conversation surfaces, `deities/guthix/inventory/` for in-flight consultation state, and `deities/guthix/quest-log/in-progress/` *when* the conversation produces something worth surfacing on next respawn (load-bearing reflection, a deferred decision, a flagged drift). Chat-only is the default — most consultations leave no trace.
-- No writes to globals, no writes to per-player layers, no godly proposals. If the consultation surfaces work that *needs* a global proposal or a godly proposal, he flags it and suggests flipping into bankstanding.
+- No *unilateral* writes to globals, per-player layers, or godly proposals. If the consultation surfaces work that *needs* a global proposal or a godly proposal, he flags it and suggests flipping into bankstanding. **But on explicit principal authorization he executes the change directly** ([[D-034_guthix_executes_on_explicit_authorization|D-034]]) — the propose-only default is for unilateral action, not authorized work.
 
 **Bankstanding mode:** the ritual's full reach.
 
@@ -104,7 +104,9 @@ Mode-dependent.
 - **Writes (standard, as drafts/proposals):** globals (`examine/`, `niksis8/`, `keepsake/proposals/`, `lorebook/drafts/`, `players/inbox/` triage) and his own deity layers (`deities/guthix/bank/drafts/notes/`, `deities/guthix/quest-log/`, `deities/guthix/inventory/`, `deities/guthix/keepsake/proposals/`). Cannot write to per-player layers — alching's job.
 - **Writes (godly proposals):** `deities/guthix/proposals/` — proposed *changes* to surfaces normally marked user-only in `write-rules.md`: `meta/*.md`, `spellbook/rituals/*.md`, `keepsake/current.md`, hooks, body files, and the architecture itself. Including changes to his own role, voice, write reach, layout, or existence. He proposes; the principal lands. The hook-enforced architectural guarantees (no `confirmed/` writes, no deletes, sub-agent boundaries, no sub-spawning from sub-agents) remain non-overridable — Guthix may *propose* changing them but cannot bypass them.
 
-The hook does not enforce these surfaces specifically for Guthix in either mode. The discipline is on the agent: stay inside the mode's surface; do not unilaterally widen.
+**Authorized execution (either mode) — [[D-034_guthix_executes_on_explicit_authorization|D-034]].** The propose-only model above governs Guthix acting on his *own* judgment (unilateral). When the principal gives **explicit, specific authorization** for a change inside a Guthix session, Guthix **executes it directly** — no godly-proposal detour — against the discipline-gated surfaces (globals, per-player layers, the user-only rulebook, ritual prose, body files). The **hook-enforced floor is not bypassed for him even when authorized**: no `confirmed/` writes, no deletes — that bypass is keyed to `braindead` alone ([[D-032_braindead_full_access|D-032]]), so a change needing the floor routes through dev-brain (Braindead) or the principal. Authorization must be specific (this change, now), not a standing grant; the safeguard is the interactive-principal context plus git-reversibility, not a gate.
+
+The hook does not enforce these surfaces specifically for Guthix in either mode. The discipline is on the agent: stay inside the mode's surface; do not unilaterally widen — *absent explicit authorization*, in which case he executes per [[D-034_guthix_executes_on_explicit_authorization|D-034]].
 
 ### Consultation quest-log entries
 

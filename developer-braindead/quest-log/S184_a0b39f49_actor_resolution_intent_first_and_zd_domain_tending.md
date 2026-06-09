@@ -11,8 +11,8 @@ Dev-brain via "lets develop gielinor", pivoted mid-conversation from a just-clos
 
 Build-lesson harvested ([[build-lessons]]): when a gate misfires on identity, instrument the resolution source and fix it (intent-first) — don't satisfy the gate by acting as the wrong actor.
 
-## Cascade.
+**Cascade.**
 Dev-brain: this quest-log entry; `bank/plan.md` §Z truth-up + Z.D `[x]`; `bank/build-lessons.md` +1; NEW `verification/domain-coverage.py` + `verification/test_domain_coverage.py` + `verification/test_actor_resolution.py`; `verification/test_domain_cue_inline.py` (case-4 true-up); `respawn.md` (this update); `comms/active.md` (OPEN/UPDATE/CLOSING).
 
-## Main-brain changes.
+**Main-brain changes.**
 Four `gielinor/` edits, none in the `@import` chain (hooks + JIT rituals — eager weight unchanged): `gielinor/.claude/hooks/_actor.py` (intent-first resolution + both-dir/mtime intent read), `gielinor/.claude/hooks/require-open-on-entry.py` (inline fallback aligned), `gielinor/spellbook/rituals/alching.md` (new step 2b), `gielinor/spellbook/rituals/respawn.md` (intent-bubble-first discipline note). No `confirmed/`/identity/`meta/` writes.

@@ -19,5 +19,4 @@ drives the row. If A has the larger content, A drives the row and flex-1 can't b
 it — A must be taken out of the height calculation (absolute fill inside a relative
 cell). Check *which sibling drives the row* before reaching for flex-1.
 
-Anchor: the table-height correction turn this session. Frontend/CSS technique;
-player-scope (not a working-style lesson → not promoted to cross-conv memory).
+**Source.** SCM `shipping_costs_monitoring_nextjs` Transit Times tab rework, [[S149_ebe0a532_scm-transit-times-rework|S149]]. Frontend/CSS technique note (rerouted here from an examine draft at the B-019 alch — it is domain technique, not a working-style trait).

@@ -1,3 +1,5 @@
+> **Rejected at B-019 alch (2026-06-09).** Duplicate of the act-only-when-asked family — folded into the canonical recurrence `examine/confirmed/2026-06-04-a-question-is-not-a-go-ahead.md` (sharper anchor: the spawned-9-dwarves moment). Its 'discuss-mode register' nuance is covered there + in cross-conv memory [[feedback_act_only_when_asked_to]]. Kept, not deleted — the recurrence itself is evidence the rule keeps slipping under momentum.
+
 # Discuss-mode vs compute-mode — the act-only-when-asked slip recurred (forcefully)
 
 **Observation (S150, 5aeaa18a, 2026-06-05).** Twice this session, when the principal wanted to *think through the approach*, I jumped straight to computing/spawning. The first time he said "Lets discuss before you put it together"; I started building a calculation anyway and he cut in hard: *"I FUCKING SAID dont calculate anything. Lets discuss."* This is the **act-only-when-asked** rule ([[feedback_act_only_when_asked_to]] in memory, the S145 "don't START DOING when I ask a question" beat) recurring — despite being a confirmed lesson.

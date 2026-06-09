@@ -1,30 +1,16 @@
 # Jebrim — last alched
 
-2026-06-03 (B-017 Phase 0, bankstanding — gnome-run g1, principal-approved). **Near-full alch** (settled backlog cleared; 2 items deferred on live-sibling collision).
+2026-06-09 (B-019 Phase 0, bankstanding — principal-self, Guthix-run). **Mid-quest alch** (explicit principal cue overrode the default mid-quest skip; ~30 live EU-tender in-progress quests, harvested only the safe self-obs + one closed-quest bank note).
 
-**Spawn-decision:** gnome (>10 pending drafts: 13 = 9 examine + 3 bank + 1 skill).
+**Spawn-decision:** heuristic fired (>10 pending: 11 = 9 examine + 1 bank + 1 held skill) but ran **principal-self** — drafts were pre-harvested at session closings, well-formed, and needed direct principal approval (a gnome would only hand back a report); principal was present.
 
-**Step 1 — identity drafts → confirmed (8 examine promoted):**
-- `2026-06-02-live-evidence-beats-a-confident-chat-diagnosis.md` (S146/S147)
-- `2026-06-02-revalidate-borrowed-constants-for-new-use.md` (S147)
-- `2026-06-02-static-audit-ranking-is-a-hypothesis-until-measured.md` (S147)
-- `2026-06-02-surface-and-fix-gitignored-config.md` (S143, verbatim correction)
-- `2026-06-02-synthetic-pass-hides-population-and-small-n-bugs.md` (S147)
-- `2026-06-02-use-pathspec-commit-from-the-first-commit.md` (S144/S147) — **promoted as sharper successor; archived predecessor** `2026-05-22-git-add-scoping-with-parallel-sessions.md` → `examine/archive/confirmed/` (principal chose replace-not-fold). Adds cross-brain shared-index sweep + porcelain-collapses-untracked-dir mechanisms.
-- `2026-06-02-verify-the-toolchain-actually-ran.md` (S146)
-- `2026-06-03-rescan-for-companion-files-in-a-multi-file-drop.md` (S148, verbatim correction)
+**Step 1 — identity drafts (9 examine triaged → 7 confirmed, 1 rejected, 1 rerouted):**
+- → `examine/confirmed/`: `2026-06-04-a-question-is-not-a-go-ahead` (S145→S150, verbatim), `2026-06-04-universal-from-a-single-verified-case` (S150, 4 instances), `2026-06-05-engine-docstring-is-not-ground-truth-for-carrier-identity` (S150, verbatim), `2026-06-05-validate-refinement-through-downstream-constraint` (S150), `2026-06-08-define-derived-rules-on-param-independent-signals` (S163), `2026-06-08-negotiated-doc-is-a-subset-reconcile-against-ground-truth` (S163, verbatim), `2026-06-09-locked-decision-beats-implementation-hint` (S166).
+- **REJECTED** `2026-06-05-discuss-mode-vs-compute-mode-recurred` → `examine/rejected/` — duplicate of the act-only-when-asked family; folded into `a-question-is-not-a-go-ahead` (principal call: fold not keep-both).
+- **REROUTED** `2026-06-03-css-height-match-needs-absolute-fill-not-flex1` → `bank/notes/frontend/` — frontend technique, not a working-style trait (principal call; the layer question last alch flagged). New `bank/notes/frontend/` subfolder; tail reframed as a bank source line.
 
-**Step 2 — bank drafts → notes (3 promoted):**
-- `bank/notes/projects/2026-06-02-fif-vat-subtotal-grain.md` (S143)
-- `bank/notes/projects/2026-06-02-scm-serving-node-oom-mode.md` (S146; date-prefix renamed on promote)
-- `bank/notes/shipping/merchone-us-holiday-volume-peaks.md` (S144)
+**Step 2 — bank drafts (1 → notes):** `bank/notes/projects/2026-06-08-eu-tender-db-schenker-reroute-validation.md` promoted (S164, closed). Principal call: promote now — durable findings are structural (two-layer eligibility, dimensions-live-in-engine, nominal-not-measured, trace-to-contract), snapshot counts dated inside. Bank staleness scan: no archive moves (tender notes are watch-not-stale — `eu_tender_2026*` numbers may be superseded by recent rebuilds but canonical tender knowledge lives in bi-analytics docs by design).
 
-Bank staleness scan (26 notes): no archive moves. Watch carried: `eu_tender_2026*.md` defensive numbers may be superseded by the S148 DHL Paket→2.0.0 / FedEx→2.0.0 rebuilds — re-verify-before-quote, not stale (canonical tender knowledge lives in bi-analytics docs by design).
+**Steps 3 / 3a:** 0 new graduation drafts, 0 new self-obs manufactured — the 9 examine drafts WERE the harvest from the closed sessions; per harvest-after-stabilizes, did NOT draft new bank/skill notes alongside the ~30 live tender quests. **Step 4:** keepsake/examine/niksis8_character current.md all under budget. **Step 5:** one rejection added (act-only dup) — no new miscalibration pattern. **Step 6:** skill draft `running-the-automated-shipping-report.md` **HELD** (S124 still in-progress, modified on tree). Skill-watches carried forward: (a) re-rating savings guards (no new recurrence S150–S166; one more earns it); (b) **reroute-eligibility validation** — the DB Schenker bank note names it as a candidate method; held until the tender picture stabilizes (don't draft a skill off live-quest work).
 
-**Steps 3 / 3a:** 0 graduation drafts, 0 new self-obs — every recent correction already captured by the step-1 drafts; tender/engine domain knowledge kept in bi-analytics docs per the bank-growth convention. **Step 4:** all three current.md under budget. **Step 5:** rejected folders settled (probe-design + wrong-layer clusters, old). **Step 6:** skill draft `running-the-automated-shipping-report.md` **HELD** (S124 in-progress; live sibling editing it). Re-rating skill-watch carried forward (no S143–S149 recurrence; one more earns the skill).
-
-**DEFERRED (live-idle sibling `e59202cf` had these dirty):**
-- `examine/drafts/2026-06-03-css-height-match-needs-absolute-fill-not-flex1.md` (#8) — also a layer-call (frontend technique → arguably `bank/drafts/notes/`, not examine). Revisit after `e59202cf` closes.
-- `spellbook/drafts/skills/running-the-automated-shipping-report.md` — held until S124 close.
-
-**Stale in-progress (left for reconciliation):** S124 (active build), S145 (transit-SLA), S148 (FedEx queued + d1/p1 siblings), S142 (UPS SFTP). Not bankstanding's reach — owning-player close/alch.
+**Stale in-progress (left for owning-player close/alch, NOT bankstanding's reach):** S124 (shipping-report, live), S142 (UPS SFTP), S145 (transit-SLA), S148 (FedEx queued), S150 (final carrier setups + carrier-overview, live umbrella), S163 (UPS Phase-2), S164 (DB Schenker, closed but in-progress dir), S166 (routing service-split, awaiting push).

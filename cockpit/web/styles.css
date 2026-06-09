@@ -199,7 +199,13 @@ html, body {
   font-size: 12px;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
-  min-width: 34px;
+  /* Reserve a constant width for the widest realistic age (3–4 chars: "10m",
+     "59m", "23h"), so crossing 9m→10m doesn't widen the box and shove the
+     right-anchored chip cluster left. 34px held 2 chars but not a chunky 3-char
+     "10m" in the RuneScape UF face → the pills jumped at the 10-min mark. (S165)
+     em-based so it tracks the age font; flex:none so flex never resizes it. */
+  flex: none;
+  min-width: 3.8em;
   text-align: right;
 }
 .prompt {
@@ -1598,3 +1604,74 @@ html, body {
 .transcript-view .b-text ul,
 .transcript-view .b-text ol { margin: 0.6em 0 1em; }
 .transcript-view .b-text li { margin: 0.45em 0; }
+
+/* ════════════════════════════════════════════════════════════════════
+   S165 — full desktop-like reading mode (principal: "make it read like the
+   Claude desktop app"). Builds on the S093 polish: a neutral near-black page,
+   the assistant answer FLOATING as plain text (no bubble / box / border), tool
+   calls as one quiet dim line (no rail, no line-count), a subtle gray user
+   pill, airy ~1.6 leading. Supersedes the earlier black-bubble + tight-leading
+   look — both predate anchoring on the desktop app. Scoped to .transcript-view;
+   the board / live terminal / peek Console keep the OSRS skin.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Neutral near-black page — drops the warm-brown tint for desktop's flat dark. */
+.transcript-view,
+.transcript-view .tv-turns { background: #18181b; }
+
+/* The assistant answer FLOATS: no box, no border, no fill. Near-white ink, airy
+   leading, a comfortable fixed measure, and a small amber turn-dot in the left
+   gutter (the desktop's per-answer marker). */
+.transcript-view .asst-bubble {
+  background: none;
+  border: none;
+  border-radius: 0;
+  color: #ececee;
+  max-width: 50rem;
+  padding: 0 0 0 20px;
+  position: relative;
+  line-height: 1.6;
+}
+.transcript-view .asst-bubble::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.6em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--waiting);
+}
+.transcript-view .t-asst { line-height: 1.6; position: relative; }
+
+/* Drop the uppercase speaker labels — the dot + the user pill carry the speaker
+   (desktop has none). Float the per-turn copy to the turn's top-right so it
+   doesn't reserve a row. */
+.transcript-view .tv-speaker { display: none; }
+.transcript-view .t-asst .tv-turn-head { position: absolute; top: 0; right: 0; margin: 0; }
+
+/* User message = a subtle gray pill, right-aligned (was a black bordered bubble).
+   No hard border; calm fill one step off the page. */
+.transcript-view .t-user .bubble {
+  background: #2a2a2e;
+  border: none;
+  color: #ececee;
+  border-radius: 14px;
+  padding: 9px 15px;
+  max-width: 70%;
+  line-height: 1.55;
+}
+
+/* Exchanges separate by whitespace, not a hairline rule (desktop). */
+.transcript-view .tv-turns > * + .t-user {
+  border-top: none;
+  margin-top: 30px;
+  padding-top: 0;
+}
+
+/* Tool calls → one quiet dim line: no left rail, dim normal-weight name, no
+   line-count meta. Aligned under the prose. Still click-to-expand; errors flag. */
+.transcript-view .b-tool { border-left: none; padding-left: 0; margin: 1px 0; }
+.transcript-view .b-tool.err { border-left: none; }
+.transcript-view .tool-name { color: var(--ink-faint); font-weight: 500; }
+.transcript-view .tool-meta { display: none; }

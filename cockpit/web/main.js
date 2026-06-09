@@ -466,6 +466,11 @@ function App() {
           else if (fs.kind === "done") state = "idle";
           else if (age < 120) state = "busy";
         }
+        // An interrupt (Esc / Ctrl+C) cancels the turn with no hook to clear busy
+        // — mirror the manifest override above so a cockpit-own row drops out of
+        // BUSY too instead of staying stuck at it. (S164)
+        const interrupted = termInterrupted(t.sid8);
+        if (interrupted && state === "busy") state = "idle";
         // last action = the freshest feed event for this terminal (fs.ts). With no
         // feed event yet, anchor recency to when it opened here (not 0) so the age
         // chip shows a real "active Ns ago" instead of a frozen 0s and the row
@@ -485,7 +490,7 @@ function App() {
         let main, subs = [];
         if (state === "needs_you") main = "needs_you";
         else if (state === "busy") main = "busy";
-        else { main = "your_move"; if (resumedIdle || quiet > 300) subs.push("idle"); }
+        else { main = "your_move"; if (resumedIdle || interrupted || quiet > 300) subs.push("idle"); }
         const cockpitIdle = subs.includes("idle");
         return {
           sid8: t.sid8,

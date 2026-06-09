@@ -208,6 +208,11 @@ class TermConn {
         this._copyToClipboard(this.term.getSelection());
         return false; // copied the selection — swallow, don't fire SIGINT at the PTY
       }
+      // Ctrl+C with nothing selected falls through to xterm, which sends \x03 and
+      // interrupts the PTY — so record it like Esc does (no hook fires on an
+      // interrupt) or the board's busy→idle clear never triggers and the row
+      // stays stuck at BUSY. (S164 — was Esc-only.)
+      if (ctrlC) this._interruptedAt = Date.now();
       // Shift+Enter → newline, not submit. The terminal can't encode Shift+Enter on
       // the wire (legacy mode sends the same \r as Enter), but THIS handler sees
       // e.shiftKey — so we just send claude the byte for its DOCUMENTED universal
@@ -1023,6 +1028,15 @@ export function TermComposer({ conn }) {
       conn.sendEsc();
       setText(""); // also clear what's typed in the bar itself
       resetHeight();
+    } else if ((e.key === "c" || e.key === "C") && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
+      // Ctrl+C from the chatbox cancels the running turn (mirrors the terminal);
+      // with a text selection, let the browser copy instead. The draft is kept —
+      // only the running query is interrupted, not what you're composing. (S164)
+      const ta = e.target;
+      if (ta.selectionStart === ta.selectionEnd) {
+        e.preventDefault();
+        conn.sendEsc();
+      }
     }
   };
   return html`<div class="term-composer">

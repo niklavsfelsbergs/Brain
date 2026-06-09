@@ -223,6 +223,16 @@ def _is_rename_prompt(prompt) -> bool:
 #                  Written by the ritual md; never hides a needs_you/your_move block.
 MODE_MARKER_SUFFIX = ".mode"
 MODE_VALUES = {"alching", "wrapped_up", "closing", "bankstanding", "consultation", "drafts"}
+# The `<sid8>.mode` marker scatters between two intent dirs depending on the
+# session's CWD at write time: dev (Braindead) markers land in the brain-root
+# .claude/intent, gielinor player markers in gielinor/.claude/intent. Reading
+# only ONE dir silently missed a `wrapped_up` written to the other — the board
+# never flipped to WRAPPED UP. So read/clear search BOTH, freshest by mtime wins
+# (mirrors close-gate-stop.py INTENT_DIRS, which already learned this in S155).
+MODE_INTENT_DIRS = (
+    BRAIN_ROOT / ".claude" / "intent",
+    BRAIN_ROOT / "gielinor" / ".claude" / "intent",
+)
 # Ritual markers that are pure flavor tags (busy stays the base state). wrapped_up
 # is special-cased (it sets base state `done`); `closing` keeps the base state but
 # the board promotes it to a main chip (handled in the wrapped/closing block below,
@@ -1562,46 +1572,66 @@ def _gc_intent_files(project_dir: Path | None, live_short: set[str], current_sid
         print(f"status-sidecar: intent GC failed: {e}", file=sys.stderr)
 
 
+def _mode_marker_candidates(project_dir: Path | None, sid8: str) -> list[Path]:
+    """All candidate `<sid8>.mode` paths — both brain-root + gielinor intent dirs
+    (the marker scatters with CWD; see MODE_INTENT_DIRS), plus the project dir's
+    own intent dir for robustness. De-duplicated, order-stable."""
+    if not sid8:
+        return []
+    dirs = list(MODE_INTENT_DIRS)
+    if project_dir:
+        dirs.append(project_dir / ".claude" / "intent")
+    seen, out = set(), []
+    for d in dirs:
+        p = d / f"{sid8}{MODE_MARKER_SUFFIX}"
+        if p not in seen:
+            seen.add(p)
+            out.append(p)
+    return out
+
+
 def _mode_marker_path(project_dir: Path | None, sid8: str) -> Path | None:
-    """S059: `.claude/intent/<sid8>.mode` — same dir as the intent files so the
-    intent GC sweeps stale markers too. None when the project dir is unknown."""
-    if not project_dir or not sid8:
+    """The canonical (brain-root) marker path, used when WRITING/locating one
+    dir. Reads + clears go through the both-dirs helpers below."""
+    if not sid8:
         return None
-    return project_dir / ".claude" / "intent" / f"{sid8}{MODE_MARKER_SUFFIX}"
+    return MODE_INTENT_DIRS[0] / f"{sid8}{MODE_MARKER_SUFFIX}"
 
 
 def _read_mode_marker(project_dir: Path | None, sid8: str) -> str:
     """Return the marker token ("alching" / "wrapped_up") or "" when absent,
-    empty, or unrecognized. Tolerant of a BOM and surrounding whitespace."""
-    p = _mode_marker_path(project_dir, sid8)
-    if not p:
-        return ""
-    try:
-        if not p.exists():
-            return ""
-        token = p.read_text(encoding="utf-8").lstrip("﻿").strip().lower()
-        return token if token in MODE_VALUES else ""
-    except Exception:
-        return ""
+    empty, or unrecognized. Searches BOTH intent dirs (the marker scatters with
+    CWD); freshest by mtime wins. Tolerant of a BOM and surrounding whitespace."""
+    best, best_mtime = "", -1.0
+    for p in _mode_marker_candidates(project_dir, sid8):
+        try:
+            if not p.is_file():
+                continue
+            mtime = p.stat().st_mtime
+            token = p.read_text(encoding="utf-8").lstrip("﻿").strip().lower()
+        except Exception:
+            continue
+        if mtime > best_mtime:
+            best, best_mtime = token, mtime
+    return best if best in MODE_VALUES else ""
 
 
 def _clear_mode_marker(project_dir: Path | None, sid8: str) -> None:
-    """Archive the session's mode marker (never delete — archive-discipline).
-    Called on SessionEnd and on a wrapped-up resume."""
-    p = _mode_marker_path(project_dir, sid8)
-    if not p:
-        return
-    try:
-        if not p.exists():
-            return
-        archive = p.parent / "archive"
-        archive.mkdir(parents=True, exist_ok=True)
-        dst = archive / p.name
-        if dst.exists():
-            dst = archive / f"{p.stem}.{int(time.time())}{p.suffix}"
-        p.replace(dst)
-    except Exception as e:
-        print(f"status-sidecar: mode marker clear failed for {sid8}: {e}", file=sys.stderr)
+    """Archive the session's mode marker(s) (never delete — archive-discipline),
+    in EVERY candidate intent dir so a scattered marker is fully cleared. Called
+    on SessionEnd and on a wrapped-up resume."""
+    for p in _mode_marker_candidates(project_dir, sid8):
+        try:
+            if not p.exists():
+                continue
+            archive = p.parent / "archive"
+            archive.mkdir(parents=True, exist_ok=True)
+            dst = archive / p.name
+            if dst.exists():
+                dst = archive / f"{p.stem}.{int(time.time())}{p.suffix}"
+            p.replace(dst)
+        except Exception as e:
+            print(f"status-sidecar: mode marker clear failed for {sid8}: {e}", file=sys.stderr)
 
 
 def _claude_exe_pid(chain) -> int:

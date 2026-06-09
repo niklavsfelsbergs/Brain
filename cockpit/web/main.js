@@ -172,11 +172,80 @@ function PlaceModal({ onPlace, onClose }) {
   `;
 }
 
+function fmtAgo(ts) {
+  if (!ts) return "";
+  const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
+  if (s < 60) return s + "s ago";
+  if (s < 3600) return Math.floor(s / 60) + "m ago";
+  if (s < 86400) return Math.floor(s / 3600) + "h ago";
+  return Math.floor(s / 86400) + "d ago";
+}
+
+// The restore list (S###). Every session on disk (~/.claude/projects), newest
+// first, minus the ones already live on the board — reopening one resumes the
+// conversation interactively (claude --resume). Sibling of PlaceModal: "+ new"
+// places a fresh chat, this reopens a past one.
+function HistoryModal({ liveSids, onReopen, onClose }) {
+  const [items, setItems] = useState(null); // null = loading
+  const [q, setQ] = useState("");
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/history")
+      .then((r) => r.json())
+      .then((j) => { if (alive) setItems(j.sessions || []); })
+      .catch(() => { if (alive) setItems([]); });
+    return () => { alive = false; };
+  }, []);
+  const ql = q.trim().toLowerCase();
+  const rows = (items || [])
+    .filter((s) => !liveSids.has(s.sid8)) // already on the board → not "history"
+    .filter((s) => !ql || `${s.name} ${s.title} ${s.first_prompt}`.toLowerCase().includes(ql));
+  return html`
+    <div class="modal-backdrop" onClick=${onClose}>
+      <div class="modal modal-history" onClick=${(e) => e.stopPropagation()}>
+        <div class="modal-title">history — reopen a past chat</div>
+        <input
+          class="hist-filter"
+          type="text"
+          value=${q}
+          autofocus
+          placeholder="filter by name, title, or first message…"
+          onInput=${(e) => setQ(e.target.value)}
+        />
+        <div class="hist-list">
+          ${items === null
+            ? html`<div class="hist-empty">loading…</div>`
+            : rows.length === 0
+            ? html`<div class="hist-empty">${ql ? "no match" : "no past sessions"}</div>`
+            : rows.map(
+                (s) => html`<button
+                  class="hist-row"
+                  key=${s.session_id}
+                  title=${"resume " + s.sid8}
+                  onClick=${() => onReopen(s)}
+                >
+                  <div class="hist-row-head">
+                    <span class="hist-name">${s.name || s.title || s.sid8}</span>
+                    <span class="hist-ago">${fmtAgo(s.last_active)}</span>
+                  </div>
+                  <div class="hist-sub">${(s.name && s.title) ? s.title : s.first_prompt}</div>
+                </button>`
+              )}
+        </div>
+        <div class="modal-actions">
+          <button class="ghost" onClick=${onClose}>close</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function App() {
   const [data, setData] = useState({ sessions: [] });
   const [err, setErr] = useState(null);
   const [sel, setSel] = useState(null);
   const [showPlace, setShowPlace] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [soundOn, setSoundOn] = useState(() => lsBool("cockpit-sound", true));
   const [feedOpen, setFeedOpen] = useState(() => lsBool("cockpit-feed", true));
   const [boardOpen, setBoardOpen] = useState(() => lsBool("cockpit-board", true));
@@ -274,6 +343,7 @@ function App() {
       // e.code is layout/shift-proof: Ctrl+Shift+1 reports key "!" but code "Digit1".
       else if (/^Digit[1-9]$/.test(e.code)) { hit(); navTo(Number(e.code.slice(5))); }
       else if (e.shiftKey && e.code === "Backquote") { hit(); setShowPlace(true); }
+      else if (k === "h" || k === "H") { hit(); setShowHistory((v) => !v); }
     };
     window.addEventListener("wheel", onWheel, { passive: false, capture: true });
     window.addEventListener("keydown", onKey, true);
@@ -383,6 +453,12 @@ function App() {
         // recent activity → busy; a close checkpoint or silence → idle.
         // No feed entry yet → idle.
         const fs = feedState[t.sid8];
+        // Elapsed since this cockpit opened/resumed the terminal — the clock to
+        // use when the session hasn't fired a feed event yet (a freshly-resumed,
+        // still-idle one), so its age ticks up instead of freezing at "0s".
+        const sinceOpen = t.openedAt
+          ? Math.max(0, Math.floor((Date.now() - t.openedAt) / 1000))
+          : 0;
         let state = "idle";
         if (fs) {
           const age = Date.now() / 1000 - fs.ts;
@@ -390,20 +466,26 @@ function App() {
           else if (fs.kind === "done") state = "idle";
           else if (age < 120) state = "busy";
         }
-        // last action = the freshest feed event for this terminal (fs.ts); 0 if
-        // it hasn't fired one yet. Real value (not the old hardcoded age_sec:0)
-        // so a cockpit-own row sorts among the manifest rows by last activity and
-        // its age chip shows a real "active Ns ago" instead of a frozen 0s. (S134)
-        const quiet = fs ? Math.max(0, Math.floor(Date.now() / 1000 - fs.ts)) : 0;
+        // last action = the freshest feed event for this terminal (fs.ts). With no
+        // feed event yet, anchor recency to when it opened here (not 0) so the age
+        // chip shows a real "active Ns ago" instead of a frozen 0s and the row
+        // doesn't tie at the top with everything else at ts 0. (S134 + jump-up fix)
+        const quiet = fs ? Math.max(0, Math.floor(Date.now() / 1000 - fs.ts)) : sinceOpen;
+        // The jump-up fix: a RESUMED terminal that hasn't fired a feed event is a
+        // restored, not-yet-active session — not a fresh placement. Mark it idle so
+        // it sinks below live work (rank 7) instead of pinning to the top at YOUR
+        // MOVE / rank 1. A genuine fresh placement (you just made it, about to type)
+        // keeps the visible top slot. Either way the age now comes from openedAt.
+        const resumedIdle = !fs && t.isResume;
         // S139 taxonomy: derive the main chip + sub-bubbles for this cockpit-own
         // row, matching the backend. needs_you → ACTION NEEDED; recent → BUSY; a
-        // quiet/parked terminal → YOUR MOVE, with an `idle` sub once it's sat past
-        // the 5-min window. (These transient rows join the manifest on their first
-        // hook and get the backend's full treatment.)
+        // quiet/parked terminal → YOUR MOVE, with an `idle` sub once it's resumed-
+        // idle or has sat past the 5-min window. (These transient rows join the
+        // manifest on their first hook and get the backend's full treatment.)
         let main, subs = [];
         if (state === "needs_you") main = "needs_you";
         else if (state === "busy") main = "busy";
-        else { main = "your_move"; if (quiet > 300) subs.push("idle"); }
+        else { main = "your_move"; if (resumedIdle || quiet > 300) subs.push("idle"); }
         const cockpitIdle = subs.includes("idle");
         return {
           sid8: t.sid8,
@@ -417,7 +499,7 @@ function App() {
           age_sec: quiet,
           idle_sec: quiet,
           quiet_sec: quiet,
-          last_action_ts: fs ? fs.ts : 0,
+          last_action_ts: fs ? fs.ts : (t.openedAt ? Math.floor(t.openedAt / 1000) : 0),
           first_prompt: "",
           doing: fs && fs.text ? fs.text : "running in this cockpit",
           intent: "",
@@ -526,6 +608,16 @@ function App() {
     setSel(c);
     setShowPlace(false);
   };
+  // Reopen a past chat from history: if a cockpit terminal already hosts it just
+  // select that; otherwise claude --resume into a fresh driven terminal (the same
+  // path owned-resume uses, so it re-owns + survives the next cockpit reopen). It
+  // reappears on the board as a live row and claims the lowest-free slot number.
+  const doReopen = (s) => {
+    const c = termForSid8(s.sid8) || resumeTerm(s.session_id);
+    c.label = s.name || s.title || "chat";
+    setSel(c);
+    setShowHistory(false);
+  };
   const doRelease = (id) => {
     release(id);
     if (sel && sel.id === id) setSel(null);
@@ -574,6 +666,7 @@ function App() {
               selectedSid8=${selSid8}
               onSelect=${selectRow}
               onNew=${() => setShowPlace(true)}
+              onHistory=${() => setShowHistory(true)}
               onRename=${renameSession}
               soundOn=${soundOn}
               onToggleSound=${toggleSound}
@@ -640,6 +733,11 @@ function App() {
             <button title="show feed (Ctrl+J)" onClick=${(e) => { e.stopPropagation(); setFeedOpen(true); }}>‹</button>
           </div>`}
       ${showPlace && html`<${PlaceModal} onPlace=${doPlace} onClose=${() => setShowPlace(false)} />`}
+      ${showHistory && html`<${HistoryModal}
+          liveSids=${new Set(sessions.map((x) => x.sid8))}
+          onReopen=${doReopen}
+          onClose=${() => setShowHistory(false)}
+        />`}
     </div>
   `;
 }

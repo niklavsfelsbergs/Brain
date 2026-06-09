@@ -137,12 +137,24 @@ html, body {
   align-items: center;
   gap: 10px;
 }
+/* The status dot now carries the recycling chat number (slots.js): a disc just
+   big enough for 1–2 digits (pill-shaped for two), keeping its state colour +
+   pulse, with a dark digit reading on the bright status fill. */
 .dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
   background: var(--idle);
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--bg);
 }
 .actor {
   font-weight: 600;
@@ -766,6 +778,51 @@ html, body {
 }
 .ghost { background: transparent; color: var(--ink-dim); }
 .primary { background: var(--working); color: #04150a; border-color: var(--working); }
+
+/* history modal — the restore list. Reuses .modal chrome; a filter input over a
+   scrollable list of past sessions, each a clickable reopen (claude --resume). */
+.modal-history { width: 560px; }
+.hist-filter {
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 13px;
+}
+.hist-filter:focus { outline: none; border-color: var(--ink-faint); }
+.hist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 52vh;
+  overflow-y: auto;
+}
+.hist-empty { color: var(--ink-faint); font-size: 13px; padding: 18px; text-align: center; }
+.hist-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.hist-row:hover { border-color: var(--gold); }
+.hist-row-head { display: flex; align-items: baseline; gap: 10px; }
+.hist-name { font-size: 13.5px; font-weight: 600; color: var(--ink); flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-ago { font-size: 11px; color: var(--ink-faint); flex: none; font-variant-numeric: tabular-nums; }
+.hist-sub {
+  font-size: 12px;
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* ====== Phase 4: activity feed ====== */
 

@@ -28,6 +28,10 @@ from aiohttp import web
 
 COCKPIT_DIR = Path(__file__).resolve().parent
 BRAIN_ROOT = COCKPIT_DIR.parent
+# The GitHub workspace (parent of brain) — the click-to-open boundary. Brain plus
+# its sibling repos (bi-analytics-main, shipping-agent, …) live here, so a report
+# path emitted by a player session resolves regardless of which repo it's in.
+WORKSPACE_ROOT = BRAIN_ROOT.parent
 STATE_DIR = BRAIN_ROOT / "switchboard"   # where the hooks write (D-026 VIZ_DIR)
 WEB_DIR = COCKPIT_DIR / "web"
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
@@ -147,6 +151,8 @@ CTYPES = {
 }
 NO_STORE = {"Cache-Control": "no-store"}
 HISTORY_RESULT_CAP = 4000   # per tool result, to bound the /history payload
+HISTORY_LIST_CAP = 150      # /api/history: most-recent sessions returned
+HISTORY_SCAN_LINES = 80     # lines head-scanned per file for title/first-prompt
 # The clean-text transcript panel (term.js toggle) requests &full=1 so copied
 # tool output isn't sheared at the cap above — a truncated copy is a broken copy.
 # A generous ceiling still applies so one pathological result can't bloat the
@@ -449,12 +455,14 @@ async def api_open_path(request):
     containing folder in Explorer with the file selected — so you never hand-
     navigate to it.
 
-    Path-safe: the requested path (repo-relative, or absolute already inside the
-    repo) is resolved and required to sit under BRAIN_ROOT; resolve()+relative_to
-    rejects traversal/symlink escape. A trailing :line[:col] (the file_path:line
-    shape) is stripped. The backend is 127.0.0.1-bound by default, so this opens
-    only what the local user could already open. Windows-only (os.startfile /
-    explorer); a clean no-op error elsewhere.
+    Path-safe: the requested path is resolved and required to sit under
+    WORKSPACE_ROOT (the GitHub workspace = brain + its sibling repos), so a report
+    path in a sibling repo (e.g. bi-analytics-main/NFE/…) opens too. A relative
+    path is tried against the brain repo first, then the workspace; resolve()+
+    relative_to rejects traversal/symlink escape outside the workspace. A trailing
+    :line[:col] (the file_path:line shape) is stripped. The backend is
+    127.0.0.1-bound by default, so this opens only what the local user could
+    already open. Windows-only (os.startfile / explorer); a clean no-op elsewhere.
     """
     raw = (request.query.get("path") or "").strip().strip('"')
     reveal = request.query.get("reveal") in ("1", "true", "yes")
@@ -463,12 +471,28 @@ async def api_open_path(request):
     # Drop a trailing :line[:col] (file_path:line) and normalize separators.
     cleaned = re.sub(r":\d+(?::\d+)?$", "", raw).replace("\\", "/").strip()
     p = Path(cleaned)
-    target = p if p.is_absolute() else (BRAIN_ROOT / cleaned)
+    # Resolve an absolute path as-is; a relative one against the brain repo first
+    # (the common cockpit/gielinor case), then the workspace (sibling repos). The
+    # first candidate that exists wins; else fall back to the first for a clean 404.
+    candidates = [p] if p.is_absolute() else [BRAIN_ROOT / cleaned, WORKSPACE_ROOT / cleaned]
+    target = None
+    for cand in candidates:
+        try:
+            r = cand.resolve()
+        except OSError:
+            continue
+        if r.exists():
+            target = r
+            break
+    if target is None:
+        try:
+            target = candidates[0].resolve()
+        except OSError:
+            return web.json_response({"ok": False, "error": "bad path"}, status=400, headers=NO_STORE)
     try:
-        target = target.resolve()
-        target.relative_to(BRAIN_ROOT)
-    except (ValueError, OSError):
-        return web.json_response({"ok": False, "error": "outside brain root"}, status=403, headers=NO_STORE)
+        target.relative_to(WORKSPACE_ROOT)
+    except ValueError:
+        return web.json_response({"ok": False, "error": "outside workspace root"}, status=403, headers=NO_STORE)
     if not target.exists():
         return web.json_response({"ok": False, "error": "not found"}, status=404, headers=NO_STORE)
     try:
@@ -537,6 +561,85 @@ def _find_session_file(key: str):
         return next(iter(PROJECTS_DIR.glob(f"*/{key}*.jsonl")), None)
     except OSError:
         return None
+
+
+def _safe_mtime(path) -> float:
+    try:
+        return path.stat().st_mtime
+    except OSError:
+        return 0.0
+
+
+def _session_summary(path):
+    """Cheap per-session summary for the history list — title (the ai-title
+    record if present, else the first user prompt) from a bounded head-scan, so
+    /api/history doesn't full-parse every transcript on disk. Returns
+    (session_id, title, first_prompt) or None on read error."""
+    title = None
+    first_prompt = ""
+    try:
+        with path.open(encoding="utf-8", errors="ignore") as fh:
+            for i, line in enumerate(fh):
+                if i >= HISTORY_SCAN_LINES:
+                    break
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    continue
+                t = r.get("type")
+                if t == "ai-title":
+                    title = r.get("aiTitle") or title
+                elif not first_prompt and t == "user" and r.get("isSidechain") is not True:
+                    content = (r.get("message") or {}).get("content")
+                    if isinstance(content, str):
+                        first_prompt = content.strip()
+                    elif isinstance(content, list):
+                        first_prompt = "\n".join(
+                            b.get("text", "") for b in content
+                            if isinstance(b, dict) and b.get("type") == "text"
+                        ).strip()
+                if title and first_prompt:
+                    break
+    except OSError:
+        return None
+    return path.stem, title, first_prompt
+
+
+async def api_history(request):
+    """All sessions on disk (~/.claude/projects), newest-first — the restore
+    list behind the cockpit's history view. Read-only: each row carries the full
+    session_id + sid8 + last-active mtime + a title (ai-title or first prompt) +
+    any disk-backed rename. The frontend filters out sessions already live on the
+    board and offers reopen (claude --resume) on the rest. Bounded to the
+    most-recent HISTORY_LIST_CAP files (sorted by mtime before the head-scan, so
+    cost tracks the cap, not the size of the projects dir)."""
+    names = _read_json(NAMES, {})
+    if not isinstance(names, dict):
+        names = {}
+    try:
+        files = list(PROJECTS_DIR.glob("*/*.jsonl"))
+    except OSError:
+        files = []
+    files.sort(key=_safe_mtime, reverse=True)
+    out = []
+    for path in files[:HISTORY_LIST_CAP]:
+        summ = _session_summary(path)
+        if summ is None:
+            continue
+        session_id, title, first_prompt = summ
+        sid8 = session_id[:8]
+        out.append({
+            "session_id": session_id,
+            "sid8": sid8,
+            "last_active": _safe_mtime(path),
+            "title": (title or "")[:120],
+            "first_prompt": (first_prompt or "")[:200],
+            "name": names.get(sid8, ""),
+        })
+    return web.json_response({"sessions": out}, headers=NO_STORE)
 
 
 def _result_text(content, cap: int = HISTORY_RESULT_CAP) -> str:
@@ -922,6 +1025,7 @@ def make_app(dev=False):
     app.router.add_post("/api/rename", api_rename)
     app.router.add_post("/api/handoff", api_handoff)  # cross-client session takeover (kill-then-resume)
     app.router.add_get("/api/feed", api_feed)
+    app.router.add_get("/api/history", api_history)   # all sessions on disk → restore list (reopen via claude --resume)
     app.router.add_get("/api/clipboard", api_clipboard)
     app.router.add_post("/api/clipboard", api_clipboard_write)
     app.router.add_get("/api/file", api_file)           # brain-graph node popup (path-safe, repo-scoped)

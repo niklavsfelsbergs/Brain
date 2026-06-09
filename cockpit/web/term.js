@@ -110,6 +110,18 @@ class TermConn {
     this.submitSeed = opts.submitSeed !== false;
     this.placedName = ""; // user-chosen name from the place modal; applied on connect
     this.resumeId = opts.resumeId || null; // uuid to reattach to (persistence)
+    // When this cockpit opened/resumed the terminal, and whether it's a resume
+    // (vs a fresh placement). The board uses these to age + rank a cockpit-own
+    // row that hasn't fired a feed event yet: a resumed-but-idle session is a
+    // RESTORED session, so it must read idle + sink rather than pin to the top
+    // at a frozen "0s" the way a fresh placement legitimately does (jump-up fix).
+    this.openedAt = Date.now();
+    this.isResume = !!opts.resumeId;
+    // Unsent compose-bar draft. Lives on the conn (which survives selecting away —
+    // sessions keep running off-screen) so switching boards/sessions and coming
+    // back restores what you'd typed, instead of the composer's local state dying
+    // with its unmount.
+    this.composeDraft = "";
     this.drive = true;
     // Restore the auto-label on resume so a reopened "Jebrim" session keeps its
     // name instead of degrading to "chat" (S095). A manual rename still overrides
@@ -865,7 +877,7 @@ export function reconnectTermsAfterWake() {
 export function liveTerms() {
   const out = [];
   for (const c of live.values()) {
-    if (c.id) out.push({ sid8: c.id, sessionId: c.sessionId, label: c.label });
+    if (c.id) out.push({ sid8: c.id, sessionId: c.sessionId, label: c.label, openedAt: c.openedAt, isResume: c.isResume });
   }
   return out;
 }
@@ -969,12 +981,27 @@ export function Term({ conn }) {
 // into the terminal. Lives outside the terminal's unscaled subtree, so it scales
 // with the UI zoom like the column header does (styles.css .term-composer). (S086)
 export function TermComposer({ conn }) {
-  const [text, setText] = useState("");
+  // Seed from the conn's saved draft so a board/session switch + return restores
+  // what was typed; write every change back through so it survives the unmount.
+  const [text, setTextState] = useState(() => conn.composeDraft || "");
   const taRef = useRef(null);
+  const setText = (v) => {
+    conn.composeDraft = v;
+    setTextState(v);
+  };
   const resetHeight = () => {
     const ta = taRef.current;
     if (ta) ta.style.height = "";
   };
+  // On mount, grow to fit a restored draft so a multi-line draft doesn't come
+  // back collapsed to one row (autogrow otherwise only fires on input).
+  useEffect(() => {
+    const ta = taRef.current;
+    if (ta && text) {
+      ta.style.height = "auto";
+      ta.style.height = Math.min(ta.scrollHeight, 280) + "px";
+    }
+  }, []);
   const submit = () => {
     if (conn.submitComposed(text)) {
       setText("");

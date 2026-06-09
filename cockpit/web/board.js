@@ -3,6 +3,7 @@
 import { html } from "htm/preact";
 import { useState, useRef } from "preact/hooks";
 import { nameFor } from "./names.js";
+import { reconcileSlots, slotFor } from "./slots.js";
 
 // S139 taxonomy. The MAIN status is the primary chip (one of a small set); the
 // rest are SUB-bubbles. ACTION NEEDED = blocked on a question list; the close
@@ -40,7 +41,7 @@ function fmtAge(s) {
   return Math.floor(s / 3600) + "h";
 }
 
-function Row({ s, selected, onSelect, onRename }) {
+function Row({ s, num, selected, onSelect, onRename }) {
   // The main status drives the chip + the row's colour class (S139). Fall back to
   // the semantic state for any row that predates the main/subs fields.
   const main = s.main || s.state;
@@ -70,7 +71,10 @@ function Row({ s, selected, onSelect, onRename }) {
   return html`
     <div class=${cls} onClick=${() => !editing && onSelect(s)}>
       <div class="row-head">
-        <span class="dot"></span>
+        ${/* The status dot doubles as the chat's recycling number (slots.js) —
+              identity (the digit) and status (the disc colour + pulse) share the
+              one mark. */ ""}
+        <span class="dot">${num || ""}</span>
         <span
           class="actor"
           title="double-click to rename"
@@ -124,10 +128,13 @@ function Row({ s, selected, onSelect, onRename }) {
 }
 
 export function Board({
-  sessions, err, selectedSid8, onSelect, onNew, onRename,
+  sessions, err, selectedSid8, onSelect, onNew, onRename, onHistory,
   soundOn, onToggleSound, feedOn, onToggleFeed,
   zoom, onZoomIn, onZoomOut, onZoomReset, onCollapseBoard, onToggleFocus, focused,
 }) {
+  // Reconcile the recycling chat numbers against the live set before rendering
+  // rows, so dropped slots free up and new sessions claim the lowest free one.
+  reconcileSlots(sessions);
   return html`
     <aside class="board-col">
       <header class="topbar">
@@ -147,6 +154,7 @@ export function Board({
           >
             ▦
           </button>
+          <button class="icon-btn" onClick=${onHistory} title="history — reopen a past chat (Ctrl+H)">↺</button>
           <button class="newbtn" onClick=${onNew} title="start a new conversation">+ new</button>
           <button class="icon-btn" onClick=${onCollapseBoard} title="collapse board (Ctrl+B)">‹</button>
         </span>
@@ -159,6 +167,7 @@ export function Board({
             html`<${Row}
               key=${s.sid8}
               s=${s}
+              num=${slotFor(s.sid8)}
               selected=${s.sid8 === selectedSid8}
               onSelect=${onSelect}
               onRename=${onRename}

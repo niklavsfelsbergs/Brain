@@ -122,6 +122,13 @@ class TermConn {
     // back restores what you'd typed, instead of the composer's local state dying
     // with its unmount.
     this.composeDraft = "";
+    // Has the USER actually interacted with this session this cockpit run (typed
+    // in the terminal / sent from the composer)? A freshly-resumed session is
+    // parked-idle by definition — but `claude --resume` fires startup hook events
+    // that make the feed look "active", which would otherwise flip the board off
+    // idle. Gate the resumed-idle board state on this, NOT on feed presence, so a
+    // session that was idle at cockpit-close comes back idle, not YOUR MOVE. (S179)
+    this.userActive = false;
     this.drive = true;
     // Restore the auto-label on resume so a reopened "Jebrim" session keeps its
     // name instead of degrading to "chat" (S095). A manual rename still overrides
@@ -347,6 +354,7 @@ class TermConn {
   submitComposed(text) {
     const t = String(text || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
     if (!t.trim()) return false;
+    this.userActive = true; // a real composer send → no longer a parked/resumed-idle row
     // /rename parity with terminal-typed input — claim it, don't send to claude.
     const m = /^\/rename\s+(.+)$/.exec(t.trim());
     if (m && this.id) {
@@ -523,6 +531,7 @@ class TermConn {
   // clears) and swallow the Enter (so Claude never submits it), then apply the
   // label. Cursor moves / pastes can desync the mirror — accepted per the user.
   _handleData(d) {
+    this.userActive = true; // genuine user keystroke → no longer a parked/resumed-idle row
     if (d === "\r" || d === "\n") {
       this._interruptedAt = 0; // a submit means the session is live again — stop the busy→idle override
       const m = /^\/rename\s+(.+)$/.exec(this._linebuf.trim());
@@ -882,7 +891,7 @@ export function reconnectTermsAfterWake() {
 export function liveTerms() {
   const out = [];
   for (const c of live.values()) {
-    if (c.id) out.push({ sid8: c.id, sessionId: c.sessionId, label: c.label, openedAt: c.openedAt, isResume: c.isResume });
+    if (c.id) out.push({ sid8: c.id, sessionId: c.sessionId, label: c.label, openedAt: c.openedAt, isResume: c.isResume, userActive: c.userActive });
   }
   return out;
 }

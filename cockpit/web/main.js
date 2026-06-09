@@ -476,12 +476,16 @@ function App() {
         // chip shows a real "active Ns ago" instead of a frozen 0s and the row
         // doesn't tie at the top with everything else at ts 0. (S134 + jump-up fix)
         const quiet = fs ? Math.max(0, Math.floor(Date.now() / 1000 - fs.ts)) : sinceOpen;
-        // The jump-up fix: a RESUMED terminal that hasn't fired a feed event is a
-        // restored, not-yet-active session — not a fresh placement. Mark it idle so
-        // it sinks below live work (rank 7) instead of pinning to the top at YOUR
-        // MOVE / rank 1. A genuine fresh placement (you just made it, about to type)
-        // keeps the visible top slot. Either way the age now comes from openedAt.
-        const resumedIdle = !fs && t.isResume;
+        // A RESUMED session is parked-idle until the USER actually interacts with
+        // it. Gate on userActive, NOT feed presence (S179): `claude --resume` fires
+        // startup hook events that make the feed look active right after a restart,
+        // which would otherwise flip a session that was IDLE at cockpit-close back
+        // to YOUR MOVE / busy. Force idle here so resume-startup noise can't un-idle
+        // it; it then sinks to rank 7 (below live work, dimmed) until the user drives
+        // it. A fresh placement (isResume false) keeps its visible top slot. (Was
+        // gated on `!fs`, which the resume's own startup events defeated — S164.)
+        const resumedIdle = t.isResume && !t.userActive;
+        if (resumedIdle) state = "idle";
         // S139 taxonomy: derive the main chip + sub-bubbles for this cockpit-own
         // row, matching the backend. needs_you → ACTION NEEDED; recent → BUSY; a
         // quiet/parked terminal → YOUR MOVE, with an `idle` sub once it's resumed-

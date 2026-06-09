@@ -1,0 +1,10 @@
+# Hand-written prose in a derived report silently drifts from its data layer
+
+**Observation ([[S180_4766eb11_dpd-current-report-refresh|S180]], 4766eb11).** Adding `dpd_pl_current` as a competitor to carrier_overview_v2 re-ranked 16/52 segment winners, which I expected to stale the 5 hand-written `sections/*.md` cards. But when I read them to reconcile, I found the cards were **already partly out of sync with the regenerated grid before my change** — e.g. `dhl_paket.md` calls FR ≤1 kg a near-miss it "just misses to dpd_pl," while the *old* `competitive_summary` had dhl_paket *winning* it. The hand prose and the data parquets had diverged across some earlier rebuild, with no signal.
+
+**Why it matters.** A report built as `data layer (regenerated) + hand-written narrative (manual)` has two sources of truth that drift apart silently. The data regenerates deterministically; the prose doesn't, and nothing flags the gap. So:
+1. **A regen's blast radius includes the prose**, not just the numbers — and that prose can be stale *independent of* the change I'm making.
+2. **Don't assume the cards match the grid.** Reconcile claims against the freshly-regenerated ground truth (the parquet), not against what the card says or what I think changed.
+3. **Estimate reconciliation scope from actual claims, not the flip count.** I first feared "16 flips → rewrite 5 cards," but most claims survived because they frame losses generically ("loses to DPD") — true whether DPD wins via the tender or current engine. Reading the real claims shrank the fix to two genuinely-false ones (guell's "wins all of AT"; the tender card).
+
+**How to apply.** When regenerating a derived report (or adding a competitor/entity to one), treat the hand-written narrative as a *separate consumer* that must be re-validated against the new data layer — and check it against ground truth, since it may already be stale. Sibling of [[2026-06-09-disagreeing-totals-suspect-grain-mismatch]] and the "verify the thing, don't trust the wiring" reflex: the card is wiring describing data; verify it against the data.

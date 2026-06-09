@@ -31,9 +31,35 @@ offsets were re-validated against the old card before reuse.
   carrier — overseas tail stays on current contract via the engine `WW-ECO-stays` rule).
 
 ## Method caveats (load-bearing)
-- **Fuel / peak / LPS NOT compared** — provisional pending UPS Q1/Q4/Q6; diffing placeholders = noise.
-  Fuel basis alone (flat 35% card vs ~20% real) swamps a 5% base move, so the card delta is *not* the
-  whole cost story. → keepsake EU-tender risk #1 (provisional-fuel collapse).
+- **Fuel / peak / LPS NOT in the card diff** — but **fuel is now resolved, not provisional** (see Fuel
+  below). Peak/LPS still pending UPS Q4/Q6; diffing those placeholders = noise. → keepsake EU-tender
+  risk #1 (provisional-fuel collapse).
+
+## Fuel — the card's "35" is a DISCOUNT, not a flat rate (resolved 2026-06-09, S168)
+- Both cards list **Fuel Surcharge = 35, "Percent Off — per Shipment", Net Rate = NA** on the Zuschläge
+  sheet — **identical old vs offer**, so fuel is genuinely clean of the rate-card diff.
+- The **35 is a 35% discount off UPS's floating published fuel index**, NOT a flat 35% surcharge — same
+  "Percent Off" rate-type as Free Domicile (80 Percent Off → pay 20% → net 5.35). Effective fuel =
+  `index × (1 − 0.35)`. Consistent with the contract being evergreen / no-GRI-clause / floats on the
+  published tariff ([[S170_be1b4946_eu-tender-carrier-substitution-deltas|S170]] recon).
+- **Confirmed by invoice reconciliation** (shipping-agent, `cost_source='invoice'`, 1.73M UPS shipments):
+  effective fuel/base = **19.3% overall, 19.8% road** (UPS04STD, 91% of vol) → implied index ~30.4%, a
+  textbook UPS EU road figure. Express 23–26%, WW Eco 5–6% (air≠road, as expected). Drifts up to
+  ~24–28% effective Apr–May 2026 (spring spike) — a *fixed* discount on a *floating* index does that; a
+  flat 35% physically couldn't move. UPS discount/credit buckets are empty → discounts baked into net
+  base, so fuel-on-net-base is the right basis.
+- **Engine refit:** `calculation/engine.py` `FUEL_PCT 0.35 → 0.20` (2025 road baseline). Cut the Q1
+  pure-quoted calc **−€179,598 (−10.7%, €1.685M→€1.505M)**; gap to actual (`real_total_eur` €1.257M)
+  halved (+34% → +20%). Forward pricing should use `published_forward_index × 0.65`, pinned at UPS Q1.
+
+## GRI sensitivity — "modest uplift" reframes to "≈ current + one GRI" (2026-06-09, S168)
+- Apply a flat **+5% GRI to the incumbent card** and the Standard-light core lanes go to **parity**
+  (`(1+d)/1.05 − 1`: DE −0.2%, FR/AT/IT/BE/NL/CH ≈ 0%). The offer's +5% on the workhorse **is, to the
+  basis point, a GRI-sized move** — UPS conceded nothing real on the core product beyond holding us at
+  the increase we'd eat anyway. (The contract has no GRI-protection clause and floats on the published
+  tariff — [[S170_be1b4946_eu-tender-carrier-substitution-deltas|S170]] — so a GRI genuinely flows through; this isn't hypothetical.)
+- Carve-outs become genuine wins vs a GRI'd baseline: **PL ~−19%** (was −15%), **DK & GB ~−4.8%**
+  (were flat — "flat" is itself a concession when a GRI was otherwise coming).
 - **Two measurement artifacts caught** (cf. [[2026-06-01-verify-the-thing-dont-trust-the-wiring]] /
   verify-diffs-both-ways): (1) the mean-across-bands *inverted* the 1 kg picture → real weight-dependent
   signal, not a bug, but the flat mean is the wrong summary; (2) a DE_ZONES diff exploded to 1648 rows

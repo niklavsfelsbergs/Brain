@@ -2,7 +2,7 @@
 quest: cost-structure-card (EU-tender carrier-overview v2) + Warenpost engine add
 sid8: f4a07849
 ts: 2026-06-08
-open_dep: BUILT + verified + rendered; NOT committed (awaiting principal go). DECISION REPORT / ROUTING now STALE vs the regenerated matrix — needs S150-coordinated rerun.
+open_dep: S165 card+Warenpost COMMITTED (d54836d). S166 routing service-split (f82b01df) BUILT+verified, NOT committed (awaiting go) + Part 6 overview-annotation optional/pending. decision_report still stale vs matrix (DISREGARDED per principal).
 ---
 
 # Resume — Cost Structure card + Warenpost engine addition (carrier-overview v2)
@@ -18,15 +18,20 @@ Sized the Warenpost exclusion (~169k parcels / 5.9% book / ~€0.5M/yr DHL overs
 ## ⚠ Stale-downstream flag (needs S150 coordination)
 The cost_matrix is shared. I re-ran it, so **decision_report/ (S150) + routing_2026q1/ now reflect PRE-Warenpost DHL costs** — stale vs the matrix. I did NOT re-run them (avoid clobbering live S150). DHL's light-EU position improved (~€0.5M); the decision report must be re-run in a coordinated S150 pass to pick it up. The EU-tender keepsake "track doc updates / Step-8 cascade" applies.
 
-## NEXT SESSION — routing report service-split (PLANNED, not built)
-Full handoff spec written: **`bi-analytics .../2_analysis/routing_2026q1/PLAN_routing_service_split.md`** — read it top-to-bottom first. Summary of the 5-part change:
-1. Regenerate `cost_matrix_2026q1` (Warenpost flows in automatically — routing's Q1 matrix is currently pre-Warenpost/stale) + re-run derive_envelope.
-2. Remove the **residual/"Direct Link"** bucket: drop out-of-scope incumbents from build_final's `keep` candidate → those re-route to the cheapest of the 6. ⚠ Quantify the 7,794 residual first (≥1 in-scope bid vs none); surface the genuinely-unserved remainder, don't freight them.
-3. Carry `service` through build_final → routing_rules.csv + routing_assignment.parquet (per-parcel service from the matrix; band-merge on (carrier, service)).
-4. New `2_analysis/service_labels.py` (verify keys vs live matrix `service` values).
-5. Display: full service split in carrier_envelopes + routing_report (routing table, what-each-takes, dim table, portfolio); remove Direct Link; use labels.
-6. (lighter, optional) carrier-overview v2: annotate the winning service per segment (NOT re-key).
-Decisions locked: residual→reroute-to-next-active; full split routing-report-only; overview=annotate-only; UPS/DBS carrier-only; author labels. No pre-routing commit (revert point = d54836d).
+## ROUTING SERVICE-SPLIT — BUILT in S166 (f82b01df), NOT yet committed
+Parts 1–5 of `PLAN_routing_service_split.md` done + verified (full record: quest-log `S166_f82b01df_routing-service-split-build.md`).
+1. ✅ Regenerated cost_matrix_2026q1 (Warenpost in) + derive_envelope (must-freight 165).
+2. ✅ Residual removed: quantified 8,396 (PostNord SE, all std, all ≥1 in-scope bid, 0 unserved) → 0 stranded after the fix; the "no in-scope carrier" edge does NOT occur (no dead path added).
+3. ✅ service carried through build_final (FAMILY_TO_ENGINE + with_service); rules band-merged on (carrier,service), assignment gains service; two-Maersks split clean (FR carrier-only). 1,985 rules, no explosion.
+4. ✅ service_labels.py (23 keys verified vs live matrix).
+5. ✅ Service-split display: routing-table Service column+filter, portfolio Products, what-each-takes Products line, dim-table Service column. Carrier-level smoothing kept (90.7% fidelity; (carrier,service)-smoothing rejected — cost 15pts, contradicts locked "carrier top-level"). Direct Link gone except migration FROM (truthful source).
+Saving €411,344 (13.9%), up from €399,750/13.5% pre-Warenpost.
+
+6. ✅ Part 6 — carrier_overview_v2 winner-service annotation (modal service per segment winner; no re-key; all 52 annotated).
+**COMMITTED** bi-analytics `f47098d` (14 files, pathspec-scoped, NOT pushed). EXCLUDED non-mine dirty: decision_report.html, validation/db_schenker/* (S164), _decision_sets_2026q1.py + decision_scorer_2026q1.py + report_2026q1.py + switch_list_2026q1/ (S150 untracked).
+
+**OPEN:** (a) **push** — awaiting go (main ahead 19). (b) ⚠ _decision_sets_2026q1.py untracked but imported by committed build_final.py — S150's to commit.
+Decisions locked: residual→reroute-to-next-active; full split routing-report-only; overview=annotate-only; UPS/DBS/Maersk-FR carrier-only; authored labels. Revert point = d54836d.
 
 ## Where we are (cost-structure card)
 Built and verified. Each of the 9 carrier pages in

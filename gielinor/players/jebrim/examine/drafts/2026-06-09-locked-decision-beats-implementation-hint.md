@@ -1,0 +1,7 @@
+# A plan's locked decision beats its own looser implementation hint — and verify the cost of the literal reading empirically
+
+**Anchor:** [[S166_f82b01df_routing-service-split-build|S166]] (f82b01df) routing service-split. `PLAN_routing_service_split.md` carried two lines in tension for `carrier_envelopes.py`: an implementation hint — *"group/smooth by (carrier, service); emit service-level cards"* — and a locked decision — *"Carrier stays the top-level grouping; service is the sub-split."* I first implemented the literal hint (smoothing unit = (carrier, service)). Measured fidelity dropped 92.7% → 78% (the "what each carrier takes" overview would misattribute 22% of parcels at the service level). Recognized the hint contradicted the locked decision, reverted to carrier-level smoothing (90.7%) + a per-carrier service sub-split annotation, and put the exact service split where it belongs (the routing table + dim table).
+
+**Lesson:** when a spec's implementation suggestion conflicts with its own *locked decision*, the locked decision is authoritative — the suggestion is the looser artifact. And don't resolve the tension by argument alone: I built the literal reading, measured its cost, and let the number decide. The empirical check (run it, read the fidelity) is what turned "these two lines disagree" into "the literal reading costs 15 points for no gain, so the locked decision wins." Flag such deviations explicitly to the principal rather than silently picking one.
+
+**Generalizes?** Yes — working-style. Captured to cross-conversation memory.

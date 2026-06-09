@@ -7,13 +7,13 @@
 | Domain | What it is | Cue / load |
 |---|---|---|
 | **[[scm]]** | Shipping Costs Monitoring — the productized always-on `shipping_costs_monitoring_nextjs` dashboard + alert engine over the gold shipping_mart (two runtimes: Airflow pipeline + Next.js serving). | `scm`, "shipping costs monitoring", "alert engine" → loads `scm.md` |
+| **[[shipping-mart]]** | The gold `shipping_mart` contract (4 facts, 11-bucket cost invariant, cost-basis, package-dim gate, lineage + access tiers) **and the shipping-agent** — the talk-to-your-data tool that queries it. | `shipping mart`, `fact_shipments`, `cost_for_routing`, `shipping-agent` → loads `shipping-mart.md`; also the global `cue_registry.py` shipping row → external repo + specialist |
+| **[[eu-tender]]** | EU Tender 2026 — the quantitative carrier-tender review (cost-only, full-year basis): architecture, switchable-incumbent scoring, the re-rating trust gate, current ~6-carrier portfolio + routing rebuild. | `eu tender`, `carrier tender`, `decision report`, `routing report`, `carrier overview` → loads `eu-tender.md` |
+| **[[carrier-contracts]]** | Carrier contracts & invoices — rate-card reading, contract terms/expiry, invoice DQ (FIF/UPS-ORWO), dimension-coverage map, re-rating discipline. | `carrier contract`, `rate card`, `fif`, `dimension coverage`, `fuel surcharge` → loads `carrier-contracts.md` |
+| **[[nfe-repo]]** | NFE workspace structure — `shipping_topics/` (ad-hoc), `projects/` (multi-phase), `dashboards/` (productized), `.claude/reference/` (patterns) — and where to do which kind of work. | `nfe`, `shipping_topics`, `repo structure`, `which folder` → loads `nfe-repo.md` |
 
 ## Not yet digested (uncovered clusters — §Z bootstrap worklist)
 
-These are live Jebrim domains with bank-note clusters but no digest yet. The §Z.D coverage detector names them; alching synthesizes each into a digest here.
-
-- **EU Tender 2026** — quantitative carrier-tender review (parcel + freight, cost-only scoring; full-year basis). Cluster: `eu_tender_2026*`, the re-rating/trust-gate + per-carrier validation notes. *(Currently carried by the keepsake pin + cue.)*
-- **Shipping data mart** — the gold `shipping_mart` contract/schema/cost-basis + the shipping-agent. *(Carried by the keepsake routing pin + the global `cue_registry.py` shipping row → external repo + specialist.)*
-- **Carrier contracts & invoices** — UPS/DPD/DHL/FIF rate cards, invoice DQ, dimension coverage, re-rating method. Cluster: the `2026-06-09-*` carrier notes + FIF quirks.
+*(Empty — all currently-named Jebrim domains are digested as of 2026-06-09. New clusters land here when a future alching/coverage pass names them.)*
 
 *Rotate a domain from the lower list to the table when alching lands its digest. Keep this index under budget — if it grows past a screen, that's a signal the domains need consolidating, not a longer index.*

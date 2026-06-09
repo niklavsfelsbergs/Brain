@@ -1,7 +1,7 @@
 # EU Tender 2026
 
 **Source:** `C:\Users\niklavs.felsbergs\Documents\GitHub\bi-analytics-main\NFE\projects\2_EU_tender_2026\`
-**Status (2026-05-20):** Phase 2 in flight; DPD PL walkthrough is the next concrete step.
+**Status (2026-06-09):** all 9 engines built + Round-2-rebuilt; routing rebuild in flight on a 2026-Q1 actuals baseline. See *Current state (2026-06-09)* below; digest [[eu-tender]] carries the synthesized surface. The 2026-05-20 architecture/framework sections remain accurate.
 
 ## What it is
 
@@ -59,13 +59,15 @@ This is a transferable pattern — worth extracting as a separate concept note l
 - Predecessor approach: shipping_costs/overview — SHIPPING-COSTS was the US-tender first pass; EU tender is a different approach. Comparison/review pending.
 - Architecture lineage: `NFE/SHIPPING-COSTS/carriers/ontrac/` + `NFE/SHIPPING-COSTS/shared/surcharges/` is the source of the Surcharge ABC pattern.
 
-## Current state (2026-05-20)
+## Current state (2026-06-09)
 
-- 9 of 11 carriers dispatchable (FedEx + DPD PL just received offers 2026-05-20).
-- Round 1 walkthroughs done for: Maersk, Austrian Post, GLS, Güll, Hermes, DHL Express, DHL Paket, FedEx.
-- **DPD PL walkthrough next** — B1 (zone fee always-on, ~EUR 3.04M Q1, biggest single lever) is the first unresolved entry.
-- After DPD PL dispatch + cascade: all dispatchable carriers in reply-waiting phase.
-- UPS still pending offer arrival.
+Round 1 + Round 2 reviewed and engines rebuilt across the book (DHL Paket →2.2.0 incl. Warenpost + truck linehaul; FedEx →2.0.0; UPS on a separate `1_offers/picanova/UPS/calculation/` calculator track). Baseline re-pointed to **2026-Q1 invoiced actuals** (531,194 parcels, ~€3.03M, 100% invoiced) — current contract = mart actuals, new offer = the per-carrier engine ([[2026-06-09-routing-cost-basis-decisions]]).
+
+- **Emergent portfolio ≈ 6:** DHL Paket, Maersk (FR actuals + EU engine), Hermes, DPD-PL (keep current, decline new), UPS (actuals ×1.05), DB Schenker (freight, ~165 must-freight via the per-destination size envelope).
+- **Routing saving ≈ €378–411k/Q (~13–14%)**; tender beats today on ~89% of book, loses on ~11% (keep current Maersk on FR + CH/ROW bulky). NUMBERS pending the routing rebuild — do not quote as final.
+- **Deliverables:** `carrier_overview_v2/` (per-carrier cost-structure cards), `routing_2026q1/` (routing report + service split), `decision_report/`.
+- Re-rating discipline locked: trust-gate engines vs their own actuals first; quarantine grain = service-lane not engine; reconcile contract tier against actuals before comparing. See [[2026-05-31-shipping-savings-rerating-trust-gate]] + [[eu-tender]].
+- The 2026-05-20 / [[S034_2026-05-22_eu-tender-logic-review|S034]] portfolio numbers (`add_hermes` €397k etc.) are superseded by the 2026-Q1-actuals routing basis above; kept in [[eu_tender_2026_S034_update]] for history.
 
 ## Branches to write (concept notes)
 

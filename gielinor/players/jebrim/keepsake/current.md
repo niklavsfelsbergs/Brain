@@ -1,53 +1,20 @@
 # Jebrim — keepsake/current.md
 
-> Read at respawn (when Jebrim is active). Pinned items that must surface every Jebrim session. Under size budget (~2k tokens). User-only; the agent proposes via `proposals/`.
+> Read at respawn (when Jebrim is active). Pinned items that must surface every Jebrim session. Under size budget. User-only; the agent proposes via `proposals/`.
 
-## Shipping Data Mart — routing
+## Work domains → `bank/domains/`
 
-Pinned 2026-05-22 (S028, post gold cutover). Supersedes 2026-05-21 pin.
+Jebrim's work-topic knowledge lives in **`bank/domains/`** (the §Z domain layer, since 2026-06-09). The always-read **`_index.md`** maps the domains every session; each **digest** force-inlines on its own cue:
 
-**Schema.** Gold layer `shipping_mart` schema is the agent's entire surface — four facts, no joins outside the schema:
-- `shipping_mart.fact_shipments` (wide fact, 65 cols — spine + provider data denormalized in)
-- `shipping_mart.fact_shipment_cost_summary` (per-shipment 11-bucket cost pivot, invariant `SUM(buckets) == total_eur == fact_shipments.real_shipping_cost_eur`)
-- `shipping_mart.fact_shipment_orderitems` (line-item rollup per shipment)
-- `shipping_mart.fact_shipment_invoice_lines` (per-charge-line invoice detail with `charge_bucket`)
+- **[[shipping-mart]]** — the gold `shipping_mart` contract + the shipping-agent (was the "Shipping Data Mart — routing" keepsake pin).
+- **[[eu-tender]]** — EU Tender 2026 review, scoring, current portfolio + routing (was the two "EU Tender 2026" keepsake pins).
+- **[[carrier-contracts]]** — rate cards, contract terms/expiry, invoice DQ, dimension coverage.
+- **[[scm]]** — the Shipping Costs Monitoring dashboard. **[[nfe-repo]]** — the NFE workspace map.
 
-Cutover from `enterprise_silver.*` landed 2026-05-22 — old silver facts are **gone** (not deprecated views). `map_shipment_key` and `dim_shipping_providers` are not needed — their data lives on `shipping_mart.fact_shipments` directly. `fact_truck_charges` is out of scope.
+The former always-on work-pins migrated *into* those digests (the load-bearing surface) which cite the bank notes for detail. This is the §Z trade: the index stays always-on (the map); topic detail is cue-loaded.
 
-**Shipping-agent (standalone).** Lives at `Documents/GitHub/shipping-agent/` (relocated 2026-05-22 out of NFE — escaped CLAUDE.md walk). Self-contained — runs anywhere with its own `.env` and `harness/`. Entry doc: `shipping-agent/README.md` (human) + `shipping-agent/how_to.md` (AI-facing rules + §1 "Where to find things" index). Reference content in `shipping-agent/reference/`; query methodology in `shipping-agent/skills/`.
+## Operating reflexes
 
-**Connection.** Local `.env` in `shipping-agent/` with the `ship_mart_ro` user (read-only, gold-only). `harness/db.py` loads from the local `.env` only — does not walk up. Smoke-test: `python harness/connect_redshift.py --query "SELECT 1"`.
+Cross-cutting reflexes are **global** — see the global `keepsake/current.md` (verify-the-thing / anchor-to-existing-state / grounding-precondition / address-as-"you"), force-injected every session.
 
-**Access tiers (2026-05-27, S101).** One agent, two tiers off `picanova/shipping-agent`: colleagues on `ship_mart_ro` (gold-only); Niklavs full-access via a gitignored `CLAUDE.local.md` overlay + `.env` user `tcg_nfe` (verified read on `enterprise_silver`/`enterprise_bronze`/`dw`/`sl_gold`). Full lineage + design: `bank/notes/projects/2026-05-27-shipping-mart-gold-lineage-and-access-tiering.md`.
-
-**Ground truth.** `Documents/GitHub/bi-etl/dags/shipping_mart/` (top-level gold DAG; per-carrier provider SQL under `fact_shipment_invoice_lines/sql/providers/`). `git pull origin main` before reading the code for an audit/sanity check.
-
-**`cost_source` values (2026-05-22):** `'invoice'` 65%, `'expected'` 24%, NULL/uncosted 8%, `'avg'` 2%. Column name is `real_shipping_cost_eur` but the flag value is `'invoice'` — naming asymmetry; future cleanup may align.
-
-**Schema discipline.** Every query qualifies as `shipping_mart.<table>`. Reaching outside `shipping_mart.*` is a scope violation (and `ship_mart_ro` would deny it).
-
-*Rotate out when ground-truth path moves to the gold-dag location, or scope/schema/credentials shift again, or the mart stops being a frequent topic.*
-
-## EU Tender 2026 — active
-
-Pinned 2026-05-21 ([[S021_2026-05-21_alching-and-rule-fix|S021]]). Source: `archive/proposals/2026-05-21_eu-tender-2026.md`.
-
-Quantitative review of 2026 EU shipping carrier tenders for TCG-Picanova. Target: 4–6 parcel + 1 freight, cost-only scoring. **Decision basis = full-year cost (2026-05-27, S099).** Q1 2026 is the per-shipment unit-cost reference; the decision re-weights it by an annual volume profile with the seasonal layers Q1 never exercises (peak/demand surcharges, Q4 volume + product-mix spike, forward fuel) — a Q1-cheap carrier can be Q4-expensive. Annualisation method TBD/parked; current work proceeds on Q1. Decisions locked 2026-05-12 (cost-only, hard cap 6, lane diagnostic + portfolio scoring). Round-1 replies reviewed + deterministic engine rebuilds in flight (maersk-3.0.0 done; hermes/dhl_express/austrian_post next). Full detail in `bank/notes/projects/eu_tender_2026.md`; full-year scoping note in the tender repo `carrier_responses_to_open_questions/FULL_YEAR_SCOPING_NOTE.md`.
-
-*Rotate out when tender decisions are signed and carriers contracted, OR project pauses > 1 month with no active work, OR pin grows stale relative to current state.*
-
-## EU Tender 2026 — bottom-line assessment from [[S034_2026-05-22_eu-tender-logic-review|S034]]
-
-Pinned 2026-05-22 ([[S034_2026-05-22_eu-tender-logic-review|S034]]). Surface to principal at every Jebrim respawn until v2 report ships OR pin grows stale. Source: `archive/proposals/2026-05-22-eu-tender-bottom-line.md`.
-
-**The project is on a credible path to a defensible decision IF three things land before signing:**
-
-1. **Enough Round 1 replies to flip fuel + customs + residential off proxy on at least 5 of 7 engines.** Sequencing risk — carrier replies are 1-2 weeks each.
-2. **Service-quality sidecar.** One-page qualitative overlay (returns rate, claims handling, transit-time variance, account-team responsiveness) per shortlisted carrier. Bridges "Hermes scores best" and "Hermes is signable."
-3. **Volume-tier rerating on the shortlisted portfolio.** §B.15. Engines price nominal-tier today; shortlisted slices cross tier boundaries.
-
-**Biggest risk:** provisional numbers getting locked. The 2026-05-14 placeholder-vs-real fuel collapse (EUR 230k → 18k headline) is the cautionary precedent — cite explicitly in v2 methodology.
-
-**The principal should read the full assessment** — chat transcript at end of [[S034_2026-05-22_eu-tender-logic-review|S034]], or reconstruct from `quest-log/in-progress/S034_2026-05-22_eu-tender-logic-review.md` + the 15 dwarf children in `completed/`.
-
-*Rotate out when v2 report ships AND the three conditions have landed, OR the project pauses > 1 month with no active work, OR the pin grows stale relative to current state.*
+*Pin a new Jebrim-specific item here only if it must fire before the first output AND isn't already global or carried by a digest. Per-player work-topics belong in `bank/domains/`, not here.*

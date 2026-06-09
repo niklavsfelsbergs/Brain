@@ -12,3 +12,10 @@ Dwarf d1, Jebrim namespace. Building `carrier_overview/sections/maersk.md`. Carr
   - carrier_vs_invoice: Maersk's ONLY current invoiced lane is FR (107 parcels, €4.82) — and the new engine REJECTS FR. So new-offer doesn't even price the incumbent lane. Thin-base caveat is sharp.
   - Writing section now.
 - WROTE `carrier_overview/sections/maersk.md` — all 7 §4 elements, Jebrim register. Tables: coverage, anatomy, envelope cliffs, lane cost position. Analyst take labelled. DONE.
+
+## v2 vs-today pass (dwarf, carrier_overview_v2)
+- Rewrote `carrier_overview_v2/sections/maersk.md` for the "vs today" lens, from the verified `_data/hands/maersk_card.md`. Preserved Services / What it carries / Why-mechanic / lever intact.
+- **Two-Maersks note added** (prominent, top of page): NEW offer (maersk-3.0.0) does NOT price FR; CURRENT Maersk contract is FR's cost leader at €4.72/parcel actual Q1, 27,624 shp, and the whole tender fails to beat it on every FR segment → keep current Maersk on France. Two carriers, two decisions.
+- **Where it wins** — tagged 14 wins from card: 13/14 ✓ beat today (UPS), 1 (Nordics-DK Bulky 1–2 kg) has no today-anchor. Nordics-DK gaps are the biggest (€2–3/parcel vs UPS). Also flagged 2 hollow ROW contenders (Std ≤1 kg +9%, Bulky 2–5 kg +57% over today) + 2 contenders that clear today (Iberia Std 2–5, ROW Std 2–5).
+- **Analyst take** — new offer genuinely improves on today (13/14 real wins, switch those EU/Nordics-DK lanes); ROW hollow slices keep incumbent; FR held by current Maersk contract.
+- DONE.

@@ -12,3 +12,9 @@ Dwarf for Jebrim. Build `sections/guell.md` (held / optimistic-ceiling badge).
 - [x] Spill: AT bulky(>150L) 1.3%; CH PostPac→Bulky(dmax>100) ~10%, +15.8% W/H>60.
 - [x] Write section → sections/guell.md (all 7 §4 elements, held/ceiling caveat threaded through every number). DONE.
 - [x] d5b SURGICAL REFRESH (corrected carrier-agnostic chargeable-weight lens, coverage now ≤100): updated profile-lens €/parcel only — AT Bulky-standard €4.45→€4.29, AT Large €4.68→€5.01, CH Large €22.96→€22.13; added CH Compact €7.08 / Bulky-standard €9.63 anchors to §3 cliff sentence (~37%→~47%). AT Compact €4.20 + count-of-cheapest 128,359 unchanged. Lane-level table/anatomy/held badge/analyst take untouched. No >100% workaround text was in the section (section quoted profile €/parcel, not coverage); proper ≤100 coverage now backs every quoted profile figure.
+
+## d5c — vs-today lens (v2 carrier overview)
+- [x] Read updated guell_card.md, existing sections/guell.md, verification/phase1/guell.md.
+- Card vs-today verdicts (vs UPS incumbent, not "no baseline"): CH Bulky 2–5kg €23.14 ⚠ HOLLOW +140% over UPS €9.66; CH Std 2–5kg €7.11 ✓ vs UPS €9.64; CH Std ≤1kg €7.08 ✓ vs UPS €9.52; CH Std 1–2kg €7.72 ✓ vs UPS €10.15; AT Bulky 5–10kg €4.59 ✓ vs UPS €16.51; AT Bulky 2–5kg €4.59 ✓ vs UPS €20.94. Four AT segments (Std ≤1/1–2/2–5kg, Bulky 1–2kg) carry NO today-verdict on card.
+- **Nuance vs brief:** brief said AT/CH have no today baseline at all; the card actually carries UPS today-figures on 6 of 10 wins (one HOLLOW). So the no-vs-today note applies only to the 4 card-silent AT segments, not the whole hand. Wrote it that way; kept held-engine caveat distinct from the no-vs-today note.
+- [x] Rewrote sections/guell.md: HELD headline unchanged; added "vs today" note (per-segment ✓/HOLLOW preserved + the no-today caveat for card-silent segments, distinct from held-engine risk). Services / What it carries / Why-mechanic / lever intact. DONE — Jebrim gates.

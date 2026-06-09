@@ -94,3 +94,11 @@ Suffixing alone doesn't decide which file is canonical. The discipline line does
 ## [[S052_98d4ec5e_switchboard-rebuild|S052]] amendment — 2026-05-23
 
 `status-sidecar.py` still mirrors both `comms/active.md` files into the switchboard dir for browser fetch (the http.server roots there). Mirror filenames unchanged (`state-comms-braindead.md`, `state-comms-gielinor.md`); their destination moved from `developer-braindead/experiments/visualizer/` to `switchboard/` per [[D-026_switchboard_promotion]]. Sandbox shape and concurrent-append discipline above are unchanged.
+
+## Amendment — 2026-06-09 (sid `6c5170d1`) — in-body convention: self-reference by sid8, not a guessed SNNN
+
+The §3 race-tolerance ("SNNN drifts from unique-key to approximate-temporal-ordering — acceptable") stands. But that tolerance enables a *mislabel* that surfaced in practice: because SNNN is allocated **at close**, a session that writes its own SNNN into a doc body / plan / comms *mid-work* is guessing — and the guess drifts. Observed: a plan body stamped `S174` for a session that closed `S178` (parallel sessions closed in between), and a reader (this session) relayed the wrong number.
+
+**Convention added:** during a session, refer to your *own* session by its **`sid8`** (stable from turn 1, the real identity) — never a guessed SNNN. SNNN is a **close-time filename label only**. Cross-references to *other, already-closed* sessions by SNNN remain correct (their number is fixed once closed). Codified in both close rituals' SNNN sections (`gielinor/spellbook/rituals/close-session.md`, `developer-braindead/spellbook/session-close.md`).
+
+This is the deliberately **cheap** fix (chosen over a pure-sid8 switch, which loses the chronological legibility SNNN buys, and over a mass-rename, which churns the whole `[[SNNN_...]]` wiki-link graph). No mechanism change, no hook, no rename. (Note this amendment header itself follows the convention — it cites the authoring session by sid8, not an SNNN it cannot yet know.)

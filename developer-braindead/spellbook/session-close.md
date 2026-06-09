@@ -46,6 +46,7 @@
 ## Notes
 
 - Quest naming is the step most likely to be skipped. Don't. The name is what makes the session findable months later.
+- **SNNN is assigned at close — refer to your own session by `sid8` mid-work, not a guessed SNNN.** You don't know your SNNN until this ritual's glob runs, so a mid-work body/comms/plan that writes its own "SNNN" is guessing, and the guess drifts (a plan stamped "S174" for a session that closed "S178"). Use the stable `sid8` for self-reference during the session; SNNN is a close-time filename label. Cross-refs to *already-closed* sessions by SNNN are fine. ([[D-024_parallel_player_coordination]] amendment.)
 - The "what crossed into main brain" check is load-bearing for [[D-001_two_brain_split]] / [[R-001]]. Even `none` must be stated explicitly.
 - If the session was unusually long or branchy, consider splitting into multiple SNNN entries. Rare; default to one.
 - The commit is the **last writing step** for a reason: every other artifact (quest log, respawn, plan, memory) needs to be on disk before the commit captures them. If a later thought surfaces, write a *new* commit — don't amend.

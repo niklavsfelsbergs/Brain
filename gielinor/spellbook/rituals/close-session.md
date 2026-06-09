@@ -31,6 +31,8 @@ Each session that runs close-session gets a sequential ID: `S001`, `S002`, etc. 
 - A quest file already carrying an SNNN keeps it. The SNNN identifies birth, not last touch. **Legacy filenames** (`S{NNN}_{YYYY-MM-DD}_{slug}.md` from before [[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]) keep their existing shape — no renaming pass.
 - Files moved to `completed/` keep their birth-SNNN prefix.
 
+**SNNN is a close-time label — refer to your *own* session by `sid8` mid-work.** SNNN is allocated *at close* (the glob above), so during a session you do not yet know it. **Never write your own session's SNNN into body text, wiki-links, or sibling artifacts (plans, notes, comms) mid-work** — you'd be guessing, and the guess drifts: a session can stamp "S174" in a doc body and then close as "S178" (parallel sessions closed in between). Use the **`sid8`** for self-reference during a session — it is stable from turn 1 and is the real identity ([[D-024_scope-git-commits-with-pathspecs-parallel-sessions]]). Cross-references to *other, already-closed* sessions by SNNN are fine (their number is fixed once closed). At close: the **filename** gets the SNNN; the **body** keeps the sid8.
+
 ## Steps
 
 For **each player** with a non-empty `quest-log/in-progress/`, run steps 1-6 in that player's namespace. Then run global steps 7-12.

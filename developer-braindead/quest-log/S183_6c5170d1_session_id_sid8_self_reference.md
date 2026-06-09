@@ -1,0 +1,11 @@
+# S183 — 2026-06-09 — Session-ID convention: self-reference by sid8, not a guessed SNNN ([[D-024_parallel_player_coordination|D-024]] refinement)
+
+Dev-brain via "lets develop gielinor" (sid `6c5170d1`), pivoted mid-conversation from a just-closed Jebrim session (S175, same sid) that hit the bug **live**: a sibling's plan body cited `S174` for a build that closed `S178`, and this session relayed the wrong number.
+
+- **Diagnosis.** SNNN is allocated *at close* (glob max+1), so a session can't know its own number mid-work — any in-body SNNN is a guess that drifts, and parallel sessions closing in between widen the gap. [[D-024_parallel_player_coordination]] §3 already accepts SNNN as "approximate-temporal-ordering" with `sid8` as the real key — so the *honesty* half was documented; the missing half was a convention to stop the **mislabel**.
+- **Weighed three options** (consultation): **pure-sid8** (rejected — loses the chronological legibility SNNN buys + a mass-rename churns the whole `[[SNNN_]]` wiki-link graph); a **timestamp ordering key** (deferred — best-of-both on ordering/uniqueness/stability, but a mixed-naming migration); **cheap tier (chosen)** — a convention + doc honesty, no mechanism change.
+- **Landed (doc-only):** the **in-body `sid8` convention** into both close rituals — [[close-session|gielinor/spellbook/rituals/close-session.md]] §SNNN + [[session-close|developer-braindead/spellbook/session-close.md]] Notes: *refer to your own session by sid8 mid-work; SNNN is a close-time filename label; cross-refs to already-closed sessions by SNNN are fine* — plus a dated [[D-024_parallel_player_coordination]] amendment recording the convention, the observed mislabel, and why the cheap fix beat pure-sid8 / mass-rename.
+- **Rejected "stamp SNNN at start"** (my own first instinct): it only relocates the allocation race to start-time and needs ritual plumbing — the convention is strictly cheaper and removes the guess entirely. Build-lesson logged.
+
+Cascade. [[close-session]] §SNNN; [[session-close]] Notes; [[D-024_parallel_player_coordination]] amendment; [[build-lessons]] +1; `respawn.md`; comms; this quest.
+Main-brain changes. One gielinor rulebook edit — `spellbook/rituals/close-session.md` (added the in-body sid8 convention to §SNNN). No `@import` / identity / `confirmed/` / hook touched; additive prose only.

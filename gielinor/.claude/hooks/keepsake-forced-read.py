@@ -20,9 +20,19 @@
 #                        (startup/resume/clear/compact); self-conditional for
 #                        dev-brain (the actor is unknown at SessionStart).
 #   UserPromptSubmit  -> ONCE per session, when the actor is resolvable, inline the
-#                        ACTIVE player's keepsake/current.md. This is the genuine
-#                        force for the player layer -- the content is literally in
-#                        context, so "this layer is empty" becomes a checkable claim.
+#                        ACTIVE player's keepsake/current.md AND their always-read
+#                        bank/domains/_index.md work-domain map (§Z.B). This is the
+#                        genuine force for the player layer -- the content is literally
+#                        in context, so "this layer is empty" becomes a checkable claim.
+#
+# THE DOMAIN-INDEX ARM (§Z.B -- the "just knows the map" guarantee). A player's
+# bank/domains/_index.md is the always-read map of their work domains (one line each);
+# the per-domain DIGESTS are cue-loaded separately (§Z.C). Like the keepsake, the index
+# is force-inlined every session so the player always knows the lay of their own land.
+# Per-player (resolvable only once the actor is named) -> it rides the UserPromptSubmit
+# arm beside the keepsake, in the SAME single emission, under the same once-per-session
+# sentinel. Budget-capped (INDEX_BYTE_CAP): an over-cap index has bloated into
+# digest-territory -> fall back to NAMING it (the digests belong cue-loaded, not here).
 #
 # WHY a second arm: SessionStart cannot know the player (the address arrives in the
 # first message, after SessionStart). The global keepsake is player-agnostic so it
@@ -77,6 +87,11 @@ PLAYER_KEEPSAKE = {
     "guthix": BRAIN_ROOT / "gielinor" / "deities" / "guthix" / "keepsake" / "current.md",
 }
 
+# The always-read domain map rides beside the keepsake (§Z.B). An index over this cap
+# has bloated past a map into digest-territory -> name it instead of inlining (the
+# digests load cue-side, §Z.C). The _about.md budget is "one line per domain".
+INDEX_BYTE_CAP = 4000
+
 # Actors with no per-player keepsake (global, injected at SessionStart, suffices) --
 # distinct from "" (unresolved, retry) so we don't keep re-firing on these. They
 # still get NO sentinel set, so a later player-address (mini-respawn) can inject.
@@ -109,6 +124,18 @@ def _keepsake_block(label: str, body: str) -> str:
     if is_empty:
         return f"[{label} keepsake/current.md -- present, no pins yet]"
     return f"[{label} keepsake/current.md -- pinned, in force this session]\n{body}"
+
+
+def _domains_index(kp: Path) -> Path:
+    """The active player's domain map lives beside the keepsake:
+    <player_root>/keepsake/current.md -> <player_root>/bank/domains/_index.md.
+    Deriving it (vs a second map) means a new domains layer needs no hook edit."""
+    return kp.parents[1] / "bank" / "domains" / "_index.md"
+
+
+def _domains_block(label: str, body: str) -> str:
+    return (f"[{label} bank/domains/_index.md -- your always-read work-domain map; "
+            f"per-domain digests load on cue]\n{body}")
 
 
 def _emit(event: str, text: str) -> None:
@@ -145,7 +172,23 @@ def _user_prompt(payload: dict, sid8: str) -> int:
     if kp is None:
         return 0  # unknown actor -> global (SessionStart) already covered it
 
-    _emit("UserPromptSubmit", _keepsake_block(actor.capitalize(), _read(kp)))
+    label = actor.capitalize()
+    blocks = [_keepsake_block(label, _read(kp))]
+
+    # Domain-index arm (§Z.B): inline the player's always-read work-domain map in the
+    # SAME emission, budget-capped. Missing file (zezima/guthix with no domains yet) ->
+    # _read returns "" -> skipped cleanly. Over-cap -> name it, don't inline.
+    di_body = _read(_domains_index(kp))
+    if di_body:
+        if len(di_body.encode("utf-8")) <= INDEX_BYTE_CAP:
+            blocks.append(_domains_block(label, di_body))
+            log_event("forced-read", "domain-index", sid8=sid8, detail=actor)
+        else:
+            blocks.append(f"[{label} bank/domains/_index.md -- present but over "
+                          f"budget ({len(di_body.encode('utf-8'))}B); read it directly]")
+            log_event("forced-read", "domain-index-overbudget", sid8=sid8, detail=actor)
+
+    _emit("UserPromptSubmit", "\n\n".join(blocks))
     log_event("forced-read", "player-inject", sid8=sid8, detail=actor)
     try:
         if sentinel:

@@ -49,9 +49,10 @@ except Exception:
 # The domain table. Import defensively — a broken/missing registry must not break
 # the hook (it just means no domain fires).
 try:
-    from cue_registry import DOMAINS
+    from cue_registry import DOMAINS, DEFAULT_SKIP_ACTORS
 except Exception:
     DOMAINS = []
+    DEFAULT_SKIP_ACTORS = ("braindead",)
 
 STATUS_DIR = Path(os.path.expanduser("~")) / ".claude" / "status"
 
@@ -81,15 +82,104 @@ except Exception:
         return _actor_for(sid8)
 
 
-def _compiled():
+def _compiled(domains):
     """Compile each domain's patterns once. Bad patterns drop that entry, not the hook."""
     out = []
-    for d in DOMAINS:
+    for d in domains:
         try:
             rx = re.compile("|".join(d["patterns"]), re.IGNORECASE)
         except Exception:
             continue
         out.append((d, rx))
+    return out
+
+
+# --- §Z.C: per-player domain-digest auto-discovery ---------------------------
+# The domain-cue path discovers the ACTIVE player's bank/domains/*.md DIGESTS,
+# reads their frontmatter `patterns`, and inlines the matching digest (the §X.3
+# force-inline, but discovered-not-hand-listed + digest-not-whole-notes). Adding a
+# domain = alching drops a digest file; no hook/registry edit. The global registry
+# above stays for EXTERNAL/specialist domains (shipping repo); per-player digests
+# are the new primary for a player's OWN topics. See gielinor/players/<p>/bank/
+# domains/_about.md + developer-braindead/bank/plan.md §Z.
+
+def _player_root(actor: str):
+    """The on-disk home of an actor that may bear a bank/domains/ layer — a player
+    (players/<actor>) or a deity (deities/<actor>). None if neither exists."""
+    for sub in ("players", "deities"):
+        p = GIELINOR_ROOT / sub / actor
+        if p.is_dir():
+            return p
+    return None
+
+
+def _parse_frontmatter(path: Path) -> dict:
+    """Minimal stdlib reader for the digest frontmatter fields this hook needs
+    (`patterns` list + `domain`/`title` scalars). NOT a general YAML parser — it
+    handles the flat `key: scalar` / `key:`-then-`  - item` shape the digest schema
+    uses. A malformed file returns {} (the digest drops out; the hook never breaks)."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+    if not text.startswith("---"):
+        return {}
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return {}
+    data, cur_key = {}, None
+    for raw in parts[1].splitlines():
+        if not raw.strip():
+            continue
+        item = re.match(r"^\s+-\s+(.*)$", raw)
+        if item and cur_key:
+            if isinstance(data.get(cur_key), list):
+                data[cur_key].append(item.group(1).strip())
+            continue
+        kv = re.match(r"^([\w-]+):\s*(.*)$", raw)
+        if kv:
+            key, val = kv.group(1), kv.group(2).strip()
+            cur_key = key
+            data[key] = val if val else []
+    return data
+
+
+def _discover_digests(actor: str) -> list:
+    """Discover the active player's bank/domains/<slug>.md digests as domain entries
+    compatible with the render/inline machinery. `_`-prefixed files are infra
+    (skipped); a digest with no `patterns` can't be cued (skipped). The digest file
+    itself is the `inline_homes` payload — its body force-inlines on a pattern match,
+    once per session, byte-capped, exactly like a registry inline_home."""
+    if not actor or actor in ("", "braindead"):
+        return []
+    root = _player_root(actor)
+    if root is None:
+        return []
+    ddir = root / "bank" / "domains"
+    if not ddir.is_dir():
+        return []
+    out = []
+    for f in sorted(ddir.glob("*.md")):
+        if f.name.startswith("_"):
+            continue
+        fm = _parse_frontmatter(f)
+        pats = fm.get("patterns") or []
+        if not isinstance(pats, list) or not pats:
+            continue
+        slug = fm.get("domain") or f.stem
+        title = fm.get("title") or slug
+        rel = f.relative_to(GIELINOR_ROOT).as_posix()
+        out.append({
+            "name": f"domain-{slug}",
+            # frontmatter patterns are literal cue substrings (per the _about), NOT
+            # regex like the registry's — escape them so a '+'/'.' in a topic is matched literally.
+            "patterns": [re.escape(p) for p in pats if isinstance(p, str) and p],
+            "message": (f"Domain digest detected (\"{{matched}}\") — {title}. Your "
+                        f"synthesized digest ({rel}) is authoritative; don't re-derive "
+                        "this domain from memory."),
+            "inline_homes": [rel],
+            "skip_actors": DEFAULT_SKIP_ACTORS,
+        })
     return out
 
 
@@ -216,8 +306,12 @@ def main() -> int:
     # get the lighter name-nudge, exactly like keepsake-forced-read skips sub-agents.
     is_subagent = bool(payload.get("agent_type"))
 
+    # Static registry domains (external/specialist) + the active player's
+    # auto-discovered own-topic digests (§Z.C).
+    domains = list(DOMAINS) + _discover_digests(actor)
+
     blocks = []
-    for d, rx in _compiled():
+    for d, rx in _compiled(domains):
         skip = tuple(d.get("skip_actors", ("braindead",)))
         if actor in skip:
             continue

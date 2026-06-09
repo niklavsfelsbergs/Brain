@@ -88,6 +88,13 @@ def main():
               ctx and "Shipping Data Mart" in ctx)
         check("3 jebrim keepsake labelled in-force", ctx and "Jebrim keepsake/current.md" in ctx)
         check("3 sentinel written", (tmp / "cccc3333.fread").exists())
+        # §Z.B: the always-read domain map rides in the SAME emission (real _index.md).
+        check("3 jebrim domain-index inlined (real file read)",
+              ctx and "Jebrim bank/domains/_index.md" in ctx)
+        check("3 jebrim domain-index carries the map (Digested domains)",
+              ctx and "Digested domains" in ctx)
+        check("3 keepsake AND domain-index in one emission",
+              ctx and "Jebrim keepsake/current.md" in ctx and "Jebrim bank/domains/_index.md" in ctx)
 
         # 4. Second prompt same session (sentinel present) -> silent
         c, out = run({"hook_event_name": "UserPromptSubmit", "session_id": sid,
@@ -118,6 +125,23 @@ def main():
                       "prompt": "the flat"}, actor="zezima", tmp=tmp)
         ctx = parse_ctx(out)
         check("8 zezima keepsake content inlined", ctx and "Zezima keepsake/current.md" in ctx)
+        # §Z.B: zezima has no bank/domains/_index.md yet -> no domain block, no crash.
+        check("8 zezima no domain-index block (none on disk)",
+              ctx and "bank/domains/_index.md" not in ctx)
+
+        # 11. §Z.B over-budget: a bloated index is NAMED, not inlined (digest-territory).
+        orig_cap = kfr.INDEX_BYTE_CAP
+        kfr.INDEX_BYTE_CAP = 10  # force the real jebrim index over cap
+        try:
+            c, out = run({"hook_event_name": "UserPromptSubmit", "session_id": "9999cccc-x",
+                          "prompt": "scm work"}, actor="jebrim", tmp=tmp)
+            ctx = parse_ctx(out)
+        finally:
+            kfr.INDEX_BYTE_CAP = orig_cap
+        check("11 over-budget index named not inlined",
+              ctx and "over budget" in ctx and "Digested domains" not in ctx)
+        check("11 over-budget still inlines the keepsake",
+              ctx and "Jebrim keepsake/current.md" in ctx)
 
         # 9. Malformed stdin -> exit 0, no output
         buf = io.StringIO()

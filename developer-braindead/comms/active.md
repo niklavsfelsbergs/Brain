@@ -4,47 +4,7 @@
 >
 > See `_about.md` for the protocol and entry kinds.
 
-> **Rotated 2026-05-29 — older entries bulk-moved to `active-2026-05-29.md`** (prior rotation 2026-05-27 → `active-2026-05-27.md`). Moved 52 of 97 entries; kept the most recent 45 below. Read the tail by seeking to EOF — a bare `Read` returns the *oldest* first. Nothing deleted (per `_about.md` → Rotation).
-
-> **Rotated 2026-05-30 — older entries bulk-moved to `active-2026-05-30.md`** (prior: `active-2026-05-29.md`, `active-2026-05-27.md`). Kept the recent tail below; seek to EOF for the live tail. Nothing deleted (per `_about.md` → Rotation).
-
-> **Rotated 2026-05-31 — 6 older entries bulk-moved to `active-2026-05-31.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-05-31 — 4 older entries bulk-moved to `active-2026-05-31.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-01 — 4 older entries bulk-moved to `active-2026-06-01.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-01 — 4 older entries bulk-moved to `active-2026-06-01.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-01 — 5 older entries bulk-moved to `active-2026-06-01.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-01 — 3 older entries bulk-moved to `active-2026-06-01.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-01 — 2 older entries bulk-moved to `active-2026-06-01.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-02 — 2 older entries bulk-moved to `active-2026-06-02.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-02 — 1 older entries bulk-moved to `active-2026-06-02.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-02 — 1 older entries bulk-moved to `active-2026-06-02.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-02 — 1 older entries bulk-moved to `active-2026-06-02.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-02 — 1 older entries bulk-moved to `active-2026-06-02.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-02 — 20 older entries bulk-moved to `active-2026-06-02.md`** (auto-rotation, comms_append.py). Kept the most recent 30 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-04 — 10 older entries bulk-moved to `active-2026-06-04.md`** (auto-rotation, comms_append.py). Kept the most recent 40 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-09 — 1 older entries bulk-moved to `active-2026-06-09.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-09 — 1 older entries bulk-moved to `active-2026-06-09.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-09 — 1 older entries bulk-moved to `active-2026-06-09.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-09 — 1 older entries bulk-moved to `active-2026-06-09.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
-
-> **Rotated 2026-06-09 — 8 older entries bulk-moved to `active-2026-06-09.md`** (auto-rotation, comms_append.py). Kept the most recent 42 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
+> **Rotated through 2026-06-09** — older entries bulk-moved to `comms/archive/active-*.md` (2026-05-27 … 2026-06-09). Most recent entries kept below; seek to EOF for the live tail. Nothing deleted (per `_about.md` → Rotation). Prior per-rotation banners collapsed S165.
 
 [2026-06-02 11:55] braindead-543c6caf CLOSING
   Completed S145 â€” knowledge-loading & rule-adherence: audit + online research, anti-deterioration plan, Phase 0 instruments, Phase 1 design + grant + Stage A. Diagnosis: triggered knowledge/rules hold, decided ones drift; the brain gets dumber as it gets richer (monotonic growth -> heavier always-on load). brain-weight.py measured ~49.2k always-on/session, @import chain tripled 8k->23k/13d. D-032: principal granted Braindead unrestricted edit reach (rulebook + hook floor; actor==braindead bypass on block-confirmed/block-deletes, floor intact for all others; verified+live). Stage A of the @import trim: chain 23,295->21,304. Re-verified+hardened S144's domain-cue. Build-lessons: the grep-before-build lesson recurred (caught by habit not by the on-disk note) â€” capture != trigger; + the trim/retrieval coupling principle.

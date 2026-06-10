@@ -14,9 +14,11 @@ patterns:
   - pcs
 corpus:
   - bank/notes/projects/2026-06-09-production-times-domain-census.md
+  - bank/notes/projects/carrier-otd-proxy-sla-method.md
+  - bank/notes/projects/2026-06-10-received-by-carrier-scan-semantics-and-truck-scan-coverage.md
 specialist: null
-freshness: 2026-06-09
-synthesized: 2026-06-09
+freshness: 2026-06-10
+synthesized: 2026-06-10
 ---
 
 # Production times & fulfillment timing
@@ -27,7 +29,7 @@ Jebrim's **throughput / timing pillar** — how long an order takes through the 
 - **Queue:** `order_created` (sales_fact) → `pcs_created` (production start).
 - **Production:** `MIN(pcs_created)` → `MAX(shipped_at)` — *the PCS production time the whole operations/ cluster measures*.
 - **Handoff:** last `SHIPPED` → first carrier OUTBOUND scan.
-- **Transit:** first OUTBOUND → last DELIVERED (the transit-SLA stage).
+- **Transit:** first OUTBOUND → last DELIVERED (the transit-SLA stage). **Basis caveat:** `received_by_carrier_ts` is an *origin* scan (our dock, brackets `truckload_closed_ts`) — received→delivered bundles our linehaul + carrier transit; comparable to our own empirical SLA, NOT to carrier contractual SLA. Per-carrier scan trust split (OnTrac per-parcel, most manifest-batch, Asendia BROKEN) → [[2026-06-10-received-by-carrier-scan-semantics-and-truck-scan-coverage]].
 
 ## Metrics
 - Production in **working days (wd)** (primary; also fd calendar, sd scheduled=unreliable/excluded), per (site × product × date) in `order_flagging.pcs_production_times`: avg/median/min/max + **P85/P95**, all **volume-weighted**. Default target **3 wd** (`Flagging config.xlsx` → "Production Times Standard"; PL→"PCS PL", US→"PCS CMH").

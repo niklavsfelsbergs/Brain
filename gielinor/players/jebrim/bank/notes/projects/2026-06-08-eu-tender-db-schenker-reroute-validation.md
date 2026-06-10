@@ -1,5 +1,7 @@
 # EU Tender 2026 — DB Schenker re-routing: contract validation findings
 
+> ⚠ **SUPERSEDED on numbers (2026-06-10).** Every per-slice figure below is pre-girth-confirmation (maersk-3.1.0, pure-girth): the L+2W+2H ruling (maersk-3.2.0) collapsed the Maersk lane — current state is 4,490 moved (Hermes 4,463 / Maersk 27), reroute saving €107,684. Current numbers + dim-provenance: [[2026-06-10-db-schenker-reroute-package-dims-and-savings]]. The two-layer eligibility method and validation workflow below remain valid.
+
 > Draft (harvest, [[S164_79537cb3_db-schenker-rerouting-validation|S164]] 2026-06-08). Source: `bi-analytics .../2_analysis/routing_2026q1/validation/db_schenker/`. Cross-ref [[eu_tender_2026]] + S150 final-setups. Promote at next Jebrim alch if still load-bearing.
 
 **Context.** The final routing moves 7,899 of DB Schenker's 8,951 Q1 parcels off (it's low-volume but expensive freight); 7,593 go to the two NEW offers — Hermes (4,746) + Maersk EU (2,847). Validated whether the contracts can actually carry them.

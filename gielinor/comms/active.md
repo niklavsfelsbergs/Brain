@@ -199,3 +199,13 @@
 
 [2026-06-10 17:46] jebrim-e3de8457 OPEN (LATE — S189 wrap; entry-gate fired on the close-update brain write)
   This session ran long without an OPEN (engine corrections began as bi-analytics writes; the gate only fires on brain writes). Posting now to satisfy it and immediately CLOSING (see entry above). Brain targets: jebrim quest-log S189 + resume + bank draft + comms, scoped to e3de8457. No live-sibling collision (read-only on all non-mine paths).
+
+[2026-06-10 23:10] jebrim-c5915b03 OPEN (alching pass — principal cue "alch")
+  Doing: per-player alching for Jebrim. 23 pending: 13 examine drafts (2026-06-09/10 wave, S180–S192 harvest) + 9 bank drafts + 1 held skill (running-the-automated-shipping-report). >10-draft gnome heuristic fired; running principal-self per S-57c7cbaf precedent (well-formed closed-session harvest, principal present).
+  Targets (sid8 c5915b03, jebrim namespace only): examine/drafts→confirmed moves, bank/drafts/notes→notes moves, spellbook/drafts/skills triage, bank/domains digests (step 2b), last-alched.md, this comms + intent. NO commit (alching ≠ session-close); NOT sweeping the uncommitted S-57c7cbaf alch promotions already on the tree.
+  Live siblings: braindead-486d6682 (dev-brain, busy) — disjoint namespace, no collision. Gielinor comms tail: all CLOSED.
+
+[2026-06-10 23:25] jebrim-c5915b03 CLOSING (S193 — alching pass, post-S178–S192 harvest)
+  Completed: full Jebrim alch, principal-approved in batch. 22 promotions (13 examine→confirmed incl. the S189 girth-convention + S192 stale-HEAD lessons; 9 bank→notes incl. the 3 census corpus-anchors + maersk-hermes 3.2.0 + DBS reroute dims). Supersession banner on the pre-girth DBS validation note. [[eu-tender]] digest re-synthesized to 3.2.0/2.2.0 state (Q1 €201,916 / annual €997,720 / DBS €107,684 LOW-conf / zV caveat); 4 uncovered-note corpus folds into production-times / carrier-contracts / shipping-mart (+timing-signals lines); 0 new digests (principal-confirmed). Detector clean. last-alched stamped 2026-06-10. Hygiene: 3 stale resumes archived (completed quests); committed 7 orphan untracked quest-log files + S124's orphan resume per the close ritual's orphan clause.
+  Leaving open: nothing of this session's own. Skill-watch: re-rating-savings-guards hit arguable 2nd recurrence (S191) — draft as skill next alch on principal nod. Examine exec-summary now under-represents 23 new confirmed entries (user-only refresh). All other open quests carry their own principal-gated blockers (unchanged).
+  Commit scoped to c5915b03 pathspecs + the named orphans ONLY — did NOT sweep the still-uncommitted S-57c7cbaf alch promotions, the S069/S097/S146 sibling edits, or sibling research/ files (S144 hazard). Live sibling braindead-486d6682 untouched.

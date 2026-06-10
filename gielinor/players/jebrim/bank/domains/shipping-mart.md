@@ -18,9 +18,12 @@ corpus:
   - bank/notes/workflow/shipping-agent-skills-loading.md
   - bank/notes/projects/dashboard_and_shipping_agent_convergence.md
   - bank/notes/projects/shipping-mart-v1-freeze-reconciliation-2026-05-25.md
+  - bank/notes/projects/shipping-agent-quality-assessment-2026-05-24.md
+  - bank/notes/projects/shipping-agent-onboarding-message.md
+  - bank/notes/projects/2026-06-10-received-by-carrier-scan-semantics-and-truck-scan-coverage.md
 specialist: shipping-agent (subagent_type) — loads picanova/shipping-agent how_to.md §0 + reference/ by construction
-freshness: 2026-05-27
-synthesized: 2026-06-09
+freshness: 2026-06-10
+synthesized: 2026-06-10
 ---
 
 # Shipping data mart — the gold `shipping_mart` + the shipping-agent
@@ -32,6 +35,8 @@ The gold layer is the **entire query surface** — four facts, no joins outside 
 - `fact_shipment_cost_summary` — per-shipment 11-bucket cost pivot; **invariant `SUM(buckets) == total_eur == real_shipping_cost_eur`** to the cent. `bkt_discounts`/`bkt_credit_note` negative; tax + customs excluded (pass-through).
 - `fact_shipment_orderitems` — line-item rollup per shipment.
 - `fact_shipment_invoice_lines` — per-charge-line invoice detail with `charge_bucket`.
+
+**Timing signals on `fact_shipments` (2026-06-10):** `truckload_id`/`_assigned_ts`/`_closed_ts` = internal PCS truckload chain (PL ~93%, CMH ~29%, PX ~0%, Wolfen/external 0% by design — read per-site); `received_by_carrier_ts` = real but *origin-side* carrier scan (MIN of OUTBOUND/TRANSIT/PICKED_UP; PICT+PicaAPI only, ~2025-10-24-forward; batch-shaped for most carriers, Asendia BROKEN) → [[2026-06-10-received-by-carrier-scan-semantics-and-truck-scan-coverage]]. None of the three are in the stale `reference/tables.md`.
 
 `map_shipment_key`/`dim_shipping_providers` not needed (data is on `fact_shipments`). `fact_truck_charges` is **out of the agent's gold scope** but exists for linehaul sizing → [[2026-06-09-fact-truck-charges-navigation]].
 

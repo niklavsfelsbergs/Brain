@@ -21,6 +21,7 @@ corpus:
   - bank/notes/projects/2026-06-02-fif-vat-subtotal-grain.md
   - bank/notes/projects/2026-06-09-fif-report-vs-ups-portal-export.md
   - bank/notes/projects/2026-06-09-fact-truck-charges-navigation.md
+  - bank/notes/projects/shipping-contract-corpus.md
 specialist: shipping-agent (full-access tier reaches bronze/silver raw invoice tables for reconciliation)
 freshness: 2026-06-09
 synthesized: 2026-06-09

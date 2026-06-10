@@ -56,3 +56,11 @@ Maersk replied: **girth = L + 2W + 2H** (the rate card's `L+2W+2H` column = `len
 - Rebuilt routing report + split, DB Schenker validation (4,490, 100% eligible), decision report, carrier overview + exec brief. Commit **`a96e449`**.
 
 **Girth question now CLOSED.** Remaining open: management deck refresh (now on the firm €201,916), and the **committed Hermes test suite is red** (21 fixtures still assert pre-2.2.0 fuel — pre-existing from `052d3c4`, Niklavs' to fix/commit).
+
+## Update 2 — all 4 principal-facing reports current + the "not DBS-only" finding
+
+Niklavs cares about **4 reports**: carrier overview, decision report, routing report (Q1), and the **annual report**. First three were rebuilt on 3.2.0 in the cascade above; the **annual report** (`annual_2026/`) I'd missed — rebuilt it: `q1_base.py → build_annual.py → annual_report.py` (skipped `aggregates_2025.py`, which reads `real_*` actuals + volumes, unaffected by engine corrections). **Annual saving €997,720/yr (7%)**, band €969k–€1,026k; same split (DBS reroute €525,360 / 54% low-confidence). q1_base reconciled to the 3.2.0 routing within €1.
+
+**`annual_2026/` is entirely UNTRACKED in git** (never committed by anyone) — flagged to Niklavs; commit deferred to him (the other 3 reports' regens are committed in `a96e449`). The annual rebuild sits on disk, uncommitted.
+
+**Key finding — the Maersk girth change is NOT DBS-only.** Measured on the 3.2.0 Q1 cost matrix: **20,171** parcels lose Maersk-EU eligibility vs pure-girth, of which **13,170 (65%) are currently on NON-DBS carriers** (UPS/other incumbents) and 7,001 on DBS. So the bigger routing effect is whole-book oversize parcels that the tender would have moved to Maersk-EU re-homing to pricier carriers — which is why the saving fell ~€75k, beyond the DBS slice. (This is why all 4 reports, not just the DBS validation, needed the redo.)

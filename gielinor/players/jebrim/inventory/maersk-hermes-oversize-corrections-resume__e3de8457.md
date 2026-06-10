@@ -1,8 +1,8 @@
 ---
 quest: S189_maersk-hermes-oversize-corrections
 sid8: e3de8457
-ts: 2026-06-10 17:20
-open_dep: none blocking — girth question RESOLVED (L+2W+2H, encoded 3.2.0). Remaining: management-deck refresh (optional, Niklavs-gated) + Hermes red fixtures (Niklavs' to fix)
+ts: 2026-06-10 17:46
+open_dep: none blocking — girth RESOLVED (L+2W+2H, 3.2.0); all 4 reports current. Remaining: annual_2026/ untracked (commit deferred to Niklavs) + management-deck refresh + Hermes red fixtures (his)
 ---
 
 # Resume — Maersk + Hermes oversize corrections + DB Schenker savings split
@@ -13,9 +13,13 @@ in-progress (all engine work + full cascade shipped + committed; girth question 
 ## Where we are
 **Girth confirmed = L+2W+2H** by Maersk → `maersk-3.2.0` (ceiling `length_plus_girth_cm ≤ 300`). Full cascade re-run on 3.2.0 + committed `hermes-2.2.0` (flat-7% fuel). Final tender Q1 saving **€201,916 (6.8%)**; DB Schenker reroute **€107,684 (53%, low-confidence)**; 4,490 moved off DB Schenker, 4,191 stay freight. Routing report (+ split), DB Schenker validation, decision report, carrier overview all rebuilt + committed. bi-analytics commits this thread: `fceacc6`, `6833671`, `052d3c4` (Niklavs' Hermes), `a96e449` (girth 3.2.0).
 
+## All 4 principal-facing reports — current on 3.2.0/2.2.0
+Carrier overview ✅, decision report ✅, routing report Q1 ✅ (€201,916 / 6.8%), annual report ✅ (€997,720/yr / 7%). Annual rebuilt via `q1_base.py → build_annual.py → annual_report.py`.
+
 ## Next concrete step (Niklavs-gated, optional)
-1. **Management deck** (`management_briefing/`, untracked) — refresh to the firm **€201,916** + the confidence split, when ready to present. No longer blocked on anything.
-2. **Hermes test suite is red** — 21 fixtures assert pre-2.2.0 fuel (0% Jan/Feb); the `hermes-2.2.0` flat-7% engine is correct, the assertions are stale. Niklavs' change (`052d3c4`) — his to update/commit (offered; he committed 2.2.0 without the fixture pass).
+1. **Commit `annual_2026/`** — entirely untracked (never committed). Recommend committing its code (`build_annual.py`, `q1_base.py`, `aggregates_2025.py`, `annual_report.py`) + `annual_report.html`, gitignore the parquet. Deferred to Niklavs.
+2. **Management deck** (`management_briefing/`, untracked) — refresh to the firm **€201,916** + the split. No longer blocked.
+3. **Hermes test suite is red** — 21 fixtures assert pre-2.2.0 fuel; the `hermes-2.2.0` flat-7% engine is correct, assertions stale. Niklavs' `052d3c4` — his to update/commit.
 
 ## Files / paths to read first (bi-analytics, NOT brain)
 1. `2_analysis/carriers/maersk/constants.py` (the 3.2.0 L+2W+2H girth block) + `calculate.py` `_decide_eligibility`.

@@ -19,6 +19,13 @@ open_dep: bi-analytics final_report/ uncommitted — awaiting principal review +
 - Hardcoded prose claims (not from stats): DPD new offer "≈19% more expensive" (S170 +18.8%), UPS migration "~62%"
   (verified 61.5% in verify_report.py), "200+ rate checks" (D3 counted 215+), "10 carriers assessed".
 
+## Hermes dependency (post-close addition, 2026-06-11)
+86% of Hermes' value (€478,669 of €558,039/yr vs today) is DBS-origin; ex-DBS €79,370/yr on ~8.3k parcels — not
+slot-worthy alone. Report now sequences the DBS dims check as PREREQUISITE for the Hermes signature (asks #2 vs #4;
+warn callout in §02). Companion scripts: final_report/{hermes_counterfactual,hermes_by_packagetype}.py. The dims
+branch logic: as-recorded → Hermes earns slot; smaller → saving re-homes to DHL/Maersk; larger → stays freight;
+ops-no → stays freight. Three of four branches end without Hermes.
+
 ## Next concrete step
 1. Niklavs reviews final_report.html in browser (visual NOT eyeballed by me — data layer verified). Expect tier-name
    and prose iteration rounds.

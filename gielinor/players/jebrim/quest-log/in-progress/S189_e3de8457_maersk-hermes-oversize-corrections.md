@@ -42,3 +42,17 @@ Carrier replies (Maersk + Hermes, 2026-06-10) on the EU-tender oversize open que
 - Overstated the Hermes bulky-surcharge novelty before checking it was already encoded (self-caught).
 - Called pure-girth "the only coherent reading" overconfidently; Niklavs' "would it even make sense?" pushback → checking industry convention reversed it to genuinely-ambiguous → ask. (→ examine draft + memory.)
 - The full carrier-overview rebuild surfaced the 450 L leak the targeted routing regen missed — a render-from-source isn't clean while a retired constant still resolves.
+
+## Update (continuation, same session) — Maersk girth confirmed = L+2W+2H
+
+Maersk replied: **girth = L + 2W + 2H** (the rate card's `L+2W+2H` column = `length_plus_girth_cm`) — the **downside reading**, and the one I'd initially (wrongly) dismissed as incoherent. Asking was right; the answer was the non-obvious branch. Encoded as **`maersk-3.2.0`** (ceiling = `length_plus_girth_cm ≤ 300`, was pure-girth in 3.1.0); fixtures 18/18 (BG oversize now ceiling-rejects — band unreachable; CH/DE-fuel dims kept under the ceiling).
+
+**Consequence:** most per-country EU oversize surcharges become **unreachable** (their l2w2h standard threshold ≤ the 300 ceiling) → the Maersk EU oversize lane is essentially standard-parcels-only.
+
+**Re-ran the full cascade** on 3.2.0 + the now-committed `hermes-2.2.0` flat-7% fuel (Niklavs' change, `052d3c4`). New numbers:
+- Tender Q1 saving **€276,951 → €201,916 (6.8%)**.
+- DB Schenker reroute saving **€168,585 → €107,684 (53% of total, still the low-confidence slice)**.
+- Parcels moved off DB Schenker **6,606 → 4,490**; DB Schenker freight **2,048 → 4,191** (must-freight 467).
+- Rebuilt routing report + split, DB Schenker validation (4,490, 100% eligible), decision report, carrier overview + exec brief. Commit **`a96e449`**.
+
+**Girth question now CLOSED.** Remaining open: management deck refresh (now on the firm €201,916), and the **committed Hermes test suite is red** (21 fixtures still assert pre-2.2.0 fuel — pre-existing from `052d3c4`, Niklavs' to fix/commit).

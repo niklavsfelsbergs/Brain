@@ -133,7 +133,7 @@ Every modelling assumption in force, for the end-of-project assumptions summary.
 6. **DHL thin-flat Sperrgut waiver** — ORWO <1 cm calendars (possibly thin canvases generally); pending Stefan. Upside-only: if it lands, the €2.31M Q1 Bulky drops. Default = price full Bulky.
 
 ## Standing audit items (from the red-team, still open)
-- **A0** — Maersk scope: live mart shows MAERSKUK (32k) > MAERSKFR (28k); confirm UK is out of tender scope.
+- **A0 — RESOLVED (2026-06-10):** MAERSKUK is a separate deal, **out of EU-tender scope**; the FR-only baseline is correct (matches `open_questions/maersk.md`). No action.
 - **A1–A5** — saving leans on unvalidatable Hermes/Maersk-EU engines (face value); the scenario selector (`mandatory_saving`) has no per-parcel do-nothing floor. €377k is conservative on *peak* but exposed on *fuel + engine validity*.
 
 ## Build checklist (4th report — annual_2026/)

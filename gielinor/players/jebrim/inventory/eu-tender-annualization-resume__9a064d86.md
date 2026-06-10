@@ -25,4 +25,4 @@ Both engine rebuilds (oversize + Hermes flat-7%) are done and committed. The ann
 ## Watch-outs
 - bi-analytics is a SEPARATE repo — pathspec-scoped commits only, principal-gated, never push.
 - The annualization note itself was updated this session and committed in this close — it's current.
-- A0 (Maersk MAERSKUK scope) is still unconfirmed — flag it doesn't silently distort the annual Maersk lever.
+- A0 (Maersk MAERSKUK scope) **RESOLVED 2026-06-10**: MAERSKUK is a separate deal, out of tender scope; FR-only baseline correct. No longer an open item.

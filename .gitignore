@@ -30,6 +30,9 @@ switchboard/ritual-events.ndjson
 switchboard/ritual-events.ndjson.tmp.*
 switchboard/adherence-snapshots.ndjson
 switchboard/state-shipping-agents.json
+switchboard/state.ndjson.tmp.*
+# S187: archived rotations of gitignored telemetry stay untracked too
+switchboard/archive/*.ndjson
 developer-braindead/experiments/visualizer/state.ndjson
 
 # Transient cockpit diagnostic logs (debug-only writers removed; files regenerable)

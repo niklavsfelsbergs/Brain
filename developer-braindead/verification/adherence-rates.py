@@ -53,6 +53,7 @@ mutates the event log). Safe to run any time.
 
 import argparse
 import json
+import re
 import sys
 import time
 from collections import Counter, defaultdict
@@ -82,10 +83,31 @@ _BOUNDARY_HOOKS = {                  # sub-agent off-surface write caught (block
 }
 _ADVISORY_CUE_PREFIXES = ("domain-cue", "grounding-cue", "shipping-cue")
 
+# Synthetic sid8s the boundary/live-fire test suites append to the LIVE event
+# log (S187 finding: ~173 polluted events across 5 test days — 78% of the raw
+# draft-redirect count was test fixtures). Several are hex-shaped (aaaa1111,
+# deadbe99), so real-vs-synthetic cannot be inferred from sid shape alone; this
+# is an explicit denylist of the known fixture conventions. Filtered by default;
+# --include-synthetic restores the raw stream. The root fix (tests targeting a
+# temp events file) is tracked separately — until then this keeps the rates
+# honest. NOTE: rates may differ slightly from pre-S187 snapshots, which were
+# computed on the raw stream.
+_SYNTHETIC_SID_RE = re.compile(
+    r"^(lf[0-9a-z]*|livefire|test1234|sess[a-z0-9]*|scm(?:one|two)00"
+    r"|aaaa\d+|bbbb\d+|cccc\d+|dddd\d+|7777aaaa|9999cccc|zzzz9999"
+    r"|zv_.*|deadbe99)$"
+)
 
-def _load(events_path: Path, days: float | None) -> list[dict]:
+
+def is_synthetic_sid(sid8: str | None) -> bool:
+    return bool(sid8) and bool(_SYNTHETIC_SID_RE.match(sid8))
+
+
+def _load(events_path: Path, days: float | None,
+          include_synthetic: bool = False) -> list[dict]:
     """Parse the event stream, windowed to the last `days` (None = all time).
-    Malformed lines are skipped, mirroring ritual-stats.py's tolerance."""
+    Malformed lines are skipped, mirroring ritual-stats.py's tolerance.
+    Synthetic test-fixture sessions are dropped unless include_synthetic."""
     if not events_path.exists():
         return []
     cutoff = (time.time() - days * 86400) if days else None
@@ -99,6 +121,8 @@ def _load(events_path: Path, days: float | None) -> list[dict]:
         except Exception:
             continue
         if cutoff is not None and float(ev.get("ts") or 0) < cutoff:
+            continue
+        if not include_synthetic and is_synthetic_sid(ev.get("sid8")):
             continue
         out.append(ev)
     return out
@@ -387,13 +411,15 @@ def main() -> int:
                     help="path to adherence-snapshots.ndjson")
     ap.add_argument("--trend", action="store_true",
                     help="print the snapshot time-series and exit")
+    ap.add_argument("--include-synthetic", action="store_true",
+                    help="keep test-fixture sessions (raw stream; default drops them)")
     args = ap.parse_args()
 
     if args.trend:
         print("\n".join(trend(args.snapshots)))
         return 0
 
-    events = _load(args.events, args.days)
+    events = _load(args.events, args.days, args.include_synthetic)
     m = compute(events)
     window = f"last {args.days:g} days" if args.days else "all time"
     print("\n".join(report(m, window)))

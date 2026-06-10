@@ -46,6 +46,13 @@ CHAT_SIZE_MAX = 1_000_000     # bytes — truncate when exceeded
 CHAT_LINES_MAX = 5000         # lines — truncate when exceeded
 CHAT_TAIL_KEEP = 2000         # lines retained on truncate
 
+# S187: state.ndjson previously had NO sweep (grew to 7 MB while chat.ndjson
+# stayed bounded — the hand-enforced-caps-drift class). Same truncate-to-tail
+# shape as chat; caps sized generously because the cockpit backend only ever
+# tail-reads this stream.
+STATE_SIZE_MAX = 3_000_000    # bytes — truncate when exceeded
+STATE_TAIL_KEEP = 6000        # lines retained on truncate
+
 # D-017: actors that can run as parallel sessions, each getting its own
 # visualizer sprite. Sub-agents (dwarves, gnomes) have unique IDs already.
 # Wisp is system-voice and conceptually singular. Guthix is bankstanding-deity,
@@ -1000,6 +1007,24 @@ def emit_chat_action(actor: str, tool_name: str, tool_input: dict) -> None:
     _emit_chat_line(actor, sid8, "action", text, instance)
 
 
+def sweep_state_ndjson() -> None:
+    """Truncate state.ndjson when it exceeds the size cap. Keeps the tail
+    STATE_TAIL_KEEP lines via atomic rewrite. Cheap stat-gated no-op on the
+    common path (one stat per call). S187 — state.ndjson had no sweep."""
+    try:
+        if not STATE_PATH.exists():
+            return
+        if STATE_PATH.stat().st_size <= STATE_SIZE_MAX:
+            return
+        lines = STATE_PATH.read_text(encoding="utf-8").splitlines()
+        tail = lines[-STATE_TAIL_KEEP:]
+        tmp = STATE_PATH.with_suffix(STATE_PATH.suffix + f".tmp.{os.getpid()}")
+        tmp.write_text("\n".join(tail) + "\n", encoding="utf-8")
+        os.replace(tmp, STATE_PATH)
+    except Exception as e:
+        print(f"emit-event: state sweep failed: {e}", file=sys.stderr)
+
+
 def sweep_chat_ndjson() -> None:
     """Truncate chat.ndjson when it exceeds size or line caps. Keeps the tail
     CHAT_TAIL_KEEP lines via atomic rewrite. Cheap no-op on the common path."""
@@ -1824,6 +1849,10 @@ def main() -> None:
             sweep_chat_ndjson()
         except Exception as e:
             print(f"emit-event: chat sweep failed: {e}", file=sys.stderr)
+        try:
+            sweep_state_ndjson()
+        except Exception as e:
+            print(f"emit-event: state sweep failed: {e}", file=sys.stderr)
         sys.exit(0)
 
     if tool_name in ("Task", "Agent"):

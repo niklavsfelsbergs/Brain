@@ -38,6 +38,14 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 BRAIN_ROOT = HERE.parents[1]
+
+# S187: route synthetic test events to a temp file, never the LIVE analytics
+# stream (switchboard/ritual_log.py honors RITUAL_EVENTS_PATH per call;
+# subprocesses inherit it). Pre-S187 these suites polluted the real log.
+import os as _os
+import tempfile as _tempfile
+_os.environ["RITUAL_EVENTS_PATH"] = str(
+    Path(_tempfile.gettempdir()) / "ritual-events-test.ndjson")
 HOOK = BRAIN_ROOT / "gielinor" / ".claude" / "hooks" / "close-gate-stop.py"
 _spec = importlib.util.spec_from_file_location("close_gate_stop", HOOK)
 g = importlib.util.module_from_spec(_spec)

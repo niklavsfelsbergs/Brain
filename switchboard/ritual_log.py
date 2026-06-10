@@ -53,6 +53,17 @@ _SIZE_MAX = 2_000_000      # bytes
 _TAIL_KEEP = 4000          # lines retained on truncate
 
 
+def _events_path() -> Path:
+    """Resolve the event-log path per call. RITUAL_EVENTS_PATH overrides the
+    default — set by the verification test harnesses so synthetic boundary-test
+    events land in a temp file instead of polluting the LIVE analytics stream
+    (S187 finding: ~173 test-fixture events had accumulated in the real log,
+    skewing draft-redirect counts 4→18). Resolved per call, not at import, so
+    a harness can set the env var before or after importing a hook module."""
+    override = os.environ.get("RITUAL_EVENTS_PATH")
+    return Path(override) if override else EVENTS_PATH
+
+
 def classify_path(rel: str) -> str:
     """Coarse class of a brain-relative path, for analytics grouping. Returns
     a short tag ('confirmed', 'drafts', 'meta', 'quest-log', ...) or '' when
@@ -85,15 +96,16 @@ def classify_path(rel: str) -> str:
 
 def _sweep() -> None:
     try:
-        if not EVENTS_PATH.exists():
+        path = _events_path()
+        if not path.exists():
             return
-        if EVENTS_PATH.stat().st_size <= _SIZE_MAX:
+        if path.stat().st_size <= _SIZE_MAX:
             return
-        lines = EVENTS_PATH.read_text(encoding="utf-8").splitlines()
+        lines = path.read_text(encoding="utf-8").splitlines()
         tail = lines[-_TAIL_KEEP:]
-        tmp = EVENTS_PATH.with_suffix(EVENTS_PATH.suffix + f".tmp.{os.getpid()}")
+        tmp = path.with_suffix(path.suffix + f".tmp.{os.getpid()}")
         tmp.write_text("\n".join(tail) + "\n", encoding="utf-8")
-        os.replace(tmp, EVENTS_PATH)
+        os.replace(tmp, path)
     except Exception as e:
         print(f"ritual_log: sweep failed: {e}", file=sys.stderr)
 
@@ -115,8 +127,9 @@ def log_event(hook: str, decision: str, *, actor: str = "", sid8: str = "",
         }
         if detail:
             rec["detail"] = str(detail)[:200]
-        EVENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with EVENTS_PATH.open("a", encoding="utf-8") as f:
+        path = _events_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(rec, separators=(",", ":")) + "\n")
         _sweep()
     except Exception as e:

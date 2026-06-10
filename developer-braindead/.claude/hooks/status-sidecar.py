@@ -72,6 +72,11 @@ CHAT_TEXT_MAX = 320          # S058: was 200 — headroom above the 280 intent c
 CHAT_SIZE_MAX = 1_000_000
 CHAT_LINES_MAX = 5000
 CHAT_TAIL_KEEP = 2000
+# S187: state.ndjson sweep — mirrors emit-event.py's new sweep_state_ndjson
+# (the stream previously had no cap and grew to 7 MB; cockpit only tail-reads).
+STATE_NDJSON_PATH = VIZ_DIR / "state.ndjson"
+STATE_SIZE_MAX = 3_000_000
+STATE_TAIL_KEEP = 6000
 # S073: the agent's visible prose — the running commentary it writes between
 # tool calls (the Understanding/Plan preamble + in-turn narration). Hooks never
 # receive this text directly, so we tail it off the on-disk transcript Claude
@@ -918,6 +923,25 @@ def _sweep_chat_ndjson() -> None:
         os.replace(tmp, CHAT_PATH)
     except Exception as e:
         print(f"status-sidecar: chat sweep failed: {e}", file=sys.stderr)
+
+
+def _sweep_state_ndjson() -> None:
+    """S187: keep state.ndjson bounded. Mirror of emit-event.py's
+    sweep_state_ndjson — called once per UserPromptSubmit beside the chat
+    sweep (stat-gated, atomic rewrite, fail-silent)."""
+    try:
+        if not STATE_NDJSON_PATH.exists():
+            return
+        if STATE_NDJSON_PATH.stat().st_size <= STATE_SIZE_MAX:
+            return
+        lines = STATE_NDJSON_PATH.read_text(encoding="utf-8").splitlines()
+        tail = lines[-STATE_TAIL_KEEP:]
+        tmp = STATE_NDJSON_PATH.with_suffix(
+            STATE_NDJSON_PATH.suffix + f".tmp.{os.getpid()}")
+        tmp.write_text("\n".join(tail) + "\n", encoding="utf-8")
+        os.replace(tmp, STATE_NDJSON_PATH)
+    except Exception as e:
+        print(f"status-sidecar: state sweep failed: {e}", file=sys.stderr)
 
 
 def _derive_subtitle(j: dict) -> str:
@@ -2005,6 +2029,8 @@ def main() -> None:
         _gc_intent_files(project_dir, live_short, sid8)
         # S052: chat ndjson sweep — once per turn, cheap when file is small.
         _sweep_chat_ndjson()
+        # S187: state ndjson sweep — same cadence, stat-gated.
+        _sweep_state_ndjson()
 
     # Manifest mirror runs last — purely a snapshot for the browser; a failure
     # here can't affect the canonical per-session store.

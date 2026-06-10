@@ -26,6 +26,14 @@ from contextlib import redirect_stdout
 from pathlib import Path
 
 BRAIN = Path(__file__).resolve().parents[2]
+
+# S187: route synthetic test events to a temp file, never the LIVE analytics
+# stream (switchboard/ritual_log.py honors RITUAL_EVENTS_PATH per call;
+# subprocesses inherit it). Pre-S187 these suites polluted the real log.
+import os as _os
+import tempfile as _tempfile
+_os.environ["RITUAL_EVENTS_PATH"] = str(
+    Path(_tempfile.gettempdir()) / "ritual-events-test.ndjson")
 HOOK_DIR = BRAIN / "gielinor" / ".claude" / "hooks"
 HOOK = HOOK_DIR / "domain-cue-reminder.py"
 

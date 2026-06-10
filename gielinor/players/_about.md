@@ -94,4 +94,4 @@ Bankstanding handles the global, cross-cutting tending and can flag a player as 
 
 - `spellbook/rituals/respawn.md` for the load order at session start and player switch.
 - `meta/modes.md` for principal vs dwarf, with the cross-player dwarf flow.
-- `lorebook/decisions/` for the choices behind this structure.
+- `lorebook/confirmed/` for the choices behind this structure.

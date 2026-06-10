@@ -14,7 +14,7 @@
 ## What does not go here
 
 - **Per-player knowledge.** Never. That belongs in the player's own bank.
-- **Decisions about how the brain operates.** Those go to global `gielinor/lorebook/drafts/` and graduate to `lorebook/decisions/`.
+- **Decisions about how the brain operates.** Those go to global `gielinor/lorebook/drafts/` and graduate to `lorebook/confirmed/`.
 - **Today-only state.** Use `inventory/` for that.
 - **Narrative of what happened.** Use `quest-log/` for that.
 

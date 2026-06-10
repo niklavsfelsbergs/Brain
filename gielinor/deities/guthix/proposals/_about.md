@@ -36,7 +36,7 @@ This is the key part. Guthix is *not* an architectural exception. The hook-enfor
 | `meta/*.md` | user-only | may draft a proposal here |
 | `spellbook/rituals/*.md` | user-only | may draft a proposal here |
 | `keepsake/current.md` | user-only | may draft a proposal here |
-| `lorebook/decisions/D-NNN_*.md` | user-only (draft-then-approve) | same path; may draft normally |
+| `lorebook/confirmed/D-NNN_*.md` | user-only (draft-then-approve) | same path; may draft normally |
 | Hook code (`.claude/hooks/*`) | normally not modified by the agent at all | may draft a proposal here |
 | Body files (`CLAUDE.md`, etc.) | user-only | may draft a proposal here |
 | Architectural guarantees | not overridable even with permission | not overridable for Guthix either; he may propose *changes* but not bypass |

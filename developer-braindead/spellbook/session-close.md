@@ -13,7 +13,13 @@
    - H1: `# SNNN — YYYY-MM-DD — Quest name`
    - 3–5 bullets describing what happened. Wiki-link to every artifact created or changed.
    - End with two lines: **Cascade.** (what dev-brain files landed) and **Main-brain changes.** (what crossed into `vault/`, or `none`).
-3. **Update `respawn.md`.** Overwrite in place. New `Last updated` line. Refresh "where we are," "what's open," "next concrete step." History lives in quest-log, not here.
+3. **Update `respawn.md` — via the tool, not a raw Edit/Write.** Compose your single `**Last updated (...)**` block, then:
+
+   ```
+   printf '%s' "$BLOCK" | py tools/respawn_update.py --prepend
+   ```
+
+   One locked, atomic write does the whole lifecycle: prepends your block, relabels the previous `Last updated` → `Prior`, wraps the older `Prior` into a collapsed `<details>`, and evicts all but the newest 2 collapsed blocks to `quest-log/archive/respawn-history.md` (append-only, nothing deleted). The lock is the same S128 primitive as `comms_append.py`, so two parallel closes serialize instead of clobbering each other (the D-024 race). Don't hand-edit the prepend: the raw read-modify-write is the lost-update path, and the hand-held size cap drifted twice (49k tokens at the 2026-05-24 trim, 62k by 2026-06-10) — the tool is the cap now. Refreshing the *tail* sections ("Where we are," "Next concrete step") when they've gone stale is still an ordinary Edit — the tool owns the session-block region only.
 4. **Update `bank/plan.md` if status changed.** Mark items `[x]` if completed; add new items if surfaced.
 5. **Harvest learnings + audit memory pointers.** Two durability tasks at every close:
    - **Learnings (always scan).** Skim the session for the highest-signal moments — *where the principal corrected me or pushed back, where something I shipped proved wrong or got reverted, or where a non-obvious failure mode / insight surfaced.* Distill each into a carried lesson in `bank/build-lessons.md` (the `From [[SNNN]]: **…**` format), citing the specific moment that produced it (observation-backed, not aspirational). If the lesson generalizes beyond this repo — a working-style or judgment lesson, not a cockpit-specific detail — **also** write it to the cross-conversation memory at `~/.claude/projects/.../memory/` per that system's protocol (one fact per file, update `MEMORY.md`). A routine build session may yield nothing — but **a session that contained a correction, a reverted change, or a misjudgment the principal caught MUST produce a captured learning.** This is not optional and not subject to "bias to less." (This step exists because [[S083_d71c4ab3_cockpit-full-audit]] shipped a regression — a heuristic with a known-but-unverified false-trip — that the principal caught in his *live* environment, then asked "did you learn from this?" That class of scenario is precisely what must be harvested, every time.)

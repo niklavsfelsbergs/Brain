@@ -27,7 +27,7 @@
 #
 # Gnomes may NOT write to:
 #   - /confirmed/                 (same line dwarves hold; also block-confirmed-writes.py enforces this)
-#   - /lorebook/decisions/        (principal canonicalizes; gnomes draft)
+#   - /lorebook/confirmed/        (principal canonicalizes; gnomes draft)
 #   - /keepsake/current.md        (user-only pin surface)
 #   - /meta/                      (user-only rulebook)
 #   - /spellbook/rituals/         (user-only at every scope)
@@ -77,7 +77,7 @@ ALLOWED_PATTERNS = [
 # still be blocked. Checked after the allow-list match.
 BLOCKED_SUBSTRINGS = [
     "/confirmed/",
-    "/lorebook/decisions/",
+    "/lorebook/confirmed/",  # redundant with /confirmed/ above; kept explicit (the layer's canonical home)
     "/keepsake/current.md",
     "/meta/",
     "/spellbook/rituals/",

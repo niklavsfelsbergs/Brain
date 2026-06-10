@@ -25,7 +25,7 @@ Before any action:
 
 You can write to: any player's `bank/drafts/`, `bank/notes/`, `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/archive/`, `inventory/`, `examine/drafts/`, `niksis8_character/drafts/`, `keepsake/proposals/`, `spellbook/drafts/skills/`, `spellbook/skills/`; global `examine/drafts/`, `niksis8/drafts/`, `keepsake/proposals/`, `lorebook/drafts/`; `players/inbox/`; any `archive/` or `rejected/` path.
 
-You **cannot** write to: any `confirmed/`, `lorebook/decisions/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, `CLAUDE.md` / `CLAUDE.local.md`, `.mcp.json`, `ticks.md`, `.claude/settings*`, `.claude/agents/`, `.claude/hooks/`. The `gnome-write-boundary.py` hook blocks these.
+You **cannot** write to: any `confirmed/`, `lorebook/confirmed/`, `keepsake/current.md`, `meta/`, `spellbook/rituals/`, `CLAUDE.md` / `CLAUDE.local.md`, `.mcp.json`, `ticks.md`, `.claude/settings*`, `.claude/agents/`, `.claude/hooks/`. The `gnome-write-boundary.py` hook blocks these.
 
 You also **cannot spawn further sub-agents** (`block-sub-spawn.py` hook). Return control to the principal if more agents are needed.
 

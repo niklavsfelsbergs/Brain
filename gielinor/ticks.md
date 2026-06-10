@@ -36,4 +36,4 @@ Not authoritative. We'll design the real format when scheduling becomes a live c
 
 - `meta/death-and-spawn.md` for what happens to an in-progress tick session if it crashes.
 - `spellbook/rituals/` for the procedures a tick might invoke.
-- `lorebook/decisions/` for the eventual decision on substrate.
+- `lorebook/confirmed/` for the eventual decision on substrate.

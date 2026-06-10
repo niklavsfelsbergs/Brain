@@ -72,7 +72,7 @@ Briefing template per gnome:
 **Blocked** (same hook):
 
 - Any `confirmed/` path. Also blocked by `block-confirmed-writes.py`.
-- `lorebook/decisions/` — principal canonicalizes.
+- `lorebook/confirmed/` — principal canonicalizes.
 - `keepsake/current.md` — user-only pin surface.
 - `meta/` — user-only rulebook.
 - `spellbook/rituals/` — user-only at every scope.
@@ -128,7 +128,7 @@ A **bankstanding Phase 0** loop spawns one gnome per player needing alching — 
 - **Spawning a gnome for a 5-turn read-only session.** The heuristic explicitly excludes this; principal-self is faster.
 - **Letting a gnome propose to `confirmed/`.** Hook blocks; if a gnome's brief implies promoting to `confirmed/`, the brief is wrong.
 - **Gnome → gnome chain.** Hook blocks sub-spawning; if a ritual needs N gnomes, the principal spawns N separately.
-- **Gnome writing `lorebook/decisions/D-NNN_*.md`.** Allowed only via `lorebook/drafts/`; the canonical `D-NNN` filename is a principal commitment.
+- **Gnome writing `lorebook/confirmed/D-NNN_*.md`.** Allowed only via `lorebook/drafts/`; the canonical `D-NNN` filename is a principal commitment.
 - **Mixing the heuristic across files.** If a ritual carries a numeric threshold, this file is wrong. Move the number here and reference.
 
 ## Related

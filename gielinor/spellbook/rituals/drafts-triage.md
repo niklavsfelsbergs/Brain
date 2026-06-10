@@ -103,7 +103,7 @@ For each verdict, execute as follows:
 | **y** | `bank/drafts/notes/` | `git mv` to `bank/notes/` preserving sub-path |
 | **y** | `spellbook/drafts/skills/` | `git mv` to `spellbook/skills/` |
 | **y** | `keepsake/proposals/` | **User-only.** Surface proposed pin text + target `keepsake/current.md` section; principal hand-edits. |
-| **y** | `lorebook/drafts/` | **User-only.** Surface; principal canonicalizes as `lorebook/decisions/D-NNN_<slug>.md` (or `confirmed/`, per the layer's convention). |
+| **y** | `lorebook/drafts/` | **User-only.** Surface; principal canonicalizes as `lorebook/confirmed/D-NNN_<slug>.md`. |
 | **n** | any | `git mv` to sibling `rejected/` preserving sub-path. Optionally append a one-line rejection note (use Edit before mv). |
 | **edit** | any | Revise per principal direction; surface revised text for re-confirmation; on second-pass `y`, treat as y. |
 

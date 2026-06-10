@@ -43,7 +43,7 @@ The draft-then-promote pattern from per-player `bank/` applies here. New observa
 
 ## What does not live here
 
-- Decisions about how the brain *operates going forward* — those belong in global `gielinor/lorebook/drafts/` and graduate to `lorebook/decisions/D-NNN_*.md` with principal approval. Guthix proposes; the principal decides.
+- Decisions about how the brain *operates going forward* — those belong in global `gielinor/lorebook/drafts/` and graduate to `lorebook/confirmed/D-NNN_*.md` with principal approval. Guthix proposes; the principal decides.
 - Per-player knowledge — never written here. Guthix may *read* a player's bank but does not write into it (alching's surface).
 - Ritual procedure — `gielinor/spellbook/rituals/bankstanding.md` holds the procedure; this folder holds the *output* of running it.
 

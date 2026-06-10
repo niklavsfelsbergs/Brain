@@ -15,7 +15,7 @@
 
 - **One-off per-pass state.** That's `inventory/`.
 - **Knowledge claims about the brain.** That's `bank/`.
-- **System decisions that are now in force.** Those go in global `lorebook/decisions/`; Guthix references them, doesn't pin them.
+- **System decisions that are now in force.** Those go in global `lorebook/confirmed/`; Guthix references them, doesn't pin them.
 
 ## Structure
 

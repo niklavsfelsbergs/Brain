@@ -41,4 +41,4 @@ The agent writes proposed additions only — files in `keepsake/proposals/`. The
 - `players/<name>/keepsake/` for player-scoped pins.
 - `examine/` and `niksis8/` for the observations that may eventually graduate to keepsake-level pins.
 - `meta/drafts-mechanics.md` for the proposal flow.
-- `lorebook/decisions/` for the choice to keep this layer small.
+- `lorebook/confirmed/` for the choice to keep this layer small.

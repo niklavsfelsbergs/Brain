@@ -291,6 +291,14 @@ def main():
         )
         sys.exit(1)
 
+    if args.entry is None:
+        # Windows stdin defaults to the console codepage (cp1252) — piped UTF-8
+        # mojibakes silently (em-dashes in entries landed as 'â€"' since S127;
+        # caught S186 via the sibling respawn_update.py's first firing). Force UTF-8.
+        try:
+            sys.stdin.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
     entry = args.entry if args.entry is not None else sys.stdin.read()
     if not entry or not entry.strip():
         sys.stderr.write("comms_append: empty entry; nothing to append.\n")

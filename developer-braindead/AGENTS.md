@@ -15,7 +15,7 @@ It is a working notebook, not a cognitive system. No agent runs cycles over it d
 
 **Read `respawn.md` at this folder's root before doing anything else.** It is the entry point — current state, what was just done, what's blocking, the next concrete step. The ritual that reads it is `spellbook/respawn-ritual.md`.
 
-**This applies on every dev-brain entry, including a mid-conversation pivot via "lets develop gielinor" — that cue is not a lighter-weight entry.** The ritual's sibling-detection and `OPEN`-posting steps (6–8) are mandatory on every entry; a mid-conversation pivot does not exempt you. Skipping the `OPEN` is the system's most common discipline leak (see the recurring *"did not post an OPEN"* note in `comms/active.md` — historically the top leak, largely closed as of the 2026-05-27 S110 audit; keep it ~100%) — it's the step that *prevents* collisions, not the `CLOSING` that records them after the fact.
+**This applies on every dev-brain entry, including a mid-conversation pivot via "lets develop gielinor" — that cue is not a lighter-weight entry.** The ritual's sibling-detection and `OPEN`-posting steps (6–8) are mandatory on every entry; a mid-conversation pivot does not exempt you. Skipping the `OPEN` is the system's most common discipline leak (see the recurring *"did not post an OPEN"* note in `comms/active.md` — historically the top leak; the 2026-06-09 S177 health-check measured first-try posting at ~72%, with the `require-open` gate backstopping the rest to ~0 never-posted — post it first-try, don't lean on the gate) — it's the step that *prevents* collisions, not the `CLOSING` that records them after the fact.
 
 ## Scope
 

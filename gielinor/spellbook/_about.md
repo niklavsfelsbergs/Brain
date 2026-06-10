@@ -43,4 +43,4 @@ See `meta/write-rules.md`.
 
 - `players/<name>/spellbook/` for character-specific procedures.
 - `meta/drafts-mechanics.md` for the skill-modification flow.
-- `lorebook/decisions/` for choices about ritual design.
+- `lorebook/confirmed/` for choices about ritual design.

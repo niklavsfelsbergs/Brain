@@ -25,12 +25,15 @@
 #   OPEN with this sid8 already in the actor's comms ....... allow
 #   otherwise .............................................. BLOCK
 #
-# ACTOR RESOLUTION (S125 fix for the S124 silent-fail-open hole)
-#   _actor_for(sid8) reads ~/.claude/status/<sid8>.json, written by a SEPARATE
-#   sidecar that can lag the first write of a 'Hey Jebrim'-straight-into-task
-#   session -> '' -> the gate failed open with NO telemetry (invisible). Now we
-#   fall back to the per-session intent file on disk, and if STILL unresolved we
-#   fail open but emit a skip-noactor event so the hole is measurable, not silent.
+# ACTOR RESOLUTION (S125 fix for the S124 silent-fail-open hole; 486d6682 dedup)
+#   Delegated entirely to the shared `_actor.resolve_actor` (intent-first, both
+#   intent dirs, newest-mtime-wins — the S184-hardened resolver). This hook used
+#   to carry its own inline copy as an import-failure fallback; that copy read
+#   only ONE intent dir and silently diverged from the canonical resolver, so it
+#   was removed: a broken `_actor` import now fails LOUD (non-2 exit -> visible
+#   error, action still allowed — fail-open semantics preserved, divergence not).
+#   If the actor is unresolved ('') we fail open but emit a skip-noactor event
+#   so the hole is measurable, not silent.
 #
 # Escapes exist so the entry sequence itself is never gated: posting the OPEN
 # (comms/active.md), the dev-brain marker (.claude/active-mode.txt), intent
@@ -52,7 +55,6 @@ except Exception:
     def classify_path(p): return ""
 
 BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent.parent  # gielinor/.claude/hooks -> brain root
-STATUS_DIR = Path(os.path.expanduser("~")) / ".claude" / "status"
 
 # Actors that do NOT post an OPEN — never gated.
 _NON_OPEN_ACTORS = {"guthix", "wisp", ""}
@@ -77,37 +79,6 @@ def _is_escape(rel: str) -> bool:
     if rel.startswith(".claude/intent/"):
         return True
     return False
-
-
-def _actor_for(sid8: str) -> str:
-    if not sid8:
-        return ""
-    try:
-        data = json.loads((STATUS_DIR / f"{sid8}.json").read_text(encoding="utf-8"))
-        return (data.get("actor") or "").lower()
-    except (OSError, ValueError):
-        return ""
-
-
-def _actor_from_intent(sid8: str) -> str:
-    """Disk fallback for actor resolution. The status file is written by a
-    separate sidecar and can lag the first write of a session that opens
-    'Hey Jebrim' straight into a task — so _actor_for returns '' and the gate
-    used to fail open SILENTLY (the S124/61d62e21 hole). The per-session intent
-    file `.claude/intent/<actor>-<sid8>.txt` is the documented on-disk session
-    anchor (communication-protocol.md → Intent narration); recover the actor
-    from its filename prefix. Actor names carry no hyphen, so rsplit is safe."""
-    if not sid8:
-        return ""
-    try:
-        intent_dir = BRAIN_ROOT / ".claude" / "intent"
-        for f in intent_dir.glob(f"*-{sid8}.txt"):
-            actor = f.name[:-4].rsplit("-", 1)[0].lower()  # drop '.txt', take prefix
-            if actor:
-                return actor
-    except OSError:
-        return ""
-    return ""
 
 
 def _player_names() -> set:
@@ -144,22 +115,16 @@ def _has_open(comms: Path, sid8: str) -> bool:
     return False
 
 
-# Shared actor resolution (audit finding #2) — prefer the canonical helper so
-# the S124 anti-race fallback lives in ONE place reusable by future actor-keyed
-# hooks; keep the inline functions above as a behavior-identical fallback if the
-# helper is ever unavailable (this is the brain's #1 gate — it must never break
-# on an import fluke).
+# Shared actor resolution — the canonical S184-hardened helper, and ONLY it.
+# The former inline fallback read one intent dir and had silently diverged from
+# the resolver it shadowed (486d6682 audit); a wrong-but-confident actor is
+# worse than a loud import error, so the import is unconditional. An import
+# failure exits non-2 with a traceback: visible, and Claude Code still allows
+# the action (fail-open preserved — a broken install can't brick a session).
 _HOOK_DIR = Path(__file__).resolve().parent
 if str(_HOOK_DIR) not in sys.path:
     sys.path.insert(0, str(_HOOK_DIR))
-try:
-    from _actor import resolve_actor
-except Exception:
-    # Degraded fallback (only if the _actor import fails). Intent-first to match
-    # the canonical resolver (S181); the inline _actor_from_intent reads one dir
-    # only, accepted in this rare import-fail path.
-    def resolve_actor(sid8, brain_root=None):
-        return _actor_from_intent(sid8) or _actor_for(sid8)
+from _actor import resolve_actor
 
 
 def main() -> int:

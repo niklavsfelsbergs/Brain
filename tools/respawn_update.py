@@ -187,8 +187,16 @@ def _summary_for(para_lines):
 
 
 def _wrap_details(para_lines):
+    # Strip the leading '**Prior (' / '**Last updated (' label from the wrapped
+    # body (-> '**(['): the <summary> already carries the Prior label, and
+    # close_check's session-load hygiene counts literal '**Prior ([[' as a
+    # stacked block — a wrapped body must not count against that cap (S187;
+    # the S182-era hand-wrapped blocks already had this shape).
+    body = list(para_lines)
+    if body:
+        body[0] = re.sub(r"^\*\*(?:Prior|Last updated)\s*\(", "**", body[0], count=1)
     return (["<details><summary>" + _summary_for(para_lines) + "</summary>", ""]
-            + list(para_lines) + ["", "</details>"])
+            + body + ["", "</details>"])
 
 
 def normalize(blocks, new_block_lines=None):

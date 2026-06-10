@@ -1,0 +1,11 @@
+# Check the convention before calling an interpretation "the only coherent one"
+
+> Draft (harvest Q5 — principal pushback reversed my judgment), [[S189_e3de8457_maersk-hermes-oversize-corrections|S189]] 2026-06-10.
+
+**The moment.** Maersk's reply said the oversize ceiling is "girth 300 cm." I encoded **pure girth = 2(W+H)** and told Niklavs it was *"the only coherent reading"* — arguing that an L+girth cap of 300 alongside a separate 175 cm length cap would be "incoherent/redundant." Niklavs pushed back: *"would it even make sense if it was L+girth given the other condition is 175 cm? do you think we should ask?"* Checking it properly, my premise was wrong: **"max length + max length-girth" is the *standard* parcel-carrier dimensional format** (UPS, FedEx, USPS all pair exactly those two). So L+girth wasn't incoherent at all — it was the convention-favored reading, and the one that nearly kills the Maersk oversize lane (€75k/Q1 swing). I had to walk back "only coherent reading" and recommend asking.
+
+**The failure mode.** I declared an interpretation *incoherent* from first-principles plausibility without checking how the domain actually does it. The confident-wrong framing would have led to silently assuming the favorable reading on a tender decision worth ~€300k/yr.
+
+**Why it generalizes.** "This is the only sensible reading / it wouldn't make sense otherwise" is a claim about a *domain convention*, and domain conventions are checkable facts, not armchair deductions. Before ruling a reading out as incoherent — especially when the stakes are large and the ruling is convenient — verify against how the field actually specifies it (industry standard, the source document's own definitions, a worked example). Sibling of *verify-the-thing* and the contrarian lens: the obvious-coherence read was confidently wrong.
+
+**How to apply.** When tempted to write "the only coherent interpretation is X" on something ambiguous and material: (1) name the convention I'm implicitly asserting, (2) check it (one search / one example / the source's own columns), (3) if it's genuinely ambiguous *and* the magnitude is large, surface it and ask rather than assume the favorable branch. The girth question had three live readings and a €300k/yr spread — exactly the assume+document *exception* (ask).

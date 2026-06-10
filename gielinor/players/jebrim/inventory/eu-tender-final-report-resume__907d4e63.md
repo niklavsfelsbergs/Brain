@@ -1,0 +1,38 @@
+---
+quest: S194_eu-tender-holdup-pass-and-project-rating
+sid8: 907d4e63
+ts: 2026-06-11 00:40
+open_dep: bi-analytics final_report/ uncommitted — awaiting principal review + commit go (separate repo, never push)
+---
+
+# Resume — EU-tender final presentation document
+
+## Where we are
+- Hold-up pass DONE (3 dwarves): numbers tie exactly on HEAD a96e449; six-item cleanup list delivered in chat
+  (stale €377k management_briefing is the risky artifact; A5 scorer floor / bias_table / Maersk ROW demand still open;
+  2 unknown test reds: austrian_post f3 crash + hermes f3 forced-mode; docs/NEXT.md + OPEN_QUESTIONS two eras behind).
+- FINAL REPORT BUILT + VERIFIED: bi-analytics `2_analysis/final_report/` — build_final_stats.py → final_stats.json →
+  final_report.py → final_report.html (+ verify_report.py, PASS). Single-page HTML, family dark theme.
+- Three-tier split (new, asserted to <€1 vs annual_stats/routing_stats): **Confirmed €176,250** (incl +€20,743 peak diff)
+  / **Offer-based €296,110** (Hermes + Maersk-EU = maersk family with non-null routed service) / **Conditional €525,360**
+  (DBS reroute). Headline = committed €472,360 (ex-DBS), per principal direction. Q1 split: 26,000 / 68,232 / 107,684.
+- Hardcoded prose claims (not from stats): DPD new offer "≈19% more expensive" (S170 +18.8%), UPS migration "~62%"
+  (verified 61.5% in verify_report.py), "200+ rate checks" (D3 counted 215+), "10 carriers assessed".
+
+## Next concrete step
+1. Niklavs reviews final_report.html in browser (visual NOT eyeballed by me — data layer verified). Expect tier-name
+   and prose iteration rounds.
+2. On his go: commit bi-analytics `git commit -- NFE/projects/2_EU_tender_2026/2_analysis/final_report` (pathspec only,
+   never push). Note annual_2026/ + UPS fuel fix + UPS comparison/ also still await commit go.
+3. LATER (his stated plan): turn the HTML into a slide deck; retire/supersede the stale management_briefing/ then.
+
+## Files to read first
+- bi-analytics `2_analysis/final_report/{build_final_stats.py, final_report.py, final_stats.json, verify_report.py}`
+- `quest-log/in-progress/S194_907d4e63_eu-tender-holdup-pass-and-project-rating.md` (+ d1/d2/d3 sibling logs)
+- digest `bank/domains/eu-tender.md` (3.2.0/2.2.0 state)
+
+## Watch-outs
+- bi-analytics SEPARATE repo, principal-gated commits, never push. final_report/ + annual_2026/ + management_briefing/
+  all untracked.
+- The old management_briefing/ deck still sells €377k as current — superseded by this report; do not present it.
+- Tier names are first-draft audience-friendly (Confirmed / Offer-based / Conditional) — principal may rename.

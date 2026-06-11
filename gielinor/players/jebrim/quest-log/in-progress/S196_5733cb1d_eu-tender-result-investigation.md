@@ -179,3 +179,60 @@
   uncommitted there pending principal go (q04f_* files belong to the rebase session).
 
 No pending external actions. (bi-analytics commit 98cdd49 completed T16; comms posts completed.)
+
+## Round 2 — continuation session 87f50e88 (2026-06-11)
+
+- T27 (recap + Q07): session opened with a round-1 recap ask, then "lets continue" → round 2.
+  Q07 ("no-Hermes = only new-Maersk-countries + reshuffle existing volume, correct? + show
+  Maersk's new volume per country"): CONFIRMED with 3 precisions (DHL gets new-to-DHL CH/AU
+  lanes; residual carriers consolidate into the 5, DK residual→Maersk at a small loss; no-Hermes
+  leaves DBS book on DBS). Per-country pull (q07 script + findings, post-rebase basis): NEW
+  Maersk volume 44,913 Q1 / ~190k yr, €53.6k Q1 / ~€224k yr saving vs today; IT 22.9k (87.6%
+  of country) + ES 15.2k (94.1%) = 85% of it; AT 4.1k (Q05 slice), DK 1.1k NEGATIVE (residual
+  consolidation), AU 1.1k row_hd, FR new trivial (360; kept FR book 12,445). Concentration-risk
+  note: Maersk becomes near-total carrier for IT/ES. Also added the pending q04e README row.
+  Conclusion pending principal.
+- T28 (Q08: "what migrates DHL Paket→DPD PL? we didn't answer that, right?" — correct, new):
+  21,946 Q1 (~105k/yr) and it saves NOTHING (−€568 Q1). 99.6% = the single DE×Poster40 light
+  cell q04f flagged as the March-anchor knife-edge flip (avg €3.21 DHL→€3.25 DPD, 68% of
+  parcels individually negative, 30% within ±€0.10). Verdict: optimizer noise on a flat cost
+  surface, poster child for the Q01b minimum-saving threshold (any ≥~1% parks it on DHL).
+  q08 script + findings + README row written. Conclusion pending principal.
+- T29 (Q08b: "why does it pop up if it's a loss?"): grounded in build_final.py — (1) argmin
+  with no min-saving threshold (ε wins move whole cells); (2) decision basis = q04f
+  March-anchored keep (DHL €3.338) vs DPD €3.255 → DPD wins forward by €0.08, while the
+  reported saving uses full-Q1 actuals (DHL €3.211, Jan/Feb cheap → −€0.04). DHL cost in the
+  cell drifted up through Q1 (3.15/3.17/3.34). Loss label = retrospective yardstick artifact;
+  forward-real vs noise undecided (open: what drove DHL March +€0.17). §Q08b appended.
+- T30 (Q08c, principal: "March got a rate increase" + Q1-vs-annual confusion): CONFIRMED
+  empirically — DHL flat rate €3.13→€3.32 (+6.1%) late Feb, same-weight buckets all step;
+  cell is genuinely cheaper on DPD forward (+€8.7k/yr vs post-increase rate). Clarified: no
+  sign flip Q1→annual (−568 × 4.82 = −2,724, same yardstick); the "loss" is the stale Jan/Feb
+  baseline scaled into the year. FLAGGED baseline-vintage implication: all savings vs DHL
+  understated ~rate-delta on moved volume; dhl→dhl stays book a phantom negative (ups→ups
+  analog) — feeds the round-2 "stays" question. §Q08c appended.
+- T31 (report-confusion fix decided): proposed the three-number bridge (Q1 actuals → do-nothing
+  @2026 rates → plan; per-flow savings on (2)−(3) only) + threshold as companion; Niklavs chose
+  "write a prompt for another session" (q04f pattern). Handoff prompt delivered in chat —
+  q09_baseline_bridge namespace reserved for that session; includes the [[S200_104770bd_eu-tender-no-hermes-portfolio-check|S200]] final_stats
+  ordering-drift fix; threshold explicitly out of scope (interaction noted).
+- T32 (understanding turns on the bridge): clarified (a) the 2026-rates yardstick = March
+  anchor mechanism (sweeps all carriers; DHL implicit via March invoices, UPS GRI the only
+  synthetic markup; single-cell DHL verification caveat → q09 to scan book-wide all carriers);
+  (b) decisions were NOT made unadjusted — q04f already put the decision side on the forward
+  basis; only reporting lagged. Real residual gap surfaced: thin-cell fallback (3,049 cells
+  keep full-Q1 mean ≈ ⅔ pre-increase for DHL → ~4% understated keep, pro-incumbent bias on
+  marginal cells). Addendum line for the q09 prompt delivered in chat (carrier-level March
+  uplift factor as fallback; quantify flips + €).
+- T33 (scope confirm): "just change the savings calc and we're good?" — yes for the confusion
+  fix (reporting-layer only; thin-cell check may flip marginal winners, reported before
+  adoption). Unchanged opens restated: threshold call, rate unknowns (GRI 5.9 / Maersk fuel
+  band / DHL waiver / DPD offer), remaining round-2 questions (stays, residual→DPD,
+  DBS→Hermes, tier split, do-nothing — easier post-q09).
+- T34 (WRAP, round 2): q09 prompt pasted by principal into a parallel session ("its happening
+  on the side"); this session closes. Round-2 footprint: q07/q08 scripts + findings + README
+  rows (q04e/q07/q08) in bi-analytics, UNCOMMITTED there. Quest stays in-progress; resume →
+  inventory/eu-tender-result-investigation-resume__87f50e88.md (5733cb1d resume archived).
+  Harvest: 1 bank draft (rate-vintage yardstick bridge) + 1 examine draft (drop-to-analogy).
+
+No pending external actions this continuation (round-2 writes were local file writes; comms posts completed).

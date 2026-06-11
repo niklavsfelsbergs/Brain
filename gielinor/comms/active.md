@@ -136,3 +136,12 @@
 [2026-06-11 ~14:40] jebrim-475fd1ab CLOSING
   Completed: SS02 service-mix-per-carrier table in the final report (build_final_stats service_mix + render + verify tie-outs, full chain PASS). Caught + attributed the headline drift to S198's FR-rebase cascade (EUR997,720 -> EUR974,692, legitimate). Quest-log S201_475fd1ab + resume + 1 examine draft written.
   Leaving open: bi-analytics final_report/ uncommitted (principal eyeball + commit go, bundles S198 cascade pathspec); annual_report.py sibling lacks the service-mix section (his call); eu-tender digest headline re-stamp at next alch (S198-flagged).
+
+[2026-06-11 ~15:05] jebrim-3389aeeb UPDATE (S201 -- GLS comparison built)
+  Done: 1_offers/picanova/GLS/comparison/ (extract_old_cards.py + compare_old_vs_new.py + findings.md + parquets) -- all UNCOMMITTED in bi-analytics, principal-gated. Headline: tender +14.9% vs 2025 terms on the same Q1 parcels; +8.7% above GLS's own 2026 continuation conditions. Driver: flat 2-25kg card abolished + new 4.1% dieselfloater + Klima 2.5% + EFTA 25.
+  Pending: shipping-agent (background) pulling GLS invoiced history (volume end date + effective stack ratio) to validate the old-stack model.
+  Targets unchanged otherwise; still off result_investigation/* (87f50e88 owns README).
+
+[2026-06-11 ~14:20] jebrim-ee882f39 CLOSING (S199 -- UPS OML/LPS predictor investigation)
+  Completed: predictor found + verified -- UPS's own dimensioner measurement (invoice packagedimensions vs detailkeyeddim, passthrough-confirmed independent), not our declared data. EUR1.44M standing net split: ~425k over-trigger by our dims (94% one catalog-dims box, zugeschnittene Verpackung 130.3x91.6, 2.5-8.5cm over 325, ~50% incidence -> threshold-straddler, audit it too), ~390k tolerance-zone 300-325, ~641k dispute (whole over-max family physically implausible on UPS's tape). CUSTOM_OVERSIZED cleared. Quest complete -> completed/ (main entry + sa trace). Bank draft 2026-06-11-ups-oml-lps-negotiated-thresholds.md updated with findings; 1 examine draft harvested (legitimate-bucket-needs-same-skepticism).
+  Leaving open (principal decisions, recorded in the quest entry): physical re-measure audit (adjudicates 390k+425k); UPS claims cadence (reversals collapsed Q4-2025, ~160k+/qtr accruing); known-dq maintainer edit (independent-measurement finding); ask PCS PL about the 2025 box change. Commit: pathspec-scoped to ee882f39 footprint + comms only (live siblings 5733cb1d / b93204b5 / 104770bd / 4b987ab6 / e6e7b78d untouched).

@@ -101,3 +101,38 @@
   Leaving open (resume: inventory/q04e-label-churn-resume__b93204b5.md): CONCLUSION block awaits principal review; bi-analytics q04e files UNCOMMITTED there (principal-gated). README q04e row left to @5733cb1d (suggested line in my 12:25 UPDATE). Open threads: strapped-variant destination; Dec-Jan STANZ baseline-or-exception call.
   Harvest: 1 examine draft (window-bounded-series-inverts-incumbency) + 1 bank draft (population-parquet invoiced-only tail artifact) + 1 cross-conv memory. S196_b93204b5 shipping-agent trace graduated -> completed/. NOT committing the 3 untracked S-shipmart-* orphan traces (no sid8, possibly live siblings' -- flagged to principal) nor sibling 5733cb1d's untracked quest-log. Brain commit scoped to b93204b5 pathspecs + comms + intent ONLY (S144 sweep hazard).
 
+
+﻿[2026-06-11 13:18] jebrim-87f50e88 OPEN (recap turn -- result-investigation Q&A summary)
+  Doing: Niklavs asked for a summary of the recent question session(s) -- recapping the S196 Q01-Q06 round + spin-offs (q04e, q04f, S200) from quest-logs + resumes. Read-only so far; no bi-analytics touches.
+  Targets (sid8 87f50e88): this comms + intent jebrim-87f50e88.txt only for now; quest-log/inventory appends only if the review continues into a new round. No commits unless cued.
+  Live siblings: ee882f39 (jebrim, S199 UPS OML/LPS predictor -- staying off its bank draft + scratchpad); 4b987ab6 (unknown, no OPEN in tail -- steering clear of non-mine paths). 5733cb1d / b93204b5 / cbc40f78 / 104770bd all CLOSED.
+
+[2026-06-11 ~13:55] jebrim-ee882f39 UPDATE (S199 -- OML/LPS predictor investigation DONE)
+  Shipping-agent run complete + spot-verified vs silver. Headline: the predictor is UPS's OWN dimensioner measurement (printed on invoice: packagedimensions vs detailkeyeddim; passthrough test = independent), not our declared data. Verdict split on EUR1.44M standing net: ~EUR425k legitimate (above 325 by our own dims), ~EUR390k tolerance-zone 300-325 (thin-axis +cm disagreement, physical audit decides), ~EUR641k dispute (incl. entire over-max family -- UPS measured lengths 1.5-2.7x keyed, physically implausible). CUSTOM_OVERSIZED: NOT the predictor (label!=physical, avg L+G 296). Reversal coverage collapsed since Q4-2025 -> receivable accruing ~EUR160k+/qtr.
+  Artifacts: quest-log S199_ee882f39_sa_ups-oml-lps-predictor.md (agent trace); bank draft 2026-06-11-ups-oml-lps-negotiated-thresholds.md; probe SQL in shipping-agent/scratchpad/. Nothing committed.
+
+﻿[2026-06-11 13:35] jebrim-87f50e88 UPDATE (round 2 of result-investigation Q&A -- scope widened from recap)
+  Doing: continuing the S196 review by rounds (continuation session; quest-log round-2 turns appended to S196_5733cb1d_*). Q07 landed: no-Hermes structure confirm + Maersk new-volume-per-country (q07_* script + findings + README rows incl. the pending q04e row).
+  Targets (sid8 87f50e88) now ALSO: bi-analytics result_investigation/q07_* + README.md (q04e+q07 rows) -- all UNCOMMITTED there, principal-gated. Original owner 5733cb1d CLOSED; no live sibling claims the folder (ee882f39 declared no bi-analytics writes).
+
+[2026-06-11 ~14:10] jebrim-475fd1ab OPEN (EU tender final report -- service-mix-per-carrier section)
+  Doing: Niklavs flagged the final report misses the per-carrier service split. Adding a compact service-mix table to SS02: service_mix block in build_final_stats.py (from routing_assignment service col), render in final_report.py, tie-out in verify_report.py. Rebuild + verify after.
+  Targets (sid8 475fd1ab): bi-analytics 2_analysis/final_report/{build_final_stats,final_report,verify_report}.py + regenerated final_stats.json/final_report.html (all already uncommitted there, principal-gated); this comms + intent jebrim-475fd1ab.txt; jebrim quest-log/inventory at close.
+  Live siblings: 87f50e88 (result_investigation/ + README -- staying off); ee882f39 (no bi-analytics writes declared). Nobody claims final_report/ -- proceeding.
+
+[2026-06-11 ~14:35] jebrim-3389aeeb OPEN (S201 -- GLS old-vs-new offer comparison)
+  Doing: EU tender -- why is GLS uncompetitive now when the old contract was good? Locating the old GLS rate card vs the 2026 tender offer/engine, then a per-component diff (base rates, surcharges, fuel) on the Q1 cost-matrix basis.
+  Targets (sid8 3389aeeb): brain -- quest-log S201_3389aeeb_*, inventory, this comms, intent jebrim-3389aeeb.txt; bi-analytics -- READ-ONLY scout first; any analysis scripts land in result_investigation/ style (own qNN prefix) only after scoping, UNCOMMITTED, principal-gated.
+  Live siblings: ee882f39 (jebrim, S199 UPS OML/LPS -- staying off its bank draft + scratchpad); 87f50e88 (jebrim, result_investigation Q&A round 2, owns q07_* + README -- I will NOT touch result_investigation/README.md without a comms ask); 475fd1ab (jebrim, busy, no OPEN in tail -- steering clear of non-mine paths).
+
+[2026-06-11 ~14:50] jebrim-276897ca OPEN (S202 -- EU tender negotiation levers, no-Hermes portfolio)
+  Doing: mapping negotiation levers + EUR impact for the chosen portfolio carriers with live contracts (Maersk, DHL Paket, DPD PL; UPS noted as pre-contract -- offer levers only). Grounding: contract-overview + carrier-contracts digest + engines + Q1 spend/cost-matrix outputs. Read-heavy; deliverable is a chat analysis first.
+  Targets (sid8 276897ca): brain -- jebrim quest-log S202_276897ca_*, inventory, this comms, intent jebrim-276897ca.txt; bi-analytics -- READ-ONLY (mining existing computed outputs; no new scripts unless cued). No commits unless principal go (pathspec-scoped; never push).
+  Live siblings: ee882f39 (S199 UPS OML/LPS -- staying off its bank draft + scratchpad; will CITE its findings read-only); 87f50e88 (result_investigation Q&A r2, owns q07_* + README -- staying off); 475fd1ab (final_report service-mix -- staying off final_report/ writes); 3389aeeb (S201 GLS diff -- disjoint, GLS not in my scope); 4b987ab6 (unknown, no OPEN -- steering clear); e6e7b78d (braindead, disjoint).
+
+[2026-06-11 ~14:25] jebrim-475fd1ab UPDATE (service-mix DONE; final report rebuilt onto post-S198 numbers)
+  SS02 service-mix table landed (build_final_stats service_mix + render + verify tie-outs, chain PASS). NOTE for siblings/next session: the rebuild absorbed S198-cbc40f78's FR-rebase cascade (artifacts regenerated 12:45) -- final_report.html headline is now base EUR393,477 + module EUR581,215 = EUR974,692, no longer the committed 98cdd49 EUR997,720. Matches S198's documented -EUR23,028; final + annual cross-assert agree. Quest-log S201_475fd1ab open; commit go pending with Niklavs.
+
+[2026-06-11 ~14:40] jebrim-475fd1ab CLOSING
+  Completed: SS02 service-mix-per-carrier table in the final report (build_final_stats service_mix + render + verify tie-outs, full chain PASS). Caught + attributed the headline drift to S198's FR-rebase cascade (EUR997,720 -> EUR974,692, legitimate). Quest-log S201_475fd1ab + resume + 1 examine draft written.
+  Leaving open: bi-analytics final_report/ uncommitted (principal eyeball + commit go, bundles S198 cascade pathspec); annual_report.py sibling lacks the service-mix section (his call); eu-tender digest headline re-stamp at next alch (S198-flagged).

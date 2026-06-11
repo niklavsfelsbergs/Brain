@@ -27,7 +27,9 @@ open_dep: bi-analytics final_report/ uncommitted — awaiting principal review +
 slot-worthy alone. Report now sequences the DBS dims check as PREREQUISITE for the Hermes signature (asks #2 vs #4;
 warn callout in §02). Companion scripts: final_report/{hermes_counterfactual,hermes_by_packagetype}.py. The dims
 branch logic: as-recorded → Hermes earns slot; smaller → saving re-homes to DHL/Maersk; larger → stays freight;
-ops-no → stays freight. Three of four branches end without Hermes.
+ops-no → stays freight. Three of four branches end without Hermes. Module gate is now 3 conditions (T10): dims real
++ ops feasible + HERMES APPETITE (~30k oversize-heavy parcels/yr may be below what their offer assumed — confirm
+they'll take the account at offered rates; module fails on check-fail OR Hermes-decline).
 
 ## Next concrete step
 1. Niklavs reviews final_report.html in browser (visual NOT eyeballed by me — data layer verified). Expect tier-name

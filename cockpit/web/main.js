@@ -10,7 +10,7 @@ import { Board } from "./board.js";
 import { Console } from "./console.js";
 import { FeedPanel } from "./feed.js";
 import { openPeek, release } from "./fleet.js";
-import { openTerm, Term, TermComposer, termForSid8, termInterrupted, resumeTerm, handoffAndResume, ownedTermIds, liveTerms, applyTermZoom, fitTerms, reconnectTermsAfterWake } from "./term.js";
+import { openTerm, Term, TermComposer, termForSid8, termInterrupted, termLastOutput, resumeTerm, handoffAndResume, ownedTermIds, liveTerms, applyTermZoom, fitTerms, reconnectTermsAfterWake } from "./term.js";
 import { TranscriptView } from "./transcript.js";
 import { nameFor, subscribeNames } from "./names.js";
 
@@ -432,6 +432,33 @@ function App() {
     };
   }, []);
 
+  // PTY-output liveness override (S188) for cockpit-driven rows. The cockpit owns
+  // the terminal byte stream, so for its own sessions it has ground truth the
+  // hook/heartbeat model lacks: claude emits output while it works and goes quiet at
+  // the prompt. Recompute the STALLED/IDLE *liveness subs* from output recency
+  // instead of the backend's frozen heartbeat. Fixes: a streaming turn never reads
+  // STALLED (bug 3 — heartbeat freezes between tool completions); a parked turn's
+  // IDLE clock counts from the LAST OUTPUT = the response ending (bug 2 — was
+  // measured from a mid-turn event, so a long final answer went idle instantly).
+  // No-op for sessions the cockpit doesn't drive (termLastOutput→0 → backend wins).
+  // Touches only liveness (subs/stale/rank); the ball-state main chip is unchanged.
+  const ptyLiveness = (s) => {
+    const out = termLastOutput(s.sid8);
+    if (!out) return s;
+    const since = Math.floor((Date.now() - out) / 1000);
+    const subs = (s.subs || []).filter((x) => x !== "idle" && x !== "stalled");
+    if (s.state === "busy" && since > 900) subs.push("stalled"); // genuinely silent 15m+
+    let idle = false;
+    if (s.state === "your_move" && since > 300) { subs.push("idle"); idle = true; }
+    let rank = s.rank;
+    if (s.state === "your_move") rank = idle ? 7 : 1;
+    else if (s.state === "busy") rank = 4;
+    // Mirror the backend's attention rule (needs_you/your_move and not idle) against
+    // the PTY-corrected idle, so an un-idled fresh-response row pulses + counts again.
+    const attention = (s.main === "needs_you" || s.main === "your_move") && !idle;
+    return { ...s, subs, tags: subs, stale: idle, quiet_sec: since,
+             last_action_ts: Math.floor(out / 1000), attention, rank };
+  };
   // Merge the hook manifest with the cockpit's own live terminals, so a session
   // the cockpit is running (e.g. a just-resumed, still-idle one) shows on the
   // board before it fires its first hook event. Manifest wins on dupes (richer).
@@ -441,7 +468,7 @@ function App() {
   const manifest = (data.sessions || []).map((s) =>
     s.state === "busy" && termInterrupted(s.sid8)
       ? { ...s, state: "idle", attention: false, rank: 7 }
-      : s,
+      : ptyLiveness(s),
   );
   const known = new Set(manifest.map((s) => s.sid8));
   const sessions = [

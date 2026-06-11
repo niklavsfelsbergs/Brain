@@ -226,8 +226,10 @@ def test_busy_stays_busy_when_quiet():
          "actor": "jebrim", "state": "busy", "last_event_ts": now - 200},   # 200s silent (long query/think)
         {"sid8": "f2000000", "session_id": "f2000000-0000-0000-0000-000000000000",
          "actor": "jebrim", "state": "busy", "last_event_ts": now - 9000},  # 2.5h quiet
-        # S141: a bg-task wait (hook flipped your_move->busy + `monitoring` tag) is
-        # intentionally quiet — it must NOT escalate to stalled even past 15 min.
+        # LEGACY-SHAPE GUARD (pre-S188 writer flipped a bg-wait your_move->busy +
+        # `monitoring`). S188 retired that flip (monitoring is a sub-bubble on a
+        # your_move row now — see test_monitoring_is_subbubble), but a status file
+        # still carrying the old busy+monitoring shape must STILL never stall.
         {"sid8": "f3000000", "session_id": "f3000000-0000-0000-0000-000000000000",
          "actor": "braindead", "state": "busy", "tags": ["monitoring"], "last_event_ts": now - 9000},
     ]}), encoding="utf-8")
@@ -246,6 +248,28 @@ def test_busy_stays_busy_when_quiet():
     # S141: a monitoring (bg-wait) row stays BUSY and never gains the stalled sub
     check("monitoring bg-wait stays main BUSY", by["f3000000"]["main"] == "busy")
     check("monitoring bg-wait NOT stalled despite 2.5h quiet", "stalled" not in by["f3000000"]["subs"])
+
+
+def test_monitoring_is_subbubble():
+    """S188: a turn that launched a background command (run_in_background Bash /
+    monitor) and ended STAYS your_move — launching a bg task and handing the turn
+    back is the principal's move, not a busy wait. The pre-S188 rule flipped
+    your_move->busy here, which false-pinned BUSY on every turn that spawned a
+    monitor/build (confirmed live: the UPS session read BUSY at
+    last_event_kind=Stop). `monitoring` now rides as a SUB-bubble under the real
+    ball-state, so the board still shows a bg task is out without burying YOUR MOVE."""
+    tmp = _sandbox()
+    now = time.time()
+    backend.MANIFEST.write_text(json.dumps({"sessions": [
+        # the S188 writer shape: your_move + monitoring tag (bg task still out)
+        {"sid8": "a0000000", "session_id": "S-mon", "actor": "jebrim",
+         "state": "your_move", "tags": ["monitoring"], "last_event_ts": now - 5},
+    ]}), encoding="utf-8")
+    m = backend.build_session_model()
+    s = m["sessions"][0]
+    check("bg-wait (monitoring) keeps main YOUR MOVE, not BUSY", s["main"] == "your_move")
+    check("monitoring rides as a sub-bubble", "monitoring" in s["subs"])
+    check("bg-wait your_move is ball-in-court attention", s["attention"] is True)
 
 
 def test_your_move_with_crew_is_busy():
@@ -424,6 +448,7 @@ def main():
     test_legacy_token_aliasing()
     test_action_heartbeat()
     test_busy_stays_busy_when_quiet()
+    test_monitoring_is_subbubble()
     test_your_move_with_crew_is_busy()
     test_main_status_taxonomy()
     test_robust_to_missing_and_malformed()

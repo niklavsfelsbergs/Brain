@@ -1835,15 +1835,18 @@ def main() -> None:
         # state, never a competing state (the busy row just gets annotated). (S134)
         tags.append(mode)
 
-    # Background-task wait (S141): a Stop fired your_move because the agent
-    # launched a detached command (run_in_background Bash / monitor) and ended the
-    # turn to WAIT on it — not because it's the principal's move. If a background
-    # task is still outstanding, keep the session `busy` so the board reads BUSY,
-    # not YOUR MOVE. The "monitoring" tag suppresses the busy→stalled escalation in
-    # the backend (an intentional quiet wait isn't a frozen heartbeat). Mirrors the
-    # your_move+crew→busy fix, for shell/monitor waits instead of sub-agents.
+    # Background-task wait (S141, REVISED S188): a Stop fired your_move because the
+    # agent launched a detached command (run_in_background Bash / monitor). It STAYS
+    # your_move — launching a bg task and handing the turn back is the principal's
+    # move, not a busy wait. The old S141 rule flipped state→busy here, which
+    # false-pinned BUSY on every turn that spawned a monitor/build even though the
+    # turn was genuinely done (confirmed live: the UPS session read BUSY at
+    # last_event_kind=Stop because it had launched a bg validation). The "monitoring"
+    # tag now rides as a SUB-bubble (see backend.py) so the board still shows a bg
+    # task is out, without burying YOUR MOVE. It also still suppresses the
+    # busy→stalled escalation in the backend (a no-op now that state stays your_move,
+    # kept for safety against any future re-derivation to busy).
     if state == "your_move" and _current_turn_launched_bg(_transcript_path(payload, sid)):
-        state = "busy"
         if "monitoring" not in tags:
             tags.append("monitoring")
 

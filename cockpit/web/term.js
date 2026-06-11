@@ -149,6 +149,15 @@ class TermConn {
     // cockpit SEES the Esc keystroke here, so it can tell the board to clear
     // busy→idle at once. Set on Esc, cleared on the next submit. (S083)
     this._interruptedAt = 0;
+    // PTY-output liveness (S188). The cockpit OWNS this terminal's byte stream, so
+    // it has ground truth the hook/heartbeat model lacks: claude emits output while
+    // it generates/thinks (and a final render when the turn lands), then goes quiet
+    // when the input prompt is waiting. _lastOutputAt = the wall-clock of the most
+    // recent server→terminal write. The board reads it (termLastOutput) to fix three
+    // inference bugs for cockpit-driven rows: a streaming turn never reads STALLED
+    // (output is flowing), and a parked turn's IDLE clock counts from the LAST OUTPUT
+    // (= the response ending), not from a mid-turn feed event or a frozen heartbeat.
+    this._lastOutputAt = 0;
 
     this.container = document.createElement("div");
     this.container.style.cssText = "width:100%;height:100%;";
@@ -507,6 +516,12 @@ class TermConn {
   // clear-screen would otherwise leave us in. Gated on _follow so a user who scrolled
   // up to read history is never yanked back down.
   _write(data) {
+    // Ground-truth liveness stamp (S188): a server→terminal write means claude is
+    // emitting — actively working, or just rendered its turn-end. The board reads
+    // this to suppress a false STALLED on a streaming row and to anchor the IDLE
+    // countdown to the response, not a stale heartbeat. Stamp before batching so it
+    // fires even when the rAF flush coalesces a burst.
+    this._lastOutputAt = Date.now();
     this._wq += data;
     if (this._wraf) return;
     this._wraf = requestAnimationFrame(() => {
@@ -908,6 +923,15 @@ export function termForSid8(sid8) {
 export function termInterrupted(sid8) {
   const c = bySid8.get(sid8);
   return !!(c && c._interruptedAt);
+}
+
+// Wall-clock (ms) of the most recent PTY output for a cockpit-driven session, or 0
+// if the cockpit doesn't drive this sid8 (VS Code / observed rows → board falls back
+// to the backend heartbeat). Ground-truth "actively working / just responded" signal
+// the hook model can't see — see _lastOutputAt. (S188)
+export function termLastOutput(sid8) {
+  const c = bySid8.get(sid8);
+  return c ? c._lastOutputAt || 0 : 0;
 }
 
 // Re-read --zoom and rescale every live terminal's font, then refit. Called by

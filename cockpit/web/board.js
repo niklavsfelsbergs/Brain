@@ -33,6 +33,7 @@ const SUB_LABEL = {
   bankstanding: "bankstanding",
   consultation: "consulting",
   drafts: "drafts",
+  monitoring: "monitoring",   // a bg command/monitor is still out (S188 — was a forced BUSY)
 };
 
 function fmtAge(s) {

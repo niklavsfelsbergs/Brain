@@ -323,6 +323,7 @@ html, body {
 /* liveness sub-bubbles (S139) — idle dim/grey, stalled in the alert orange */
 .flavor-idle { color: var(--ink-faint); border-color: var(--line); }
 .flavor-stalled { color: var(--stalled); border-color: var(--stalled); }
+.flavor-monitoring { color: var(--crew); border-color: var(--crew); }  /* a bg command/monitor is still out (S188) — informational, kin to crew */
 /* ritual flavors (S134) — Guthix rituals in gold, drafts-housekeeping in alching purple */
 .flavor-bankstanding { color: var(--gold); border-color: var(--gold-dk); }
 .flavor-consultation { color: var(--gold); border-color: var(--gold-dk); }

@@ -329,6 +329,11 @@ def build_session_model():
         bankstanding = "bankstanding" in hook_tags
         consultation = "consultation" in hook_tags
         drafts = "drafts" in hook_tags
+        # A detached bg command (run_in_background Bash / monitor) is still out. As
+        # of S188 this is a SUB-bubble only — it no longer forces the row BUSY (the
+        # turn that launched it is the principal's move). Rides under whatever the
+        # real ball-state is (typically your_move).
+        monitoring = "monitoring" in hook_tags
         # Mid-wrap: close-session started but not finished. Promotes to the
         # WRAPPING UP main chip below (above busy/rituals), or rides as a sub when
         # the close pauses on a ball-state (e.g. your_move waiting for a commit
@@ -374,6 +379,8 @@ def build_session_model():
             subs.append("consultation")
         if drafts:
             subs.append("drafts")
+        if monitoring:
+            subs.append("monitoring")
 
         # Greying: only an idle (quiet-parked) row dims — an active main never does.
         stale = is_idle

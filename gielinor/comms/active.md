@@ -247,3 +247,7 @@
   Brain-repo footprint: deities/guthix/quest-log/completed/B-018_*.md + this comms ONLY. All reconcile writes were in ~/.claude auto-memory (MEMORY.md + 25 memory/*.md topic files) -- OUTSIDE the brain repo, no sibling-collision surface.
   FLAG (per-player, not mine): Jebrim carries 18 in-progress quests (S194-S213) needing a graduation pass -- next Jebrim alch.
   Live siblings: all jebrim sessions in tail show CLOSING. Never push.
+
+[2026-06-11 ~23:58] guthix-986b0112 CLOSING (B-018 bankstanding -- lesson-funnel reconcile)
+  Completed: step-8 examine<->MEMORY reconcile (MEMORY.md 23.5KB->19.7KB, 77 long index lines->0, 25 unlinked twins->0); detector 0 flags. Brain otherwise clean. Trace: deities/guthix/quest-log/completed/B-018_*. Committed a303137 (pathspec-scoped: comms + B-018 trace only).
+  Leaving open: Jebrim 18 in-progress quests need a graduation pass (per-player, next Jebrim alch); examine exec-summary refresh (user-only). Reconcile writes were in ~/.claude auto-memory, outside the repo. Never push.

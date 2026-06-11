@@ -1,0 +1,11 @@
+# Compare on the engine's go-forward column, not the raw repriced column
+
+**Observation ([[S213_9ac35cce_ups-engine-vs-current-cost|S213]], 2026-06-11).** Asked to compare the 2026 UPS offer engine cost vs current invoiced cost, I summed `ups_total_eur` (the raw repriced column) over every parcel — including the WW-ECO overseas tail (US/AU/CA/…) that the offer doesn't even quote. The raw column prices that tail on premium air (Express Saver, ~€50/pcl on US vs €15 today), so I reported the offer as +8–19% / +13% GRI'd *more expensive* wholesale. Niklavs caught it: "in the calculation they also stay on current, right?" The engine already had a `go_forward_eur` / `stays_current` column that keeps the unquoted tail on its current contract. Scoring on that, the offer is ~break-even vs GRI'd today (+1.8–2.9%), not +13%. My raw-column sum over-stated the engine ~€116k.
+
+**The lesson.** When comparing a *plan* (re-rating engine, optimizer, scenario) against *actuals*, use the engine's own **decision / go-forward column** — the one that encodes which units actually switch vs stay — not the raw per-unit repriced column. The raw column reprices units the plan never moves (rejected, unquoted, out-of-scope), and for those the repriced number is fictional. The go-forward column is the plan's actual claim; the raw column is an intermediate.
+
+**How to apply.** Before summing a "what would the offer cost" column, check whether the engine emits a switch/stay flag or a go-forward total (`go_forward_eur`, `stays_current`, `decision_*`, `chosen_*`). If it does, that's the comparison basis. If I'm about to reprice 100% of a population, ask: does the plan actually move 100%? The tail that *can't* move (unserved / unquoted / over-limit) should carry its current cost in the comparison, not a fallback price.
+
+**Why it matters.** This is a sibling of the populated-column-isn't-a-measurement and modeling-label-isn't-a-physical-fact reflexes: a column existing and being summable doesn't make its values the right ones for the question. The cheap guard is that Niklavs spotted it in one line — but the right reflex is to reach for the go-forward column first, not be corrected onto it.
+
+Generalized to cross-conversation memory.

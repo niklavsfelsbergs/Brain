@@ -124,6 +124,22 @@ IDLE_AFTER_SEC = 300
 STALL_AFTER_SEC = 900
 STATE_NDJSON = STATE_DIR / "state.ndjson"
 
+# Per-session lifecycle/flavor markers the agent writes to <sid8>.mode (S059/S134/
+# S141). The status sidecar republishes these as tags only ON A HOOK FIRE — but a
+# clean session-close runs as ONE turn (write `closing` at step 0, ordinary tools
+# through step 10, `wrapped_up` at step 11, then Stop), so no fire happens WHILE the
+# marker reads `closing` and the board skips WRAPPING UP entirely, jumping to
+# WRAPPED UP. So the backend reads the marker LIVE per poll (mirror of the
+# action-heartbeat re-read) — see _live_mode_markers. Dirs mirror the sidecar's
+# MODE_INTENT_DIRS (the marker scatters between brain-root + gielinor with CWD).
+MODE_INTENT_DIRS = (
+    BRAIN_ROOT / ".claude" / "intent",
+    BRAIN_ROOT / "gielinor" / ".claude" / "intent",
+)
+MODE_MARKER_SUFFIX = ".mode"
+FLAVOR_MODES = {"alching", "bankstanding", "consultation", "drafts"}
+MODE_VALUES = FLAVOR_MODES | {"closing", "wrapped_up"}
+
 # Legacy → D-029 token aliases. A session that hasn't fired a hook since the
 # vocabulary change still carries an old token in its status file; map it on
 # read so the board renders correctly through the transition (it self-heals to
@@ -271,6 +287,40 @@ def _last_action_ts_map(max_bytes: int = 256_000) -> dict:
     return out
 
 
+def _live_mode_markers() -> dict:
+    """{sid8: (marker_token, mtime)} read FRESH from the <sid8>.mode files in both
+    intent dirs, freshest mtime wins. The backend reads these per poll rather than
+    trusting the manifest's frozen `tags`, so a `closing` marker surfaces as WRAPPING
+    UP within one poll of the close starting — independent of whether a hook fired (a
+    one-turn close fires none while the marker reads `closing`). The mtime rides along
+    so the consumer can REJECT a stale marker: these files linger after a session ends
+    without SessionEnd (crash), and a stale `wrapped_up` would otherwise falsely flip
+    a since-resumed live row to DONE. Mirrors the sidecar's _read_mode_marker;
+    unknown/empty tokens dropped. Fail-soft: any error yields no marker for a session,
+    so the row falls back to manifest tags."""
+    out: dict = {}
+    for d in MODE_INTENT_DIRS:
+        try:
+            if not d.exists():
+                continue
+            for p in d.glob(f"*{MODE_MARKER_SUFFIX}"):
+                sid8 = p.stem
+                if len(sid8) != 8:
+                    continue
+                try:
+                    mtime = p.stat().st_mtime
+                    token = p.read_text(encoding="utf-8").lstrip("﻿").strip().lower()
+                except OSError:
+                    continue
+                if token not in MODE_VALUES:
+                    continue
+                if mtime > (out.get(sid8) or ("", -1.0))[1]:
+                    out[sid8] = (token, mtime)
+        except OSError:
+            continue
+    return out
+
+
 def build_session_model():
     """The single normalized model the three views project from (D-028)."""
     manifest = _read_json(MANIFEST, {"sessions": []})
@@ -279,6 +329,7 @@ def build_session_model():
         names = {}
     now = time.time()
     action_ts = _last_action_ts_map()        # {sid8: latest action ts} — heartbeat (D-029)
+    mode_markers = _live_mode_markers()      # {sid8: closing/wrapped_up/flavor} — read live (S188b)
     sessions = []
     for s in manifest.get("sessions", []):
         state = LEGACY_STATE.get(s.get("state", "unknown"), s.get("state", "unknown"))
@@ -307,6 +358,25 @@ def build_session_model():
         pending = _pending_subagents(s.get("session_id"))
         if state == "your_move" and pending:
             state = "busy"
+        # Live lifecycle marker (S188b). Read fresh from the <sid8>.mode file so the
+        # close lifecycle surfaces without waiting on a hook fire: a one-turn close
+        # writes `closing` (step 0) then `wrapped_up` (step 11) with no sidecar fire
+        # between, so the manifest tags never carry `closing` and the board skipped
+        # WRAPPING UP. `wrapped_up` sets state `done` (WRAPPED UP); `closing`/flavors
+        # merge into the tag set below.
+        # STALENESS GUARD: .mode files linger after a crash-exit (no SessionEnd to
+        # archive them), so trust a marker only if it's NEWER than the session's last
+        # hook event. A close writes its marker just after the turn's UserPromptSubmit
+        # (no later fire in a one-turn close), so a valid marker is always fresher than
+        # last_event_ts; a stale `wrapped_up` from a prior close that since resumed is
+        # OLDER than the resume event → ignored (the row keeps its real live state).
+        # The paused-close case still publishes via the manifest tag the sidecar wrote
+        # at the AskUserQuestion fire.
+        live_mode, live_mtime = mode_markers.get(sid8, ("", -1.0))
+        if live_mtime < last:
+            live_mode = ""
+        if live_mode == "wrapped_up" and state != "ended":
+            state = "done"
         # Liveness sub-flags (S139 — the S134 relabel is GONE). A quiet row keeps
         # its real semantic state and gets a sub-bubble, instead of being
         # relabelled to a main IDLE/STALLED chip:
@@ -325,6 +395,15 @@ def build_session_model():
         # list). Rituals: alching/bankstanding promote to a MAIN chip; consultation/
         # drafts stay sub-bubbles. (S134/S139)
         hook_tags = set(s.get("tags") or [])
+        # Merge the live marker (S188b) so `closing` (WRAPPING UP) and ritual flavors
+        # publish the moment the agent writes the marker, not only on the next hook
+        # fire. `wrapped_up` already set state=done above; `wrapped` rides as a tag.
+        if live_mode == "closing" and state not in ("done", "ended"):
+            hook_tags.add("closing")
+        elif live_mode in FLAVOR_MODES:
+            hook_tags.add(live_mode)
+        elif live_mode == "wrapped_up":
+            hook_tags.add("wrapped")
         alching = "alching" in hook_tags
         bankstanding = "bankstanding" in hook_tags
         consultation = "consultation" in hook_tags

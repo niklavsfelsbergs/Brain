@@ -52,6 +52,11 @@ def _sandbox():
         "gnome": tmp / "state-gnomes.json",
         "penguin": tmp / "state-penguins.json",
     }
+    # Isolate the live <sid8>.mode marker read (S188b) from the real intent dirs so
+    # tests neither read live close-markers nor depend on machine state (S187 hygiene).
+    intent = tmp / "intent"
+    intent.mkdir(exist_ok=True)
+    backend.MODE_INTENT_DIRS = (intent,)
     (tmp / "state-names.json").write_text("{}", encoding="utf-8")
     (tmp / "state.ndjson").write_text("", encoding="utf-8")
     return tmp
@@ -272,6 +277,57 @@ def test_monitoring_is_subbubble():
     check("bg-wait your_move is ball-in-court attention", s["attention"] is True)
 
 
+def test_live_closing_marker_surfaces_wrapping_up():
+    """S188b: the board's WRAPPING UP (closing) state must surface from the LIVE
+    <sid8>.mode marker, not only from a manifest tag a hook happened to publish. A
+    clean one-turn close writes `closing` (step 0) then `wrapped_up` (step 11) with
+    no sidecar fire between, so the manifest never carries `closing` and the board
+    skipped straight to WRAPPED UP. The backend reads the marker live per poll:
+    `closing` -> main WRAPPING UP even though the manifest row is bare busy;
+    `wrapped_up` -> main WRAPPED UP (done) likewise; and a `closing` marker that's
+    been superseded by a real ball-state still rides as a sub, not the main chip."""
+    tmp = _sandbox()
+    now = time.time()
+    intent = backend.MODE_INTENT_DIRS[0]
+    backend.MANIFEST.write_text(json.dumps({"sessions": [
+        # mid-close: manifest row is plain busy (last fire was the close's prompt),
+        # the live marker says closing -> WRAPPING UP.
+        {"sid8": "a0000000", "session_id": "S-clos", "actor": "braindead",
+         "state": "busy", "last_event_ts": now - 5},
+        # finished: marker flipped to wrapped_up, manifest still busy -> WRAPPED UP.
+        {"sid8": "b0000000", "session_id": "S-wrap", "actor": "braindead",
+         "state": "busy", "last_event_ts": now - 5},
+        # close paused on a question: ball-state wins the chip, closing rides as sub.
+        {"sid8": "c0000000", "session_id": "S-pause", "actor": "braindead",
+         "state": "needs_you", "last_event_ts": now - 5},
+        # no marker at all -> ordinary busy, untouched.
+        {"sid8": "d0000000", "session_id": "S-bare", "actor": "jebrim",
+         "state": "busy", "last_event_ts": now - 5},
+        # STALE marker: a prior close left a wrapped_up marker, the session then
+        # RESUMED (fresh last_event_ts) -> the marker is older than the last event and
+        # must be IGNORED, so the row keeps its live busy state (not a false DONE).
+        {"sid8": "e0000000", "session_id": "S-resumed", "actor": "jebrim",
+         "state": "busy", "last_event_ts": now},
+    ]}), encoding="utf-8")
+    (intent / "a0000000.mode").write_text("closing", encoding="utf-8")
+    (intent / "b0000000.mode").write_text("wrapped_up", encoding="utf-8")
+    (intent / "c0000000.mode").write_text("closing", encoding="utf-8")
+    stale = intent / "e0000000.mode"
+    stale.write_text("wrapped_up", encoding="utf-8")
+    import os
+    os.utime(stale, (now - 600, now - 600))   # marker is 10 min older than the resume
+    m = backend.build_session_model()
+    by = {s["sid8"]: s for s in m["sessions"]}
+
+    check("live closing marker -> main WRAPPING UP", by["a0000000"]["main"] == "closing")
+    check("live wrapped_up marker -> main WRAPPED UP (done)", by["b0000000"]["main"] == "done")
+    check("paused close: ball-state wins main, closing demoted to sub",
+          by["c0000000"]["main"] == "needs_you" and "closing" in by["c0000000"]["subs"])
+    check("no marker -> ordinary busy untouched", by["d0000000"]["main"] == "busy")
+    check("STALE marker older than last event is IGNORED (no false DONE)",
+          by["e0000000"]["main"] == "busy")
+
+
 def test_your_move_with_crew_is_busy():
     """S139: a session parked on a Stop (your_move) while a FOREGROUND subagent is
     still out is waiting on its crew, not the principal — the board must read it
@@ -449,6 +505,7 @@ def main():
     test_action_heartbeat()
     test_busy_stays_busy_when_quiet()
     test_monitoring_is_subbubble()
+    test_live_closing_marker_surfaces_wrapping_up()
     test_your_move_with_crew_is_busy()
     test_main_status_taxonomy()
     test_robust_to_missing_and_malformed()

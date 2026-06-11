@@ -199,6 +199,7 @@ Write today's date into `players/<active>/last-alched.md`. This is what the thre
 - Does not touch other players' content. A Zezima alching session does not read or modify Jebrim's layers.
 - Does not promote cross-player patterns to the global layer. That is explicitly bankstanding's integrative job, not alching's.
 - Does not write to the global lorebook even when a behavioral change is implied. Flag for bankstanding instead.
+- Does not reconcile the harness auto-memory (`MEMORY.md` / `memory/*.md`). Auto-memory is global and always-loaded across every player; tending the two-funnel drift (examine ↔ auto-memory) is **bankstanding's** step 8. If a player-scoped lesson is duplicated between this player's `examine/` and a warm MEMORY entry, just note it for the next bankstanding.
 
 ## Discipline
 

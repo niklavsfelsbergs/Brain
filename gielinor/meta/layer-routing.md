@@ -19,6 +19,7 @@ The brain's layers are differentiated by *what they store*, not *when they're wr
 | **Observation about Niklavs through the player's relationship-lens** | `niksis8_character/drafts/` (per-player) → principal approves to `confirmed/` |
 | **Currently load-bearing project, deadline, stakeholder commitment** | `keepsake/proposals/` (per-player) → principal pins to `current.md` |
 | **System-level self-observation** (about the agent as a whole, not any one player) | `examine/drafts/` (global) → principal approves to `confirmed/` |
+| **Durable operating lesson already warm in the harness auto-memory** (`MEMORY.md` / `memory/*.md`, always-loaded every mode) | Keep the warm MEMORY entry (short rule + cross-link) **and** ensure a canonical `examine/confirmed/` anchor exists. The two funnels are kept both (B-015) but reconciled — never left to diverge — at **bankstanding step 8**; detector `developer-braindead/verification/lesson-store-check.py` |
 | **Universal Niklavs observation** (true regardless of which player saw it) | `niksis8/drafts/` (global) → principal approves to `confirmed/` |
 | **Cross-player always-surface pin** | `keepsake/proposals/` (global) → principal pins |
 | **Decision about how the agent operates going forward** | `lorebook/drafts/` → principal approves to `lorebook/confirmed/D-NNN_*.md` |

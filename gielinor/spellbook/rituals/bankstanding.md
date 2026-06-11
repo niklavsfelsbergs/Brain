@@ -145,9 +145,21 @@ A bankstanding round that just triages inbox items and rotates keepsake doesn't 
 - Why.
 - What triggered the change (which observation, which rejection pattern, which user feedback in this round).
 
-The principal then promotes the draft to `lorebook/confirmed/` if it stands.
+The principal then promotes the draft to `lorebook/confirmed/` if it stands. On promotion, add the decision's entry to `lorebook/_index.md` in the same pass — distilled one-line rule plus cue patterns if it has a topic-cue moment, else its `carried-by:` line. An unindexed decision is invisible to the `[LOR]` cue arm (`domain-cue-reminder.py`); `developer-braindead/verification/hygiene-check.py` flags the drift.
 
 No separate `patch-notes.md` is maintained — the lorebook entries themselves are the chronological record of the system's evolution.
+
+### 8. Reconcile the two lesson funnels (examine ↔ harness auto-memory)
+
+The brain keeps operating lessons in **two funnels**: the gated, portable `examine/` (the canonical self-model, tended in steps 2–5 above) and the **harness auto-memory** (`MEMORY.md` index + `memory/*.md` topic files) — always-loaded every session and *every mode* (dev-brain and Guthix included), and tended by **nothing else**. Per the 2026-06-01 B-015 steer the two are kept **both** — auto-memory is the frictionless always-loaded warm store, `examine/` is the gated archived portable one — but the *bridge* between them was never built, so they drift and double-capture the same lesson. This step is that bridge. (Background: `developer-braindead/bank/research/2026-06-11-lesson-store-grounding.md`.)
+
+Run the detector (read-only): `developer-braindead/verification/lesson-store-check.py`. Act on each flag, **propose-then-approve** like every other bankstanding move:
+
+- **CAP over working / hard** → trim index lines to the rule (detail stays in the topic file) and/or retire (below). Over the **hard** cap means the harness *truncates* `MEMORY.md` at load — fix that first.
+- **DRIFT — an unlinked examine↔MEMORY duplicate** → the same lesson lives in both funnels. Keep **one canonical `examine/` anchor**; reduce the MEMORY entry to the short rule **+ a cross-link to that anchor** (by filename stem). **Do not delete the MEMORY entry** — it is the always-loaded warm copy, the *only* lesson store present in dev-brain / Guthix modes; just stop it diverging. (`likely` matches are name-fuzzy — confirm before reconciling; reworded twins evade the name-match, so a manual scan still earns its keep.)
+- **Retire a MEMORY index line** only when its lesson has **graduated to an always-on `keepsake/` reflex** (no longer needs a warm line) or been **superseded** by a newer entry. Retirement = move the topic file to `memory/archive/` (never delete) and drop its index line.
+
+Cap: bias to the **unlinked-exact** duplicates first; a few per pass. The detector is the enforcement backbone (hand-enforced caps drift; detectors hold); this step is the hand that acts on it. Auto-memory is global, so this is bankstanding's job, never alching's.
 
 ## Discipline
 
@@ -165,3 +177,4 @@ No separate `patch-notes.md` is maintained — the lorebook entries themselves a
 - `meta/drafts-mechanics.md` for the drafts-review machinery used in steps 2 and 5.
 - `meta/archive-discipline.md` for the moving-not-deleting rules.
 - `lorebook/_about.md` for what the self-improvement log captures and what it doesn't.
+- `developer-braindead/verification/lesson-store-check.py` + `developer-braindead/bank/research/2026-06-11-lesson-store-grounding.md` for the two-funnel reconcile (step 8).

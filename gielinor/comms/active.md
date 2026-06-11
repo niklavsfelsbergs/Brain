@@ -290,3 +290,26 @@
   Completed: the principal-approved FR rebase build fix -- 3 changes in routing_2026q1/build_final.py + replica annual_2026/q1_base.py (DPD-FR cur_inc->maersk 3,205 parcels; March keep anchor min_n=10, 763 anchored/3,049 fallback; baseline untouched) + deterministic tie-break fix (latent 1-vs-1 dom tie the reconcile assert caught). Cascade re-run end-to-end, all asserts + verify_report PASS. Headline: annual EUR997,720 -> EUR974,692 (-23,028); Q1 EUR201,916 -> EUR194,191. Deliverables: q04f_fr_rebase.py + q04f_fr_rebase_findings.md + README Q04f row (sibling rows untouched).
   Leaving open (resume: inventory/fr-incumbent-rebase-resume__cbc40f78.md): (1) principal decision on the non-reproducing existence proof (Poster40@0kg stays DPD under the approved spec -- q04c's 4.09 was Maersk-only); (2) principal decision on the DE Poster40 knife-edge flip (21,858 parcels DHL->DPD @ EUR0.04/parcel -- Q01b threshold candidate); (3) bi-analytics commit go (everything uncommitted there); (4) eu-tender digest headline stale (EUR997,720) -> next alch.
   Harvest: 1 examine draft (briefs-expected-result-is-a-testable-claim) + 1 cross-conv memory. Brain commit pathspec-scoped to cbc40f78 footprint + comms ONLY (S144 sweep hazard; live siblings 5733cb1d / b93204b5 / 104770bd / 4b987ab6 / e6e7b78d untouched).
+
+[2026-06-11 ~13:30] jebrim-ee882f39 OPEN (S199 -- UPS OML/LPS predictor investigation)
+  Doing: (1) bank draft -- UPS negotiated OML/LPS thresholds (LPS >325 / OML >419, ours, override the DE book) + CUSTOM_OVERSIZED cohort hypothesis; (2) spawning the shipping-agent for the predictor investigation (does ANYTHING in our data predict OML/LPS charges -- deep cohorts packagetype x dim-band x weight-band, UPS billed dims vs ours, grain check; outcome fork: course-correct / our-data-wrong / UPS-mischarge dispute).
+  Targets (sid8 ee882f39): brain -- jebrim bank/drafts/notes/projects/2026-06-11-ups-oml-lps-negotiated-thresholds.md, quest-log S199_ee882f39_*, inventory, this comms, intent jebrim-ee882f39.txt; outside brain -- shipping-agent repo scratchpad (probe scripts only). NO bi-analytics writes, no commits without principal go (pathspec-scoped; never push).
+  Live siblings: 5733cb1d + b93204b5 (jebrim, result_investigation Q&A / q04e -- disjoint, staying off result_investigation/*); cbc40f78 CLOSED; 104770bd + 4b987ab6 (unknown, no OPEN -- steering clear of non-mine paths); e6e7b78d (braindead, disjoint).
+
+[2026-06-11 ~14:10] jebrim-5733cb1d CLOSING (S196 -- EU tender result investigation, round 1)
+  Completed: result_investigation Q&A round 1, Q01-Q06 all closed with principal conclusions in the findings
+  files. Flow profiles (UPS->DPD/Maersk/DHL, Maersk->DPD, DPD->Maersk, UPS->Hermes), threshold sensitivities
+  (incl. true-grain re-run after principal caught my dest-x-pkg error), CH/AU deep-dives, FR staleness
+  validation -> handed the q04f rebase to a parallel session (landed: headline 997.7k->974.7k EUR/yr), label-churn
+  handed to q04e session, oversize-fee-pool sizing (~675k/yr; ~190k/yr unrescuable without dispatch dims).
+  Committed bi-analytics 98cdd49 (final_report + annual_2026 + result_investigation through Q04d).
+  Leaving open: quest in-progress (review continues by rounds; remaining: stays, residual->DPD, DBS->Hermes
+  own question, tier split/fuel band/do-nothing). bi-analytics q05_*/q06_*/README/q04-conclusion edits
+  UNCOMMITTED there (principal go pending); q04f_* files belong to the rebase session, not swept.
+  Resume: inventory/eu-tender-result-investigation-resume__5733cb1d.md. Harvest: 1 examine + 1 bank draft
+  + 1 memory. Brain commit pathspec-scoped to 5733cb1d files ONLY (S144 hazard; siblings b2e97698/e6e7b78d).
+
+[2026-06-11 ~12:45] jebrim-b93204b5 CLOSING (S197 -- q04e label-churn deep dive shipped)
+  Completed: q04e deliverable in bi-analytics result_investigation/ (findings + script, q04e_ prefix only). Verdicts: WICKEL 80x60 family -> ORWO_80x60 relabel-equivalent, fold (ORWO born 2025-07; carrier-side swap Mon 2026-02-23, weekend catalog change, all shops at once); STANZ 120x90->120x80 REAL size change crossing Maersk <=300 L+girth (311.5->290) AND a reversion (S80 the 2-yr incumbent, Dec-Jan S90 surge = anomaly; re-weight ~3x, don't fold). Sweep: no other churn pairs; GEL Q1-tail death = invoiced-only artifact; PIZZA 120x90 [x2] shrank same event; plain WICKEL resurrected May 12 on a new box.
+  Leaving open (resume: inventory/q04e-label-churn-resume__b93204b5.md): CONCLUSION block awaits principal review; bi-analytics q04e files UNCOMMITTED there (principal-gated). README q04e row left to @5733cb1d (suggested line in my 12:25 UPDATE). Open threads: strapped-variant destination; Dec-Jan STANZ baseline-or-exception call.
+  Harvest: 1 examine draft (window-bounded-series-inverts-incumbency) + 1 bank draft (population-parquet invoiced-only tail artifact) + 1 cross-conv memory. S196_b93204b5 shipping-agent trace graduated -> completed/. NOT committing the 3 untracked S-shipmart-* orphan traces (no sid8, possibly live siblings' -- flagged to principal) nor sibling 5733cb1d's untracked quest-log. Brain commit scoped to b93204b5 pathspecs + comms + intent ONLY (S144 sweep hazard).

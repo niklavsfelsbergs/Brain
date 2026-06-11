@@ -1,9 +1,0 @@
-# A "vs today" baseline silently assumes the incumbent persists
-
-**Observation ([[S209_89e4a123_carrier-overview-v2-rederive|S209]], 2026-06-11).** In the carrier_overview_v2 re-derive I framed 5 of UPS's 7 segment wins as "⚠ hollow vs today — keep the incumbent": the new 2026 offer priced above UPS's current invoiced cost on CH/FR/Nordics bulky. Niklavs pushed back: *"we cannot keep today's UPS, I believe we have to sign this contract."*
-
-**Why it's a real correction.** The whole premise of a tender is that the incumbent contract is being **replaced** — so "keep today" is fiction, and the raw-Q1 "today" bar is the wrong yardstick. Two things I'd skipped:
-1. **The forward cost, not the raw actual.** UPS floats on its published tariff (no GRI cap), so *staying* incurs a +5% GRI. Against the GRI'd-forward bar, the high-volume FR slices flip from "hollow" to break-even-or-better — the conclusion inverts.
-2. **Availability.** A "hollow vs today" verdict only means "keep" if today's rate is actually obtainable next year. When the contract's being replaced, it isn't.
-
-**How to apply.** Before framing "X is hollow vs today → keep the incumbent," check (a) is the incumbent rate available *forward* (contract renewable / not being replaced)? and (b) should the bar be the forward (GRI'd / rate-moved) cost rather than raw actuals? If the contract is being replaced, compare the offer to the forward cost and to the *other* offers, not to a soon-to-expire incumbent rate. The raw-actuals bar is the conservative floor, not the decision bar. Generalizes to any incumbent-vs-replacement comparison, not just UPS. See [[2026-06-11-ups-new-offer-vs-today-cost-drivers]].

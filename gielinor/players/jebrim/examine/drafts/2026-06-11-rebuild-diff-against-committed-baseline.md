@@ -1,7 +1,0 @@
-# Rebuilding a generated report: diff the headline against the committed baseline before presenting
-
-**Observation ([[S201_475fd1ab_final-report-service-mix|S201]], 2026-06-11, T4).** Rebuilt the EU-tender final report to add the service-mix table; the full verify chain PASSed — and the headline had silently moved €997,720 → €974,692. The verifier only checks *internal* consistency (tiers tie, figures render), so a rebuild that absorbs regenerated upstream artifacts passes clean. The drift was caught only by noticing the resume's recorded numbers differed, then diffing against the committed `final_stats.json` (98cdd49) and tracing the cause to [[S198_cbc40f78_fr-incumbent-rebase|S198]]'s FR-rebase cascade (legitimate, approved, −€23,028 — but Niklavs last saw the old number).
-
-**The rule.** A regenerated derived artifact inherits whatever upstream state is on disk at rebuild time — in a parallel-session tree that state moves between builds. Before presenting "rebuilt + verified": diff the headline figures against the last version the principal reviewed (committed or otherwise), and if they moved, name the cause from the sibling record before reporting. "PASS" answers *is it self-consistent*, never *is it the state he thinks it is*.
-
-Adjacent to the global derived-report-prose-drifts lesson but distinct: this is silent *absorption of sibling changes via rebuild*, not prose-vs-data drift within one report.

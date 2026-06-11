@@ -20,23 +20,7 @@
 
 > **Rotated 2026-06-11 (S196 close)** - older entries moved to `archive/active-2026-06-11.md`. Kept the newest 14 entries.
 
-
-[2026-06-11 ~14:35] jebrim-3389aeeb OPEN (S201 -- GLS old-vs-new offer comparison)
-  Doing: EU tender -- why is GLS uncompetitive now when the old contract was good? Locating the old GLS rate card vs the 2026 tender offer/engine, then a per-component diff (base rates, surcharges, fuel) on the Q1 cost-matrix basis.
-  Targets (sid8 3389aeeb): brain -- quest-log S201_3389aeeb_*, inventory, this comms, intent jebrim-3389aeeb.txt; bi-analytics -- READ-ONLY scout first; any analysis scripts land in result_investigation/ style (own qNN prefix) only after scoping, UNCOMMITTED, principal-gated.
-  Live siblings: ee882f39 (jebrim, S199 UPS OML/LPS -- staying off its bank draft + scratchpad); 87f50e88 (jebrim, result_investigation Q&A round 2, owns q07_* + README -- I will NOT touch result_investigation/README.md without a comms ask); 475fd1ab (jebrim, busy, no OPEN in tail -- steering clear of non-mine paths).
-
-[2026-06-11 ~14:50] jebrim-276897ca OPEN (S202 -- EU tender negotiation levers, no-Hermes portfolio)
-  Doing: mapping negotiation levers + EUR impact for the chosen portfolio carriers with live contracts (Maersk, DHL Paket, DPD PL; UPS noted as pre-contract -- offer levers only). Grounding: contract-overview + carrier-contracts digest + engines + Q1 spend/cost-matrix outputs. Read-heavy; deliverable is a chat analysis first.
-  Targets (sid8 276897ca): brain -- jebrim quest-log S202_276897ca_*, inventory, this comms, intent jebrim-276897ca.txt; bi-analytics -- READ-ONLY (mining existing computed outputs; no new scripts unless cued). No commits unless principal go (pathspec-scoped; never push).
-  Live siblings: ee882f39 (S199 UPS OML/LPS -- staying off its bank draft + scratchpad; will CITE its findings read-only); 87f50e88 (result_investigation Q&A r2, owns q07_* + README -- staying off); 475fd1ab (final_report service-mix -- staying off final_report/ writes); 3389aeeb (S201 GLS diff -- disjoint, GLS not in my scope); 4b987ab6 (unknown, no OPEN -- steering clear); e6e7b78d (braindead, disjoint).
-
-[2026-06-11 ~14:25] jebrim-475fd1ab UPDATE (service-mix DONE; final report rebuilt onto post-S198 numbers)
-  SS02 service-mix table landed (build_final_stats service_mix + render + verify tie-outs, chain PASS). NOTE for siblings/next session: the rebuild absorbed S198-cbc40f78's FR-rebase cascade (artifacts regenerated 12:45) -- final_report.html headline is now base EUR393,477 + module EUR581,215 = EUR974,692, no longer the committed 98cdd49 EUR997,720. Matches S198's documented -EUR23,028; final + annual cross-assert agree. Quest-log S201_475fd1ab open; commit go pending with Niklavs.
-
-[2026-06-11 ~14:40] jebrim-475fd1ab CLOSING
-  Completed: SS02 service-mix-per-carrier table in the final report (build_final_stats service_mix + render + verify tie-outs, full chain PASS). Caught + attributed the headline drift to S198's FR-rebase cascade (EUR997,720 -> EUR974,692, legitimate). Quest-log S201_475fd1ab + resume + 1 examine draft written.
-  Leaving open: bi-analytics final_report/ uncommitted (principal eyeball + commit go, bundles S198 cascade pathspec); annual_report.py sibling lacks the service-mix section (his call); eu-tender digest headline re-stamp at next alch (S198-flagged).
+> **Rotated 2026-06-12 — 4 older entries bulk-moved to `active-2026-06-12.md`** (auto-rotation, comms_append.py). Kept the most recent 50 below; seek to EOF for the live tail. Nothing deleted (per `_about.md` -> Rotation).
 
 [2026-06-11 ~15:05] jebrim-3389aeeb UPDATE (S201 -- GLS comparison built)
   Done: 1_offers/picanova/GLS/comparison/ (extract_old_cards.py + compare_old_vs_new.py + findings.md + parquets) -- all UNCOMMITTED in bi-analytics, principal-gated. Headline: tender +14.9% vs 2025 terms on the same Q1 parcels; +8.7% above GLS's own 2026 continuation conditions. Driver: flat 2-25kg card abolished + new 4.1% dieselfloater + Klima 2.5% + EFTA 25.

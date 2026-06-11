@@ -23,9 +23,11 @@ corpus:
   - bank/notes/projects/2026-06-09-tender-2.96M-vs-scm-3.3M-scope-reconciliation.md
   - bank/notes/projects/2026-06-10-maersk-hermes-oversize-corrections-and-savings-split.md
   - bank/notes/projects/2026-06-10-db-schenker-reroute-package-dims-and-savings.md
+  - bank/notes/projects/2026-06-11-eu-tender-red-team-audit.md
+  - bank/notes/projects/2026-06-11-eu-tender-annualization-method.md
 specialist: shipping-agent (spawn for the 2026-Q1 actuals baseline pulls)
-freshness: 2026-06-10
-synthesized: 2026-06-10
+freshness: 2026-06-11
+synthesized: 2026-06-11
 ---
 
 # EU Tender 2026 — quantitative carrier-tender review
@@ -45,6 +47,8 @@ A carrier we ship today *and* that bid with a working engine takes `INCUMBENT | 
 
 ## Current state (2026-06-10, maersk-3.2.0 / hermes-2.2.0)
 Carrier replies resolved the oversize gaps: Maersk hard ceiling **longest ≤175 (DE 200) AND L+2W+2H ≤ 300** (girth ruling = the downside reading; most EU oversize surcharges now unreachable → Maersk lane essentially standard-only) + Hermes dimensional gate + flat-7% fuel → [[2026-06-10-maersk-hermes-oversize-corrections-and-savings-split]]. **Q1 saving €201,916 (6.8%)** (was €377k pre-corrections); **annual €997,720/yr (7%)**, band €969k–€1,026k (`annual_2026/`). The girth change re-homed the *whole book*, not just DBS (13,170 of 20,171 affected parcels were on non-DBS carriers). **DB Schenker reroute = €107,684 (53%), LOW confidence**: 4,490 moved (Hermes 4,463 / Maersk 27); 85% of switch saving sits on zV parcels whose dims are a **template, not a measurement** (open bi-etl lineage trace) → [[2026-06-10-db-schenker-reroute-package-dims-and-savings]]. All 4 reports (carrier overview, decision, routing Q1, annual) current on 3.2.0/2.2.0; management deck deferred (stale at €377k). Open carrier items: Maersk EU fuel band/schedule, UPS GRI 5/5.9, DHL thin-flat waiver.
+
+**Final report frame ([[S194_907d4e63_eu-tender-holdup-pass-and-project-rating|S194]], `final_report/`, uncommitted in bi-analytics):** the decision line is no longer the confidence split — it's **BASE PORTFOLIO €420,218/yr + OVERSIZE MODULE €577,502/yr** (Hermes + DBS reroute = one gated decision; 3 gate conditions: DBS dims check, module numbers hold, Hermes' own appetite for ~30k/yr oversize-heavy volume). Hermes is ~86% DBS-origin value — not slot-worthy without the module. Annualization method (Q1 base × per-country 2025 profile, ~×4.8; peak = the only seasonal term) → [[2026-06-11-eu-tender-annualization-method]]. Red-team audit standing items (selector floor, bias_table, Maersk ROW demand €0) + follow-through state → [[2026-06-11-eu-tender-red-team-audit]].
 
 ## Live work
 Spawn the **shipping-agent** for actuals/mart pulls. Per-carrier rate detail, fuel/surcharge specifics → the engines in the repo + [[carrier-contracts]]. Sibling [[shipping-mart]] is the data layer underneath.

@@ -22,9 +22,16 @@ corpus:
   - bank/notes/projects/2026-06-09-fif-report-vs-ups-portal-export.md
   - bank/notes/projects/2026-06-09-fact-truck-charges-navigation.md
   - bank/notes/projects/shipping-contract-corpus.md
+  - bank/notes/projects/2026-06-11-austrian-post-public-indices-dhl-demand.md
+  - bank/notes/projects/2026-06-11-fedex-pl-fuel-fx-remote-area-mechanics.md
+  - bank/notes/projects/2026-06-11-fedex-q1-2026-fuel-history.md
+  - bank/notes/projects/2026-06-11-hermes-destatis-diesel-fuel-mechanics.md
+  - bank/notes/projects/2026-06-11-maersk-row-fedex-pl-public-surcharges.md
+  - bank/notes/projects/2026-06-11-ups-de-2026-published-surcharges.md
+  - bank/notes/projects/2026-06-11-ups-invoice-charge-profile.md
 specialist: shipping-agent (full-access tier reaches bronze/silver raw invoice tables for reconciliation)
-freshness: 2026-06-09
-synthesized: 2026-06-09
+freshness: 2026-06-11
+synthesized: 2026-06-11
 ---
 
 # Carrier contracts & invoices
@@ -50,6 +57,9 @@ The FIF report = UPS monthly invoice file → [[2026-05-28-ups-orwo-fif-data-qui
 
 ## Dimension coverage (raw upstream, off-contract)
 Of ~21 carriers: **~10 carry real measured dims, 5 oversize-billing-signal only, 3 (DHL feeds) nothing** → [[2026-06-09-carrier-invoice-dimension-coverage]]. **Audit method:** profile the *widest bronze source* + charge-DESCRIPTION **values**, not a narrow silver table's column names (a name-scan false-negatived ~14 carriers). **A populated column ≠ an independent measurement** → [[2026-06-09-carrier-measured-vs-passthrough-dims]]: Maersk reprints OUR declared L/W/H verbatim (passthrough); Yodel only 6.9% populated; verify provenance (exact-equality test, dual-field trap) before claiming "full coverage."
+
+## Fuel-index mechanics by carrier (2026-06-11 research picks)
+Each carrier floats fuel off a **different public index** — never reuse one number across carriers: **Hermes** → Destatis Grossverbraucher diesel, reply-ladder bands (0% ≤122.7, +0.5%/2.578pt; the *offer* ladder is a retired 2015-base trap, ~1.26×) → [[2026-06-11-hermes-destatis-diesel-fuel-mechanics]]; **FedEx PL** → three *independent* indices (Intl = jet fuel, Regional = EU diesel — one number can't serve both), 2-week lag empirically confirmed, band tables in [[2026-06-11-fedex-q1-2026-fuel-history]] + [[2026-06-11-fedex-pl-fuel-fx-remote-area-mechanics]]; **UPS** → weekly Mondays, EC diesel (road) / USGC jet (express), 2-week lag → [[2026-06-11-ups-de-2026-published-surcharges]]; **Austrian Post** → BMWET prev-month-max diesel TKZ tiers (own 0–32% card non-public) → [[2026-06-11-austrian-post-public-indices-dhl-demand]]; **Maersk ROW** lanes = Maersk base + FedEx public surcharges → [[2026-06-11-maersk-row-fedex-pl-public-surcharges]]. **UPS ground truth (12-mo invoices):** ~€235k/yr billed by charge types NOT in the cost model (peak/demand ~€191k); oversize must be read NET (UPS reverses ~54% in place); seasonal €0.20/pkg Base Rate Surcharge + standing Over-Max €440 survive partial waivers → [[2026-06-11-ups-invoice-charge-profile]].
 
 ## Re-rating discipline
 Reconcile a re-rate against the unit's ground-truth actuals before reporting a delta (a new flat fee can flip a near-zero delta's sign); test for a real lever (negotiated discount / contract term) before fitting an engine parameter (DPD's sheet-vs-invoiced gap was a ~9% discount, not a divisor). Linehaul/truck sizing → `shipping_mart.fact_truck_charges` (volume-weight over a full demand cycle) → [[2026-06-09-fact-truck-charges-navigation]]. Trust-gate detail lives in [[eu-tender]]; spawn the **shipping-agent** for the actuals pulls.

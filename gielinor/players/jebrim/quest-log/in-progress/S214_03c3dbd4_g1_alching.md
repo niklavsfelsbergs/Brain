@@ -1,0 +1,34 @@
+# [[S214_03c3dbd4_g1_alching|S214]] / 03c3dbd4 — gnome g1 alching run-log (Jebrim, propose-only)
+
+> Gnome-run alching pass. Spawned-because: >10-pending-drafts heuristic (36 drafts = 17 bank + 19 examine, all 2026-06-11, S201–[[S213_9ac35cce_ups-engine-vs-current-cost|S213]] EU-tender/UPS wave). `last-alched.md` = 2026-06-11 (prior gnome b2e97698); these 36 are all NEW since. **Propose-only** — no promotions, no moves performed. Off-limits respected: [[S212_177f00f1_eu-tender-no-hermes-report|S212]] RateProof (12aa2f0f) untouched; 2026-06-09 already-promoted set untouched.
+
+## Step 1 — identity drafts (19 examine; niksis8_character/drafts empty; keepsake/proposals empty)
+Read all 19. **Dedup pass against examine/confirmed/ (79 entries incl. 2026-06-09 untracked additions): NO exact duplicates found.** The 8 flagged candidates (briefs-expected-result, count-lines, go-forward, selection-evidence, window-bounded, size-artifact-booked-basis, confirm-same-population, vs-today) are all *distinct-instance* lessons that cross-link confirmed entries as **siblings** (correct born-linked authoring), not re-statements. Confirmed siblings verified by reading: populated-column (S173), decompose-cost-gap ([[S175_6c5170d1_routing-cost-basis-review|S175]]), answer-direct-question ([[S186_91513c92_nfe-domain-deepen-new-domains|S186]]), locked-decision ([[S166_f82b01df_routing-service-split-build|S166]]), modeling-label ([[S185_e9821cdf_eu-tender-report-signoff|S185]]), categorical-class ([[S182_e3648d0d_routing-report-size-tiers|S182]]), disagreeing-totals ([[S174_8a204c6b_fif-may-export-reconciliation|S174]]) — each is a different anchor/mechanism. Recommendation: **promote all 19 to confirmed** (0 reject-as-dup, 0 edit). Several are warm in harness MEMORY (go-forward, count-lines, vs-today, selection-evidence, etc.) — that does NOT block a confirmed promotion; examine↔MEMORY reconciliation is bankstanding step 8, not alching's. Note for next bankstanding: the funnel-drift detector should confirm these get MEMORY+confirmed twins.
+
+## Step 2 — bank drafts (17 in bank/drafts/notes/projects/2026-06-11-*)
+Read all 17. Recommendation: **promote all 17, 0 reject.** No contradiction with existing bank/notes/ found (the corpus was walked [[S193_c5915b03_jebrim-alching-pass|S193]]; the new UPS canon supersedes via cross-link, not contradiction). **Overlap/consolidation flags (promote-as-is, but they form a tight UPS cluster):** ups-cascade-new-canon (the canon anchor) / ups-engine-vs-current-cost-corrected / ups-new-offer-vs-today-cost-drivers / ups-routing-keep-vs-offer / zv-dbschenker-ups-reroute — five UPS notes from one session-wave; all distinct (canon / like-for-like / driver-decomposition / WW-ECO-tail / reroute-economics) but mutually cross-referencing → candidate for a future UPS sub-domain digest (see step 2b, DEFER). No staleness archive moves recommended on existing notes.
+
+## Step 2b — domains (detector: 7 digests, 63 notes; STALE: none by mtime; 14 uncovered)
+- **STALE-by-content (detector blind to it): eu-tender + carrier-contracts.** Prior gnome re-stamped `synthesized: 2026-06-11` WITHOUT updating the headline numbers, so mtime-staleness can't fire. eu-tender digest still headlines €997,720/yr + the €420,218/€577,502 split — **two canons behind** [[S208_9399f067_ups-cascade|S208]]'s €1,908,707/yr (12.66%, firm €990,225 + DBS-contingent €918,482, q09 do-nothing basis). Re-synthesized "Current state" block drafted in the report below — recommend landing AFTER the 17 bank drafts promote (so corpus[] can cite them). carrier-contracts likely same drift (UPS cascade changed canon) — recommend principal re-check on landing.
+- **UNCOVERED (14):** the 9-note projects cluster includes the 5-note RateProof business cluster (rateproof-concept-state, carrier-tender-consulting-market, parcel-audit-market, solo-ai-consulting-economics, independent-specialization-decision-state). **Prior pass DEFERRED a RateProof digest pending quest-close; the RateProof quest is STILL live (12aa2f0f) → recommend DEFER again.** The 2 MCP notes + workflow/frontend/shipping singletons = one-off reference, not domains (bias-to-less). **0 new digests this pass.**
+
+## Step 3 — completed-quest graduation
+Recent completed quests (S199–[[S210_a17168ec_decision-report-regen|S210]] + S-shipmart dwarf traces) are the SOURCE quests for the 17 bank + 19 examine drafts already pending — domain knowledge already harvested via those drafts. **0 graduation drafts** (bias-to-less holds).
+
+## Step 3a — self-observation sweep (in-progress turns since 2026-06-11)
+The 19 examine drafts already cover corrections from S196–[[S213_9ac35cce_ups-engine-vs-current-cost|S213]] comprehensively. Spot-checked the gap sessions ([[S205_f08474c9_ups-round1-reply-review|S205]]/[[S207_4b987ab6_maersk-hermes-dims-db-schenker-reroute-consult|S207]]/[[S208_9399f067_ups-cascade|S208]]/[[S210_a17168ec_decision-report-regen|S210]]/[[S212_177f00f1_eu-tender-no-hermes-report|S212]]) for unharvested corrections: [[S208_9399f067_ups-cascade|S208]] chain-regen miss + zV-on-UPS flag + renew_ups selective-vs-wholesale framing are all captured (chain-regen-must-enumerate draft + ups-cascade/ups-routing bank drafts). **0 new drafts** — wave fully harvested.
+
+## Step 4 — size budgets
+- examine/confirmed/current.md: 6526 chars (~1.6k tokens) — **under** ~3k budget. No rotation.
+- niksis8_character/confirmed/current.md: 288 chars — fine.
+- keepsake/current.md: 1551 chars — under ~2k. No rotation.
+- **Carry (user-only, non-urgent, prior-pass flag CONFIRMED + worse):** the exec-summary rolls up only ~40 of 79 confirmed entries and carries ZERO 2026-06-09/10/11 entries — the entire EU-tender/UPS analytical-discipline wave is absent from the roll-up. Recommend a user-only refresh.
+
+## Step 5 — rejected-folder patterns
+examine/rejected/ (4: 3 probe-design S024-25, 1 discuss-vs-compute 2026-06-05); niksis8_character/rejected/ (2, both 2026-05-21). No new rejections this wave; no fresh pattern. Report-only.
+
+## Step 6 — skill graduation
+spellbook/drafts/skills/ was empty. **Drafted `re-rating-savings-guards.md`** per the prior pass's explicit NOD (2nd recurrence [[S191_36b49f0c_eu-tender-annualization-report|S191]] accepted; further recurrence [[S211_dcd18cfd_ups-savings-dbschenker-reroute-investigation|S211]] confirm-same-population + [[S213_9ac35cce_ups-engine-vs-current-cost|S213]] go-forward). 7-step trust-gate→mirage-guard→go-forward pipeline, cites the [[S132_32ff1025_shipping-savings-routing-optimization|S132]]/[[S191_36b49f0c_eu-tender-annualization-report|S191]]/[[S211_dcd18cfd_ups-savings-dbschenker-reroute-investigation|S211]]/[[S213_9ac35cce_ups-engine-vs-current-cost|S213]] repetitions. **1 new skill draft; 0 others** (bias-to-less).
+
+## Step 7 — last-alched.md
+NOT updated (gnome propose-only; principal-session stamps after approvals land).

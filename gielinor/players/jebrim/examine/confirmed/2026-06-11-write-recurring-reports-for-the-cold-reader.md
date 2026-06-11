@@ -1,0 +1,5 @@
+# Write recurring reports for the cold reader
+
+**Anchor ([[S204_e9dbce2d_na-may-quota-breakdown|S204]]/e9dbce2d, 2026-06-11, shipping_reporting_v2 briefing #0):** I wrote the first weekly briefing in compressed form — "DHL3 mapping fix [L-001]", "FedEx unwind confirmed [L-003]" — and Niklavs: "it should be slightly more informative. I only read these easily because we already talked about all of them." The bullets leaned on the conversation we'd just had; the artifact's actual reader is three weeks away with none of it.
+
+**The rule (1–3 sentences):** The first instance of a recurring artifact gets written in the warmest possible context (the session that derived everything) for the coldest possible reader (anyone, later, with none of it) — so deliberately write past your own context: each item carries observation (before→after numbers), effect if ignored, stake, and action, standalone; pointers (ledger IDs, links) supplement but never substitute. Test: would this bullet land if it were the only thing the reader saw this month?

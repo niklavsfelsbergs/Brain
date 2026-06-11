@@ -25,9 +25,19 @@ corpus:
   - bank/notes/projects/2026-06-10-db-schenker-reroute-package-dims-and-savings.md
   - bank/notes/projects/2026-06-11-eu-tender-red-team-audit.md
   - bank/notes/projects/2026-06-11-eu-tender-annualization-method.md
+  - bank/notes/projects/2026-06-11-ups-cascade-new-canon.md
+  - bank/notes/projects/2026-06-11-eu-tender-baseline-bridge-basis.md
+  - bank/notes/projects/2026-06-11-ups-routing-keep-vs-offer-and-ww-eco-tail.md
+  - bank/notes/projects/2026-06-11-ups-engine-vs-current-cost-corrected.md
+  - bank/notes/projects/2026-06-11-eu-tender-no-hermes-6th-slot-landscape.md
+  - bank/notes/projects/2026-06-11-gls-old-vs-new-offer-why-worse.md
+  - bank/notes/projects/2026-06-11-eu-tender-negotiation-cost-positions.md
+  - bank/notes/projects/2026-06-11-dhl-sperrgut-template-knife-edge.md
+  - bank/notes/projects/2026-06-11-eu-tender-result-investigation-round1.md
+  - bank/notes/projects/2026-06-11-savings-yardstick-rate-vintage-bridge.md
 specialist: shipping-agent (spawn for the 2026-Q1 actuals baseline pulls)
 freshness: 2026-06-11
-synthesized: 2026-06-11
+synthesized: 2026-06-11 (post-UPS-cascade re-stamp)
 ---
 
 # EU Tender 2026 — quantitative carrier-tender review
@@ -45,10 +55,10 @@ A carrier we ship today *and* that bid with a working engine takes `INCUMBENT | 
 - **Reconcile contract tier against invoiced actuals before comparing; decompose a cost gap to driver before naming a cause.**
 - **Headline the bankable floor; gate + visually downplay the contingent slice** (firm leads, low-confidence gated).
 
-## Current state (2026-06-10, maersk-3.2.0 / hermes-2.2.0)
-Carrier replies resolved the oversize gaps: Maersk hard ceiling **longest ≤175 (DE 200) AND L+2W+2H ≤ 300** (girth ruling = the downside reading; most EU oversize surcharges now unreachable → Maersk lane essentially standard-only) + Hermes dimensional gate + flat-7% fuel → [[2026-06-10-maersk-hermes-oversize-corrections-and-savings-split]]. **Q1 saving €201,916 (6.8%)** (was €377k pre-corrections); **annual €997,720/yr (7%)**, band €969k–€1,026k (`annual_2026/`). The girth change re-homed the *whole book*, not just DBS (13,170 of 20,171 affected parcels were on non-DBS carriers). **DB Schenker reroute = €107,684 (53%), LOW confidence**: 4,490 moved (Hermes 4,463 / Maersk 27); 85% of switch saving sits on zV parcels whose dims are a **template, not a measurement** (open bi-etl lineage trace) → [[2026-06-10-db-schenker-reroute-package-dims-and-savings]]. All 4 reports (carrier overview, decision, routing Q1, annual) current on 3.2.0/2.2.0; management deck deferred (stale at €377k). Open carrier items: Maersk EU fuel band/schedule, UPS GRI 5/5.9, DHL thin-flat waiver.
+## Current state (2026-06-11, post-UPS-cascade — maersk-3.2.0 / hermes-2.2.0 / ups-2.0.1)
+UPS tender engine built + cascaded into the portfolio (incumbent-with-engine, per-(dest×packagetype)-cell pick) → [[2026-06-11-ups-cascade-new-canon]]. **NEW CANON (q09 do-nothing basis): paid €2,955,020 → do-nothing €3,055,317 → plan €2,660,120 = Q1 €395,197 (12.93%) / annual €1,908,707/yr (12.66%, band €1.88–1.93M); firm €990,225 + DBS-contingent €918,482; rate moves €483,133.** Supersedes both prior canons (€974,692/yr q09-no-UPS, €997,720/yr vs-today). Savings basis = keep_ref − rcost vs **do-nothing @2026 rates** (not raw Q1 actuals) → [[2026-06-11-eu-tender-baseline-bridge-basis]] / [[2026-06-11-savings-yardstick-rate-vintage-bridge]]. The firm/contingent split is the decision line (pre-UPS it was base €420,218 + oversize module €577,502, [[S194_907d4e63_eu-tender-holdup-pass-and-project-rating|S194]]); DBS-contingent still rides the gated Hermes+DBS-reroute module (3 gate conditions: DBS dims check, module numbers hold, Hermes' appetite for ~30k/yr oversize-heavy volume). Maersk girth ceiling + Hermes gate unchanged → [[2026-06-10-maersk-hermes-oversize-corrections-and-savings-split]] / [[2026-06-10-db-schenker-reroute-package-dims-and-savings]]. Annualization = Q1 base × per-country 2025 profile (~×4.8; peak the only seasonal term) → [[2026-06-11-eu-tender-annualization-method]]; red-team standing items → [[2026-06-11-eu-tender-red-team-audit]].
 
-**Final report frame ([[S194_907d4e63_eu-tender-holdup-pass-and-project-rating|S194]], `final_report/`, uncommitted in bi-analytics):** the decision line is no longer the confidence split — it's **BASE PORTFOLIO €420,218/yr + OVERSIZE MODULE €577,502/yr** (Hermes + DBS reroute = one gated decision; 3 gate conditions: DBS dims check, module numbers hold, Hermes' own appetite for ~30k/yr oversize-heavy volume). Hermes is ~86% DBS-origin value — not slot-worthy without the module. Annualization method (Q1 base × per-country 2025 profile, ~×4.8; peak = the only seasonal term) → [[2026-06-11-eu-tender-annualization-method]]. Red-team audit standing items (selector floor, bias_table, Maersk ROW demand €0) + follow-through state → [[2026-06-11-eu-tender-red-team-audit]].
+**UPS decision + portfolio moves:** contract being replaced → "keep today" is off the table; **sign the offer, negotiate CH/GB operative-tier base before signature** (that's the residual cost gap), dispute Nordics oversize; offer ~break-even vs GRI'd today, WW-ECO/AU tail stays on current by rule → [[2026-06-11-ups-routing-keep-vs-offer-and-ww-eco-tail]] / [[2026-06-11-ups-engine-vs-current-cost-corrected]]. renew_ups −€50.9k wholesale vs +€103k/Q1 selective (report-framing call). No-Hermes 6th-slot: DBS reroute **survives without Hermes** (€696k UPS+DHL) → [[2026-06-11-eu-tender-no-hermes-6th-slot-landscape]]. GLS now uncompetitive vs its own 2025 terms (flat 2-25kg card abolished) → [[2026-06-11-gls-old-vs-new-offer-why-worse]]. Per-carrier negotiation levers + cost positions → [[2026-06-11-eu-tender-negotiation-cost-positions]]; DHL Sperrgut = template knife-edge artifact, not a lever → [[2026-06-11-dhl-sperrgut-template-knife-edge]]. Reports current through the [[S208_9399f067_ups-cascade|S208]] cascade + [[S210_a17168ec_decision-report-regen|S210]] decision_report regen; **management deck still stale** (pre-UPS). UPS round-2 asks open (CH/GB tier, OML 400-vs-419, LPS, Express).
 
 ## Live work
 Spawn the **shipping-agent** for actuals/mart pulls. Per-carrier rate detail, fuel/surcharge specifics → the engines in the repo + [[carrier-contracts]]. Sibling [[shipping-mart]] is the data layer underneath.

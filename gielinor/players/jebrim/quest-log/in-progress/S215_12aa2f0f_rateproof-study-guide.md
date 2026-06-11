@@ -26,7 +26,10 @@ None — the study guide is a `research/` artifact (no draft gate), already on d
 
 None pending.
 
+## T7 — amended close (2026-06-12): session-count forensics + digest pin
+Niklavs asked how many sessions the tender has taken; pushed back twice when the first numbers felt low — and was right both times. Counted rigorously and found the durable traces massively under-count real session volume (quest files only land on a *formal* close; most sessions `/clear` without one). Ground truth from `.claude/projects/` transcripts: **441 total Claude sessions** on the repo; **~115 actually worked the tender** (73 heavy build/report/audit — counted by work-signal *depth* of repo references, not keyword mentions; the 372 "mentions" were mostly digest force-load noise); **66 left a tender quest file**; **68 hands-on**; **~215 main-brain close rituals** (max SNNN [[S220_097ab6e8_eu-tender-q4-mix-seasonality|S220]] + 212 comms CLOSINGs). Pinned the one-liner into `bank/domains/eu-tender.md` (`## Project scale`) on principal cue. Reflection beat: the scale *is* the RateProof moat (115 audited sessions vs the market's one-afternoon analysis).
+
 ## Cascade / Main-brain changes
 
-- Brain (Jebrim namespace + comms): this quest-log entry + `inventory/rateproof-study-guide-resume__12aa2f0f.md` + `research/2026-06-11-rateproof-method-mastery-study-guide.md` + 1 examine draft (contingent-attribution framing) + comms OPEN/CLOSING + `.mode` markers.
-- No bi-analytics changes (EU tender thread was read-only).
+- Brain (Jebrim namespace + comms): this quest-log entry + `inventory/rateproof-study-guide-resume__12aa2f0f.md` + `research/2026-06-11-rateproof-method-mastery-study-guide.md` + 2 examine drafts (contingent-attribution framing; trace-count-vs-reality) + `bank/domains/eu-tender.md` (Project-scale pin) + comms OPEN/CLOSING/amended-CLOSING + `.mode` markers.
+- No bi-analytics changes (both EU-tender threads were read-only/consult).

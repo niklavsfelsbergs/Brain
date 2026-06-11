@@ -1,8 +1,8 @@
 ---
 quest: S194_eu-tender-holdup-pass-and-project-rating
 sid8: 907d4e63
-ts: 2026-06-11 00:40
-open_dep: bi-analytics final_report/ uncommitted — awaiting principal review + commit go (separate repo, never push)
+ts: 2026-06-11 09:35
+open_dep: bi-analytics final_report/ + re-cut annual_2026/ uncommitted — awaiting principal review + commit go (separate repo, never push)
 ---
 
 # Resume — EU-tender final presentation document
@@ -21,6 +21,13 @@ open_dep: bi-analytics final_report/ uncommitted — awaiting principal review +
   confidence split (Confirmed €176,250 / Offer-based €296,110 / Conditional €525,360) stays as the secondary cut.
 - Hardcoded prose claims (not from stats): DPD new offer "≈19% more expensive" (S170 +18.8%), UPS migration "~62%"
   (verified 61.5% in verify_report.py), "200+ rate checks" (D3 counted 215+), "10 carriers assessed".
+- **ANNUAL REPORT RE-CUT TO THE SAME BASE (2026-06-11 T11, principal caught the €472,360-vs-€420,218 mismatch =
+  the €52,142 Hermes other-lanes uplift):** build_annual.py now runs the same no-hermes counterfactual + emits
+  "structure" (identical base/module, per-dest Base/+Module columns); annual_report.py base-led (KPIs, summary,
+  §04 3-gate module callout incl. Hermes appetite, hermes badge "MODULE — AFTER CHECK"); stale girth/MAERSKUK
+  caveats cleared (noted as resolved-since-audit). build_final_stats cross-asserts vs annual_stats.structure —
+  the two reports cannot drift again. Old firm/contingent tiers stay in annual_stats.json but no longer render.
+  NOTE: 2nd recurrence of fix-the-class-across-sibling-consumers (restructured one report, left the sibling).
 
 ## Hermes dependency (post-close addition, 2026-06-11)
 86% of Hermes' value (€478,669 of €558,039/yr vs today) is DBS-origin; ex-DBS €79,370/yr on ~8.3k parcels — not

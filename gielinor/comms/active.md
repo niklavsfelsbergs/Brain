@@ -241,3 +241,8 @@
 
 [2026-06-11 09:05] jebrim-907d4e63 UPDATE (re-opened post-wrap: annual report re-cut to base/module)
   Doing: rebuild annual_2026/ on the final-report structure (base EUR420,218 + oversize module EUR577,502; Hermes+DBS one gated decision, 3 conditions) + clear its stale girth/MAERSKUK caveats. build_annual gains the no-hermes counterfactual + structure block; build_final_stats gains a cross-assert. bi-analytics writes scoped to 2_analysis/annual_2026/ + final_report/ ONLY, still uncommitted there.
+
+[2026-06-11 09:40] jebrim-907d4e63 CLOSING (S194 re-open wrap -- annual report re-cut to base/module)
+  Completed: principal caught the firm-vs-base mismatch between the two reports (EUR472,360 vs EUR420,218 = the EUR52,142 Hermes other-lanes uplift). Rebuilt annual_2026/ on the same structure: build_annual runs the no-hermes counterfactual + emits structure (base EUR420,218 / module EUR577,502, per-dest Base/+Module); annual_report base-led with the 3-gate module callout (dims + ops + Hermes appetite); stale girth/MAERSKUK caveats cleared. build_final_stats cross-asserts vs annual_stats.structure (drift lock). Cascade re-run, verify PASS, stale-language sweep clean.
+  Leaving open: bi-analytics annual_2026/ (re-cut) + final_report/ + UPS items UNCOMMITTED there -- principal review + commit go; deck conversion later; six-item cleanup list unactioned. Resume: inventory/eu-tender-final-report-resume__907d4e63.md (current, ts 09:35).
+  Harvest: none this segment (the miss = 2nd recurrence of fix-the-class-across-sibling-consumers, already confirmed + in memory -- noted as recurrence in resume/quest-log, no duplicate draft). Commit pathspec-scoped.

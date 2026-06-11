@@ -16,6 +16,12 @@ The S199 predictor investigation ([[S199_ee882f39_sa_ups-oml-lps-predictor]]) te
 
 **The actual predictor is UPS's own dimensioner measurement**, printed on the invoice (`packagedimensions`) next to what we keyed (`detailkeyeddim` = our declared, passthrough-verified). Verdict on €1.44M standing net: ~€425k over-trigger by our own dims (94% = ONE box: `zugeschnittene Verpackung` 130.3×91.6×7–10, L+G 327.5–333.5, **catalog dims** 2.5–8.5 cm over, charged ~50% in 2023–24 / 26.7% in 2026 — coin-flip incidence = physically threshold-straddling); ~€390k tolerance-zone 300–325 (UPS thin-axis inflation, STANZVERPACKUNG 120×90 epicenter); ~€641k dispute incl. the entire over-max family (zero parcels >419 by our dims ever; UPS measured lengths 1.5–2.7× keyed — physically implausible). Reversal coverage collapsed Q4-2025 → receivable accruing ~€160k+/qtr. The >325 box nearly vanished in 2025 (12 shipments) and returned in 2026 — ask PCS PL what changed.
 
+## Principal rulings (2026-06-11, UPS Round-1 review session)
+
+- **Sending `zugeschnittene Verpackung` with UPS was a mistake** (principal-stated). The box is catalog-dim threshold-straddling (L+G 327–333 vs the 325 LPS trigger) — coin-flip LPS incidence is inherent to routing that box on UPS, not a billing accident. Forward implication: routing/packaging fix candidate; in the tender engines, this box on UPS always carries the LPS-incidence cost.
+- **Oversize adjustment models BY BILL** (empirical incidence from invoices — what UPS actually charges via its dimensioner), not contract-correct-from-our-dims. Exact approach (cohort incidence vs flat uplift) deferred to the calculation-build phase. Dispute-grade share (~€641k/yr) stays a visible separate line — it's also a negotiation lever.
+- **Discrepancy to chase:** Round-1 reply quotes OML at >400 cm L+G (book value) vs the negotiated 419 stated here. Round-2 / contract-text check.
+
 ## Related
 
 - [[2026-06-11-ups-invoice-charge-profile]] — charge structure, oversize NET discipline (refund-in-place reversals).

@@ -296,3 +296,13 @@
 
 [2026-06-12 09:58] jebrim-6ae2971e UPDATE (S223 re-close — bi-analytics docs committed)
   Niklavs gave the commit go after the first close: the 8 EU-tender doc edits committed at 5399d7f (bi-analytics-main main, pathspec-scoped, no sibling sweep, not pushed). Quest-log + resume updated to record it. Nothing left pending except the guell-2.0.0 build (next session). Brain re-commit pathspec-scoped to 6ae2971e footprint + comms.
+
+[2026-06-12 11:20] jebrim-9f716f1f OPEN
+  (late OPEN — continuation session jumped straight into the build; posting at close per the entry gate.)
+  Scope: guell-2.0.0 BUILD + EU-tender portfolio-fit read (the next-session work S223/6ae2971e handed off). Files: bi-analytics-main/.../2_analysis/carriers/guell/ (engine), cost_matrix/scorer/decision_report/bias_table regen, report.py, _refresh_bias_table.py, PLAN §B.21, ASSUMPTIONS, guell/CLAUDE.md. Brain: new S225 quest + inventory resume (9f716f1f) + examine draft.
+  Siblings: no live overlap on guell/ — S223 (6ae2971e) closed; S224 (yodel) is a different carrier.
+
+[2026-06-12 11:22] jebrim-9f716f1f CLOSING (S225)
+  Completed: guell-2.0.0 BUILT per §B.21 (19/19 fixtures) — fuel→15% on broadened base, Maut→0.32, CH energy + FX→per-month, line-haul (inbound sprinter + outbound + CH decl) wired, new at_oversize 45-EUR recovery tail, PEAK=0. Cost matrix (31.6M rows) + scorer + decision_report.html + bias_table.md regenerated; report.py de-held Güll + verdict rewrite; _refresh_bias_table repointed. ANSWER: "cheaper Güll" FALSE — line-haul makes it ~15% dearer/parcel; HOLDS as a modest AT/CH complement (+€164k marginal), displaces Austrian Post (AP wins 8,803→486), can't rescue renew_maersk. Brand-new-carrier caveat front-and-centre.
+  Graduated S223 (6ae2971e) → completed/ (review+sync shipped+committed 5399d7f/3392e0e; its open dep — this build — now done). Veto if you want it carried forward.
+  Leaving open: ALL bi-analytics edits UNCOMMITTED — await commit go (separate repo, pathspec-scoped, never push). NEXT SESSION: does adding Güll to the 5-carrier NO-HERMES portfolio give meaningful savings? (Niklavs deferred; prompt in inventory/guell-2.0.0-build-resume__9f716f1f.md.) Round-2 Q11 + Commerzbank FX-value pull open, non-blocking. Brain commit pathspec-scoped to 9f716f1f footprint + comms; never push.

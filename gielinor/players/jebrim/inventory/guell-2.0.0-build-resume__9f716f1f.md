@@ -2,17 +2,29 @@
 quest: S225_guell-2.0.0-build
 sid8: 9f716f1f
 ts: 2026-06-12 11:20
-open_dep: bi-analytics edits uncommitted (await Niklavs commit go) + no-Hermes-5-carrier-+Güll investigation queued next session
-status: build SHIPPED + answered; next-session investigation queued
+open_dep: bi-analytics edits uncommitted (await Niklavs commit go); no-Hermes+Güll report variant = next build (S228 answered the marginal)
+status: build SHIPPED + portfolio-fit ANSWERED (S228); report-variant build queued
+
+note (S228, 2026-06-12): the deferred no-Hermes+Güll question is ANSWERED — see
+quest-log/in-progress/S228_50e52247_* + bank/drafts/notes/projects/2026-06-12-guell-no-hermes-marginal-and-density-gate.md.
 ---
 
-## NEXT SESSION — the question Niklavs actually wants
+## ANSWERED S228 — Güll → no-Hermes marginal
 
-**Does adding Güll to the 5-carrier NO-HERMES portfolio give meaningful savings?** (deferred from this session, his words.)
-- The "no-hermes" portfolio is the basis of `final_report_no_hermes_v2/` (€976,024 base, standalone "Carrier Recommendation"). Pin the exact 5-carrier decision-set composition from `_decision_sets.py` / `scenarios.parquet` first (don't guess it).
-- Compute Güll's MARGINAL = (no-hermes-5-carrier + Güll) − (no-hermes-5-carrier), on the current guell-2.0.0 matrix (within-matrix, clean). Read it off `data/scenarios.parquet` if the set is enumerated, else add the variant to `_decision_sets.py` + re-score.
-- **Directional hypothesis (verify, don't assume):** Güll's marginal should be LARGER without Hermes than the +€61k it added to the Hermes-containing full portfolio — Hermes was covering AT/CH cells Güll competes for; removing it frees lanes. Whether that clears "meaningful" (vs the ~€61-164k Hermes-present range) is the compute.
-- Same caveats carry: brand-new carrier (no parity), flagged FX/density/Q11 assumptions; report PAPER vs DEFENSIBLE.
+**+€163,897/yr PAPER** (`all_renewals` €456,541 → `all_renewals_plus_guell` €620,438, full-year decision-set scorer). Per-country won: AT 79,497 + CH 31,523 = 111,020/yr. Hypothesis confirmed in sign (off Hermes-present-6 = +€150,617, so Hermes itself frees only ~€13k; rest is saturation). DEFENSIBLE floor ~€60–120k. Key structural catch: the €976,024 report is a DIFFERENT pipeline (q1 routing) from the decision-set `all_renewals` — membership-equal, not numerically-equal; the +€164k does NOT add onto €976,024. Full detail in the bank draft.
+
+## NEXT SESSION — build the no-Hermes + Güll report variant (recommended)
+
+Small build, NOT a cascade. Güll is already priced in the q1 pipeline (wins cells in `routing_2026q1/build_routing.py` emergent routing; "[HELD/provisional]" is only a print label). Steps:
+- Add `"guell"` to `final_report_no_hermes/build_stats_no_hermes.py` FINAL set (FINAL_5 → +guell) + `FAMILY_TO_ENGINE` service map; re-run build-stats → report → deck (~1–2h, mostly verification: headline reconcile + deck regen). Build it as a standalone variant BESIDE the 5-carrier report (5-carrier vs 5+Güll, same conservative basis).
+- Expect the report's Güll number < +€164k (conservative basis: UPS-on-engine, DBS-pinned) = the management-ready figure.
+- Flag **150 parcels/pallet** on the page as a working assumption. Revising later = edit `carriers/guell/constants.py` `PARCELS_PER_PALLET` + regenerate Güll's prices + re-run (NOT just the report — density is baked into per-parcel cost).
+
+### Gating data item (the one thing that firms the marginal)
+Logistics-manager **parcels-per-pallet (AT, CH separately) + per-sprinter fill**, and whether fill binds on volume or weight first. Question framed in the S228 quest-log / chat. ~€40k-per-50-parcels sensitivity. Also: Commerzbank strongest-of-month FX pull (non-blocking).
+
+### Principal calls locked S228 (already in guell-2.0.0, no rebuild)
+FX 1.08 keep · ignore AT bulky shape · use Güll's stated outbound per-pallet rates (24.50 AT / 40 CH).
 
 
 # Resume — guell-2.0.0 build + EU-tender portfolio fit

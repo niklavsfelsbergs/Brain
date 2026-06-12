@@ -20,3 +20,16 @@ no-Hermes one")** so a wrong pick is corrected at one line, not after a full bui
 
 Not a costly miss here (the main v2 was wanted too), but the cheaper path was one clarifying half-sentence up front.
 Related: [[feedback_build_the_named_ingredient_not_the_old_plan]], [[feedback_match_artifact_family_by_reading_it]].
+
+## Recurrence — [[S234_976b6908_eu-tender-presented-canonical-report-pin|S234]] (976b6908), 2026-06-12 (costlier: grounding, not just building)
+Niklavs: "the eu tender just got presented." I grounded off `final_report/` (the structurally-primary, base-named
+folder) and quoted its **stale** €420k/€577k base+module split as the headline. He corrected: *"how do you not know
+the final saving was 976k? just the firm one"* — the canonical/presented artifact is `final_report_no_hermes_v2/`
+(firm headline €976,024). Same failure mode as the moment above, **applied to which artifact I read for the canonical
+figure**, and worse: I stated a wrong number to the principal the day he presented it, instead of naming the variant.
+The corpus already *contained* the right pointer — the no-Hermes v2 was the live focus across the entire prior
+session run ([[S212_177f00f1_eu-tender-no-hermes-report|S212]]/[[S219_e0eb59c8_eu-tender-final-report-content-pass|S219]]/[[S221_eec4ee99_eu-tender-report-review-qa|S221]]/[[S222_3309c3da_eu-tender-no-hermes-v2-headline-reconciliation|S222]]/[[S226_da65054b_eu-tender-routing-report-no-hermes|S226]]) — I just defaulted to the folder name that reads "final". **Fix landed this
+session:** pinned a `CANONICAL PRESENTED REPORT = final_report_no_hermes_v2/` line into the force-loaded
+`bank/domains/eu-tender.md` so the next session can't re-anchor to the superseded folder. Second occurrence in one day
+→ this is a real pattern, not a one-off; the base-named/structurally-primary variant is a **magnet for wrong-anchor**
+when a later variant is the live one. Promote on next alch.

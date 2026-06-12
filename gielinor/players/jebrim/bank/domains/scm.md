@@ -14,9 +14,10 @@ corpus:
   - bank/notes/projects/2026-06-02-scm-serving-node-oom-mode.md
   - bank/notes/projects/shipping_costs_dashboard_csv_export_architecture.md
   - bank/notes/projects/dashboard_and_shipping_agent_convergence.md
+  - bank/notes/projects/2026-06-12-scm-breakdown-cost-basis-not-buckets.md
 specialist: shipping-agent (spawn for live mart queries)
-freshness: 2026-06-02
-synthesized: 2026-06-09
+freshness: 2026-06-12
+synthesized: 2026-06-12 (Breakdown cost-basis reconcile)
 ---
 
 # SCM — Shipping Costs Monitoring dashboard
@@ -26,6 +27,7 @@ The productized, always-on cost **monitor** over the gold `shipping_mart` — *k
 ## Cost basis (load-bearing)
 - **`cost_for_routing`** = the default cost everywhere downstream = `COALESCE(shipping_cost_final, expected)`; `shipping_cost_final` = mart `final_shipping_cost_eur` = `COALESCE(real, expected, avg)`.
 - **11 cost buckets** sum to `total_eur == real_shipping_cost_eur` to the cent (invariant). Reducers `bkt_discounts` / `bkt_credit_note` are **negative**; tax + customs **excluded** (pass-through).
+- **Breakdown table cost is cost-basis-driven, not bucket-driven** ([[S227_6f393689_scm-breakdown-cost-basis-fix|S227]], `d70e516`): `final`→`cost_for_routing` over all costed rows, `invoiced`→`shipping_cost` on `has_cost` rows — matches the Overview chart by construction. The old `SUM(11 buckets)` basis read **€0** for un-invoiced carriers (DB Schenker on lag) and diluted sub-100%-invoiced avgs (buckets exist only on invoiced rows). **Bucket decomposition now lives only in the `BucketsTrend` chart** (`/api/breakdown-buckets`); the charge-bucket filter was removed from the Breakdown sidebar → [[2026-06-12-scm-breakdown-cost-basis-not-buckets]].
 - ORWO `expected` is a SQL-level `CASE` fallback (DHL/UPS country avgs + seasonal peak), not mart-sourced — stand-in until ORWO migrates. UI basis: `real_expected` (default) or `real`.
 
 ## Alert engine

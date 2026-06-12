@@ -122,3 +122,8 @@
 [2026-06-12 ~15:40] jebrim-976b6908 CLOSING (S234 — EU tender presented; canonical report artifact pinned)
   Completed: tender got presented; principal corrected my stale-folder grounding (I quoted final_report/'s old €420k/€577k split). Pinned CANONICAL PRESENTED REPORT = final_report_no_hermes_v2/ (firm headline €976,024 = structure.base_ann) into the force-loaded bank/domains/eu-tender.md, marked final_report/ + the old split SUPERSEDED. Read-only on bi-analytics (verified v2 exists + the number). Graduated S234 → completed/ (shipped + no open dep).
   Leaving open: nothing blocking. Harvest: reinforced examine draft which-variant-anchor-to-most-recent-active (2nd occurrence in a day, costlier — grounding off wrong variant) → promote next alch. Brain commit pathspec-scoped to 976b6908 footprint + comms ONLY; live siblings untouched; never push.
+
+[2026-06-12 18:16] jebrim-fcf8efd5 OPEN (alching — Jebrim per-player tend)
+  Doing: principal-cued alch of Jebrim. Surface = 19 pending drafts (12 examine + 7 bank, all post-2026-06-11-last-alched), 0 niksis8_char / 0 skills / 0 keepsake proposals. >10-draft heuristic fires → gnome-vs-self decision to Niklavs first.
+  Targets (sid8 fcf8efd5): Jebrim namespace ONLY — examine/drafts→confirmed, bank/drafts/notes→notes, bank/domains/ (eu-tender + carrier-contracts re-stamp candidates), spellbook/drafts/skills, last-alched.md, this comms. No globals, no other players.
+  Steering clear of: the uncommitted prior-pass promotions sitting in the tree (06-09 git-mv wave, ?? confirmed/ + D drafts/) — NOT re-triaging those; they're already promoted on disk, pending a commit. Live siblings: tail all CLOSING; will not touch any sibling resume/quest files.

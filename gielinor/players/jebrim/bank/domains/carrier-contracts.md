@@ -32,9 +32,10 @@ corpus:
   - bank/notes/projects/2026-06-11-ups-oml-lps-negotiated-thresholds.md
   - bank/notes/projects/2026-06-11-ups-residential-and-peak-surge-mechanics.md
   - bank/notes/projects/2026-06-11-ups-new-offer-vs-today-cost-drivers.md
+  - bank/notes/projects/2026-06-12-dpd-pl-contract-export-only.md
 specialist: shipping-agent (full-access tier reaches bronze/silver raw invoice tables for reconciliation)
-freshness: 2026-06-11
-synthesized: 2026-06-11 (UPS-mechanics corpus +3)
+freshness: 2026-06-12
+synthesized: 2026-06-12 (corpus +1: DPD-PL export-only served set)
 ---
 
 # Carrier contracts & invoices

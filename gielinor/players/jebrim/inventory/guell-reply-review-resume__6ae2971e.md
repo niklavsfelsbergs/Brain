@@ -19,7 +19,7 @@ open_dep: guell-2.0.0 build + portfolio-fit read pending (next session)
 - `2_analysis/carriers/guell/` — the engine to rebuild (`guell-1.0.0` → `guell-2.0.0`).
 - `2_analysis/data/cost_matrix.parquet` + `scenarios.parquet` + `decision_report.html` — current (stale) scoring; regenerate after the build.
 
-**Also pending (non-blocking):** the 8 bi-analytics doc edits are UNCOMMITTED — Niklavs to give the commit go (separate work repo). Q11 Round-2 follow-up drafted at `1_offers/picanova/Güll/questions_round2.md`.
+**Doc edits committed:** the 8 bi-analytics docs landed at `5399d7f` (main, not pushed). Q11 Round-2 follow-up drafted at `1_offers/picanova/Güll/questions_round2.md`. Nothing left pending except the build itself.
 
 ---
 

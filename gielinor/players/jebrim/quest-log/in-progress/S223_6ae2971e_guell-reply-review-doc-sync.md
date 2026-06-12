@@ -28,7 +28,7 @@ Niklavs (Jebrim) flagged a PDF from Güll in `carrier_responses_to_open_question
 - `PLAN.md` §B.21 — unblocked; constants/structural locked to reply; rollup line updated.
 - `CROSS_CARRIER_OVERVIEW.md` — Güll row + CH-customs theme updated.
 
-**These bi-analytics-main edits are uncommitted in that repo** (work-repo commit not authorized this session — flagged to Niklavs at close).
+**These bi-analytics-main edits were committed** at `5399d7f` (main, pathspec-scoped to the 8 files; sibling `.claude/reference/*` + `final_report/*` left untouched; not pushed) on Niklavs' go after the first close.
 
 ## Pending external actions
 

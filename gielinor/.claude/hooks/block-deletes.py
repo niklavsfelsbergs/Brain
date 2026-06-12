@@ -66,6 +66,28 @@ def main() -> None:
         log_event("block-deletes", "bypass-braindead", sid8=sid8, detail=command[:120])
         sys.exit(0)  # construction crew: unrestricted (principal-authorized)
 
+    # Scope guard (2026-06-12): protect ONLY brain paths. The DELETE_PATTERNS match
+    # the command string regardless of where the delete LANDS, so a `git rm` / rm in
+    # a work repo (e.g. bi-analytics) tripped the guard even though no brain file was
+    # at risk. Allow a delete when its effective directory is an absolute path
+    # OUTSIDE the brain AND no absolute brain path appears anywhere in the command
+    # (the second clause closes a `cd /tmp && rm <brain-path>` leak). Conservative:
+    # a relative or unknown cwd is treated as in-brain and stays gated. Drive forms
+    # normalized so git-bash `/c/...` and Windows `C:\...` compare alike.
+    brain_norm = str(Path(__file__).resolve().parents[3]).replace("\\", "/").lower()
+
+    def _drive(s: str) -> str:
+        s = s.replace("\\", "/").lower()
+        return re.sub(r"(?:^|(?<=[\s'\"=]))/([a-z])/", r"\1:/", s)  # /c/ -> c:/
+
+    cmd_norm = _drive(command)
+    m = re.match(r"\s*(?:cd|set-location|sl)\s+(?:-path\s+)?['\"]?([^'\"&;|]+)",
+                 command, re.IGNORECASE)
+    eff = _drive(m.group(1).strip().rstrip("/\\")) if m else _drive(payload.get("cwd") or brain_norm)
+    if re.match(r"^[a-z]:/", eff) and not eff.startswith(brain_norm) and brain_norm not in cmd_norm:
+        log_event("block-deletes", "allow-outside-brain", sid8=sid8, detail=command[:120])
+        sys.exit(0)
+
     for pat in DELETE_PATTERNS:
         if pat.search(command):
             log_event("block-deletes", "block", sid8=(payload.get("session_id") or "")[:8], detail=command[:120])

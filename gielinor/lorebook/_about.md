@@ -24,11 +24,14 @@ Each entry is a single self-improvement: what was changed, why it was changed, w
 ```
 lorebook/
   _about.md            # this file
+  _index.md            # synthesized cue index — per-decision distilled rule + prompt patterns
   drafts/              # proposed self-improvements awaiting principal review
   confirmed/           # approved self-improvements; each entry is its own file
   archive/             # confirmed entries that no longer reflect current operation
   rejected/            # drafts the principal turned down (kept; patterns matter)
 ```
+
+**The cue index (`_index.md`, [[S192_384c1c27_db-schenker-reroute-package-dims|S192]]).** Confirmed decisions never loaded at respawn — a player mid-task could miss an applicable one (knowledge-miss regression case 10). `_index.md` is the synthesized map the `[LOR]` arm of `domain-cue-reminder.py` parses every prompt: a decision with `patterns:` + `rule:` gets its distilled rule force-inlined when a prompt matches (once per session per decision); the rest carry a `carried-by:` label naming where their behavior already lives (always-on meta file, ritual read, hook). **Every promotion to `confirmed/` adds an index entry in the same pass** (drafts-triage / bankstanding carry the step); `developer-braindead/verification/hygiene-check.py` flags unindexed decisions and ghost entries.
 
 Same drafts/confirmed/archive/rejected pattern as the other identity-shaped layers (`examine/`, `niksis8/`, per-player `examine/`, per-player `niksis8_character/`).
 

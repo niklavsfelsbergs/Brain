@@ -223,6 +223,112 @@ def test_empty_stream():
           and m["cue_load_proxy_rate"] is None)
 
 
+# ── Tier-3 obedience (S192): transcript-grounded ─────────────────────────────
+def _iso(epoch):
+    from datetime import datetime, timezone
+    return datetime.fromtimestamp(epoch, tz=timezone.utc).isoformat().replace(
+        "+00:00", "Z")
+
+
+def _trow(t, epoch, text="", tools=None, tool_result=False, meta=False,
+          sidechain=False):
+    content = []
+    if text:
+        content.append({"type": "text", "text": text})
+    for name, inp in (tools or []):
+        content.append({"type": "tool_use", "name": name, "input": inp})
+    if tool_result:
+        content.append({"type": "tool_result", "content": "ok"})
+    return {"type": t, "timestamp": _iso(epoch), "isMeta": meta,
+            "isSidechain": sidechain, "message": {"content": content}}
+
+
+def _write_transcript(root: Path, sid8: str, rows: list[dict]) -> None:
+    proj = root / "proj-x"
+    proj.mkdir(parents=True, exist_ok=True)
+    full = sid8 + "-0000-0000-0000-000000000000"
+    (proj / f"{full}.jsonl").write_text(
+        "\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+
+
+def test_obedience_scoring():
+    t0 = 1_750_000_000.0
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        # session A: cue at t0 -> turn has a Reading: line AND a cued Read
+        _write_transcript(root, "obeyaaaa", [
+            _trow("user", t0 - 2, "once again the tender numbers"),
+            _trow("assistant", t0 + 3,
+                  "**Understanding:** ...\n**Reading:** players/jebrim/bank/notes/x.md"),
+            _trow("assistant", t0 + 5,
+                  tools=[("Read", {"file_path": "players/jebrim/bank/notes/x.md"})]),
+            _trow("user", t0 + 60, tool_result=True),       # tool result, not a prompt
+            _trow("user", t0 + 900, "next topic entirely"),  # next real prompt
+        ])
+        # session B: cue at t0 -> turn has NEITHER signal
+        _write_transcript(root, "disobbbb", [
+            _trow("user", t0 - 1, "shipping mart question again"),
+            _trow("assistant", t0 + 4, "answer from memory, no reads"),
+            _trow("user", t0 + 700, "later prompt"),
+        ])
+        events = [
+            ev("grounding-cue", "nudge", "obeyaaaa", ts=t0),
+            ev("grounding-cue", "nudge", "disobbbb", ts=t0),
+            ev("grounding-cue", "nudge", "gonecccc", ts=t0),   # no transcript
+            ev("domain-cue:shipping", "inline", "obeyaaaa", ts=t0),  # inline: excluded
+        ]
+        m = ar.compute_obedience(events, transcript_root=root)
+        t = m["total"]
+        check("obedience: 3 nudges fired, inline excluded", t.get("fired") == 3,
+              str(t))
+        check("obedience: 2 scored, 1 no-transcript",
+              t.get("scored") == 2 and t.get("no_transcript") == 1, str(t))
+        check("obedience: reading_line + cued_read counted once each",
+              t.get("reading_line") == 1 and t.get("cued_read") == 1, str(t))
+        check("obedience: either == 1 (B is a clean disobedience)",
+              t.get("either") == 1, str(t))
+
+
+def test_obedience_turn_boundaries_and_meta():
+    t0 = 1_750_100_000.0
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        # The cued Read happens in the NEXT turn -> must NOT count; the meta row
+        # and the sidechain row must not be treated as the anchor prompt.
+        _write_transcript(root, "boundddd", [
+            _trow("user", t0 - 3, "caveat text", meta=True),
+            _trow("user", t0 - 1, "back to the property work"),
+            _trow("assistant", t0 + 2, "answering without grounding"),
+            _trow("user", t0 + 30, "follow-up prompt"),
+            _trow("assistant", t0 + 33,
+                  tools=[("Read", {"file_path": "zezima/bank/notes/prop.md"})]),
+        ])
+        m = ar.compute_obedience(
+            [ev("grounding-cue", "nudge", "boundddd", ts=t0)], transcript_root=root)
+        t = m["total"]
+        check("obedience: next-turn read does NOT count",
+              t.get("scored") == 1 and t.get("either", 0) == 0, str(t))
+
+        # event ts far from any prompt -> unlocated, not scored
+        m = ar.compute_obedience(
+            [ev("grounding-cue", "nudge", "boundddd", ts=t0 + 5000)],
+            transcript_root=root)
+        check("obedience: distant event => unlocated",
+              m["total"].get("unlocated") == 1, str(m["total"]))
+
+
+def test_obedience_home_tokens():
+    check("tokens: grounding-cue -> own-memory layers",
+          "bank/" in ar._cue_home_tokens("grounding-cue"))
+    check("tokens: digest cue -> its digest path",
+          "bank/domains/scm" in ar._cue_home_tokens("domain-cue:domain-scm"))
+    toks = ar._cue_home_tokens("domain-cue:shipping")
+    check("tokens: registry domain -> canonical-file basenames + specialist",
+          "tables.md" in toks and "shipping-agent" in toks, str(toks))
+    check("tokens: lorebook cue -> lorebook/",
+          "lorebook/" in ar._cue_home_tokens("lorebook-cue:D-024"))
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     print(f"=== test_adherence_rates.py — {len(tests)} test groups ===")

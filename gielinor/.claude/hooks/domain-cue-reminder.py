@@ -194,6 +194,88 @@ def _actor_for(sid8: str) -> str:
         return ""
 
 
+# --- [LOR]: lorebook-decision cue arm (knowledge-miss regression case 10) -----
+# ~18 lorebook/confirmed/D-NNN decisions never load in player turns; most are
+# carried by an always-on file, a ritual read, or a hook, but a handful are
+# genuinely missable mid-task (pathspec commits, the PowerShell encoding rule).
+# lorebook/_index.md is the synthesized map: per decision, literal cue patterns
+# + a ONE-LINE distilled rule. On a pattern match the RULE ITSELF is inlined
+# (forcing-over-naming, like §Z.C — but the rule is small enough to BE the
+# payload), once per session per decision. After that the entry goes SILENT for
+# the session — no name-nudge tail, because lorebook cues ("commit") recur far
+# more than topic cues and a per-prompt reminder of an already-inlined 3-line
+# rule is wallpaper (grounding-cue §6 over-trust risk). Sub-agents are skipped
+# entirely: they work a brief; the principal carries the operating decisions.
+
+LOREBOOK_INDEX = GIELINOR_ROOT / "lorebook" / "_index.md"
+
+
+def _parse_lorebook_index(path: Path = None) -> list:
+    """Parse lorebook/_index.md into cue entries. Only entries carrying BOTH
+    `patterns:` and `rule:` are cue-active; the rest document their carrier
+    (`carried-by:`) and are inert here. Malformed file -> [] (never breaks)."""
+    try:
+        text = (path or LOREBOOK_INDEX).read_text(encoding="utf-8")
+    except OSError:
+        return []
+    entries, cur = [], None
+    for line in text.splitlines():
+        # Header is `## D-NNN — title`, possibly with the ID wikilink-wrapped by
+        # the born-link pre-commit hook: `## [[D-NNN_stem|D-NNN]] — title`.
+        h = re.match(r"^##\s+(?:\[\[[^\]|]+\|)?(D-\d{3})(?:\]\])?\s+[—-]+\s+(.*)$",
+                     line)
+        if h:
+            cur = {"id": h.group(1), "title": h.group(2).strip(),
+                   "patterns": [], "rule": "", "file": ""}
+            entries.append(cur)
+            continue
+        if cur is None:
+            continue
+        kv = re.match(r"^-\s+(patterns|rule|file):\s*(.*)$", line)
+        if kv:
+            key, val = kv.group(1), kv.group(2).strip()
+            if key == "patterns":
+                cur["patterns"] = [p.strip() for p in val.split(",") if p.strip()]
+            else:
+                cur[key] = val
+    return [e for e in entries if e["patterns"] and e["rule"]]
+
+
+def _lorebook_blocks(prompt: str, actor: str, sid8: str, is_subagent: bool) -> list:
+    """Match the prompt against the cue-active lorebook entries; return
+    (name, text) blocks for the combined emission. Once-per-session-per-decision
+    via the same .dcue-* sentinel family the domain inline uses."""
+    if is_subagent or actor in DEFAULT_SKIP_ACTORS:
+        return []
+    blocks = []
+    for e in _parse_lorebook_index():
+        try:
+            rx = re.compile("|".join(re.escape(p) for p in e["patterns"]),
+                            re.IGNORECASE)
+        except Exception:
+            continue
+        m = rx.search(prompt)
+        if not m:
+            continue
+        name = f"lorebook-{e['id']}"
+        sentinel = (STATUS_DIR / f"{sid8}.dcue-{name}") if sid8 else None
+        if sentinel and sentinel.exists():
+            continue  # rule already in context this session; repeating it is wallpaper
+        matched = m.group(0).strip()
+        ref = e["file"] or f"lorebook/confirmed/{e['id']}_*.md"
+        text = (f"Applicable lorebook decision (\"{matched}\") — {e['id']} "
+                f"{e['title']} (in force; full entry: {ref}):\n  {e['rule']}")
+        try:
+            if sentinel:
+                sentinel.parent.mkdir(parents=True, exist_ok=True)
+                sentinel.write_text("1", encoding="utf-8")
+        except OSError:
+            pass
+        log_event(f"lorebook-cue:{e['id']}", "inline", sid8=sid8, detail=matched)
+        blocks.append((name, text))
+    return blocks
+
+
 def _render(d: dict, matched: str) -> str:
     """Compose the nudge text for one matched domain from its structured fields.
 
@@ -328,6 +410,9 @@ def main() -> int:
         else:
             log_event(f"domain-cue:{name}", "nudge", sid8=sid8, detail=matched)
         blocks.append((name, text))
+
+    # [LOR] lorebook-decision arm — same single combined emission.
+    blocks.extend(_lorebook_blocks(prompt, actor, sid8, is_subagent))
 
     if not blocks:
         return 0  # ordinary prompt — fast, silent pass-through

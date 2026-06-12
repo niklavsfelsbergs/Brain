@@ -29,11 +29,17 @@ THE HONESTY TIERS (why some signals are rates and some are only counts)
 
     Tier 3 — ADVISORY-CUE obedience — NOT gate-grounded. domain-/grounding-cue
       only NUDGE; whether the agent then loaded the named knowledge lives in the
-      transcript `Reading:` line (R3-tier, optional, omitted on trivial turns),
-      NOT in this event stream. We report fire-density + a clearly-LABELED
-      co-occurrence proxy and name the high-fire cues as forced-read CONVERSION
-      CANDIDATES. We do NOT invent an obedience %. Naming the unclosed axis IS
-      the deliverable.
+      transcript (`Reading:` lines + actual Read/Grep/Agent calls), NOT in this
+      event stream. The default report shows fire-density + a clearly-LABELED
+      co-occurrence proxy. **--obedience (S192) closes the axis**: it joins each
+      real nudge event to its session transcript (~/.claude/projects/), locates
+      the prompt turn the cue fired on, and scores the turn on (a) a `Reading:`
+      preamble line and (b) an actual tool call touching the cued knowledge home
+      (per-hook token map from cue_registry / the §Z digest paths). That turns
+      "fired 295x, obedience unmeasured" into a measured rate — honest caveats:
+      only nudge-decisions are scored (inline = guaranteed load, no obedience
+      question), and sessions whose transcript is gone score as unscored, never
+      as disobedient.
 
 PERSISTENCE (--snapshot / --trend)
   Raw events already persist in switchboard/ritual-events.ndjson, but that file
@@ -46,6 +52,7 @@ Usage:
     python developer-braindead/verification/adherence-rates.py [--days N]
     python developer-braindead/verification/adherence-rates.py --snapshot [--days N]
     python developer-braindead/verification/adherence-rates.py --trend
+    python developer-braindead/verification/adherence-rates.py --obedience [--days N]
 
 Read-only by default; --snapshot appends one line to the snapshot file (never
 mutates the event log). Safe to run any time.
@@ -257,6 +264,228 @@ def compute(events: list[dict]) -> dict:
     return m
 
 
+# ── Tier-3 obedience (S192): transcript-grounded cue-obedience ────────────
+# A nudge event says "the cue fired"; the transcript says what happened next.
+# For each REAL nudge we locate the prompt turn it fired on (nearest real user
+# prompt to the event ts) and score that turn on two independent signals:
+#   reading_line — the assistant's text carries a `Reading:` preamble line
+#                  (the R3 visible-grounding-plan discipline);
+#   cued_read    — a tool call in the turn actually touches the CUED knowledge
+#                  home (Read/Grep/Bash/Agent input contains a home token).
+# `either` is the headline obedience rate. Sessions with no transcript on disk
+# (rotated away) are UNSCORED, never counted as disobedient.
+
+TRANSCRIPT_ROOT = Path.home() / ".claude" / "projects"
+
+# Both the plain "Reading: x" and the bold preamble form "**Reading:** x".
+_READING_LINE_RE = re.compile(r"\bReading:(?:\*\*)?\s")
+_PROMPT_MATCH_WINDOW_S = 300        # event-ts -> prompt-row max distance
+
+# Static home-token map for hooks whose homes aren't in cue_registry.
+_STATIC_HOME_TOKENS = {
+    "grounding-cue": ["bank/", "research/", "quest-log/", "memory/"],
+}
+
+
+def _iso_epoch(ts: str) -> float:
+    from datetime import datetime
+    return datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
+
+
+def _cue_home_tokens(hook: str) -> list[str]:
+    """Lowercase substrings that count as 'touched the cued home' for a hook."""
+    for prefix, toks in _STATIC_HOME_TOKENS.items():
+        if hook.startswith(prefix):
+            return toks
+    if hook.startswith("domain-cue:domain-"):
+        # §Z.C per-player digest nudge -> the digest file (post-inline name-nudges)
+        slug = hook.split("domain-cue:domain-", 1)[1]
+        return [f"bank/domains/{slug}", "bank/domains/"]
+    if hook.startswith("lorebook-cue"):
+        return ["lorebook/"]
+    if hook.startswith(("domain-cue:", "shipping-cue")):
+        name = hook.split(":", 1)[1] if ":" in hook else "shipping"
+        try:
+            hooks_dir = ROOT / "gielinor" / ".claude" / "hooks"
+            if str(hooks_dir) not in sys.path:
+                sys.path.insert(0, str(hooks_dir))
+            from cue_registry import DOMAINS  # type: ignore
+        except Exception:
+            return [name]
+        for d in DOMAINS:
+            if d.get("name") == name:
+                toks = [name]
+                for f in d.get("canonical_files", []):
+                    base = f.replace(":", "/").split("/")[-1].strip()
+                    if base:
+                        toks.append(base.lower())
+                if d.get("specialist"):
+                    toks.append("shipping-agent")
+                return toks
+        return [name]
+    return []
+
+
+def _find_transcript(sid8: str, root: Path = None) -> Path | None:
+    root = root or TRANSCRIPT_ROOT
+    if not sid8 or not root.is_dir():
+        return None
+    for proj in root.iterdir():
+        if not proj.is_dir():
+            continue
+        hits = sorted(proj.glob(f"{sid8}*.jsonl"))
+        if hits:
+            return hits[0]
+    return None
+
+
+def _parse_transcript(path: Path) -> list[dict]:
+    """Reduce a transcript to scoring rows: ts, is_prompt (a REAL user prompt —
+    not a tool_result carrier, not isMeta, not a sub-agent sidechain), the
+    assistant text, and the tool-call inputs."""
+    rows = []
+    try:
+        fh = path.open(encoding="utf-8")
+    except OSError:
+        return rows
+    with fh:
+        for line in fh:
+            try:
+                r = json.loads(line)
+            except Exception:
+                continue
+            t = r.get("type")
+            if t not in ("user", "assistant") or r.get("isSidechain"):
+                continue
+            try:
+                ep = _iso_epoch(r.get("timestamp") or "")
+            except Exception:
+                continue
+            content = (r.get("message") or {}).get("content")
+            texts, tools, has_tool_result = [], [], False
+            if isinstance(content, str):
+                texts.append(content)
+            elif isinstance(content, list):
+                for b in content:
+                    if not isinstance(b, dict):
+                        continue
+                    bt = b.get("type")
+                    if bt == "text":
+                        texts.append(b.get("text") or "")
+                    elif bt == "tool_use":
+                        try:
+                            tools.append(json.dumps(b.get("input") or {}).lower())
+                        except Exception:
+                            pass
+                    elif bt == "tool_result":
+                        has_tool_result = True
+            is_prompt = (t == "user" and not has_tool_result
+                         and not r.get("isMeta") and bool("".join(texts).strip()))
+            rows.append({"type": t, "ts": ep, "texts": texts, "tools": tools,
+                         "is_prompt": is_prompt})
+    return rows
+
+
+def _score_turn(rows: list[dict], event_ts: float, home_tokens: list[str]) -> dict | None:
+    """Find the prompt turn the cue fired on; score it. None = prompt not located."""
+    prompts = [(i, abs(r["ts"] - event_ts)) for i, r in enumerate(rows)
+               if r["is_prompt"] and abs(r["ts"] - event_ts) <= _PROMPT_MATCH_WINDOW_S]
+    if not prompts:
+        return None
+    start = min(prompts, key=lambda p: p[1])[0]
+    end = next((i for i in range(start + 1, len(rows)) if rows[i]["is_prompt"]),
+               len(rows))
+    reading_line = False
+    cued_read = False
+    toks = [t.lower() for t in home_tokens]
+    for r in rows[start + 1:end]:
+        if r["type"] != "assistant":
+            continue
+        if not reading_line and any(_READING_LINE_RE.search(x) for x in r["texts"]):
+            reading_line = True
+        if not cued_read and toks:
+            for tool_input in r["tools"]:
+                if any(t in tool_input for t in toks):
+                    cued_read = True
+                    break
+        if reading_line and cued_read:
+            break
+    return {"reading_line": reading_line, "cued_read": cued_read,
+            "either": reading_line or cued_read}
+
+
+def compute_obedience(events: list[dict], transcript_root: Path = None) -> dict:
+    """Join nudge events to transcripts; per-hook + total obedience. Pure given
+    the events list + a transcript root (harness-drivable)."""
+    transcript_root = transcript_root or TRANSCRIPT_ROOT
+    per_hook: dict[str, Counter] = defaultdict(Counter)
+    cache: dict[str, list[dict] | None] = {}
+    for ev in events:
+        hook = ev.get("hook") or ""
+        if ev.get("decision") != "nudge":
+            continue
+        if not any(hook.startswith(p) for p in
+                   _ADVISORY_CUE_PREFIXES + ("lorebook-cue",)):
+            continue
+        c = per_hook[hook]
+        c["fired"] += 1
+        sid8 = ev.get("sid8") or ""
+        if sid8 not in cache:
+            tp = _find_transcript(sid8, transcript_root)
+            cache[sid8] = _parse_transcript(tp) if tp else None
+        rows = cache[sid8]
+        if not rows:
+            c["no_transcript"] += 1
+            continue
+        score = _score_turn(rows, float(ev.get("ts") or 0), _cue_home_tokens(hook))
+        if score is None:
+            c["unlocated"] += 1
+            continue
+        c["scored"] += 1
+        c["reading_line"] += int(score["reading_line"])
+        c["cued_read"] += int(score["cued_read"])
+        c["either"] += int(score["either"])
+    total = Counter()
+    for c in per_hook.values():
+        total.update(c)
+    return {"per_hook": {k: dict(v) for k, v in per_hook.items()},
+            "total": dict(total)}
+
+
+def report_obedience(m: dict, window: str) -> list[str]:
+    out = [f"=== Tier-3 cue OBEDIENCE — transcript-grounded (S192) — window: {window} ===",
+           "(scored = nudge joined to its prompt turn; unscored = transcript gone or",
+           " prompt not located — never counted as disobedient. inline events are",
+           " guaranteed-load and excluded by construction.)\n",
+           f"  {'hook':<34} {'fired':>5} {'scored':>6} {'Reading:':>9} "
+           f"{'cued-read':>9} {'either':>7}"]
+
+    def line(name, c):
+        s = c.get("scored", 0)
+        def cell(k):
+            v = c.get(k, 0)
+            return f"{v} ({v / s * 100:.0f}%)" if s else "-"
+        return (f"  {name:<34} {c.get('fired', 0):>5} {s:>6} "
+                f"{cell('reading_line'):>9} {cell('cued_read'):>9} {cell('either'):>7}")
+
+    for name, c in sorted(m["per_hook"].items(),
+                          key=lambda kv: -kv[1].get("fired", 0)):
+        out.append(line(name, c))
+    out.append(line("TOTAL", m["total"]))
+    t = m["total"]
+    unscored = t.get("no_transcript", 0) + t.get("unlocated", 0)
+    if unscored:
+        out.append(f"\n  unscored: {unscored} "
+                   f"({t.get('no_transcript', 0)} transcript gone, "
+                   f"{t.get('unlocated', 0)} prompt not located)")
+    out.append("\n  caveat: for inline-bearing hooks (deploy-schema, the per-player")
+    out.append("  domain-* digests) a 'nudge' is the post-inline tail — the contents")
+    out.append("  were force-injected EARLIER in that session, so a low rate there is")
+    out.append("  NOT disobedience. The honest obedience reads are the never-inlined")
+    out.append("  advisory hooks: domain-cue:shipping and grounding-cue.")
+    return out
+
+
 # ── reporting ─────────────────────────────────────────────────────────────
 def _pct(x: float | None) -> str:
     return f"{x * 100:.0f}%" if x is not None else "n/a"
@@ -325,12 +554,12 @@ def report(m: dict, window: str) -> list[str]:
         f"  ({m['cue_load_proxy_hits']}/{m['cue_sessions']} cue-firing sessions"
         f" also got a forced-read inject)"
     )
-    out.append("  Obedience — did the agent load the CUED knowledge? — is not in")
-    out.append("  this stream; it lives in the transcript `Reading:` line (R3,")
-    out.append("  optional). Not fabricated here. The high-fire cues below are the")
+    out.append("  Obedience — did the agent load the CUED knowledge? — lives in the")
+    out.append("  transcript, not this stream: run with --obedience for the")
+    out.append("  transcript-grounded measure (S192). High-fire cues below are the")
     out.append("  forced-read CONVERSION CANDIDATES (advisory → guaranteed-load):")
     for k, v in sorted(m["cue_fires"].items(), key=lambda kv: -kv[1])[:5]:
-        out.append(f"    - {k}: {v} fires, obedience unmeasured")
+        out.append(f"    - {k}: {v} fires")
     return out
 
 
@@ -371,9 +600,12 @@ def trend(path: Path) -> list[str]:
         if not line:
             continue
         try:
-            rows.append(json.loads(line))
+            r = json.loads(line)
         except Exception:
             continue
+        if r.get("kind") == "obedience":
+            continue  # obedience snapshots have their own shape; not in this table
+        rows.append(r)
     if not rows:
         out.append("  (no valid snapshots)")
         return out
@@ -413,6 +645,8 @@ def main() -> int:
                     help="print the snapshot time-series and exit")
     ap.add_argument("--include-synthetic", action="store_true",
                     help="keep test-fixture sessions (raw stream; default drops them)")
+    ap.add_argument("--obedience", action="store_true",
+                    help="transcript-grounded tier-3 cue-obedience report (S192)")
     args = ap.parse_args()
 
     if args.trend:
@@ -420,8 +654,28 @@ def main() -> int:
         return 0
 
     events = _load(args.events, args.days, args.include_synthetic)
-    m = compute(events)
     window = f"last {args.days:g} days" if args.days else "all time"
+
+    if args.obedience:
+        ob = compute_obedience(events)
+        print("\n".join(report_obedience(ob, window)))
+        if args.snapshot:
+            t = ob["total"]
+            s = t.get("scored", 0)
+            rec = {"kind": "obedience", "ts": round(time.time(), 3),
+                   "window_days": args.days, "fired": t.get("fired", 0),
+                   "scored": s,
+                   "reading_line_rate": (t.get("reading_line", 0) / s) if s else None,
+                   "cued_read_rate": (t.get("cued_read", 0) / s) if s else None,
+                   "either_rate": (t.get("either", 0) / s) if s else None}
+            args.snapshots.parent.mkdir(parents=True, exist_ok=True)
+            with args.snapshots.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(rec, separators=(",", ":")) + "\n")
+            print(f"\n[obedience snapshot appended to "
+                  f"{args.snapshots.relative_to(ROOT).as_posix()}]")
+        return 0
+
+    m = compute(events)
     print("\n".join(report(m, window)))
 
     if args.snapshot:

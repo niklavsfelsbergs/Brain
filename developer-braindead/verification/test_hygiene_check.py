@@ -115,6 +115,39 @@ with tempfile.TemporaryDirectory() as td:
     check("10 shared denylist: aaaa1111+zv_x synthetic, 76f2e60f real",
           is_syn("aaaa1111") and is_syn("zv_carri") and not is_syn("76f2e60f"))
 
+with tempfile.TemporaryDirectory() as td:
+    lb = Path(td)
+    conf = lb / "confirmed"
+    conf.mkdir(parents=True)
+
+    # 11. confirmed + indexed in sync -> clean
+    (conf / "D-017_user-only.md").write_text("x", encoding="utf-8")
+    (conf / "D-024_pathspecs.md").write_text("x", encoding="utf-8")
+    (lb / "_index.md").write_text(
+        "# index\n\n## D-017 — user-only\n- rule: r\n\n## D-024 — pathspecs\n"
+        "- patterns: commit\n- rule: r\n", encoding="utf-8")
+    check("11 lorebook in-sync -> clean", hc.check_lorebook_index(lb) == [])
+
+    # 12. confirmed-but-unindexed flagged; ghost entry flagged
+    (conf / "D-035_new-decision.md").write_text("x", encoding="utf-8")
+    (lb / "_index.md").write_text(
+        "# index\n\n## D-017 — user-only\n- rule: r\n\n## D-024 — pathspecs\n"
+        "- rule: r\n\n## D-099 — ghost\n- rule: r\n", encoding="utf-8")
+    flags = hc.check_lorebook_index(lb)
+    check("12a unindexed confirmed decision flagged",
+          any("D-035" in f and "NOT in _index" in f for f in flags))
+    check("12b ghost index entry flagged",
+          any("D-099" in f and "ghost" in f for f in flags))
+
+    # 13. missing index file -> single blind-arm flag
+    (lb / "_index.md").unlink()
+    flags = hc.check_lorebook_index(lb)
+    check("13 missing index -> blind-arm flag",
+          len(flags) == 1 and "blind" in flags[0])
+
+# 14. the LIVE index covers the LIVE confirmed set (the real drift check)
+check("14 live lorebook index in sync", hc.check_lorebook_index() == [])
+
 fails = [n for n, ok in results if not ok]
 print(f"\n{len(results) - len(fails)}/{len(results)} passed"
       + (f"  FAILURES: {fails}" if fails else ""))

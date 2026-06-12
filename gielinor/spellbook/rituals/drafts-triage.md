@@ -103,7 +103,7 @@ For each verdict, execute as follows:
 | **y** | `bank/drafts/notes/` | `git mv` to `bank/notes/` preserving sub-path |
 | **y** | `spellbook/drafts/skills/` | `git mv` to `spellbook/skills/` |
 | **y** | `keepsake/proposals/` | **User-only.** Surface proposed pin text + target `keepsake/current.md` section; principal hand-edits. |
-| **y** | `lorebook/drafts/` | **User-only.** Surface; principal canonicalizes as `lorebook/confirmed/D-NNN_<slug>.md`. |
+| **y** | `lorebook/drafts/` | **User-only.** Surface; principal canonicalizes as `lorebook/confirmed/D-NNN_<slug>.md`. In the same pass, add the decision's entry to `lorebook/_index.md` (distilled rule + cue patterns if it has a topic-cue moment, else its `carried-by:` line) — an unindexed decision is invisible to the `[LOR]` cue arm; `hygiene-check.py` flags the drift. |
 | **n** | any | `git mv` to sibling `rejected/` preserving sub-path. Optionally append a one-line rejection note (use Edit before mv). |
 | **edit** | any | Revise per principal direction; surface revised text for re-confirmation; on second-pass `y`, treat as y. |
 

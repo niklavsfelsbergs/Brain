@@ -12,9 +12,9 @@
 # own bank/notes/research/quest-log before analyzing.
 #
 # Design (per the proposal + the brain's verify-enforcement-fires ethos):
-#   - cue match is the LOAD-BEARING path; artifact detection is best-effort and
-#     no-ops cleanly if the payload exposes no attachment field (UNVERIFIED — see
-#     ARTIFACT_KEYS note; do not rely on it).
+#   - cue match is the LOAD-BEARING path; artifact detection (S192, VERIFIED)
+#     matches the upload PLACEHOLDERS Claude Code inserts into the prompt text —
+#     see the _ARTIFACT_RE note for the verification trail.
 #   - advisory only: emits additionalContext, never blocks (exit 0 always).
 #   - gielinor-scoped: skips dev-brain (actor == "braindead") via the per-session
 #     status sidecar; everything else (players, Guthix, wisp) fires.
@@ -53,10 +53,32 @@ _CUE_PATTERNS = [
 ]
 _CUE_RE = re.compile("|".join(_CUE_PATTERNS), re.IGNORECASE | re.DOTALL)
 
-# Best-effort attachment keys. UNVERIFIED against Claude Code's real
-# UserPromptSubmit payload — if none are present this half silently no-ops and
-# the cue-match path carries all the value. Do not assume these fire.
-ARTIFACT_KEYS = ("attachments", "files", "pasted_contents", "attached_files")
+# Artifact detection — VERIFIED against the real payload (S192, regression case 5).
+# The original ARTIFACT_KEYS payload-field guess (attachments/files/pasted_contents/
+# attached_files) was DEAD CODE: the shipped binary constructs the UserPromptSubmit
+# input as {...base, hook_event_name, prompt, session_title} — no attachment field
+# exists (claude.exe: `f={...X9(q),hook_event_name:"UserPromptSubmit",prompt:H,
+# session_title:...}`). What the prompt TEXT does carry are the placeholders the TUI
+# inserts for uploads — the binary's own grammar (its paste/image builders):
+#   [Pasted text #N] / [Pasted text #N +M lines] / [Image #N] /
+#   [...Truncated text #N +M lines...]
+# Receipt that these reach hooks: switchboard/chat.ndjson (written by a
+# UserPromptSubmit hook from its payload) carries "[Image #1]" inline in real
+# Jebrim prompts (sid 36b49f0c). The dragged-file arm (absolute path with a
+# document extension) is plausible-but-unobserved in 411 transcripts — kept narrow,
+# honestly unverified; the placeholder arms are the verified core.
+# Artifact-ONLY matches fire once per session (sentinel): screenshot-heavy debug
+# sessions would otherwise turn the nudge into wallpaper. Cue matches are rarer
+# and keep their every-match behavior.
+_ARTIFACT_PATTERNS = [
+    r"\[Image #\d+\]",
+    r"\[Pasted text #\d+(?: \+\d+ lines)?\]",
+    r"\[\.\.\.Truncated text #\d+ \+\d+ lines\.\.\.\]",
+    # dragged file: absolute Windows path ending in a document/data extension
+    # (in-tree code/md paths are relative in practice — kept out on purpose)
+    r"[A-Za-z]:\\[^\s\"'<>|]{2,200}\.(?:pdf|xlsx?|docx?|pptx?|csv|png|jpe?g|webp|heic|eml|msg)\b",
+]
+_ARTIFACT_RE = re.compile("|".join(_ARTIFACT_PATTERNS), re.IGNORECASE)
 
 
 def _actor_for(sid8: str) -> str:
@@ -70,12 +92,10 @@ def _actor_for(sid8: str) -> str:
         return ""
 
 
-def _has_artifact(payload: dict) -> bool:
-    for k in ARTIFACT_KEYS:
-        v = payload.get(k)
-        if v:  # non-empty list/str/dict
-            return True
-    return False
+def _artifact_marker(prompt: str) -> str:
+    """The upload placeholder found in the prompt text, or ''."""
+    m = _ARTIFACT_RE.search(prompt)
+    return m.group(0).strip() if m else ""
 
 
 def _emit(matched: str) -> None:
@@ -116,8 +136,21 @@ def main() -> int:
 
     m = _CUE_RE.search(prompt)
     matched = m.group(0).strip() if m else None
-    if matched is None and _has_artifact(payload):
-        matched = "uploaded artifact"
+    if matched is None:
+        marker = _artifact_marker(prompt)
+        if marker:
+            # Artifact-only fires once per session — screenshot-heavy sessions
+            # would otherwise wallpaper the nudge (cue matches stay every-match).
+            sentinel = (STATUS_DIR / f"{sid8}.gcue-artifact") if sid8 else None
+            if sentinel and sentinel.exists():
+                return 0
+            matched = f"uploaded artifact: {marker}"
+            try:
+                if sentinel:
+                    sentinel.parent.mkdir(parents=True, exist_ok=True)
+                    sentinel.write_text("1", encoding="utf-8")
+            except OSError:
+                pass
     if matched is None:
         return 0  # ordinary prompt — fast, silent pass-through
 

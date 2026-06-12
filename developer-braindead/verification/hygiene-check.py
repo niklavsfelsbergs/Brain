@@ -22,6 +22,13 @@ Two axes:
       means a new emitter bypassed it), and *.tmp.* litter from failed
       atomic replaces.
 
+  C — LOREBOOK-INDEX coverage (S192, the [LOR] cue arm's drift guard):
+      gielinor/lorebook/_index.md is the synthesized cue index the
+      domain-cue hook parses; a decision promoted to confirmed/ without an
+      index entry is invisible to the arm (the index regrows stale exactly
+      like every other hand-maintained map). Flags confirmed D-NNN files
+      missing from the index and ghost index entries with no confirmed file.
+
 Read-only. Exit 0 always (a detector surfaces, it doesn't gate — the R3
 honesty: rituals/sessions choose to act). Run any time:
 
@@ -41,6 +48,7 @@ except Exception:
 ROOT = Path(__file__).resolve().parents[2]            # brain/
 PLAYERS_DIR = ROOT / "gielinor" / "players"
 SWITCHBOARD = ROOT / "switchboard"
+LOREBOOK = ROOT / "gielinor" / "lorebook"
 
 # ── Axis A thresholds (hand-enforced caps, made visible) ────────────────────
 INPROGRESS_CAP = 10        # files in quest-log/in-progress/ before flagging
@@ -139,17 +147,46 @@ def check_telemetry(sb: Path = SWITCHBOARD,
     return flags
 
 
+# ── Axis C ───────────────────────────────────────────────────────────────────
+def check_lorebook_index(lorebook: Path = LOREBOOK) -> list[str]:
+    """Confirmed-decision vs cue-index coverage. Returns FLAG lines ([] = clean)."""
+    import re
+    flags: list[str] = []
+    confirmed_dir = lorebook / "confirmed"
+    index = lorebook / "_index.md"
+    if not confirmed_dir.is_dir():
+        return [f"FLAG lorebook confirmed/ missing: {confirmed_dir}"]
+    if not index.exists():
+        return [f"FLAG lorebook/_index.md missing — the [LOR] cue arm is blind"]
+    confirmed = {m.group(1) for f in confirmed_dir.glob("D-*.md")
+                 if (m := re.match(r"(D-\d{3})", f.name))}
+    # Headers may carry born-link wikilink wraps: `## [[D-NNN_stem|D-NNN]] — …`.
+    indexed = set(re.findall(
+        r"^##\s+(?:\[\[[^\]|]+\|)?(D-\d{3})(?:\]\])?\s",
+        index.read_text(encoding="utf-8"), re.MULTILINE))
+    for d in sorted(confirmed - indexed):
+        flags.append(f"FLAG lorebook {d} confirmed but NOT in _index.md — "
+                     f"invisible to the [LOR] cue arm; add its entry")
+    for d in sorted(indexed - confirmed):
+        flags.append(f"FLAG lorebook _index.md has ghost entry {d} "
+                     f"(no confirmed file) — remove or fix")
+    return flags
+
+
 def main() -> int:
     print("=" * 72)
     print("S187 HYGIENE DETECTOR — active-state drift + telemetry boundedness")
     print("=" * 72)
     a = check_active_state()
     b = check_telemetry()
+    c = check_lorebook_index()
     print(f"\nAxis A — active-state (players under {PLAYERS_DIR.name}/):")
     print("\n".join(f"  {f}" for f in a) if a else "  clean")
     print(f"\nAxis B — telemetry ({SWITCHBOARD.name}/):")
     print("\n".join(f"  {f}" for f in b) if b else "  clean")
-    print(f"\nsummary: {len(a) + len(b)} flag(s)")
+    print(f"\nAxis C — lorebook cue-index coverage:")
+    print("\n".join(f"  {f}" for f in c) if c else "  clean")
+    print(f"\nsummary: {len(a) + len(b) + len(c)} flag(s)")
     return 0
 
 

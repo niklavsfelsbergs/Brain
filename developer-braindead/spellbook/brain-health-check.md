@@ -23,7 +23,7 @@ All under `developer-braindead/verification/` unless noted:
 - `ritual-stats.py` — raw event counts.
 - `close_check.py` — ritual-completeness gate (`--ritual {dev,player}`).
 - `check.py` — structural checks.
-- `knowledge-miss-regression-set.md` — retrieval scorecard (baseline 6 caught / 2 partial / 3 miss of 11; case 11 added S182, re-baselined on Fable 5 at S187).
+- `knowledge-miss-regression-set.md` — retrieval scorecard (baseline 8 caught / 2 partial / 1 miss of 11; case 11 added S182, re-baselined on Fable 5 at S187, mechanical ceiling reached S192 — the residual miss + partial-half are `[CRIT]` judgment, not buildable).
 - `hygiene-check.py` — active-state drift (per-player in-progress/inventory caps + staleness) + telemetry boundedness (sweep-not-holding, dead diag logs, synthetic-sid reappearance). The S187 detector for dimension 7's evidence.
 - `switchboard/ritual-events.ndjson` — event ground truth (synthetic test-fixture sid8s pollute it — `adherence-rates.py` filters its denylist by default since S187; for raw reads, filter `lf*`/`livefire`/`sess*`/`aaaa*`/`zv_*`/`test1234`/`scmone00`/`zzzz9999`/`deadbe99` etc.).
 - Prior baselines: `quest-log/S060_*`, `S110_*`, `S142_*`, `S145_*`.
@@ -38,7 +38,7 @@ All under `developer-braindead/verification/` unless noted:
 
 4. **Knowledge hygiene & alching cadence** (weight 15) — drafts backlog by age across `bank/drafts/`, `spellbook/drafts/`, `examine/drafts/`; research picked into bank; `keepsake/current.md` current and not stale; `examine/confirmed/current.md` reflects recent learning. *Evidence:* draft counts + oldest-draft age per player; keepsake/examine mtime vs recent quests. *5 = drafts triaged within a session-or-two; 2 = months-old pile.*
 
-5. **Knowledge retrieval effectiveness** (weight 15) — re-score `knowledge-miss-regression-set` vs baseline (6/2/3); domain-cue obedience by cross-referencing fired cues against the `Reading:` line in transcripts; confirm forced-read inlines real content. *5 = ≥ baseline + obedience observed; 2 = cues fire but knowledge doesn't land.*
+5. **Knowledge retrieval effectiveness** (weight 15) — re-score `knowledge-miss-regression-set` vs baseline (8/2/1); cue obedience via `adherence-rates.py --obedience` (transcript-grounded since S192; baseline: 50% either-signal all-time — shipping 47% n=268, grounding-cue 65% n=68, `Reading:`-line alone 15%) vs the prior `kind:"obedience"` snapshot; confirm forced-read inlines real content. *5 = ≥ baseline + obedience not degrading; 2 = cues fire but knowledge doesn't land.*
 
 6. **Context economy** (weight 12) — `brain-weight.py` now vs S145/S147 baselines; trend (monotonic growth is the rot driver); the open ~6.6k CORE-thinning debt. *5 = flat/shrinking with rules intact; 2 = re-growing unmanaged.*
 

@@ -51,3 +51,21 @@ None — work confined to the bi-analytics work repo + this quest/inventory/comm
 
 ## Main-brain changes.
 This quest-log entry + resume archived (`inventory/archive/`) + comms OPEN/CLOSING + harvest drafts (see close).
+
+## Post-close continuation (same session, after the S239 wrap)
+
+Principal re-opened with follow-ups; all committed to bi-analytics-main and **pushed** to origin/main:
+
+1. **Refreshed the project-root README** (`385fd9e`) to post-refactor state (carrier_engines, the
+   11-engine model, €976,024 result, pointers to the new `2_analysis/README.md`). Then **pushed the
+   full EU-tender arc** (10 commits, `24de3fa..385fd9e`).
+2. **`carriers/ → carrier_engines/`** (`d337700`) — renamed the engine package (180 files); updated
+   `from carriers.X` → `carrier_engines.X` across 38 .py + 57 .md. Caught + reverted a blanket-replace
+   over-reach that hit the same-named sibling folder `docs/carriers/` (a different folder).
+3. **Report folders consolidated under `reports/`** (`8e30d0f`) — `final_report/`,
+   `final_report_no_hermes_v2/`, `final_report_no_hermes_with_gull/`, `decision_report/`,
+   `management_briefing/`. Depth change broke the builders' `ROOT = parents[1]` anchors → bumped all
+   10 to `parents[2]`; fixed `regen_all.py` + doc paths. Then **pushed** (`385fd9e..8e30d0f`).
+
+Regen gate held at `base_ann == 976023.94` through every rename; presented lineage byte-identical.
+Harvest: 1 examine draft (blanket folder-rename hits same-named sibling folders). Origin now 0/0.

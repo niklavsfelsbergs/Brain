@@ -1,6 +1,6 @@
 # "Make a v2 of the report" → the variant he means is the most-recently-active one
 
-**Rule.** A bare singular reference ("the report / the X") to a multi-variant artifact family anchors to the **most-recently-active variant in the working thread**, not the structurally-primary / base-named one. The base-named variant (`final_report/`, the "main" report) is a **magnet for wrong-anchor** when a later variant is the live focus. When the reference is ambiguous and the action non-trivial (a build, or quoting a canonical figure), **name the variant in the Plan line** so a wrong pick costs one line, not a full build or a wrong number to the principal. Twice in one day ([[S219_e0eb59c8_eu-tender-final-report-content-pass|S219]] build, [[S234_976b6908_eu-tender-presented-canonical-report-pin|S234]] grounding) → pattern, not one-off.
+**Rule.** A bare singular reference ("the report / the X") to a multi-variant artifact family anchors to the **most-recently-active variant in the working thread**, not the structurally-primary / base-named one. The base-named variant (`final_report/`, the "main" report) is a **magnet for wrong-anchor** when a later variant is the live focus. When the reference is ambiguous and the action non-trivial (a build, or quoting a canonical figure), **name the variant in the Plan line** so a wrong pick costs one line, not a full build or a wrong number to the principal. Twice in one day (S219 build, S234 grounding) → pattern, not one-off.
 
 **Source:** [[S219_e0eb59c8_eu-tender-final-report-content-pass|S219]] (e0eb59c8), 2026-06-12.
 

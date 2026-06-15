@@ -104,6 +104,7 @@ def _emit(matched: str) -> None:
         "search the active player's bank/notes/, research/, and quest-log/ for this subject; "
         "map any uploaded artifact to where prior work left off; confirm the referent's identity. "
         'Treat "this is new" as a hypothesis to disprove. '
+        "State an `Anchor:` line naming what this continues (meta/communication-protocol.md). "
         "(examine G1; recurred S066/S076/S095; D-028.)"
     )
     out = {

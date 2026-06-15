@@ -80,6 +80,7 @@ def main():
         check("1 SessionStart injects the FORCED-READ directive", ctx and "FORCED-READ" in ctx)
         check("1 SessionStart names the Global keepsake", ctx and "Global keepsake/current.md" in ctx)
         check("1 SessionStart names the resume read", ctx and "inventory/*-resume" in ctx)
+        check("1 SessionStart demands the Anchor: verdict line", ctx and "`Anchor:`" in ctx)
 
         # 2. SessionStart for a sub-agent (agent_type set) -> silent
         c, out = run({"hook_event_name": "SessionStart", "session_id": "bbbb2222-x",
@@ -103,6 +104,7 @@ def main():
               ctx and "Digested domains" in ctx)
         check("3 keepsake AND domain-index in one emission",
               ctx and "Jebrim keepsake/current.md" in ctx and "Jebrim bank/domains/_index.md" in ctx)
+        check("3 first-prompt demands the Anchor: verdict line", ctx and "`Anchor:`" in ctx)
 
         # 4. Second prompt same session (sentinel present) -> silent
         c, out = run({"hook_event_name": "UserPromptSubmit", "session_id": sid,

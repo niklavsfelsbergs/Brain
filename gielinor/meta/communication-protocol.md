@@ -25,6 +25,19 @@ On **substantive, ambiguous, or knowledge-dependent** turns, add a third preambl
 
 **It's visible, not enforced (R3-tier).** Naming a read doesn't force the read, and you can read a file and still ignore it — so this *complements, never replaces*, the hooks that actually push knowledge into view (the domain-/grounding-cue nudges, any forced-read gate). Its payoff is **observability**: a stated `Reading:` line makes cue-obedience legible — when a domain/grounding cue fires, did the right knowledge actually get loaded before the answer landed?
 
+## The `Anchor:` line — state the continuation verdict
+
+On the **first substantive turn of a session**, and again whenever a **genuinely new topic** is introduced mid-session, state the continuation verdict *before* the substantive reply — `Anchor:` followed by one of:
+
+- **`Anchor: continues <prior work>`** — naming the concrete referent (a quest-log entry, a bank note, an inventory resume file, a git arc) the ask picks up. This is the **Recall-shaped lens** (the five-lens read, below) made visible.
+- **`Anchor: new topic`** — *after* actually checking (git log / quest-log / bank / inventory), never as a default. Per the *Anchor to existing state — default to continuation* reflex and the never-assert-absence rule, "this is new" is a claim that needs a look, not the lazy answer.
+
+It pairs with the `Reading:` line and precedes it logically: the continuation call is *what* you're grounding in, the Reading line is *which files*. Both are the visible, correctable surface of one internal judgment — and a wrong anchor (treating a continuation as new, or the reverse) is the brain's most-repeated expensive failure (the pinned keepsake reflex plus the anchor-referent / check-own-memory / never-assert-absence rules all guard it). Stating the verdict surfaces a wrong anchor in one line while it's still cheap to fix — the same logic as the Understanding line, aimed at the question that costs the most when answered wrong.
+
+**It's the output half of the keepsake forced-read.** `keepsake-forced-read.py` already injects the keepsake + work-domain index on the first prompt, and `grounding-cue-reminder.py` fires on continuation cues; the `Anchor:` line is the *stated verdict* those injections exist to inform — visible, not hook-enforceable (a hook can inject context, it can't make the model emit a line).
+
+**Omit it on trivial turns** — the compression rule governs here too. "Show me file X" gets no Anchor line. Gate it on the same test as the five-lens read: fires when a dropped or wrong continuation-call would cost a turn or an irreversible action.
+
 ## Compression for trivial requests
 
 When the ask is unambiguous and small (e.g., "what was that number," "show me file X," routine acknowledgments), compress to a single action line instead of the full Understanding/Plan format.

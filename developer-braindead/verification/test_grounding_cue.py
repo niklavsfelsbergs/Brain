@@ -76,6 +76,8 @@ code, out = run("where is the report I prepared earlier?")
 check("cue: fires on 'prepared earlier'", "Grounding cue" in ctx(out))
 code, out = run("what are the carrier volumes this week?")
 check("cue: silent on benign prompt", ctx(out) == "")
+code, out = run("back to the tender numbers")
+check("cue: nudge demands the Anchor: verdict line", "`Anchor:`" in ctx(out))
 
 # --- 2. artifact placeholders (the real shapes, from the binary's own grammar) --
 code, out = run("[Image #1] what do you make of this?", sid="sessART10001")

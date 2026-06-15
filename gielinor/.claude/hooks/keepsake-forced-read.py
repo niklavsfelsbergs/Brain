@@ -108,6 +108,18 @@ DIRECTIVE = (
     "follow developer-braindead/respawn.md instead."
 )
 
+# The Anchor-verdict directive (meta/communication-protocol.md -> The `Anchor:` line).
+# The OUTPUT half of the forced-read: having the keepsake + domain map in context, the
+# agent states whether this prompt continues prior work or is a new topic. Rides BOTH
+# arms -- SessionStart (guaranteed, before the actor is known) and the first player
+# prompt (the most salient first-answer moment) -- so the demand lands at session-open.
+ANCHOR_DIRECTIVE = (
+    "State an `Anchor:` line in your opening preamble on this first substantive turn "
+    "(and on any genuinely new topic later) -- whether this prompt continues prior work "
+    "(name the quest/note/resume/git arc it picks up) or is a new topic (only after "
+    "checking; 'new' is a hypothesis, not a default). Omit on trivial turns."
+)
+
 
 def _read(p: Path) -> str:
     try:
@@ -149,7 +161,8 @@ def _session_start(payload: dict, sid8: str) -> int:
     if payload.get("agent_type"):
         return 0
     gk = _read(GLOBAL_KEEPSAKE)
-    _emit("SessionStart", DIRECTIVE + "\n\n" + _keepsake_block("Global", gk))
+    _emit("SessionStart",
+          DIRECTIVE + "\n\n" + ANCHOR_DIRECTIVE + "\n\n" + _keepsake_block("Global", gk))
     log_event("forced-read", "session-start", sid8=sid8)
     return 0
 
@@ -188,6 +201,7 @@ def _user_prompt(payload: dict, sid8: str) -> int:
                           f"budget ({len(di_body.encode('utf-8'))}B); read it directly]")
             log_event("forced-read", "domain-index-overbudget", sid8=sid8, detail=actor)
 
+    blocks.append(ANCHOR_DIRECTIVE)
     _emit("UserPromptSubmit", "\n\n".join(blocks))
     log_event("forced-read", "player-inject", sid8=sid8, detail=actor)
     try:

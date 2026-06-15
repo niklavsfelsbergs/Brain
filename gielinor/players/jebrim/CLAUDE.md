@@ -15,15 +15,19 @@ The master rulebook from `gielinor/CLAUDE.md` is already in context — this fil
 - Repository-anchored knowledge work — pulling from and writing back about `Documents/bi-analytics-main/NFE/` and `Documents/bi-etl/`.
 - Focused execution where the principal needs a deliverable.
 
-## Shipping / mart work — load the knowledge first (default: spawn the shipping-agent)
+## Shipping / mart work — the shipping_mart is source #1 (then: load the knowledge)
 
-Any work over the shipping data mart (the `shipping_mart` gold facts, carrier cost, the automated shipping report, EU tender, anything talk-to-your-data-shaped over shipping) carries a hard precondition: **you do not reason about the mart from memory.** The mart's contract, schema (incl. package dims / `length_plus_girth_cm`), cost-basis rules, and DQ quirks live in `shipping-agent/` — `how_to.md` §0 + `reference/{mart-contract,tables,known-dq}.md`.
+Any shipping-data question (carrier cost, volumes, the automated shipping report, EU tender, anything talk-to-your-data-shaped over shipping) carries two hard preconditions, **in order**:
+
+**1. The gold `shipping_mart` is SOURCE #1 — start there.** It is the default first source for *any* shipping-data question. Reaching for another source — NFE ad-hoc queries, raw invoice tables, silver/bronze, a CSV export, direct Redshift — requires an **explicit, stated reason the mart cannot answer it** (e.g. linehaul sizing via `fact_truck_charges`, or raw vocab in silver/bronze, both documented in the `shipping-mart` digest). Default to the mart; justify any departure. The failure this fixes: routing a shipping question to some other source and never reaching the mart at all.
+
+**2. Don't reason about the mart from memory.** Its contract, schema (incl. package dims / `length_plus_girth_cm`), cost-basis rules, and DQ quirks live in `shipping-agent/` — `how_to.md` §0 + `reference/{mart-contract,tables,known-dq}.md`.
 
 - **Default: spawn the shipping-agent** (`subagent_type: shipping-agent`) for any mart pull beyond a one-line lookup. Its config loads the rulebook by construction — that is the knowledge guarantee. See the `calling-the-shipping-agent` skill.
 - **If working the mart inline** (a quick check, or building report harness code): load `shipping-agent/how_to.md` §0 + the relevant `reference/` file *before* writing SQL or interpreting any figure.
-- The `domain-cue-reminder.py` hook reinforces this — it nudges on shipping/mart cues (the shipping entry in `gielinor/.claude/hooks/cue_registry.py`) — but the discipline is yours; the hook is a backstop, not the rule.
+- The `domain-cue-reminder.py` hook reinforces both preconditions — it nudges on shipping/mart cues (the shipping entry in `gielinor/.claude/hooks/cue_registry.py`) — but the discipline is yours; the hook is a backstop, not the rule.
 
-This exists because the knowledge gap recurred: mart work was done as principal without loading the reference (S-2026-06-02, the shipping-report build). Don't repeat it.
+This exists because two gaps recurred: (a) mart work done as principal without loading the reference (S-2026-06-02, the shipping-report build); (b) shipping questions routed off-mart instead of starting at the mart (2026-06-15). Don't repeat either.
 
 ## Out-of-scope
 

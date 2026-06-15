@@ -99,8 +99,9 @@ DOMAINS = [
             r"\b(UPS|DHL|DPD|GLS|USPS|FedEx|Maersk|Asendia|OnTrac|Yodel|Hermes|Schenker|ORWO|Picturator|PicaAPI)\b",
         ],
         "message": (
-            "Shipping/mart topic detected (\"{matched}\"). The mart's contract is "
-            "authoritative — don't reason about the shipping_mart from memory."
+            "Shipping topic detected (\"{matched}\"). The gold shipping_mart is "
+            "SOURCE #1 for any shipping-data question — start there, not another "
+            "table/repo/export; and don't reason about its contract from memory."
         ),
         # External knowledge home: these live in the picanova/shipping-agent repo,
         # NOT this brain tree. The reliable loader is the specialist (it loads the
@@ -117,10 +118,15 @@ DOMAINS = [
             "rather than trusting recall of the mart shape or cost-basis rules."
         ),
         "read_before": (
-            "Load the canonical files (or spawn the specialist) before writing SQL or "
-            "interpreting any shipping_mart figure — the contract holds the cost-basis "
-            "rules, schema (incl. dims / length_plus_girth_cm), and DQ quirks. "
-            "(sibling of grounding-cue; see skill calling-the-shipping-agent.)"
+            "MART-FIRST (source #1): for any shipping-data question the gold "
+            "shipping_mart is the default first source — start there. Reaching for "
+            "another source (NFE ad-hoc queries, raw invoice tables, silver/bronze, a "
+            "CSV export, direct Redshift) needs an explicit, stated reason the mart "
+            "cannot answer it (e.g. linehaul via fact_truck_charges, raw vocab in "
+            "silver/bronze). Then load the canonical files (or spawn the specialist) "
+            "before writing SQL or interpreting any shipping_mart figure — the contract "
+            "holds the cost-basis rules, schema (incl. dims / length_plus_girth_cm), and "
+            "DQ quirks. (sibling of grounding-cue; see skill calling-the-shipping-agent.)"
         ),
         "skip_actors": DEFAULT_SKIP_ACTORS,
     },

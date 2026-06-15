@@ -28,6 +28,8 @@ synthesized: 2026-06-10
 
 # Shipping data mart — the gold `shipping_mart` + the shipping-agent
 
+**Source #1 for any shipping-data question — start here.** The gold `shipping_mart` is the default first source for shipping data; reaching for another source (NFE ad-hoc, raw invoice tables, silver/bronze, CSV exports, direct Redshift) needs an explicit reason the mart can't serve it — e.g. linehaul via `fact_truck_charges`, or raw vocab in silver/bronze (both noted below). Default to the mart; justify any departure.
+
 The gold layer is the **entire query surface** — four facts, no joins outside the schema. **Do not reason about the mart from memory** (Jebrim CLAUDE.md hard precondition): spawn the **shipping-agent** (`subagent_type: shipping-agent`) for any pull past a one-line lookup — it loads the rulebook by construction — or load `picanova/shipping-agent` `how_to.md` §0 + `reference/{mart-contract,tables,known-dq}.md` before writing SQL or reading any figure.
 
 ## The four facts (`shipping_mart.*`)

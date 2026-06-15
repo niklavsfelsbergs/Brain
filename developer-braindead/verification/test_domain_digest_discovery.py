@@ -136,7 +136,8 @@ check("7 subagent: NO force-load inline", INLINE_MARKER not in ctx)
 code, out = run("shipping costs monitoring dashboard", sid="sessBOTH0007")
 ctx = ctx_of(out)
 check("8 both: scm digest body present", TOK_BODY in ctx)
-check("8 both: static shipping nudge also present", "shipping_mart from memory" in ctx)
+check("8 both: static shipping nudge also present",
+      "SOURCE #1" in ctx and "shipping_mart" in ctx)
 
 # --- 9. malformed input -> safe ------------------------------------------------
 sys.stdin = io.StringIO("not json{")

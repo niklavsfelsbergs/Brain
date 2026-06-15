@@ -123,6 +123,8 @@ check("render: includes Freshness", "Freshness:" in rendered)
 check("render: includes Read before answering", "Read before answering:" in rendered)
 check("render: surfaces the external repo home",
       "picanova/shipping-agent" in rendered)
+check("render: shipping nudge states mart-primacy (source #1)",
+      "SOURCE #1" in rendered and "MART-FIRST" in rendered)
 
 deploy = next(d for d in cue_registry.DOMAINS if d["name"] == "deploy-schema")
 rendered_dep = dcr._render(deploy, "deploy")

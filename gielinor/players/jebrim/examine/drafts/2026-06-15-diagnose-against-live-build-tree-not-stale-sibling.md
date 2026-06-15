@@ -1,0 +1,9 @@
+# Diagnose against the live build tree, not whichever sibling checkout opens first
+
+**Observed:** [[S240_a7f855d6_scm-breakdown-filter-load-perf|S240]] (a7f855d6), SCM Breakdown perf. I produced a full diagnosis + ranked recommendation (#1 dead-buckets, #2 batch refresh, #3 server result-cache) reading the `bi-analytics` checkout. When the principal said "build in bi-analytics-main," I diffed and found that tree was **substantially ahead** — [[S147_dcb495a7_scm-perf-audit|S147]] Tranche-3 had already shipped my #3 (immutable `bd_<hash>` fingerprint cache, LRU-capped) and the sparkline half of #2. My recommendation was partly against stale code; I'd have re-implemented existing work had I charged in.
+
+**Why it matters:** the existing memory cluster ("verify live checkout before editing", "check if already built before proposing a build") frames this as an *editing* hazard (wrong-tree edits read as "did nothing"). This session showed the same hazard one step earlier — at **diagnosis/recommendation** time. A multi-worktree repo (bi-analytics has ≥4 sibling checkouts) means the *first* tree you open is not necessarily the one the user builds/deploys from, and the trees diverge.
+
+**Rule to apply:** before diagnosing or recommending against a multi-worktree repo, identify the **live build/deploy tree first** (the one with the fresh `.next`/build artifacts, the branch the user names) and ground the diagnosis there. A diagnosis off a stale sibling can recommend already-done work. I caught it here only because the principal named the target tree on the build turn — bake the check into the *diagnosis* step, not just the edit step.
+
+Anchors: the bi-analytics-main vs bi-analytics diff (route.ts/BreakdownTab.tsx differed); the [[S147_dcb495a7_scm-perf-audit|S147]] fingerprint-cache + sparkline-batch already present. Extends [[2026-06-... verify-live-checkout]] family.

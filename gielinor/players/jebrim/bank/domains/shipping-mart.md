@@ -21,16 +21,17 @@ corpus:
   - bank/notes/projects/shipping-agent-quality-assessment-2026-05-24.md
   - bank/notes/projects/shipping-agent-onboarding-message.md
   - bank/notes/projects/2026-06-10-received-by-carrier-scan-semantics-and-truck-scan-coverage.md
+  - bank/notes/projects/2026-06-15-na-shipping-quota-mart-revenue-basis.md
 specialist: shipping-agent (subagent_type) — loads picanova/shipping-agent how_to.md §0 + reference/ by construction
-freshness: 2026-06-10
-synthesized: 2026-06-10
+freshness: 2026-06-17
+synthesized: 2026-06-17
 ---
 
 # Shipping data mart — the gold `shipping_mart` + the shipping-agent
 
 **Source #1 for any shipping-data question — start here.** The gold `shipping_mart` is the default first source for shipping data; reaching for another source (NFE ad-hoc, raw invoice tables, silver/bronze, CSV exports, direct Redshift) needs an explicit reason the mart can't serve it — e.g. linehaul via `fact_truck_charges`, or raw vocab in silver/bronze (both noted below). Default to the mart; justify any departure.
 
-The gold layer is the **entire query surface** — four facts, no joins outside the schema. **Do not reason about the mart from memory** (Jebrim CLAUDE.md hard precondition): spawn the **shipping-agent** (`subagent_type: shipping-agent`) for any pull past a one-line lookup — it loads the rulebook by construction — or load `picanova/shipping-agent` `how_to.md` §0 + `reference/{mart-contract,tables,known-dq}.md` before writing SQL or reading any figure.
+The gold layer is the **entire query surface** — four facts, no joins outside the schema. **Do not reason about the mart from memory** (Jebrim CLAUDE.md hard precondition): for an ordinary pull, load `picanova/shipping-agent` `how_to.md` §0 + `reference/{mart-contract,tables,known-dq}.md` first and query the mart yourself via the Redshift MCP. Spawn the **shipping-agent** (`subagent_type: shipping-agent`) — it loads the rulebook by construction — only for agent-shaped work: heavy/fan-out pulls, chart deliverables, or methodology-heavy cost-basis/re-rating analysis (changed 2026-06-17).
 
 ## The four facts (`shipping_mart.*`)
 - `fact_shipments` — wide spine (~65 cols; provider data denormalized in; `shippingprovider_extkey` = carrier service-tier/product).
@@ -45,6 +46,7 @@ The gold layer is the **entire query surface** — four facts, no joins outside 
 ## Cost basis (load-bearing)
 - Default cost = `final_shipping_cost_eur = COALESCE(real, expected, avg)` ("the one number"). `cost_source` (2026-05-22): `'invoice'` 65% / `'expected'` 24% / NULL 8% / `'avg'` 2%. Column is `real_shipping_cost_eur` but the flag value is `'invoice'`.
 - The 11 buckets derive from silver `shipping_charge_bucket_mapping`. Every query qualifies `shipping_mart.<table>` — reaching outside is a scope violation (`ship_mart_ro` denies it at the DB).
+- **Revenue + quota (mart-native):** `fact_shipments.net_revenue_eur` (EUR, shipment grain — per-order revenue allocated to each parcel by quantity share) is the revenue denominator — **quota = `final_shipping_cost_eur` ÷ `net_revenue_eur`, both mart, order-month lens** — and reproduces the SCM dashboard (US May 26.5%). Do **NOT** join `dw.sales_fact` for the denominator (the prior error). B2C (Picturator) `net_revenue_eur` includes customer-paid shipping → dashboard quota basis, not a pure-product denominator. → [[2026-06-15-na-shipping-quota-mart-revenue-basis]]
 
 ## Package-dimension gate
 Carrier envelopes are hard cutoffs independent of weight (DHL Paket 60×60×120, ≤31.5 kg). **TCG volume is canvas-dominated — long/flat/narrow** (UPS-DE 2–5 kg ≈ 98×71×5 cm), busting second-side limits by design. **Any carrier-swap savings number is invalid until gated against the alternative's envelope** (the €460K→€0 lever) → [[2026-05-23-package-dimensions-carrier-envelopes]].

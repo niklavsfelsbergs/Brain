@@ -4,23 +4,26 @@
 
 ## What it is
 
-The shipping agent (`Documents/GitHub/shipping-agent/`, repo `picanova/shipping-agent`) is a hardened talk-to-your-data specialist over the gold `shipping_mart`. In collaborative work — chiefly `bi-analytics/NFE/{projects,dashboards,shipping_topics}` — Jebrim stays the brain-in-the-loop and calls the agent as a **scoped execution engine** for data-heavy pulls. The brain carries the context + memory; the work artifacts live in NFE.
+The shipping agent (`Documents/GitHub/shipping-agent/`, repo `picanova/shipping-agent`) is a hardened talk-to-your-data specialist over the gold `shipping_mart`. In collaborative work — chiefly `bi-analytics/NFE/{projects,dashboards,shipping_topics}` — Jebrim stays the brain-in-the-loop. For ordinary pulls he queries the mart himself; he calls the agent as a **scoped execution engine** only when the work is data-heavy or methodology-heavy. The brain carries the context + memory; the work artifacts live in NFE.
 
-## When to call it
+## The default: run it yourself
 
-**Default for mart work, not a last resort.** Spawning the shipping-agent is the *reflex* for any shipping-mart pull beyond a one-line lookup — because the agent's config loads `how_to.md` + `reference/` by construction, so the mart contract (schema incl. dims / `length_plus_girth_cm`, cost-basis rules, DQ quirks) is guaranteed present. Doing mart work as Jebrim-principal without that knowledge is the failure this skill exists to prevent (S-2026-06-02: the shipping-report build speculated about whether the mart even carries dimensions — `tables.md` answers it in one line). The `shipping-cue-reminder.py` hook nudges on shipping/mart cues as a backstop.
+**Changed 2026-06-17.** Spawn-first was right for the initial testing window; it's overkill now. For ordinary mart pulls — a number, a slice, one lane or one carrier, a straightforward aggregate — Jebrim runs the query directly via the Redshift MCP. The one hard precondition is unchanged: **don't reason about the mart from memory.** Load `shipping-agent/how_to.md` §0 + the relevant `reference/` file *first* (external repo, stale-by-default), carry the cost-basis + coverage caveats yourself, then query. The mart stays source #1; what changed is who holds the pen.
 
-- A `shipping_topics` / dashboard / project task needs a mart pull where the agent's hardened methodology earns its keep: cost-basis discipline, **charge-bucket-first** cost-movement decomposition, scope-gating, coverage/DQ caveats, carrier/lane/origin analysis, chart deliverables.
-- Anything talk-to-your-data-shaped over the mart that's more than a one-liner.
-- **If you genuinely must work inline** (quick check, or editing report-harness code rather than querying): load `shipping-agent/how_to.md` §0 + the relevant `reference/` file *first* — never reason about the mart from memory.
+The failure this skill still guards (S-2026-06-02: the shipping-report build speculated about whether the mart even carries dimensions — `tables.md` answers it in one line) is *working the mart without loading the reference* — that is now the inline failure mode, not a reason to spawn. The `domain-cue-reminder.py` hook nudges on shipping/mart cues as a backstop.
 
-## When NOT to call it
+## When to spawn the shipping-agent instead
 
-- Trivial lookups faster done inline via the Redshift MCP (a single count, an existence check).
-- Non-mart work, pure decision/brain work, or maintainer edits to the agent itself.
-- Calibration: call it when the methodology adds value — not for a `SELECT COUNT(*)`.
+Reserved for work that is more than running SQL — when the hardened methodology or chart harness is the point:
 
-## How to call it
+- **Heavy or fan-out pulls** — multi-step decomposition, many-slice sweeps, anything where parallelism or isolation pays.
+- **Chart deliverables** — it owns the chart harness; let it produce them.
+- **Methodology-heavy analysis** — cost-basis discipline, **charge-bucket-first** cost-movement decomposition, scope/origin gating, carrier re-rating trust-gates, coverage/DQ caveats. When getting the *basis* right is the whole risk, the specialist that loads the contract by construction carries it more safely than working it inline.
+- **The real interactive agent** — for polished talk-to-your-data with the live UX + workbench memory, the principal uses the real agent in its own folder directly.
+
+Calibration: spawn when the methodology adds value over a clean query — not for a `SELECT COUNT(*)`, and not for a pull you can run yourself once the reference is loaded.
+
+## How to call it (when you do spawn)
 
 1. **Resolve scope with Niklavs first.** The agent's load-bearing guardrails are the **vertical** fork (TCG shops vs the ORWO photo lab) and the **origin** fork (production site). Because Jebrim is the interface, surface those forks to the principal *before* spawning — the dwarf gets a fully-scoped brief, never a bare "we". (One-shot dwarves can't pop the interactive menu and bounce back, so this discipline lives with Jebrim.)
 2. **Spawn the `shipping-agent` subagent** (Agent tool, `subagent_type: shipping-agent`). It's a **dedicated agent type** now — built as a dev-brain task per [[S101_612683db_shipping-agent-access-split|S101]] open item 6; brief at `.claude/agents/shipping-agent.md`. It renders distinctly on the cockpit (a cyan "S" crew chip, not a generic dwarf "D") and has a hook-enforced write boundary (`shipping-agent-write-boundary.py` — quest-log + inventory inside the brain; charts/CSVs/SQL land outside it). It reads its own brief, so the recital below is a *scope hand-off*, not a full rule-restate. (An ad-hoc dwarf briefed as below still works as a fallback if the type is ever unavailable.) Runs in-session (subscription), NOT headless `claude -p` / Agent SDK (metered from 2026-06-15).

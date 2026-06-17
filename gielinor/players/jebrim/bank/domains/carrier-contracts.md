@@ -33,9 +33,10 @@ corpus:
   - bank/notes/projects/2026-06-11-ups-residential-and-peak-surge-mechanics.md
   - bank/notes/projects/2026-06-11-ups-new-offer-vs-today-cost-drivers.md
   - bank/notes/projects/2026-06-12-dpd-pl-contract-export-only.md
+  - bank/notes/projects/2026-06-15-usps-2026-fuel-surcharge.md
 specialist: shipping-agent (full-access tier reaches bronze/silver raw invoice tables for reconciliation)
-freshness: 2026-06-12
-synthesized: 2026-06-12 (corpus +1: DPD-PL export-only served set)
+freshness: 2026-06-17
+synthesized: 2026-06-17 (corpus +1: USPS first-ever fuel surcharge)
 ---
 
 # Carrier contracts & invoices
@@ -64,6 +65,9 @@ Of ~21 carriers: **~10 carry real measured dims, 5 oversize-billing-signal only,
 
 ## Fuel-index mechanics by carrier (2026-06-11 research picks)
 Each carrier floats fuel off a **different public index** — never reuse one number across carriers: **Hermes** → Destatis Grossverbraucher diesel, reply-ladder bands (0% ≤122.7, +0.5%/2.578pt; the *offer* ladder is a retired 2015-base trap, ~1.26×) → [[2026-06-11-hermes-destatis-diesel-fuel-mechanics]]; **FedEx PL** → three *independent* indices (Intl = jet fuel, Regional = EU diesel — one number can't serve both), 2-week lag empirically confirmed, band tables in [[2026-06-11-fedex-q1-2026-fuel-history]] + [[2026-06-11-fedex-pl-fuel-fx-remote-area-mechanics]]; **UPS** → weekly Mondays, EC diesel (road) / USGC jet (express), 2-week lag → [[2026-06-11-ups-de-2026-published-surcharges]]; **Austrian Post** → BMWET prev-month-max diesel TKZ tiers (own 0–32% card non-public) → [[2026-06-11-austrian-post-public-indices-dhl-demand]]; **Maersk ROW** lanes = Maersk base + FedEx public surcharges → [[2026-06-11-maersk-row-fedex-pl-public-surcharges]]. **UPS ground truth (12-mo invoices):** ~€235k/yr billed by charge types NOT in the cost model (peak/demand ~€191k); oversize must be read NET (UPS reverses ~54% in place); seasonal €0.20/pkg Base Rate Surcharge + standing Over-Max €440 survive partial waivers → [[2026-06-11-ups-invoice-charge-profile]]. **2026-offer mechanics:** OML 400 (reply) vs 419 (negotiated) allowance, LPS 101.80 assumed, residential flat €0.40 (carrier-confirmed), peak residential-gated → [[2026-06-11-ups-oml-lps-negotiated-thresholds]] / [[2026-06-11-ups-residential-and-peak-surge-mechanics]]; offer-vs-today cost-driver decomposition (~73% base/GRI, ~19% residential, fuel neutral; CH/GB operative-tier is the residual gap) → [[2026-06-11-ups-new-offer-vs-today-cost-drivers]].
+
+## USPS (NA) — first-ever fuel surcharge (2026)
+A **flat 8% on base postage** (NOT indexed/dynamic like UPS/FedEx), effective **Apr 26 2026 → Jan 17 2027**; Ground Advantage exposed (we ship ~100% GA in NA), commercial/negotiated rates ARE subject. Separate base GRIs Jan 18 + Jul 12; **no April base GRI** — the surcharge is April's only price event. It **folds into the base-rate bucket** in `shipping_mart` (USPS bills all-in; the USPS fuel bucket ≈ €0), so it surfaces only as a per-parcel rate step (NA €6.14 Jan–Mar → €7.19 full May), **invisible to a fuel-bucket query**. ~€9–11k/mo NA run-rate. → [[2026-06-15-usps-2026-fuel-surcharge]]
 
 ## Re-rating discipline
 Reconcile a re-rate against the unit's ground-truth actuals before reporting a delta (a new flat fee can flip a near-zero delta's sign); test for a real lever (negotiated discount / contract term) before fitting an engine parameter (DPD's sheet-vs-invoiced gap was a ~9% discount, not a divisor). Linehaul/truck sizing → `shipping_mart.fact_truck_charges` (volume-weight over a full demand cycle) → [[2026-06-09-fact-truck-charges-navigation]]. Trust-gate detail lives in [[eu-tender]]; spawn the **shipping-agent** for the actuals pulls.

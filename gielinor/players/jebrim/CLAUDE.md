@@ -23,8 +23,8 @@ Any shipping-data question (carrier cost, volumes, the automated shipping report
 
 **2. Don't reason about the mart from memory.** Its contract, schema (incl. package dims / `length_plus_girth_cm`), cost-basis rules, and DQ quirks live in `shipping-agent/` — `how_to.md` §0 + `reference/{mart-contract,tables,known-dq}.md`.
 
-- **Default: spawn the shipping-agent** (`subagent_type: shipping-agent`) for any mart pull beyond a one-line lookup. Its config loads the rulebook by construction — that is the knowledge guarantee. See the `calling-the-shipping-agent` skill.
-- **If working the mart inline** (a quick check, or building report harness code): load `shipping-agent/how_to.md` §0 + the relevant `reference/` file *before* writing SQL or interpreting any figure.
+- **Default: run the mart query yourself.** Load `shipping-agent/how_to.md` §0 + the relevant `reference/` file *first* (external repo, stale-by-default — re-read, don't recall), then query the live mart via the Redshift MCP directly. Preconditions (1) and (2) hold whoever runs it; you're the executor. Carry the cost-basis + coverage caveats yourself.
+- **Spawn the shipping-agent** (`subagent_type: shipping-agent`) only when the work is genuinely agent-shaped — heavy fan-out / multi-step decomposition, chart deliverables (it owns that harness), or methodology-heavy analysis (cost-basis discipline, charge-bucket-first decomposition, carrier re-rating trust-gates) where its hardened config earns the spawn. Not for a `SELECT` you can run in two lines. See the `calling-the-shipping-agent` skill. (Changed 2026-06-17: spawn-first was the initial-testing default; now it's reserved for agent-shaped work.)
 - The `domain-cue-reminder.py` hook reinforces both preconditions — it nudges on shipping/mart cues (the shipping entry in `gielinor/.claude/hooks/cue_registry.py`) — but the discipline is yours; the hook is a backstop, not the rule.
 
 This exists because two gaps recurred: (a) mart work done as principal without loading the reference (S-2026-06-02, the shipping-report build); (b) shipping questions routed off-mart instead of starting at the mart (2026-06-15). Don't repeat either.

@@ -104,8 +104,9 @@ DOMAINS = [
             "table/repo/export; and don't reason about its contract from memory."
         ),
         # External knowledge home: these live in the picanova/shipping-agent repo,
-        # NOT this brain tree. The reliable loader is the specialist (it loads the
-        # rulebook by construction), so prefer spawning it over hand-reading paths.
+        # NOT this brain tree. Default (2026-06-17): LOAD these and run the query
+        # yourself; the specialist (which loads them by construction) is reserved for
+        # agent-shaped work (heavy/fan-out, charts, methodology-heavy cost-basis).
         "canonical_files": [
             "picanova/shipping-agent repo: how_to.md §0",
             "picanova/shipping-agent repo: reference/mart-contract.md",
@@ -114,8 +115,9 @@ DOMAINS = [
         "specialist": "shipping-agent (subagent_type: shipping-agent)",
         "freshness": (
             "Home is an external repo, not this tree — a remembered schema is the "
-            "stale-by-default case; spawn the specialist (or re-read the reference) "
-            "rather than trusting recall of the mart shape or cost-basis rules."
+            "stale-by-default case; re-read the reference and query the mart yourself "
+            "(or spawn the specialist for agent-shaped work) rather than trusting "
+            "recall of the mart shape or cost-basis rules."
         ),
         "read_before": (
             "MART-FIRST (source #1): for any shipping-data question the gold "

@@ -40,9 +40,10 @@ corpus:
   - bank/notes/projects/2026-06-12-eu-tender-no-hermes-v2-headline-vs-flow-split-reconciliation.md
   - bank/notes/projects/2026-06-12-go-live-stub-year-realization.md
   - bank/notes/projects/2026-06-12-guell-no-hermes-marginal-and-density-gate.md
+  - bank/notes/projects/2026-06-13-eu-tender-pipeline-architecture-fork.md
 specialist: shipping-agent (spawn for the 2026-Q1 actuals baseline pulls)
-freshness: 2026-06-12
-synthesized: 2026-06-12 (corpus +5: presented no-Hermes-v2 + Güll-density + go-live)
+freshness: 2026-06-17
+synthesized: 2026-06-17 (corpus +1: [[S239_dc163efd_eu-tender-architecture-refactor-execution|S239]] 2_analysis refactor)
 ---
 
 # EU Tender 2026 — quantitative carrier-tender review
@@ -50,7 +51,7 @@ synthesized: 2026-06-12 (corpus +5: presented no-Hermes-v2 + Güll-density + go-
 Pick **4–6 parcel + 1 freight** carrier partners for TCG-Picanova, optimising **cost only** (qualitative goes in prose, not weights). Repo: `bi-analytics-main/NFE/projects/2_EU_tender_2026/`. **Decision basis = full-year cost**: 2026-Q1 is the per-shipment unit-cost reference, annualized via per-country seasonal ratios + peak-window volumes (Q1 never exercises peak/demand surcharges). Locks (2026-05-12): hard cap 6, cost-only, lane diagnostic informs + portfolio scenarios decide. Scope = PCS-PL print site, invoiced-only, 18 countries (€2,955,020 Q1 — a backfilling snapshot, quote with as-of date); not comparable to all-sites SCM views → [[2026-06-09-tender-2.96M-vs-scm-3.3M-scope-reconciliation]]. Maersk-UK (A0) is a separate deal, out of tender scope.
 
 ## Architecture (Phase 2, `2_analysis/`)
-Capability matrix (pure `(carrier,service,country,weight,dim,packagetype)→eligible?+reject_reason`) → **per-carrier rate engines** (`carriers/<slug>/`, polars `Surcharge` ABC, two-phase BASE→DEPENDENT, version-stamped) → **cost matrix** (one row per shipment×carrier×service) → lane diagnostic + portfolio scorer. 9+ engines incl. `dpd_pl_current` (**export-only — PL-domestic unmodeled**, the "carrier-only" slice → [[2026-06-09-dpd-pl-current-engine-export-only-gap]]). `docs/` is live state; **DECISIONS must match engine state, not target state** → [[eu_tender_2026_S034_update]].
+Capability matrix (pure `(carrier,service,country,weight,dim,packagetype)→eligible?+reject_reason`) → **per-carrier rate engines** (`carriers/<slug>/`, polars `Surcharge` ABC, two-phase BASE→DEPENDENT, version-stamped) → **cost matrix** (one row per shipment×carrier×service) → lane diagnostic + portfolio scorer. 9+ engines incl. `dpd_pl_current` (**export-only — PL-domestic unmodeled**, the "carrier-only" slice → [[2026-06-09-dpd-pl-current-engine-export-only-gap]]). `docs/` is live state; **DECISIONS must match engine state, not target state** → [[eu_tender_2026_S034_update]]. **Refactored end-to-end [[S239_dc163efd_eu-tender-architecture-refactor-execution|S239]] (2026-06-13):** the `*_2026q1` suffix trap removed (de-suffixed/62 files), the superseded 2025-full-year cluster archived to `_archive/full_year_v1/`, the 5 report folders consolidated under `reports/`, a `regen_all.py` orchestrator added (regen gate holds `base_ann==976023.94`, presented lineage byte-identical), and `carriers/`→`carrier_engines/` renamed. Pre-refactor canonical-vs-superseded module map → [[2026-06-13-eu-tender-pipeline-architecture-fork]].
 
 ## Scoring — the switchable incumbent
 A carrier we ship today *and* that bid with a working engine takes `INCUMBENT | NEW_OFFER | OFF` per scenario; **INCUMBENT bid = the 2026 engine where it can price**, invoice fallback otherwise → [[eu-tender-switchable-incumbent-treatment]]. **Decision report = selection ceiling (per-parcel cherry-pick); routing report = executed plan (one-carrier-per-(dest×packagetype)-cell)** — their headlines legitimately differ (~€102.5k operational gap) → [[2026-06-09-decision-vs-routing-savings-reconciliation]].

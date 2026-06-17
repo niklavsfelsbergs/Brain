@@ -15,9 +15,11 @@ corpus:
   - bank/notes/projects/shipping_costs_dashboard_csv_export_architecture.md
   - bank/notes/projects/dashboard_and_shipping_agent_convergence.md
   - bank/notes/projects/2026-06-12-scm-breakdown-cost-basis-not-buckets.md
+  - bank/notes/projects/2026-06-15-scm-breakdown-filter-load-perf.md
+  - bank/notes/projects/2026-06-16-scm-full-refresh-stale-partition-mechanism.md
 specialist: shipping-agent (spawn for live mart queries)
-freshness: 2026-06-12
-synthesized: 2026-06-12 (Breakdown cost-basis reconcile)
+freshness: 2026-06-17
+synthesized: 2026-06-17 (refresh model + breakdown caching)
 ---
 
 # SCM — Shipping Costs Monitoring dashboard
@@ -52,6 +54,11 @@ The productized, always-on cost **monitor** over the gold `shipping_mart` — *k
 - [[2026-06-02-scm-serving-node-oom-mode]] — the third (serving 502) + the embedded-engine lesson.
 - [[shipping_costs_dashboard_csv_export_architecture]] — CSV export architecture + locked conventions.
 - [[dashboard_and_shipping_agent_convergence]] — monitor-vs-investigator, cost-basis reconciliation, convergence directions.
+
+## Refresh model + Breakdown caching (2026-06)
+- **Refresh staleness (the OnTrac "Feb onset" artifact):** default `refresh.sh` ran `pipeline.py --refresh` = **incremental** (re-pull last 3 mo, merge onto cached `raw.parquet`; bucket cols pulled per-shipment from gold, so each cached month is frozen at the mart's classification when last pulled). A **backdated mart correction never reaches cached older months** → a metric that "onsets" exactly at the rolling-window boundary while the gold mart shows it present all along = **stale cached partitions, not a cost event**. Fix: flush `raw.parquet` + permanent `--refresh-full`. → [[2026-06-16-scm-full-refresh-stale-partition-mechanism]]
+- **Deploy topology (corrected):** `refresh.sh` deploys via the **ECR image** (push `picanova/bi-analytics` main → CI `:latest` → DAG); the **LIVE DAG is in the bi-etl repo** (`bi-etl/dags/AI_Automations/nextjs_dashboard_dags/...`), NOT the stale copy under the app dir — verify DAG/timeout config against the bi-etl copy.
+- **Breakdown filter-load perf:** filtered rows live in immutable fingerprint tables `bd_<hash>` in one shared in-memory DuckDB, **LRU-capped** (`BD_MAX_TABLES`=8 = the memory bound); level-query results result-cached. Wins: bucket-independent fetch + one-request `/api/breakdown?specs=` (2+N → 1). **Memory-neutral discipline: never exceed the LRU cap or raise `memory_limit`.** → [[2026-06-15-scm-breakdown-filter-load-perf]]
 
 ## Live work
 Spawn the **shipping-agent** (`specialist`) for any live mart pull — this digest is *about* the dashboard, not a substitute for querying the mart.

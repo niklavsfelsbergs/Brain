@@ -51,6 +51,18 @@ decide what to do at scale. Then: put together an HTML final routing report for 
 - None to `gielinor/` content beyond this close (quest-log + inventory resume + one examine draft).
   All substantive work landed in `bi-analytics-main/NFE/projects/2_EU_tender_2026/`.
 
+## Post-review addendum (same session)
+
+Principal reviewed the ops report and caught a service-rendering bug: it printed per-parcel
+size-driven product splits as fake weight ranges ("Kleinpaket 0kg+"). Root cause — a packagetype is
+a wrapping *method*, not a fixed size; parcel dims vary, so DHL picks the product per parcel by
+weight+size. Fixed: show a weight cutoff only where products genuinely partition by weight, else
+volume shares, dropping trivial slivers. Then tested the principal's DQ hypothesis: ~0.155% of parcels
+(826) have outlier dims (measurement errors) — but **verified they change ZERO routing decisions**
+(0 standard parcels mis-routed to freight/another carrier; cells set by the ~99% bulk). So no source
+clean / matrix regen — cosmetic only, flagged as Q16 upstream. Committed bi-analytics `11fc677`
+(renderer + Q16).
+
 ## Pending external actions
 
-None pending. (bi-analytics `8b83ce9` committed; ops renderer commit is a next-session item, not a dangling pending.)
+None pending. (bi-analytics `8b83ce9` + `11fc677` committed; renderer shipped.)

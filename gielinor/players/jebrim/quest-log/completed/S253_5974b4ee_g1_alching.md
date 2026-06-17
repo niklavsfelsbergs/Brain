@@ -61,3 +61,11 @@ Stamped 2026-06-17 (sid8 5974b4ee, gnome g1).
 4. RateProof digest — DEFERRED a 5th time (S195/[[S215_12aa2f0f_rateproof-study-guide|S215]] still in in-progress/).
 5. Jebrim-examine-is-analytical-not-introspective — persona/working-agreement candidate, re-confirmed, surfaced for principal.
 6. **HOOK GAP (load-bearing):** `gnome-write-boundary.py` blocks `/bank/domains/` — but alching step 2b tends `bank/domains/` and gnomes are sanctioned to run alching. Every gnome-delegated alch (this is the 4th consecutive gnome-run Jebrim alch) silently cannot do step 2b. Either add `/bank/domains/` to the hook's `ALLOWED_PATTERNS`, or route step 2b to principal-self. Flag for principal/dev-brain.
+
+## Session also covered (5974b4ee — beyond the alch)
+The alch above was the third of three things this session did; all committed in `c562555` (pathspec-scoped, never pushed):
+1. **Shipping-agent spawn-policy change** — shifted the default from spawn-first to *run the mart query yourself* (load the contract docs, query via Redshift MCP); reserve the `shipping-agent` subagent for heavy / chart / methodology-heavy work. Updated 4 rule homes: `players/jebrim/CLAUDE.md`, `bank/domains/shipping-mart.md`, `.claude/hooks/cue_registry.py`, `spellbook/skills/calling-the-shipping-agent.md`.
+2. **/drafts** — promoted 13 pending drafts (7 examine→confirmed, 5 bank→notes, 1 skill).
+3. **Full alch** (this run-log) + principal-self completion of the gnome-blocked **step 2b** (the 4 digest re-syntheses, applied to eu-tender/scm/shipping-mart/carrier-contracts) + promoted the `mixed-currency` examine draft to `confirmed/` (held `relayed-subagent` as a near-twin).
+
+**Tooling note (Q5 harvest):** the Write tool double-encoded multibyte chars (em-dash / section-sign) into mojibake when creating the skill file; the Edit tool did not. Caught on read-back, reversed with `iconv -f UTF-8 -t WINDOWS-1252`. → MEMORY `feedback_write_tool_mojibake_multibyte`.

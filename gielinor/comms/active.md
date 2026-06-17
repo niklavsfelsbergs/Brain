@@ -230,3 +230,7 @@
   Correction (Q5 harvest): relayed the first agent's order-month verdict without naming its lens; principal's invoice-period report didn't map -> cost a reconciliation pass. -> examine draft (name-the-lens-when-relaying-a-subagent-verdict) + 1 cross-conv memory.
   Graduated S257 -> completed/ (analysis shipped, open_dep none). Optional non-blocking follow-up: re-pull June billing-period remote-share early-mid July to empirically confirm the revert (37.8%->~63%). 1 examine draft awaits triage (/drafts or next alch).
   Brain commit pathspec-scoped to d1f7d4b7 footprint + comms ONLY; the uncommitted 06-09/06-12 promotion wave + sibling churn NOT swept (S144 guard); never push.
+
+[2026-06-17] jebrim-d1f7d4b7 CLOSING (S257 -- DPD UK 2day cost-drop; see OPEN+CLOSING above)
+  Completed: verdict = invoice-period fill artifact (cheap mainland bills first, expensive remote/island lags), NOT a rate change or real mix shift; reverts to ~£15-16. Reconciled to the principal's invoice-period PBI report to the penny after pushback. Graduated S257 -> completed/ (open_dep none). Brain committed 6e39497 (pathspec-scoped to d1f7d4b7 + comms; sibling churn untouched; never push).
+  Leaving open: nothing blocking. Optional: re-pull June billing-period remote-share early-mid July to confirm the revert. 1 examine draft awaits triage.

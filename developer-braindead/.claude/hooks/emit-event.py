@@ -1628,11 +1628,27 @@ def handle_task_pre(payload: dict) -> None:
         tool_input.get("run_in_background")
         or tool_input.get("runInBackground")
     )
+    # The modern `Agent` tool launches sub-agents ASYNC: its PostToolUse fires
+    # ~250ms later at LAUNCH (the parent gets a handle), NOT at completion — the
+    # real result arrives minutes later via a `<task-notification>` re-invoke
+    # carrying this same tool_use_id. So a foreground Agent spawn must NOT
+    # despawn on Post: that dropped the entry ~230ms after spawn, before the
+    # cockpit's ~2s poll ever saw a pending sub-agent, so "awaiting crew" never
+    # showed (observed live: G12 gnome + D264 dwarf both despawned ~230ms after
+    # spawn while the agent ran on for >1min). Flag it so handle_task_post skips
+    # the launch-despawn; status-sidecar despawns it when the task-notification
+    # lands. Distinct from `background` (run_in_background, EXCLUDED from crew):
+    # an async Agent IS the crew the turn waits on, so it stays in the pending
+    # list and reads "awaiting crew". (The old blocking `Task` tool, whose Post
+    # bracketed completion, keeps despawning on Post — not flagged here.)
+    async_agent = (payload.get("tool_name") or "") == "Agent" and not background
     # B7: spawnedAt is the GC anchor; used by gc_stale_subagents to find
     # entries whose PostToolUse never landed.
     entry = {"id": sub_id, "color": color, "at": at, "spawnedAt": now_iso()}
     if background:
         entry["background"] = True
+    elif async_agent:
+        entry["async_agent"] = True
     if tool_use_id:
         sub["byToolUseId"][tool_use_id] = entry
         # Queue this spawn so the first sub-call carrying `agent_id` can claim
@@ -1686,7 +1702,12 @@ def handle_task_post(payload: dict) -> None:
     # the despawn — the 1h gc_stale_subagents sweep will clean it eventually.
     if tool_use_id and tool_use_id in sub["byToolUseId"]:
         peek = sub["byToolUseId"].get(tool_use_id)
-        if peek and peek.get("background"):
+        # Both background (run_in_background) and async Agent spawns have a Post
+        # that fires at LAUNCH, not completion — leave the entry in place. The
+        # idle GC sweep (background) / the status-sidecar task-notification
+        # reconciler (async_agent) clear them at the right time. Despawning here
+        # would drop "awaiting crew" ~230ms after spawn — the bug this guards.
+        if peek and (peek.get("background") or peek.get("async_agent")):
             return
 
     entry = None

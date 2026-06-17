@@ -26,6 +26,7 @@ import os
 import re
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -513,6 +514,109 @@ def _count_pending_subagents(session_id: str) -> int:
     if not session_id:
         return 0
     return len(_pending_subagents_by_session().get(session_id, []))
+
+
+# Role-state file basename → the despawn event the visualizer reads to clear a
+# sprite. Used when status-sidecar reconciles a completed async Agent spawn (the
+# despawn emit-event.py skipped at launch).
+_ROLE_DESPAWN_EVENT = {
+    "state-dwarves.json": "despawn-dwarf",
+    "state-gnomes.json": "despawn-gnome",
+    "state-penguins.json": "despawn-penguin",
+    "state-shipping-agents.json": "despawn-shipping-agent",
+}
+
+
+def _completed_task_notification_tuis(transcript: Optional[Path],
+                                      max_bytes: int = 524_288) -> set:
+    """Tool-use-ids that have a `<task-notification>` re-invoke in the transcript
+    tail. The async `Agent` tool returns a handle at launch (its PostToolUse) and
+    delivers the real result later via a synthetic `<task-notification>` user turn
+    carrying the original `<tool-use-id>`; that arrival means the sub-agent came
+    to rest, so its spawn entry should despawn. Transcript-derived rather than
+    leaning on a hoped-for UserPromptSubmit-on-notification hook fire — status-
+    sidecar already reads the transcript every fire (and recognizes the turn in
+    _is_turn_start). Capped tail read; any error → empty set (fail safe)."""
+    if transcript is None:
+        return set()
+    try:
+        with transcript.open("rb") as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - max_bytes))
+            data = f.read().decode("utf-8", "replace")
+    except Exception:
+        return set()
+    tuis: set = set()
+    for line in data.splitlines():
+        if "task-notification" not in line:
+            continue
+        for m in re.finditer(r"<tool-use-id>\s*(toolu_[A-Za-z0-9_-]+)", line):
+            tuis.add(m.group(1))
+    return tuis
+
+
+def _emit_async_despawn_event(path: Path, entry: dict) -> None:
+    """Append a despawn event to state.ndjson so the visualizer clears the sprite
+    (emit-event.py owns spawn/despawn events; status-sidecar emits only this one,
+    for the async completion it reconciles). Append-only line — same atomicity
+    story as _emit_chat_intent."""
+    ev = _ROLE_DESPAWN_EVENT.get(path.name)
+    if not ev:
+        return
+    rec = {
+        "wallTime": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),
+        "source": "hook", "type": ev, "id": entry.get("id"),
+    }
+    try:
+        with STATE_NDJSON_PATH.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, separators=(",", ":")) + "\n")
+    except Exception as e:
+        print(f"status-sidecar: async despawn event emit failed: {e}", file=sys.stderr)
+
+
+def _reconcile_async_crew(session_id: str, transcript: Optional[Path]) -> None:
+    """Despawn async `Agent` spawn entries (the `async_agent` flag emit-event.py
+    sets) whose `<task-notification>` has landed — the completion signal the
+    Agent tool's launch-time PostToolUse can't give. Removes the entry from the
+    role file (so the manifest's crew derivation drops the tag → "awaiting crew"
+    clears) and emits a despawn event (clears the sprite). emit-event.py's 1h GC
+    is the backstop for any entry whose notification we never see. Runs every
+    fire, so the tag drops within a poll of the sub-agent coming to rest."""
+    if not session_id:
+        return
+    completed = _completed_task_notification_tuis(transcript)
+    if not completed:
+        return
+    for path in SUBAGENT_STATE_PATHS:
+        try:
+            st = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        sub = (st.get("bySession") or {}).get(session_id)
+        if not isinstance(sub, dict):
+            continue
+        by_tui = sub.get("byToolUseId") or {}
+        removed = [(tui, e) for tui, e in list(by_tui.items())
+                   if isinstance(e, dict) and e.get("async_agent") and tui in completed]
+        if not removed:
+            continue
+        by_agent = sub.get("byAgentId") or {}
+        pend = sub.get("pendingAgentBind") or []
+        for tui, entry in removed:
+            by_tui.pop(tui, None)
+            for aid, t in list(by_agent.items()):
+                if t == tui:
+                    by_agent.pop(aid, None)
+            if tui in pend:
+                pend.remove(tui)
+            _emit_async_despawn_event(path, entry)
+        try:
+            tmp = path.with_suffix(path.suffix + f".tmp.{os.getpid()}")
+            tmp.write_text(json.dumps(st), encoding="utf-8")
+            os.replace(tmp, path)
+        except Exception as e:
+            print(f"status-sidecar: async crew despawn write failed: {e}", file=sys.stderr)
 
 
 def _detect_host() -> str:
@@ -1806,6 +1910,15 @@ def main() -> None:
 
     project_dir = _project_dir()
     actor, intent = _detect_actor(project_dir, sid8, sid)
+
+    # Async crew completion: clear any Agent-tool spawn whose <task-notification>
+    # has landed (its launch-time PostToolUse couldn't). Runs on every relevant
+    # fire so the crew tag drops within a poll of the sub-agent coming to rest,
+    # not at emit-event.py's 1h GC backstop. See _reconcile_async_crew.
+    try:
+        _reconcile_async_crew(sid, _transcript_path(payload, sid))
+    except Exception as e:
+        print(f"status-sidecar: async crew reconcile failed: {e}", file=sys.stderr)
 
     # S059 / D-029: per-session mode marker → two-axis projection. The marker no
     # longer competes with the base state (the old precedence ladder is gone):

@@ -6,5 +6,5 @@
 - **Verified.** `node --check` clean; `cockpit/test_backend.py` 79/79 (backend untouched); `styles.css` braces balanced (365/365); a throwaway Node fixture confirmed the regex set (long slash path / bare sql / windows drive path MATCH; `2/3/5`, `06/04`, `claude.ai`, `1.5`, `e.g.` correctly IGNORED) and that a 47-char path split at a 40-col boundary reassembles whole spanning row0→row1. **RUNTIME-UNVERIFIED**: the running cockpit window holds stale JS — needs a relaunch to eyeball the live hover/open behavior. Accepted residual documented in code: prose `Word.<whitelisted-ext>` (e.g. `Node.js`) can still match in the terminal — rare, and a mis-click just flashes "not found" (the false-negative cure wins the trade).
 - **No commit-vs-hold tension hit:** offered to hold for the eyeball, Niklavs cued wrap-up; committing per the close ritual (the relaunch verify carries as the ★NEXT).
 
-**Cascade.** [[S270_cockpit_click_to_open_link_reliability]] (this), respawn.md, comms/active.md (OPEN+CLOSING), build-lessons.md.
+**Cascade.** [[S270_07bbe4c6_cockpit_click_to_open_link_reliability]] (this), respawn.md, comms/active.md (OPEN+CLOSING), build-lessons.md.
 **Main-brain changes.** `cockpit/web/links.js` + `cockpit/web/styles.css` (cockpit is repo-root, not under `gielinor/` — no `gielinor/` identity/rulebook writes).

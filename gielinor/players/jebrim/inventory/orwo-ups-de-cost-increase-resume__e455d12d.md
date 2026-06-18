@@ -1,8 +1,8 @@
 ---
 quest: ORWO UPS DE cost-increase investigation → box-grain quota estimator (SCM May/Jun)
 sid8: e455d12d
-ts: 2026-06-18 (S266 close)
-open_dep: Phase-1 bi-etl SQL + an HTML explainer for Niklavs to review BEFORE he pushes (next session)
+ts: 2026-06-18 (continuation, sid 64902bef)
+open_dep: Phase 1 BUILT — bi-etl SQL written + HTML explainer done + acceptance tests passed live. Awaiting: Niklavs reads fix_explainer.html, then HE commits bi-etl (pathspec) + pushes. bi-etl change is UNCOMMITTED on purpose.
 ---
 
 # ORWO cost/quota over-read → box-grain estimator
@@ -64,7 +64,35 @@ alias `lines` reserved; positional GROUP BY flaky; `SIMILAR TO`, `STDDEV`/`STDDE
 aggregates all rejected → use `~` regex, explicit group exprs, AVG(x*x)-AVG(x)^2 for variance, chain
 CTEs not joins.
 
-## NEXT SESSION — Phase 1 (implement) + HTML explainer, then Niklavs reviews & pushes
+## PHASE 1 BUILT (continuation session, sid 64902bef, 2026-06-18)
+
+**Done this session — all 5 plan steps:**
+- **Step 1+2 (SQL + box_n/share_n):** wrote real `Pass 2a.5b` in `bi-etl/.../update_fact_shipments_cost.sql`
+  (4 temps: trainmonth auto-pick / boxes / boxrate cell+fam / boxgrain; UPDATE mirrors Pass 2a.5).
+  Resolved box_n-vs-share_n LIVE: DHL fully uniform (box_n==share_n), UPS ~16% within-box split, but
+  `box_rate/box_n` sums to box_rate per box so it's **immaterial to any aggregate** — kept plain box_n
+  scoped to (order_month, trackingnumber). Cross-month tracking reuse = 8.3% → month-scoping handles it
+  (the skeleton's plain-trackingnumber grouping was a bug; fixed). Calibration window = **most-recent
+  fully-mature month per family (>=60% inv)** → DHL=May, UPS=April (auto-rolls; freshness lever).
+- **Step 3:** Pass 2a.6 now excludes UPS+DHL (calib CTE + apply UPDATE) — no double-correct.
+- **Step 4 (acceptance, READ-ONLY live mart):** whole-ORWO quota reproduced topic-50 to ~0.1pp —
+  Mar 17.06→17.15, Apr 15.54→15.64, May 16.58→16.40, **Jun 18.28→16.40**. Mature months ≤0.1pp (no
+  distortion). June per-family: UPS €55.2k→€40.5k (driver), DHL ~flat (real), POST €39.4k held, OTHER
+  held. Tests 1-5 pass (mature self-consistency / immature drop / POST+OTHER zero-change / conservation /
+  regression). MCP quirk hit: multi-ref CTE → "transaction is read-only" (CTE materialized as temp);
+  rewrote with independent inline subqueries.
+- **Step 5:** `fix_explainer.html` built in topic 50 — self-contained single file (CSS bar chart, no CDN
+  dep), topic-35 style tokens (dark + orange), ASCII-only (no mojibake). Story: wrong → why → fix →
+  before/after → carrier cut → OOS validation → ETL change → risks + decisions.
+
+**REMAINING — Niklavs' action (do NOT do for him):**
+1. Open `bi-analytics-main/NFE/shipping_topics/50_orwo_box_grain_quota_estimation/fix_explainer.html`, review.
+2. Decide the 3 open questions (calibration window; deploy ETL vs SCM-preview; POST contracted rate).
+3. He commits the bi-etl change (pathspec on `update_fact_shipments_cost.sql`) + pushes. **bi-etl is UNCOMMITTED.**
+4. (optional) commit topic-50 HTML to NFE — offered, awaiting his go.
+
+---
+## (original plan, for reference) NEXT SESSION — Phase 1 (implement) + HTML explainer
 
 **Goal:** turn the validated design into a tested bi-etl change + a self-contained HTML doc that
 explains the fix to Niklavs. **He reviews the HTML BEFORE any push. Do NOT push — push is his action.**

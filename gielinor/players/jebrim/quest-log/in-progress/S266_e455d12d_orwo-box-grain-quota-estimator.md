@@ -67,3 +67,23 @@ not touched this session). No SCM/dashboard code changed.
 This quest-log + resume + bank draft (2026-06-18-orwo-box-grain-cost-estimation) + 2 examine drafts
 (estimator-error-is-level-not-structure, coverage-gate-calibrated-estimate-per-segment) + comms.
 Resume: inventory/orwo-ups-de-cost-increase-resume__e455d12d.md.
+
+---
+
+## CONTINUATION (2026-06-18, "continue quest 266") — Phase 1 BUILT
+- Verified bi-etl HEAD before editing: branch `feat/fif-ups-orwo-monthly` is **even with origin/main**
+  (0/0, target file identical) → the live SQL IS current HEAD; no pull needed (the verify-the-thing reflex
+  paid: didn't assume the branch was stale or carrying ORWO work).
+- **Wrote `Pass 2a.5b`** (box-grain overwrite, UPS+DHL un-invoiced) + **gated Pass 2a.6** (excludes UPS/DHL).
+  Design calls made live: box_n stays (order_month, trackingnumber)-grain (box-conservation makes the
+  box_n-vs-share_n divergence immaterial; DHL uniform, UPS ~16% within-box; cross-month reuse 8.3% handled
+  by month-scoping). Calibration = most-recent-mature-month per family (DHL May, UPS April, ≥60% inv floor).
+- **Acceptance (read-only live mart):** reproduced topic-50 within ~0.1pp; Jun 18.28→16.40, mature months
+  ≤0.1pp, POST/OTHER zero-change, UPS the driver (€55.2k→€40.5k). All 5 tests pass.
+- **Built `fix_explainer.html`** in topic 50 (self-contained, CSS chart, ASCII-clean, topic-35 tokens).
+- bi-etl SQL left **UNCOMMITTED** (Niklavs reviews HTML → he commits pathspec + pushes). Handed off.
+
+## Cascade (continuation).
+bi-etl `dags/shipping_mart/fact_shipment_cost_summary/sql/update_fact_shipments_cost.sql` MODIFIED
+(+208/-6) — NOT committed, NOT pushed (his action). bi-analytics-main NFE topic 50 gained
+`fix_explainer.html` — not yet committed (offered). No live mart writes (all validation read-only).

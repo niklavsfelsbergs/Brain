@@ -235,6 +235,7 @@ def compute(events: list[dict]) -> dict:
     m["forced_read_player_inject"] = len(fr_player_inject)
     m["player_sessions_seen"] = len(player_sessions)
     covered = len(player_sessions & fr_player_inject)
+    m["player_inject_covered"] = covered
     m["player_inject_coverage_rate"] = (
         covered / len(player_sessions) if player_sessions else None
     )
@@ -536,8 +537,8 @@ def report(m: dict, window: str) -> list[str]:
     out.append(
         f"  player keepsake hard-inline coverage: "
         f"{_pct(m['player_inject_coverage_rate'])}"
-        f"  ({m['forced_read_player_inject']} injected / "
-        f"{m['player_sessions_seen']} player sessions seen)"
+        f"  ({m['player_inject_covered']} of "
+        f"{m['player_sessions_seen']} player sessions got the inline)"
     )
     out.append("  (the inject IS the load — this is a real 'knowledge loaded' rate")
     out.append("   for keepsake content. Small N until the §X.4 hook ages in.)\n")

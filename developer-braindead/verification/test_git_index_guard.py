@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 
-HOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "git-index-guard.py")
+HOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "gielinor", ".claude", "hooks", "git-index-guard.py")
 BLOCK, ALLOW = 2, 0
 
 

@@ -262,23 +262,24 @@ def test_real_close_check_subprocess():
     proves _run_close_check actually shells out, runs the right ritual, and
     propagates the exit code + output.
 
-    The FAIL direction is asserted against a hard fact: b82b0b90 (a wrapped_up
-    player session) FAILs because a shared-lineage quest file is uncommitted in
-    this parallel tree -> exit 1 with the gap in the output. This is the live
-    evidence that drove the 'block w/ loop-guard' severity choice. The dev
-    direction asserts only that the subprocess RAN the dev ritual (its check
-    names appear) -- NOT a specific exit code, because the dev ritual's
-    check_active_mode reads the GLOBAL active-mode.txt, which the running dev
-    session legitimately holds at 'dev-brain'; the PASS->exit-0 wiring is proven
-    deterministically by test_wrapped_up_pass_allows above."""
+    Both directions assert only that the subprocess RAN the right ritual (its
+    check names appear in the output) and propagated an int exit code -- NOT a
+    specific exit value. The PASS->exit-0 and FAIL->exit-2 severity wiring is
+    proven deterministically by test_wrapped_up_pass_allows /
+    test_wrapped_up_fail_blocks above (monkeypatched). Pinning a live session's
+    pass/fail here made the suite FLAKY: the old assertion required player
+    b82b0b90 to exit 1 because a shared-lineage quest file was uncommitted in
+    this parallel tree -- true only until that file was committed, after which
+    b82b0b90 PASSes and the hard-coded exit==1 false-failed (2026-06-18 audit).
+    This test's job is the shell-out plumbing, not the exit value."""
     code_dev, out_dev = g._run_close_check("0526dd9d", "dev")
     check("real close_check dev subprocess RAN the dev ritual (check names present)",
           "CLOSING posted" in out_dev and "active-mode" in out_dev and isinstance(code_dev, int),
           f"code={code_dev} out={out_dev[:120]!r}")
-    code_fail, out_fail = g._run_close_check("b82b0b90", "player")
-    check("real close_check player b82b0b90 (uncommitted shared file) -> exit 1 + gap shown",
-          code_fail == 1 and "core artifacts committed" in out_fail,
-          f"code={code_fail} out={out_fail[:120]!r}")
+    code_player, out_player = g._run_close_check("b82b0b90", "player")
+    check("real close_check player subprocess RAN + propagated an int exit code",
+          isinstance(code_player, int) and "CLOSING posted" in out_player,
+          f"code={code_player} out={out_player[:120]!r}")
 
 
 def main() -> int:

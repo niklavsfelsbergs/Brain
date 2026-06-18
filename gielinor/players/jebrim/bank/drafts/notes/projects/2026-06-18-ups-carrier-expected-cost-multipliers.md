@@ -1,6 +1,6 @@
 # Carrier `expected_shipping_cost_eur` accuracy + applied correction multipliers
 
-**Drafted:** 2026-06-18 ([[S262_ac4b4649_ups-carrier-estimate-multipliers|S262]]). From the June Picturator quota-crater investigation → generalized to a per-carrier estimate-accuracy scan. Scope: TCG order sources (`source_system IN ('PCS','PicaAPI','Picturator')`), gold `shipping_mart`, order-month lens.
+**Drafted:** 2026-06-18 (S262). From the June Picturator quota-crater investigation → generalized to a per-carrier estimate-accuracy scan. Scope: TCG order sources (`source_system IN ('PCS','PicaAPI','Picturator')`), gold `shipping_mart`, order-month lens.
 
 ## The decision (principal, 2026-06-18)
 Applying these multipliers to the carrier `expected_shipping_cost_eur` estimate: **UPS ×1.20, DB Schenker ×1.10, DPD UK ×1.10, USPS ×1.08.** All other carriers left at ×1.0.

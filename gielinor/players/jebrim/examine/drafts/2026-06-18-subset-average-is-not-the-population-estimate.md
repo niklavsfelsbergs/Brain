@@ -1,6 +1,6 @@
 # A subset's average is not the population's — I quoted one as representative and had to walk it back
 
-**Observed:** 2026-06-18 ([[S262_ac4b4649_ups-carrier-estimate-multipliers|S262]]/ac4b4649). UPS estimate-accuracy investigation.
+**Observed:** 2026-06-18 (S262/ac4b4649). UPS estimate-accuracy investigation.
 
 ## What happened
 A sub-agent reported the UPS estimate for the **un-invoiced remainder** of matured months at **€8.03/parcel**, "close to actuals." I relayed that as "the estimate is broadly in line (×1.016), no real defect — June's drop is June-specific." Two turns later, charting the **all-parcel** expected cost showed it was flat ~**€6.8/parcel** and ~18% below real — a genuine, year-round defect. The €8.03 was the *expensive tail* (the 2–5% of parcels still unbilled in matured months skew large/international, because big parcels bill slowest). The principal got confused by the contradiction ("why did you previously state it's in line?") and I had to openly correct myself and re-prove it on a same-parcel basis.
@@ -10,4 +10,4 @@ A figure computed over a **selected subset** carries that subset's selection bia
 
 This is the recurrence of [[feedback_selection_evidence_not_class_evidence]] and [[feedback_selected_subset_vs_blend_not_a_discrepancy]] — already in memory, fired again here, costing the principal a confused turn. The trigger I keep missing: a number described as "for the X that are Y" is a *conditional* statistic; "Y" is a selection that needs interrogating before the number means anything about "all X."
 
-Anchor: the €8.03-vs-€6.8 reversal, [[S262_ac4b4649_ups-carrier-estimate-multipliers|S262]] quest-log.
+Anchor: the €8.03-vs-€6.8 reversal, S262 quest-log.

@@ -19,13 +19,13 @@ wrap-up to read later.
 - Headline answer: retain 50% → forgo €61,738/yr (€976k→€914k); 100% → €493,488/yr;
   cost back-loaded on the DHL-Paket light-EU tail; DPD-PL cheapest to reclaim.
 
-## Next concrete step (only if principal asks after reading)
+## UPDATE — cell-grain version BUILT (S263, fd7bcba7, 2026-06-18)
 
-1. **Cell-grain operational version** — current curve is the parcel-grain floor
-   (cherry-pick). Real implementation flips whole dest×packagetype×weight cells to
-   UPS; costs somewhat more + drags non-UPS cell-mates. Would rebuild on cell grain.
-2. **Screenshot** the HTML if he wants it inline / for sharing.
-3. **5-tier cut** (20/40/60/80/100) if he prefers the original granularity over 10%.
+The parked "cell-grain operational" next-step is done. **Live resume + full state →
+`inventory/ups-retention-curve-resume__fd7bcba7.md`**; record → quest-log
+`S263_fd7bcba7_ups-retention-cell-grain.md`. One line: 96% of the away pool retainable at
+≈ the floor (€463k/yr); the last <1% is sliver-trapped (€1.94M to flip) → unretainable.
+NFE committed `1e52a7a`.
 
 ## Files to read first
 

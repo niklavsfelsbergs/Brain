@@ -62,3 +62,12 @@ read-only consumers of build_pp / the cost matrix).
 **Main-brain changes.** None.
 
 Resume: `inventory/ups-retention-curve-resume__319db0c2.md`.
+
+---
+
+## [[S263_fd7bcba7_ups-retention-cell-grain|S263]] continuation (fd7bcba7, 2026-06-18) — cell-grain operational version BUILT
+
+Principal picked the parked "cell-grain operational" next-step. Full record →
+`quest-log/in-progress/S263_fd7bcba7_ups-retention-cell-grain.md`. In one line: 96% of the
+away pool retainable at ≈ the floor (€463k/yr, UPS-dominated cells); the last <1% is
+sliver-trapped (€1.94M to flip) → operationally unretainable. NFE committed `1e52a7a`.

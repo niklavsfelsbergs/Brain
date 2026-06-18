@@ -1,0 +1,9 @@
+# Define a population off the stable charge CODE, not a relayed English label
+
+**Draft.** Source: S260 (88c8d323), 2026-06-18 — over-max 62k reconciliation.
+
+I anchored the "over-max parcels" cohort on `chargedescription = 'Nachfragezuschlag-Über Max.'` — carrying the sub-agent's English headline "Demand Surcharge – Over Maximum" as the definition. The principal caught it: *"Why are you filtering only for peak over max?"* `Nachfragezuschlag` = UPS's **peak-season demand surcharge** — the over-max *variant* of a peak surcharge, not the over-maximum condition itself. The literal "Over Maximum" charges are codes **OVR** (Über Maximalgröße / size) and **OML** (Über Maximallänge / length). The full UPS oversize taxonomy: LPS (large package), SOV (peak demand over-max), OVR (over-max size), OML (over-max length), AHC (additional handling) — same codes the [[S243_f6d41a0d_ups-lps-oml-2026-surcharge-export|S243]] export enumerated.
+
+**The lesson.** When defining a cohort over a charge/category field, key on the **stable code** (`chargedescriptioncode`), not a free-text label — especially not an English label *relayed by a sub-agent*, which compresses a multi-code reality into one phrase. The raw vocab is German here; "over max" maps to 5 distinct codes that mean different things and stack on the same parcel. A relayed label is a hypothesis about which code(s) are meant, not the definition.
+
+**How to apply.** Before filtering on `chargedescription ILIKE '%...%'` or a relayed name, pull the **code taxonomy** first (distinct code + description + EUR) and confirm which code(s) the question actually means with the principal. Anchor the cohort on codes. Sibling of read-the-rate-type-column-not-just-value and verify-subagent-findings. Note the inverse caught here too: I *over-doubted* a correct sub-agent total (€62K) — verify both directions, a number you can't reproduce may be your reproduction that's wrong.

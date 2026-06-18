@@ -18,10 +18,12 @@ Reserved for work that is more than running SQL — when the hardened methodolog
 
 - **Heavy or fan-out pulls** — multi-step decomposition, many-slice sweeps, anything where parallelism or isolation pays.
 - **Chart deliverables** — it owns the chart harness; let it produce them.
-- **Methodology-heavy analysis** — cost-basis discipline, **charge-bucket-first** cost-movement decomposition, scope/origin gating, carrier re-rating trust-gates, coverage/DQ caveats. When getting the *basis* right is the whole risk, the specialist that loads the contract by construction carries it more safely than working it inline.
+- **Methodology-heavy *sweeps*** — multi-carrier / multi-period cost-movement decomposition, re-rating trust-gates *across many slices*, scope/origin gating compounded over many cuts. The spawn earns its keep when the basis-risk **compounds across many cuts** — not when one bucket or one basis applies to a single known population.
 - **The real interactive agent** — for polished talk-to-your-data with the live UX + workbench memory, the principal uses the real agent in its own folder directly.
 
 Calibration: spawn when the methodology adds value over a clean query — not for a `SELECT COUNT(*)`, and not for a pull you can run yourself once the reference is loaded.
+
+**The litmus (the thing that mis-fired 2026-06-18, S260).** If you can answer it with **one query once the contract is loaded, run it yourself** — even when it “touches charge buckets.” A *topic phrase* like “charge-bucket decomposition” is **not** the spawn trigger; the **fan-out / compounding basis-risk is**. “Charge-bucket decomposition” earns a spawn only as an *11-bucket cost-movement sweep across carriers/months* — never as a single-bucket sum on a known set of parcels (e.g. *“what’s the over-max surcharge on these 47 UPS parcels”* is one `GROUP BY` — run it inline). When a list item above names a *topic*, read it through this litmus before it pulls a spawn: topic ≠ trigger; shape is the trigger.
 
 ## How to call it (when you do spawn)
 

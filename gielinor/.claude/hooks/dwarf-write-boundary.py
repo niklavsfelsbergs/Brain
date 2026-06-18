@@ -11,6 +11,7 @@
 #   - bank/notes/...            (any player)
 #   - quest-log/in-progress/... (any player)
 #   - quest-log/completed/...   (any player)
+#   - quest-log/traces/...      (any player — the sub-agent's own run-log trace; B-020)
 #   - inventory/...             (any player)
 #
 # Identity-shaped layers (examine/, niksis8/, niksis8_character/, lorebook/,
@@ -41,6 +42,7 @@ ALLOWED_PATTERNS = [
     "/bank/notes/",
     "/quest-log/in-progress/",
     "/quest-log/completed/",
+    "/quest-log/traces/",
     "/inventory/",
 ]
 
@@ -83,7 +85,7 @@ def main() -> None:
         print(
             f"BLOCKED: dwarves cannot write to {rel}.\n"
             f"  Allowed: bank/notes, quest-log/in-progress, quest-log/completed,\n"
-            f"           inventory.\n"
+            f"           quest-log/traces, inventory.\n"
             f"  Identity layers and the rulebook are principal-only.\n"
             f"  See meta/modes.md.",
             file=sys.stderr,

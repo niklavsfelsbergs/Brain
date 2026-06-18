@@ -137,6 +137,8 @@ This is a feedback loop. Per-player `rejected/` patterns are alching's job.
 
 Phase 0 has already alched players with changes. This step is the **post-check**: list any player skipped during Phase 0 (e.g., mid-quest skip), and any player whose `last-alched.md` is aging despite no recent activity (so the principal can decide whether to alch defensively). For most rounds this is empty.
 
+**Quest-graduation backlog check (B-020).** Also run `python developer-braindead/verification/quest-graduation-check.py` (all players, read-only) and surface the per-player GRADUATABLE counts (shipped quests with `open_dep: none` still sitting in `in-progress/`) and stray TRACE counts. Bankstanding **cannot move them** — it writes globals only, not per-player layers — so this is flag-and-recommend: name the players over the backlog soft-cap and recommend a close-session / gnome graduation pass on each. Sibling of step 8's lesson-store reconcile, applied to episodic memory; see `meta/modes.md` → *Sub-agent traces* and the detector's header.
+
 ### 7. If anything in this bankstanding round changed how the agent operates — log it in lorebook
 
 A bankstanding round that just triages inbox items and rotates keepsake doesn't need a lorebook entry. But if the round produced *behavioral changes* — a new working agreement, a refined ritual, a rule the agent will hold itself to going forward — write a `lorebook/drafts/` entry capturing:

@@ -16,6 +16,7 @@
 #   - /research/                (any player's; cross-player discipline is in the brief)
 #   - /quest-log/in-progress/   (any player's — sibling run-log entry)
 #   - /quest-log/completed/     (any player's — when penguin finishes)
+#   - /quest-log/traces/        (any player's — the penguin's own run-log trace; B-020)
 #   - /quest-log/archive/       (any player's — housekeeping)
 #   - /inventory/               (any player's — working state during research)
 #
@@ -60,6 +61,7 @@ ALLOWED_PATTERNS = [
     "/research/",
     "/quest-log/in-progress/",
     "/quest-log/completed/",
+    "/quest-log/traces/",
     "/quest-log/archive/",
     "/inventory/",
 ]
@@ -143,7 +145,7 @@ def main() -> None:
             f"BLOCKED: penguins cannot write to {rel}.\n"
             f"  Path is outside the penguin write surface.\n"
             f"  Allowed: research/, quest-log/in-progress/, quest-log/completed/,\n"
-            f"           quest-log/archive/, inventory/.\n"
+            f"           quest-log/traces/, quest-log/archive/, inventory/.\n"
             f"  See meta/modes.md and spellbook/skills/spawning-penguins.md.",
             file=sys.stderr,
         )

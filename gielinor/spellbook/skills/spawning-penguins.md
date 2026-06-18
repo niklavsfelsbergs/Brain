@@ -44,7 +44,7 @@ Per penguin, before spawning:
 - **Source map (if pre-staged).** Bulleted list of candidate sources the principal already knows about. Optional.
 - **Deliverable.** File path — typically `players/<player>/research/<YYYY-MM-DD>-<slug>.md`. Sections per `research.md` body shape.
 - **Out of scope.** What this penguin does *not* touch (prevents overlap with siblings).
-- **Sibling file path.** Where the penguin writes its quest-log entry — `players/<player>/quest-log/in-progress/SNNN_pN_<slug>.md` (pN = penguin 1, 2, ...).
+- **Sibling file path.** Where the penguin writes its run-log trace — `players/<player>/quest-log/traces/SNNN_pN_<slug>.md` (pN = penguin 1, 2, ...; [[B-020_2026-06-18_memory-cap-trim-and-graduation-retire|B-020]]: a sub-agent run-log is a *trace*, not a quest — `quest-log/traces/`, not `in-progress/`). The research writeup itself lands in `research/` per the Deliverable above.
 
 **Read `meta/modes.md` now** before briefing — it left the eager `@import` chain (§X Stage B), so the penguin write boundary loads here, at spawn time. Hook-enforced boundary: `research/`, `quest-log/`, `inventory/` only. No `bank/`, no `drafts/`, no sub-spawning.
 

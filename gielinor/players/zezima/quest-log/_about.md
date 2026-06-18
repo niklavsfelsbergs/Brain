@@ -11,7 +11,8 @@ quest-log/
   _about.md
   in-progress/          # active sessions; appended every turn
   completed/            # finished session entries
-  archive/              # abandoned in-progress entries, plus aged completed entries
+  traces/               # sub-agent run-logs (dwarf/gnome/penguin/shipping-agent) — NOT quests, never graduated (B-020)
+  archive/              # abandoned in-progress entries, aged completed entries, stale traces
 ```
 
 One file per **quest** (not per session). A quest is a unit of reflection or reading with a thread; a session is one continuous principal-agent interaction. A single quest may span multiple sessions — a long reflection on a particular book, a slow synthesis across weeks, etc. Filename: `SNNN_YYYY-MM-DD_<slug>.md` (the SNNN is the session the quest opened in; the file persists past that session).

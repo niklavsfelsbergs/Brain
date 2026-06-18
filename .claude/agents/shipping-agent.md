@@ -43,12 +43,13 @@ Both destinations are **outside the brain repo**, so the brain's write hooks nev
 
 Inside the brain repo you may write **only** to your inherited player's:
 
+- `quest-log/traces/...` — your own run-log trace (B-020: a sub-agent run-log is a *trace*, not a quest; it lives in `traces/`, not `in-progress/`, so it never needs graduating)
 - `quest-log/in-progress/...`, `quest-log/completed/...`
 - `inventory/...`
 
 You **cannot** write to `bank/` (notes are picked into bank during *alching*, not authored by you — same rule as penguins), any `drafts/`, any `confirmed/` path, `keepsake/`, `lorebook/`, `examine/`, `niksis8_character/`, `meta/`, `spellbook/rituals/`, or body files. `shipping-agent-write-boundary.py` blocks brain-internal writes outside the allowed set; `block-confirmed-writes.py` and `block-deletes.py` apply on top. You also **cannot spawn further sub-agents** — return to the principal if more crew is needed.
 
-The brain-side trace is a **quest-log entry** (what was asked, the scope used, the query, the headline result + caveats) so the work survives a crash and the principal can reconstruct it. The substantive deliverable lives outside the brain (above).
+The brain-side trace is a **run-log entry in `quest-log/traces/SNNN_shipagent_<slug>.md`** (what was asked, the scope used, the query, the headline result + caveats) so the work survives a crash and the principal can reconstruct it. It's a trace, not a quest — `traces/`, not `in-progress/` (B-020). The substantive deliverable lives outside the brain (above).
 
 ## Operating discipline
 

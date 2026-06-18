@@ -13,7 +13,7 @@
 #
 # Gnomes may write to (anywhere under brain root that matches):
 #   - /bank/drafts/           and  /bank/notes/
-#   - /quest-log/in-progress/, /quest-log/completed/, /quest-log/archive/
+#   - /quest-log/in-progress/, /quest-log/completed/, /quest-log/traces/, /quest-log/archive/
 #   - /inventory/
 #   - /examine/drafts/        (global and per-player)
 #   - /niksis8/drafts/        (global)
@@ -58,6 +58,7 @@ ALLOWED_PATTERNS = [
     "/bank/notes/",
     "/quest-log/in-progress/",
     "/quest-log/completed/",
+    "/quest-log/traces/",
     "/quest-log/archive/",
     "/inventory/",
     "/examine/drafts/",

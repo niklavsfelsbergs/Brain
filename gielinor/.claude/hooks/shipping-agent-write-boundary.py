@@ -16,6 +16,7 @@
 # Shipping-agent may write (inside the brain) to:
 #   - quest-log/in-progress/... (any player)
 #   - quest-log/completed/...   (any player)
+#   - quest-log/traces/...      (any player — its own run-log trace; B-020)
 #   - inventory/...             (any player)
 #
 # NOT bank/ — mart findings are picked into bank during *alching*, not authored
@@ -44,6 +45,7 @@ BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent
 ALLOWED_PATTERNS = [
     "/quest-log/in-progress/",
     "/quest-log/completed/",
+    "/quest-log/traces/",
     "/inventory/",
 ]
 
@@ -88,7 +90,7 @@ def main() -> None:
         print(
             f"BLOCKED: the shipping-agent cannot write to {rel} inside the brain.\n"
             f"  Allowed (brain-internal): quest-log/in-progress, quest-log/completed,\n"
-            f"           inventory.\n"
+            f"           quest-log/traces, inventory.\n"
             f"  Charts / CSVs / SQL belong OUTSIDE the brain (the shipping-agent\n"
             f"  workbench/ or the NFE work folder). Mart findings reach bank/ via\n"
             f"  alching, not by direct write.\n"

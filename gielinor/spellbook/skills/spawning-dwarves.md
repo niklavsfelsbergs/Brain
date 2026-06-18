@@ -32,7 +32,7 @@ Per dwarf, before spawning:
 - **Reads.** Concrete paths / sources / queries.
 - **Deliverable.** What file the dwarf writes, what sections it must contain.
 - **Out of scope.** What this dwarf does *not* touch (prevents overlap with siblings).
-- **Sibling file path.** Where the dwarf writes its quest-log entry — typically `quest-log/in-progress/SNNN_dN_<slug>.md` next to the parent quest.
+- **Sibling file path.** Where the dwarf writes its run-log trace — `quest-log/traces/SNNN_dN_<slug>.md` ([[B-020_2026-06-18_memory-cap-trim-and-graduation-retire|B-020]]: a sub-agent's run-log is a *trace*, not a quest — it lives in `quest-log/traces/`, not `in-progress/`, so it never needs graduating). Findings the principal keeps get folded into the parent quest on return.
 
 **Read `meta/modes.md` now** before briefing — it left the eager `@import` chain (§X Stage B), so the dwarf write boundary loads here, at spawn time. Hook-enforced boundary: no `confirmed/`, no `drafts/`, no `spellbook/rituals/`, no sub-dwarf spawning.
 

@@ -73,7 +73,7 @@ The load order below front-loads only the durable, in-force, identity-shaped mat
 
    k. **Alching threshold check.** Read `players/<name>/last-alched.md` and count drafts across the player's `examine/drafts/`, `niksis8_character/drafts/`, `bank/drafts/notes/`, `spellbook/drafts/skills/`, `keepsake/proposals/`. If any threshold in `spellbook/rituals/alching.md` § *Recommendation thresholds* is breached, surface a one-line recommendation per `meta/communication-protocol.md` § *Internal rituals stay silent* (the threshold-recommendation exception). The principal decides whether to alch now or later.
 
-7. **If dwarf mode:** skip the unfinished-business check. Read the task brief from the principal. Operate within the dwarf write boundary (`meta/modes.md`). Write findings to the inherited player's `quest-log/in-progress/`; return a summary to the principal.
+7. **If dwarf mode:** skip the unfinished-business check. Read the task brief from the principal. Operate within the dwarf write boundary (`meta/modes.md`). Write your run-log trace to the inherited player's `quest-log/traces/` (a sub-agent run-log is a trace, not a quest — `meta/modes.md` → *Sub-agent traces*); return a summary to the principal.
 
 8. **Cued retrieval during the session.** Other layers are not preloaded — `bank/`, `spellbook/skills/`, `lorebook/`. The agent reads them as the task requires.
 
@@ -100,6 +100,7 @@ The resume foreground for each in-flight quest lives in `inventory/<quest-slug>-
    - **Abandon** — move the file to `quest-log/archive/in-progress/` (never delete) and start fresh.
    - **Reconcile the pending action externally first** — the principal checks whether the last `pending` action actually completed on the outside world (e.g., a file was written, a message was sent), then tells the agent to mark it `completed` or `failed` by hand before resuming.
 4. **Do not auto-resume.** Do not start new work until the principal has chosen. Auto-resuming risks re-running an action that already completed and re-doubling its side effect.
+5. **Backlog check (B-020).** Run `python developer-braindead/verification/quest-graduation-check.py --player <active>` (read-only). If it reports GRADUATABLE quests (`open_dep: none` but still in `in-progress/`) or stray TRACES, surface the counts in one line — *"N graduatable + M traces in your in-progress; run a close-session graduation pass?"* The detector only flags; the `git mv` to `completed/` (and trace archival) is close-session / gnome / principal work, never auto (S144 parallel-safety). This is the half that stops `in-progress/` silently creeping back to a 70-file backlog — same "detectors hold, discipline drifts" logic as the lesson-store check.
 
 **Read `meta/death-and-spawn.md` now** for the full crash-recovery + reset model before presenting the options — it is no longer loaded eagerly (Phase-1 §X-A trim), so this reconciliation step is its trigger.
 

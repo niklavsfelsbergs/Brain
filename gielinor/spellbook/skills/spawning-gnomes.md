@@ -52,14 +52,14 @@ Briefing template per gnome:
 - **Player(s) in scope.** Named players (e.g., `Jebrim`); `system` for an unscoped session-close.
 - **Inputs.** The numbers that fired the heuristic (turn count, drafts pending, days since alch). Lets the gnome state in its report which threshold triggered the spawn.
 - **Out of scope.** Anything the principal wants explicitly excluded — e.g., "do not touch Zezima's drafts this pass."
-- **Sibling file path.** Where the gnome writes its run-log entry — typically `players/<scope>/quest-log/in-progress/SNNN_gN_<ritual>.md` (gN = gnome 1, 2, ...). For unscoped session-close, `players/inbox/SNNN_gN_<ritual>.md`.
+- **Sibling file path.** Where the gnome writes its run-log trace — `players/<scope>/quest-log/traces/SNNN_gN_<ritual>.md` (gN = gnome 1, 2, ...; [[B-020_2026-06-18_memory-cap-trim-and-graduation-retire|B-020]]: a gnome run-log is a *trace*, not a quest — `quest-log/traces/`, not `in-progress/`). For unscoped session-close, `players/inbox/SNNN_gN_<ritual>.md`.
 
 ## Write surface — what the gnome can touch
 
 **Allowed** (hook-enforced by `.claude/hooks/gnome-write-boundary.py`):
 
 - Any player's `bank/drafts/`, `bank/notes/` (the latter via alching-promotion path).
-- Any player's `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/archive/`.
+- Any player's `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/traces/`, `quest-log/archive/`.
 - Any player's `inventory/`.
 - Any player's `examine/drafts/`, `niksis8_character/drafts/`.
 - Any player's `keepsake/proposals/`.

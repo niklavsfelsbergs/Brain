@@ -80,6 +80,7 @@ The agent has been invoked as a sub-agent by another agent (a principal, or — 
 **A dwarf may write to:**
 
 - `bank/notes/` of its inherited player.
+- `quest-log/traces/` of its inherited player — its own run-log trace (the default; see *Sub-agent traces* below).
 - `quest-log/in-progress/` and `quest-log/completed/` of its inherited player.
 - `inventory/` of its inherited player.
 
@@ -105,7 +106,7 @@ Gnomes are **system-namespace**. There is one gnome agent config; the spawn brie
 **A gnome may write to:**
 
 - Any player's `bank/drafts/`, `bank/notes/` (the latter via alching-promotion path).
-- Any player's `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/archive/`.
+- Any player's `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/traces/`, `quest-log/archive/`.
 - Any player's `inventory/`.
 - Any player's `examine/drafts/`, `niksis8_character/drafts/`.
 - Any player's `keepsake/proposals/`.
@@ -138,7 +139,7 @@ System namesake: in RuneScape lore, penguins are intelligence operatives — the
 **A penguin may write to:**
 
 - The active player's `research/` (any subpath). This is the penguin's playground — full research writeups, working notes, source dumps. Write freely; no draft gate inside this folder. Filenames typically `YYYY-MM-DD-<topic-slug>.md`.
-- The active player's `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/archive/` — sibling run-log entry, typically `SNNN_pN_<slug>.md` (pN = penguin 1, 2, ...).
+- The active player's `quest-log/traces/` — its own run-log trace, typically `SNNN_pN_<slug>.md` (pN = penguin 1, 2, ...; the default, see *Sub-agent traces* below). Plus `quest-log/in-progress/`, `quest-log/completed/`, `quest-log/archive/` as needed.
 - The active player's `inventory/` — working state during research.
 
 **A penguin may not:**
@@ -163,11 +164,17 @@ The agent has been invoked as the **Shipping Data Mart specialist** — an in-se
 
 It reads the live gold `shipping_mart` via the Redshift MCP (read-only), defaults to the gold contract, and reaches the upstream raw layer only when asked *and* a local profile grants it. Its real deliverables — charts, CSVs, saved SQL — land **outside the brain** (the shipping-agent repo's `workbench/` or the NFE work folder), where no brain hook governs them.
 
-**A shipping-agent may write (inside the brain) to** its inherited player's `quest-log/in-progress/`, `quest-log/completed/`, `inventory/` — the brain-side trace only.
+**A shipping-agent may write (inside the brain) to** its inherited player's `quest-log/traces/` (its own run-log trace — the default; see *Sub-agent traces* below), plus `quest-log/in-progress/`, `quest-log/completed/`, `inventory/` — the brain-side trace only.
 
 **A shipping-agent may not** write `bank/` (mart findings reach bank via *alching*, like penguins), any `drafts/`, any `confirmed/` path, `keepsake/`, `lorebook/`, `examine/`, `niksis8_character/`, `meta/`, `spellbook/rituals/`, body files, or any other player's namespace. It also cannot spawn sub-agents (it carries no Task/Agent tool; `block-sub-spawn.py` is the unreachable backstop) and never runs headless (`claude -p` / Agent SDK) — it is an in-session emulation on the subscription path.
 
 **Tool surface:** `Read`, `Glob`, `Grep`, `Edit`, `Write`, `Bash` (the chart harness is `python harness/build_inline_chart.py`), plus the Redshift MCP read tools (`execute_sql`, `list_schemas`, `list_objects`, `get_object_details`, `explain_query`). The boundary is enforced by `.claude/hooks/shipping-agent-write-boundary.py`, gated on PreToolUse payload field `agent_type == "shipping-agent"` — same mechanism as the dwarf/gnome/penguin hooks.
+
+### Sub-agent traces — `quest-log/traces/`, not `in-progress/`
+
+A sub-agent's own run-log (a dwarf's working notes, a gnome's ritual log, a penguin's run-log, a shipping-agent's pull trace) is a **trace, not a quest.** It exists so the work survives a crash and the principal can reconstruct it — then the principal folds any keepers into the real quest and the trace is disposable. Traces therefore live in **`quest-log/traces/`**, never `quest-log/in-progress/`.
+
+Why this is its own home (Guthix bankstanding B-020, 2026-06-18): quest promotion (`in-progress/` → `completed/`) is graduation-gated, but traces are never quests and have **no graduation path** — so when they landed in `in-progress/` they accumulated forever (Jebrim hit 28 stray traces inside 73 in-progress files). Routing them to `traces/` keeps the in-progress count honest (it's real quests only) and gives traces a home that's swept/archived, not graduated. `traces/` is *not* scanned by the D-029 graduation pass; periodic housekeeping (close-session / a gnome) archives stale traces to `quest-log/archive/traces/`. The four write-boundary hooks permit `traces/`; the spawn skills point each sub-agent at it. The principal's quest file stays in `in-progress/` as before.
 
 ## Player inheritance
 

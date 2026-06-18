@@ -111,3 +111,7 @@
 - carried-by: cue (this index)
 - patterns: why can't you, why cant you, carry it out, carry this out, carry that out, you should be able
 - rule: Guthix's "proposes-only" rule governs UNILATERAL action; on explicit, specific principal authorization ("do it — this change, now") Guthix executes directly against the discipline-gated surfaces (globals, per-player layers, rulebook prose). The hook floor still binds him (no confirmed/ writes, no deletes — that routes through Braindead or the principal). Don't re-derive propose-only as a hard limit; that exact friction is why [[D-034_guthix_executes_on_explicit_authorization|D-034]] exists.
+
+## [[D-035_retire-memory-lessons-on-graduation|D-035]] — Retire a warm MEMORY line when its lesson graduates to an always-on rule
+- file: lorebook/confirmed/D-035_retire-memory-lessons-on-graduation.md
+- carried-by: ritual (bankstanding step 8 + alching — retire-on-graduation) + detector (lesson-store-check.py CAP/DRIFT flags) — no topic cue (fires inside alching/bankstanding, which read the ritual at entry)

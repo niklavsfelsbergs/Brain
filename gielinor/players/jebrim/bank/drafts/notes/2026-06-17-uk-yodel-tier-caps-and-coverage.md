@@ -13,7 +13,7 @@ Flat base rate per tier (no weight gradient within ceiling):
 - **Large** £3.69 — length ≤120 cm, ≤160 L (0.16 m³), 0–30 kg
 - PUDO £1.94 — same as Medium; over-Medium → returned to sender
 
-**OOG:** length 120–170 cm → +£15/parcel; length >170 cm OR >0.16 m³ → +£50/parcel (£15 does not stack); unliftable/too-large → RTS. Fuel = **−8% discount** of published rate. Other flat surcharges: NI £1, out-of-area £4.50, ULEZ £0.05, peak £0.10 (Nov–Jan), relabel £1, repack £2.50, non-machinable £0.50, restricted £25, missing-PAN £1.
+**OOG:** length 120–170 cm → +£15/parcel; length >170 cm OR >0.16 m³ → +£50/parcel (£15 does not stack); unliftable/too-large → RTS. Fuel = **+10% surcharge on base** (published 18% − 8pp; corrected — see Fuel section below). Other flat surcharges: NI £1, out-of-area £4.50, ULEZ £0.05, peak £0.10 (Nov–Jan), relabel £1, repack £2.50, non-machinable £0.50, restricted £25, missing-PAN £1.
 
 ## Key correction (don't repeat)
 

@@ -606,6 +606,29 @@ html, body {
 .pathlink { color: var(--gold); text-decoration: underline dotted; text-underline-offset: 2px; cursor: pointer; }
 .pathlink:hover { text-decoration: underline; }
 
+/* Transient notice when a click-to-open is rejected by the backend (path moved /
+   renamed / outside the repo). Makes a dead click visible instead of silent — the
+   "sometimes it does nothing" half of the S270 reliability pass. */
+#pathlink-flash {
+  position: fixed;
+  bottom: 14px;
+  right: 14px;
+  max-width: 360px;
+  z-index: 9999;
+  padding: 8px 12px;
+  background: var(--panel-2);
+  color: var(--waiting);
+  border: 1px solid var(--gold-dk);
+  border-radius: 6px;
+  font-size: 12.5px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+#pathlink-flash.show { opacity: 1; transform: translateY(0); }
+
 .b-think {
   margin: 6px 0;
   font-size: 12.5px;

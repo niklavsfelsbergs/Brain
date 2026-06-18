@@ -1,0 +1,9 @@
+# Fixing a class of UI bug across a tab group — enumerate ALL tabs, not just the ones named for it
+
+**Observation (S264/[[S265_17290ea4_scm-resizable-columns|S265]], 2026-06-18).** The Country column overflowed across the SCM "Cost Drivers" inner tabs. I fixed it in the three *shift* tables (Routing / Carrier / Product Shifts) and shipped — but the Cost Drivers tab has a **fourth** inner tab, **Rate Changes** (`RateChangesTable`), with the same `data-table` Country-cell pattern. I didn't touch it, so the overlap persisted there; Niklavs caught it with a screenshot of the Rate Changes tab a few turns later.
+
+**The miss.** I mentally scoped the fix to "the shift tabs" (the literal word in the original report) instead of "every inner tab of the Cost Drivers tab that shares this table pattern." The bug was a property of the shared `data-table` Country cell, so the correct unit of fix was *all consumers of that pattern*, not the subset whose names matched the report's phrasing.
+
+**How to apply.** When fixing a shared-pattern bug across a tab group / family of components, **enumerate the full set first** (grep the shared marker — here `className="data-table"` returns 7 tables, or the `COLUMNS`+`colgroup` pattern returns the 4 Cost-Drivers tables) and fix the whole class, rather than the ones literally named in the ask. A `grep` for the shared construct up front would have surfaced RateChangesTable before the first commit. Sibling of [[feedback_fix_the_class_across_sibling_consumers]] — same logic, applied to UI tab groups: the report names a symptom location, not the fix's true scope.
+
+→ cf. memory `feedback_fix_the_class_across_sibling_consumers`; the all-tables resizable-columns plan ([[S265_17290ea4_scm-resizable-columns|S265]]) is the general fix that retires this whole class.

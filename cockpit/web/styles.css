@@ -903,6 +903,13 @@ body.resizing .board-col, body.resizing .feed-col { transition: none; }
 .brain-dock {
   flex: none;
   height: var(--brain-h, 300px);
+  /* Reserve a floor of feed below the dock: cap the dock so it can never grow
+     past (column − ~170px), regardless of the persisted --brain-h or the zoom.
+     Without this, a large saved --brain-h (e.g. a past gutter drag toward the
+     clamp max of 820) made the fixed-height dock taller than the column and
+     pushed the feed-head + feed-items entirely below the fold ("only the map,
+     no feed"). calc against the flex column's definite height is zoom-safe. */
+  max-height: calc(100% - 170px);
   aspect-ratio: auto !important;
 }
 .brain-gutter {

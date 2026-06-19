@@ -397,6 +397,14 @@ export function mountBrain(host) {
   cnv.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab";
   ctx = cnv.getContext("2d");
   host.append(cnv, head);
+  // Size the backing store to the real box NOW, on (re)mount. draw() only calls
+  // applySize when the rendered box differs from the module-global view.w/h — but
+  // on a REMOUNT (feed toggled off→on) those globals still hold the prior instance's
+  // last size, which equals the fresh canvas's size, so the size-sync is skipped and
+  // the new canvas keeps its default 300×150 backing → the graph draws off-screen
+  // (blank panel). Sizing here on mount breaks that staleness; the loop still
+  // self-heals later resizes. (S### — the "panel gone after hide→show" bug.)
+  { const b = host.getBoundingClientRect(); applySize(b.width, b.height); }
 
   // LEFT-drag pans the map (tx/ty), RIGHT-drag orbits the camera (yaw/pitch);
   // the auto-spin keeps running on top of either. e.button: 0 = left, 2 = right.

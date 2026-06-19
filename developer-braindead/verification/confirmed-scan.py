@@ -13,8 +13,18 @@ that look wrong." Read-only; it flags and nominates, it never edits.
 Two tiers, because honesty about precision matters:
 
   HARD FLAGS -- near-zero false positives; treat as a worklist.
-    1. DANGLING  -- a [[wikilink]] in a gated note points at no existing file
-                    (the cited anchor vanished -> the claim lost its support).
+    1. DANGLING  -- a [[wikilink]] points at no existing file AND is a genuine
+                    break: a bare ID (`[[D-012]]`, `[[S018]]`) or a single-word
+                    placeholder (`[[keepsake]]`, `[[wikilink]]`). Resolution is
+                    PREFIX-AWARE -- it strips the brain's filename conventions
+                    (SNNN_/sid8_/date_, the `feedback_`/`reference_` memory type
+                    prefixes, and the `D-NNN_`/`S018` lorebook/quest IDs) off
+                    BOTH the link target and the corpus stems before matching,
+                    because the brain links lessons by concept-slug while the
+                    files carry those prefixes. A multi-word concept-slug that
+                    still doesn't resolve is demoted to LOOSE (below), not hard-
+                    flagged -- it points at a real lesson under a differing
+                    stem, so crying "broken" trains the operator to ignore it.
     2. UNDATED   -- a note makes a load-bearing claim (money / percent /
                     "current"/"now") with NO as-of date anywhere (frontmatter,
                     body, or filename). The brain's own rule: every money
@@ -36,6 +46,13 @@ or magnitude, so it pairs a per-parcel rate against an aggregate total and flood
 false positives -- and a scan that cries wolf trains the operator to ignore it,
 the exact failure this tool exists to prevent. Contradiction judgment is the
 semantic pass's job, over the RELATED pairs.
+
+Known limitation (considered, deferred 2026-06-19): RELATED clusters on TITLE
+tokens only, so a contradiction between two notes with dissimilar titles slips
+through. Body-similarity widening was deferred -- the demonstrated need in real
+use was HARD-flag (DANGLING) PRECISION, not RELATED recall, and widening the net
+adds noise to the one tier that's clean. Revisit if a missed cross-title
+contradiction actually surfaces.
 
 The candidate tiers are deliberately NOT exit-code-failing on their own -- they
 are review fodder, not errors.
@@ -76,7 +93,21 @@ WIKILINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
 MONEY_RE = re.compile(r"(?:€|EUR)\s?\d|\d[\d.,]*\s*(?:€|EUR)")
 PCT_RE = re.compile(r"\d+(?:\.\d+)?\s?%")
 
-_SLUG_PREFIX = re.compile(r"^(?:s\d+_)?(?:[0-9a-f]{8}_)?(?:\d{4}-\d{2}-\d{2}[-_])?", re.IGNORECASE)
+# The brain's filename-prefix conventions. Stripped off BOTH the link target and
+# the corpus stems so a concept-slug link resolves to its differently-named file:
+#   - SNNN_ / sid8_ / date_      -- renamed quest files
+#   - feedback_/reference_/...   -- harness auto-memory type prefixes
+#   - D-NNN_ / S018_ / I-003_    -- lorebook decision / quest / idea IDs
+_PREFIX_PATTERNS = (
+    re.compile(r"^s\d+[-_]", re.IGNORECASE),                              # SNNN_ quest
+    re.compile(r"^[0-9a-f]{8}[-_]", re.IGNORECASE),                       # sid8_
+    re.compile(r"^\d{4}-\d{2}-\d{2}[-_]"),                                # date-
+    re.compile(r"^(?:feedback|reference|project|user)[-_]", re.IGNORECASE),  # memory type prefix
+    re.compile(r"^[dsiaqrbg]-?\d+[-_]", re.IGNORECASE),                   # D-033_/S018_/I-003_/B-020_ IDs
+)
+# a bare ID with no descriptive suffix: `D-012`, `S018`, `I-003` -- a genuine
+# convention break (the brain authors links by full stem, per D-004), kept HARD.
+_BARE_ID_RE = re.compile(r"[a-z]-?\d+", re.IGNORECASE)
 _STOP = {
     "the", "a", "an", "to", "of", "is", "isnt", "not", "vs", "and", "for", "on",
     "in", "be", "it", "its", "with", "by", "as", "at", "or", "from", "2026",
@@ -90,8 +121,18 @@ def _collapse(s: str) -> str:
 
 
 def _norm_stem(stem: str) -> str:
-    """Strip SNNN_/sid8_/date_ prefixes so renamed quest files still resolve."""
-    return _SLUG_PREFIX.sub("", stem.lower())
+    """Strip the brain's filename-prefix conventions (iteratively, since none
+    stack in practice but the order shouldn't matter) so a concept-slug resolves
+    to its prefixed file."""
+    s = stem.lower()
+    changed = True
+    while changed:
+        changed = False
+        for pat in _PREFIX_PATTERNS:
+            new = pat.sub("", s)
+            if new != s:
+                s, changed = new, True
+    return s
 
 
 def _match_keys(stem: str) -> set:
@@ -149,7 +190,15 @@ def _link_corpus(roots: list) -> set:
 
 
 def _resolve_link(target: str, corpus: set) -> str:
-    """Return 'ok' | 'loose' | 'dangling' for a wikilink target."""
+    """Return 'ok' | 'loose' | 'dangling' for a wikilink target.
+
+    'ok'        resolves (prefix-aware) to a real file, or is a templated/anchor link.
+    'loose'     points nowhere navigable but isn't a genuine break: a prose
+                description (spaces/apostrophe) OR a multi-word concept-slug that
+                names a real lesson under a differing stem -- fix opportunistically.
+    'dangling'  a genuine break worth a HARD flag: a bare ID (`D-012`, `S018`) or
+                a single-word placeholder (`keepsake`, `wikilink`).
+    """
     t = target.split("|")[0].split("#")[0].strip()
     if not t:
         return "ok"          # pure-anchor link, nothing to resolve
@@ -159,6 +208,15 @@ def _resolve_link(target: str, corpus: set) -> str:
         return "ok"
     # link-by-description (prose / apostrophe) -> soft, not a hard flag
     if " " in t or "'" in t or "’" in t:
+        return "loose"
+    # a bare ID with a descriptive suffix would have resolved above; a BARE id is
+    # a genuine convention break -> HARD. A multi-word concept-slug names a real
+    # lesson under a differing filename -> soft (LOOSE). Single bare words
+    # (placeholders, layer names) stay HARD.
+    if _BARE_ID_RE.fullmatch(t):
+        return "dangling"
+    word_parts = [w for w in re.split(r"[-_]", _norm_stem(t)) if w]
+    if len(word_parts) >= 3:
         return "loose"
     return "dangling"
 

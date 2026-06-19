@@ -40,11 +40,18 @@ def main():
         ge = root / "players" / "jebrim" / "examine" / "confirmed"
         gz = root / "players" / "zezima" / "bank" / "notes"
 
-        # an existing anchor so a good link resolves
+        # existing anchors so good links resolve (resolution is PREFIX-AWARE):
         _w(ge / "2026-06-01-real-anchor.md", "# real\nbody\n")
-        # DANGLING: links a slug that does not exist
+        # a memory-style file: a concept-slug link must resolve past the feedback_ prefix
+        _w(ge / "feedback_distinguish_fixture_from_live.md", "# lesson\nbody\n")
+        # an ID-prefixed lorebook-style file: a concept-slug link resolves past D-NNN_
+        _w(ge / "D-033_act-only-when-merited.md", "# decision\nbody\n")
+        # alpha links: 2 resolve via prefix, a bare-ID + a placeholder DANGLE (hard),
+        # a multi-word concept-slug MISS is LOOSE (names a real lesson, differing stem)
         _w(gj / "2026-06-10-alpha.md",
-           "As of 2026-06-10\nSee [[2026-06-01-real-anchor]] and [[totally-missing-slug]].\n")
+           "As of 2026-06-10\nSee [[2026-06-01-real-anchor]], "
+           "[[distinguish-fixture-from-live]], [[act-only-when-merited]], "
+           "[[D-404]], [[keepsake]], and [[totally-missing-concept-slug]].\n")
         # LOOSE: prose target (has spaces) -> soft, not dangling
         _w(gj / "2026-06-10-beta.md",
            "As of 2026-06-10\n12% lift. See [[a concept by description]].\n")
@@ -70,8 +77,15 @@ def main():
         stale_files = {f for f, _, _ in r["stale"]}
         coll = {(c["a"].split("/")[-1], c["b"].split("/")[-1]) for c in r["collisions"]}
 
-        check("DANGLING catches the missing slug", "totally-missing-slug" in dang)
+        check("DANGLING catches a bare-ID link", "D-404" in dang)
+        check("DANGLING catches a single-word placeholder", "keepsake" in dang)
         check("good link does NOT dangle", "2026-06-01-real-anchor" not in dang)
+        check("concept-slug resolves past the feedback_ memory prefix",
+              "distinguish-fixture-from-live" not in (dang | loose))
+        check("concept-slug resolves past the D-NNN_ lorebook prefix",
+              "act-only-when-merited" not in (dang | loose))
+        check("multi-word concept-slug MISS is LOOSE not DANGLING",
+              "totally-missing-concept-slug" in loose and "totally-missing-concept-slug" not in dang)
         check("prose target is LOOSE not DANGLING",
               "a concept by description" in loose and "a concept by description" not in dang)
         check("templated (*) link is skipped", not any("glob" in t for t in dang | loose))

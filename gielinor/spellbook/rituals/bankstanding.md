@@ -163,6 +163,26 @@ Run the detector (read-only): `developer-braindead/verification/lesson-store-che
 
 Cap: bias to the **unlinked-exact** duplicates first; a few per pass. The detector is the enforcement backbone (hand-enforced caps drift; detectors hold); this step is the hand that acts on it. Auto-memory is global, so this is bankstanding's job, never alching's.
 
+### 9. Scan the gated layers for rot + contradiction (confirmed-scan)
+
+The gated layers — every `confirmed/` plus the promoted `bank/notes/` — are the canon the brain force-injects and reasons *from*. A wrong-but-confident claim there doesn't crash; it compounds silently. This step is the cheap audit that turns "re-read everything" into "re-read the few things that look wrong."
+
+Run the detector (read-only): `python developer-braindead/verification/confirmed-scan.py`. It splits into two tiers, handled differently:
+
+**HARD flags — a worklist (near-zero false positives).**
+
+- **DANGLING** — a wikilink whose anchor genuinely doesn't resolve: a bare `[[D-012]]`/`[[S018]]` ID or a single-word placeholder. (Resolution is prefix-aware — concept-slug links that resolve to a real lesson under a differing filename are demoted to LOOSE, not flagged here, so the worklist stays trustworthy.) Fix = rewrite to the full stem or drop the link.
+- **UNDATED** — a load-bearing note (carries a money/percent figure) with no as-of date anywhere; the brain's own rule is every figure states its period. Fix = add the as-of date.
+- **STALE** — a load-bearing note past `--stale-days`: a re-verification worklist, not an error.
+
+Act per the standard reach: for a **global**-layer note, propose the fix (bankstanding writes globals, draft-approve). For a **per-player** note, **flag-and-recommend** only — bankstanding reads per-player but writes globals, so name the note and recommend an alching/close pass for that player (same shape as step 6's quest-graduation flag).
+
+**CANDIDATES — a review queue the principal approves, never an auto-fix.**
+
+Run `python developer-braindead/verification/confirmed-scan.py --emit-candidates <path>` to dump the COLLISION (near-duplicate titles) + RELATED (topically-overlapping) pairs as JSON. Then do the **semantic pass in-session**: read both files of each pair and judge whether their factual claims actually *contradict* (same quantity/definition/decision, incompatible values, accounting for stated as-of dates and acknowledged supersession) — or are merely related / a clean supersession. **The semantic pass produces hypotheses, not verdicts** — a deterministic flag is a candidate for a human read, never a correction. Surface real contradictions with file:line evidence and **propose** the reconciliation; the principal approves. A scan that auto-"corrects" a false positive introduces the exact error the gated layers exist to avoid (the founding case: two DPD-PL counts that *read* as a contradiction were two routing scenarios, settled only by grounding against the parquets — an auto-fix would have corrupted a correct note).
+
+**Known limitation (considered, deferred).** RELATED pairs cluster on *title* tokens, so a contradiction between two notes with dissimilar titles slips through. Widening to body-similarity was deferred — the demonstrated need is HARD-flag precision, not RELATED recall, and widening adds noise to the one tier that's clean. Revisit if a missed cross-title contradiction surfaces in real use.
+
 ## Discipline
 
 - **Propose, don't destroy.** Even when the move is obviously right, surface it.
@@ -180,3 +200,4 @@ Cap: bias to the **unlinked-exact** duplicates first; a few per pass. The detect
 - `meta/archive-discipline.md` for the moving-not-deleting rules.
 - `lorebook/_about.md` for what the self-improvement log captures and what it doesn't.
 - `developer-braindead/verification/lesson-store-check.py` + `developer-braindead/bank/research/2026-06-11-lesson-store-grounding.md` for the two-funnel reconcile (step 8).
+- `developer-braindead/verification/confirmed-scan.py` for the gated-layer rot/contradiction scan (step 9) — HARD flags (worklist) + a RELATED/COLLISION review queue (the principal-approved semantic pass).

@@ -18,19 +18,25 @@ corpus:
   - bank/notes/projects/2026-06-15-scm-breakdown-filter-load-perf.md
   - bank/notes/projects/2026-06-16-scm-full-refresh-stale-partition-mechanism.md
 specialist: shipping-agent (spawn for live mart queries)
-freshness: 2026-06-17
-synthesized: 2026-06-17 (refresh model + breakdown caching)
+freshness: 2026-06-19
+synthesized: 2026-06-19 (order-month lens + live tie-out + decomposition math + agent SCM docs)
 ---
 
 # SCM — Shipping Costs Monitoring dashboard
 
-The productized, always-on cost **monitor** over the gold `shipping_mart` — *known unknowns*, patterns watched continuously (the shipping-agent is the ad-hoc *investigator*; same mart, different loop). App: `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/`, branch `shipping-mart-cutover`. Self-contained — own CLAUDE.md / README / docs/. **Two runtimes:** the batch **pipeline** (Airflow DAG, ~08:00 Berlin → refreshes parquets → S3 → pod restart) and the **serving** Next.js app (EKS). The cutover replaced 5 Redshift queries with 2 pulls against the mart.
+The productized, always-on cost **monitor** over the gold `shipping_mart` — *known unknowns*, patterns watched continuously (the shipping-agent is the ad-hoc *investigator*; same mart, different loop). App: `bi-analytics/NFE/dashboards/shipping_costs_monitoring_nextjs/`, now on `main` (cutover merged; verified HEAD 2026-06-18 `e4fe742`). Self-contained — own CLAUDE.md / README / docs/. **Two runtimes:** the batch **pipeline** (Airflow DAG, ~08:00 Berlin → refreshes parquets → S3 → pod restart) and the **serving** Next.js app (EKS). The cutover replaced 5 Redshift queries with 2 pulls against the mart.
 
 ## Cost basis (load-bearing)
 - **`cost_for_routing`** = the default cost everywhere downstream = `COALESCE(shipping_cost_final, expected)`; `shipping_cost_final` = mart `final_shipping_cost_eur` = `COALESCE(real, expected, avg)`.
 - **11 cost buckets** sum to `total_eur == real_shipping_cost_eur` to the cent (invariant). Reducers `bkt_discounts` / `bkt_credit_note` are **negative**; tax + customs **excluded** (pass-through).
 - **Breakdown table cost is cost-basis-driven, not bucket-driven** ([[S227_6f393689_scm-breakdown-cost-basis-fix|S227]], `d70e516`): `final`→`cost_for_routing` over all costed rows, `invoiced`→`shipping_cost` on `has_cost` rows — matches the Overview chart by construction. The old `SUM(11 buckets)` basis read **€0** for un-invoiced carriers (DB Schenker on lag) and diluted sub-100%-invoiced avgs (buckets exist only on invoiced rows). **Bucket decomposition now lives only in the `BucketsTrend` chart** (`/api/breakdown-buckets`); the charge-bucket filter was removed from the Breakdown sidebar → [[2026-06-12-scm-breakdown-cost-basis-not-buckets]].
 - ORWO `expected` is a SQL-level `CASE` fallback (DHL/UPS country avgs + seasonal peak), not mart-sourced — stand-in until ORWO migrates. UI basis: `real_expected` (default) or `real`.
+- **Date lens = ORDER-MONTH** (`shop_order_created_date`, *not* ship/invoice date) — SCM's reconciliation basis; the same metric runs ~1pt higher on ship/production-month, so a silent lens swap reads as a phantom defect. **Combined quota** = `Σ final_shipping_cost_eur / Σ net_revenue_eur`; **Real quota** = invoiced cost ÷ revenue of the *same* `cost_source='invoice'` rows (apples-to-apples). **Live tie-out (2026-06-19, gold):** US May-2026 = **26.64% combined / 26.23% real** (53,294 shipments) — confirms a gold query matches SCM. Scope key is `destination_country_code='US'` — `destination_country='US'` returns **zero rows** (name col holds 'United States'). 'NA' = US+CA, CA much higher. (Headline cost+revenue cols live on `fact_shipments` directly — the `fact_shipment_cost_summary` join is only for the charge-bucket split.)
+
+## Decomposition math (analytical tabs)
+Source-derived 2026-06-19 from the live app (`api/breakdown/route.ts`, `api/cost-drivers-top/route.ts`, `lib/shifts.ts`); now documented in the agent's `reference/scm.md` §8.
+- **Breakdown Impact / Rate / Mix:** `Impact = (avg_cost_cur − avg_cost_base) × N_cur`; `Rate = Σ_subseg n_i,cur × (c_i,cur − c_i,base)` (unit-cost change held at current volume); `Mix = Impact − Rate` (volume/composition residual, **0 at leaf grain** — Rate collapses to Impact there). `%Change = avg_cost_cur/avg_cost_base − 1`.
+- **Cost Drivers:** rate driver = `Δavg_cost × n_cur` per country×provider corridor (kept if `|Δavg|>0.005`; a new no-baseline corridor gets Δ=0, never a rate driver). Carrier/routing/product **shift** driver = `shifted_vol × (provider_avg_cur − corridor_baseline_blend)`, `shifted_vol = corridor_vol_cur × share_delta`, **gainers only** (`share_delta>0`). Pool all 4 types, sort by `|eur_impact|` → **Drivers** (>0) / **Savers** (<0), top-N (default 10); type chips filter before the slice.
 
 ## Alert engine
 - `alerts.parquet` (per-week × corridor × type) → gap-and-island → **`issues.parquet`, the UI's primary surface** (`/api/alerts` returns issues, not alerts).
@@ -62,3 +68,4 @@ The productized, always-on cost **monitor** over the gold `shipping_mart` — *k
 
 ## Live work
 Spawn the **shipping-agent** (`specialist`) for any live mart pull — this digest is *about* the dashboard, not a substitute for querying the mart.
+- **Agent now documents SCM (2026-06-19, shipping-agent commit `cfc435a`):** the agent's knowledge home carries `reference/scm.md` (tile→definition map, exact basis/lens/scope, the worked US-May quota reproduction, §8 decomposition math, deep-link contract) + `skills/scm-screenshot.md` (reproduce-then-investigate on a pasted tile). `how_to.md` **rule 39** makes order-month the agent's default cost/quota lens too → agent answers and the monitor **tie by construction**.

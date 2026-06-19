@@ -158,6 +158,16 @@ class TermConn {
     // (output is flowing), and a parked turn's IDLE clock counts from the LAST OUTPUT
     // (= the response ending), not from a mid-turn feed event or a frozen heartbeat.
     this._lastOutputAt = 0;
+    // Selection snapshot for Ctrl+C copy (S278). Claude's TUI repaints by
+    // clear-then-rewrite, and a repaint CLEARS xterm's live selection — so by the
+    // time the user reaches for Ctrl+C, hasSelection() is often already false and
+    // the copy branch is skipped, falling through to \x03 (SIGINT) which wipes the
+    // input line ("two Ctrl+C's erased my text"). We cache every non-empty
+    // selection the instant it's made (onSelectionChange, below) so Ctrl+C can copy
+    // the snapshot even after the live selection has evaporated. Consumed on copy
+    // and cleared on typing so a stale selection can't hijack a genuine interrupt.
+    this._selCache = "";
+    this._selCacheAt = 0;
 
     this.container = document.createElement("div");
     this.container.style.cssText = "width:100%;height:100%;";
@@ -220,9 +230,18 @@ class TermConn {
       // bridge for the same reason paste reads from it: WebView2 gates the native
       // navigator.clipboard path; the server's clipboard IS the user's. (S087)
       const ctrlC = (e.key === "c" || e.key === "C") && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey;
-      if (ctrlC && this.term.hasSelection()) {
-        this._copyToClipboard(this.term.getSelection());
-        return false; // copied the selection — swallow, don't fire SIGINT at the PTY
+      // Prefer the live selection; fall back to the snapshot if a repaint just
+      // cleared it (the common case in claude's live TUI — see _selCache). A recent
+      // snapshot (≤5s, not yet consumed) counts as "you meant to copy", so Ctrl+C
+      // copies instead of falling through to SIGINT and erasing the input. (S278)
+      if (ctrlC) {
+        const live = this.term.hasSelection() ? this.term.getSelection() : "";
+        const sel = live || (Date.now() - this._selCacheAt < 5000 ? this._selCache : "");
+        if (sel) {
+          this._copyToClipboard(sel);
+          this._selCacheAt = 0; // consume — a 2nd Ctrl+C should interrupt, not re-copy
+          return false; // copied the selection — swallow, don't fire SIGINT at the PTY
+        }
       }
       // Ctrl+C with nothing selected falls through to xterm, which sends \x03 and
       // interrupts the PTY — so record it like Esc does (no hook fires on an
@@ -287,6 +306,18 @@ class TermConn {
       },
       { passive: true },
     );
+
+    // Snapshot the selection the moment it changes to non-empty — this fires at
+    // mouse-up with the FULL selected text, before claude's next repaint clears
+    // the live selection. We ignore the empty events a repaint emits, so the cache
+    // holds the last good selection rather than getting nulled by a redraw. (S278)
+    this.term.onSelectionChange(() => {
+      const s = this.term.getSelection();
+      if (s) {
+        this._selCache = s;
+        this._selCacheAt = Date.now();
+      }
+    });
 
     this.term.onData((d) => this._handleData(d));
     // Route every xterm resize through the coalescer, not a direct _send. fit.fit()
@@ -547,6 +578,12 @@ class TermConn {
   // label. Cursor moves / pastes can desync the mirror — accepted per the user.
   _handleData(d) {
     this.userActive = true; // genuine user keystroke → no longer a parked/resumed-idle row
+    // Typing invalidates the selection snapshot: if you're sending input you're not
+    // mid-copy, so a leftover selection mustn't hijack a later Ctrl+C interrupt.
+    // (Ctrl+C-to-copy returns false in keydown and never reaches here, so this only
+    // fires on real typed/navigation input — exactly what should clear it.) (S278)
+    this._selCache = "";
+    this._selCacheAt = 0;
     if (d === "\r" || d === "\n") {
       this._interruptedAt = 0; // a submit means the session is live again — stop the busy→idle override
       const m = /^\/rename\s+(.+)$/.exec(this._linebuf.trim());

@@ -16,6 +16,8 @@
 
 ## Not yet digested (uncovered clusters — §Z bootstrap worklist)
 
-*(Empty — all currently-named Jebrim domains are digested as of 2026-06-09. 2026-06-09 coverage-decision: shipping-savings REJECTED by principal ("bad project"); tcg-organic-growth + Lyto rejected; production-times + bi-etl ACCEPTED and digested. Dashboard-build method is a **skill** gap, not a domain. New clusters land here when a future pass names them.)*
+- **orwo-tender** — ORWO carrier tender 2026 (sibling of [[eu-tender]], distinct project). Weight-only / tracking-grain repricing (ORWO is consolidated + dim-poor); POST=DHL-Warenpost=Deutsche-Post; standalone NFE `projects/7_ORWO_tender_2026/`. Seeded 2026-06-19 ([[S275_abfcf511_orwo-tender-contracts-coverage-weight-grain|S275]]); 3 bank drafts await alch (`2026-06-19-orwo-*`). **Create the digest at next alching** — and route the mart weight-grain/consolidation finding into [[shipping-mart]] and the ORWO rate cards into [[carrier-contracts]], not all into orwo-tender.
+
+*(Prior: all 2026-06-09-named domains digested; shipping-savings/tcg-organic-growth/Lyto rejected; production-times + bi-etl digested. Dashboard-build is a **skill** gap. New clusters land here when a pass names them.)*
 
 *Rotate a domain from the lower list to the table when alching lands its digest. Keep this index under budget — if it grows past a screen, that's a signal the domains need consolidating, not a longer index.*

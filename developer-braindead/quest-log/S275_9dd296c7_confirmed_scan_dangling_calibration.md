@@ -11,6 +11,6 @@ Dev-brain via "lets develop gielinor, continue with this". Continued the `confir
 
 **Standing input for the next real bankstand:** the 8-DANGLING worklist (bare-ID links needing full-stem rewrites, most in `lorebook/confirmed/`) + 7 UNDATED bank notes.
 
-Cascade. `developer-braindead/verification/confirmed-scan.py` (resolver calibration + docstring), `developer-braindead/verification/test_confirmed_scan.py` (new-policy cases), `developer-braindead/comms/active.md` (OPEN + CLOSING), `respawn.md`, this quest-log. Prior orphan `ae6ca4c` now reconciled into the record.
+**Cascade.** `developer-braindead/verification/confirmed-scan.py` (resolver calibration + docstring), `developer-braindead/verification/test_confirmed_scan.py` (new-policy cases), `developer-braindead/bank/build-lessons.md`, `developer-braindead/comms/active.md` (OPEN + CLOSING), `respawn.md`, this quest-log. Prior orphan `ae6ca4c` now reconciled into the record.
 
-Main-brain changes. `gielinor/spellbook/rituals/bankstanding.md` — new step 9 (confirmed-scan as a review queue) + a Related cross-ref. No identity/`confirmed/`/`meta/` writes.
+**Main-brain changes.** `gielinor/spellbook/rituals/bankstanding.md` — new step 9 (confirmed-scan as a review queue) + a Related cross-ref. No identity/`confirmed/`/`meta/` writes.

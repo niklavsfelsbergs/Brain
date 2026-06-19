@@ -1,11 +1,23 @@
 ---
 quest: S275_abfcf511_orwo-tender-contracts-coverage-weight-grain
 sid8: abfcf511
-ts: 2026-06-19 (updated by session 6fbdcee1: roadmap + Phase-1 UPS slice)
-open_dep: Phase 1 (UPS) pipeline built; base-rate gap RESOLVED (card validated vs silver Dom. Standard lines; the €5.41 "gap" was a mart base-bucket artifact). Next = rebuild actual-base from silver lines + reprice. NFE 7_ORWO_tender_2026/ uncommitted (his call); bi-etl 5ab0322c2 local-unpushed.
+ts: 2026-06-19 (updated by session e5be6eb5: SPINE CORRECTION + silver-anchored base build)
+open_dep: SPINE CORRECTED — ORWO = production_site='Wolfen' (NOT source_system='ORWO'). Real UPS book = ~126k trks, cross-border-first (AT 41k > DE 33k > UK 21k > FR 12k > CH 5k > US 3k). Silver-anchored per-tracking base BUILT + validated (repricing_base/sql/02). RATE CARDS EXTRACTED + TRUST-GATED (repricing_base/rate_cards.md): cards reproduce invoiced freight to the cent. REPRICE ENGINE BUILT (repricing_base/engine/, EU-tender-style: build_rate_tables.py → parquet → calculate.py polars as-of join → run_gate.py). FULL-GRAIN TRUST GATE PASSES: modeled base €335k vs invoiced freight €345k = 0.971 portfolio; every material lane 0.98-1.00 (AT/FR/NL/CH/IT/ES/BE/LU ~0.998, DE 0.979). Misses are tiny tails (GB Economy DDP 0.911 = zone-35 tail routes to z34; DK 15trk wrong column; NO 3trk remote surcharge) — all documented in engine/README.md. cost_total 0.942 (the ~6% = unmodeled surcharge_other bucket). NEW UPS OFFER REPRICED (offers/UPS/, Niklavs uploaded 'Netto-Tarife ORWO Photolab - Tender 2026.xlsm'): SAVING €16,973 H1 / ~€34k/yr (4.4%), ALMOST ALL Switzerland (CH −€11.2k/−29%, light-parcel cut 11.44→8.04) + mid-weight DE (−€5.7k/−11%). AT (biggest lane 20k) + FR/NL/IT/ES + GB/US ALL UNCHANGED. Negotiation read: offer cherry-picks CH/DE, holds AT flat → the lever for more is AT. Built offers/UPS/{build_offer_tables.py → rates_offer_standard.parquet, compare_offer.py → offer_vs_baseline.parquet, offer_summary.md}. Next = (a) negotiate AT ask, (b) competitor offers (DHL/AT-Post/Güll/GLS/Maersk) same machinery, (c) refine annualization (seasonal ratios), (d) DHL Phase 2. NFE 7_ORWO_tender_2026/ uncommitted (his call); bi-etl 5ab0322c2 local-unpushed.
 ---
 
 # ORWO Tender 2026 - resume
+
+## ⚠ SPINE CORRECTION (session e5be6eb5, 2026-06-19) — supersedes the "DE 91.8%" facts below
+**ORWO = `production_site='Wolfen'`, NOT `source_system='ORWO'`.** The old filter caught only a DE-heavy 34k sub-slice (the entire reason Phase-1 read "92% DE"). ORWO production lives at the Wolfen plant; the mart splits it across two source_systems — `ORWO` (34k) + `Picturator` (93k), both `production_site='Wolfen'` = ~126k UPS trks. PCS-PL (432k) stays the separate Picanova tender. The real book is **cross-border-first**: AT 41.4k > DE 33.1k > UK 21.4k > FR 12.2k > CH 5.2k > US 3.1k.
+
+**Cost basis = silver invoices (INVOICES ONLY, S279), and silver is the COMPLETE spine for the invoiced population** — it carries trackingnumber + receivercountry + `zone` (UPS zone #) + billedweight + per-line cost. 93.5% (58,085) of the 62,107 silver freight trks match mart-Wolfen, but the mart adds nothing silver lacks. Mart-Wolfen reserved for the non-invoiced hole (model-only).
+
+**ORWO is a white-label op:** ships for ~20 photo brands under 2 UPS accounts, both with ORWO 2026 rate cards — `0R6D66` ORWO Photolab proper (~12k, intl) + `0R6D51` shared reseller (~50k: Hofer/Rossmann/Aldi/Monoeuvre/Sendmoments/Bestecanvas/MeinFoto/Lidl/MyPoster/…). Tender scope (principal-confirmed) = the whole Wolfen book / both accounts. **Same `production_site='Wolfen'` key applies to DHL (Phase 2).**
+
+**Validated cost shape (silver, freight>0, ex tax/duty) → `repricing_base/sql/02_ups_tracking_base_silver.sql`:** AT €6.08 (1.2kg, TB Standard) · GB €8.98 (Economy DDP) · DE €5.86 (8.6kg, Dom. Standard) · FR €5.81 · CH €13.80 (WW Standard) · US €14.03. Fuel ≈18% of freight throughout.
+
+---
+
 
 ## Where we are
 Tender kickoff done (S275). **Session 6fbdcee1:** wrote `roadmap.md` (5-phase plan) + built **Phase 1 UPS tracking-grain repricing base** end-to-end, verified live. Standalone home `NFE/projects/7_ORWO_tender_2026/`; new `repricing_base/` (sql/01 + findings.md). Key reframe holds: **base = weight x zone (no dims); reprice at TRACKING grain.**

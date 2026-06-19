@@ -56,6 +56,14 @@ The agent works through each item below in order. **Propose, never silently dest
 
 Switchboard-only — not architecturally enforced; a missing marker just means no chip.
 
+**Floor-unlock — closing drafts to `confirmed/` in-pass ([[D-036_guthix-floor-unlock-in-bankstanding|D-036]]).** By default the `confirmed/` floor is in force even for Guthix: he *proposes* identity promotions and they land by the principal's own `git mv` (the historical flow, and still the default). When the principal **explicitly authorizes closing drafts to `confirmed/` during this pass** ("go ahead, promote these" / "unlock the floor"), Guthix may execute the approved promotions directly — but only after writing the **floor-unlock marker**:
+
+- **Write** `.claude/intent/<sid8>.floor-unlock` at the brain root (`<sid8>` = first 8 chars of `CLAUDE_CODE_SESSION_ID`), content = a one-line grant record (timestamp + what was authorized). `block-confirmed-writes.py` then honors Guthix's `confirmed/` writes **for this session only**, and **only while the `.mode` marker reads `bankstanding` or `alching`** (so Phase 0's per-player examine promotions are covered by the same grant). Every honored write is logged `bypass-guthix-authorized`.
+- **Discipline — the marker IS the permission record.** Write it *only* on explicit authorization, never pre-emptively or "to be ready." Absent an explicit grant, the floor holds and you default to propose-and-let-the-principal-`mv`. The hook can't read your intent — the marker is your attestation that the principal said go, so do not forge it.
+- **Scope: `confirmed/` writes only.** Deletes are **not** covered (`block-deletes.py` stays braindead-only) — bankstanding/alching archive, never delete, so Guthix never needs a delete.
+- **Gnome note.** A Phase-0 gnome still *cannot* write `confirmed/` (its own boundary hook); it recommends. Under an active unlock, **Guthix executes the gnome's approved examine promotions himself** in-pass, instead of routing every `git mv` to the principal.
+- **Clear at close.** Empty or remove the marker at ritual/session close, alongside clearing the `.mode` marker. A stale marker only affects its own `<sid8>`, but clear it so the grant doesn't outlive the pass.
+
 ### 0. Alch each changed player first
 
 Before bankstanding's own work begins, walk the player roster. For each player, compare the most recent change in their namespace against `players/<name>/last-alched.md`.

@@ -14,6 +14,8 @@ The **hook-enforced floor remains in force for Guthix even when authorized**: no
 
 This is deliberate: it keeps the architectural guarantee intact and needs **no hook change**. Guthix gains discipline-level authority to execute on authorization; he does not gain a floor bypass.
 
+**Amended by [[D-036_guthix-floor-unlock-in-bankstanding|D-036]] (2026-06-19).** The floor-bypass withheld here was later granted in **one scoped form**: during **bankstanding/alching**, an explicit per-session **floor-unlock marker** lets Guthix write `confirmed/` directly (a hook change — the marker is the machine-readable authorization signal this decision noted a hook couldn't read). Deletes stay `braindead`-only; outside bankstanding/alching the `confirmed/` floor still binds him exactly as below.
+
 ## Why
 
 The propose-then-land detour is overhead when the principal is sitting in the session authorizing the change live — the exact reasoning behind [[D-032_braindead_full_access|D-032]]'s Braindead grant. The recurring friction (*"why can't you, we already discussed this"*) came from the docs stating propose-only without the authorization carve-out, so the agent re-derived a false hard limit every session. Writing the carve-out down is the durable fix.

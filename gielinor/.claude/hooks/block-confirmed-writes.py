@@ -31,6 +31,45 @@ except Exception:
 
 BRAIN_ROOT = Path(__file__).resolve().parent.parent.parent
 
+# Intent sidecars scatter across two dirs (brain-root + gielinor), freshest by
+# mtime wins -- same convention _actor.py / status-sidecar.py use.
+_INTENT_DIRS = (BRAIN_ROOT / ".claude" / "intent",
+                BRAIN_ROOT / "gielinor" / ".claude" / "intent")
+
+
+def read_mode(sid8: str) -> str:
+    """Current ritual mode from the `<sid8>.mode` sidecar (freshest across both
+    intent dirs). '' when unset."""
+    if not sid8:
+        return ""
+    best, best_mt = "", -1.0
+    for d in _INTENT_DIRS:
+        f = d / f"{sid8}.mode"
+        try:
+            mt = f.stat().st_mtime
+            val = f.read_text(encoding="utf-8").strip().lower()
+        except OSError:
+            continue
+        if val and mt > best_mt:
+            best, best_mt = val, mt
+    return best
+
+
+def floor_unlocked(sid8: str) -> bool:
+    """True iff a non-empty `<sid8>.floor-unlock` marker exists -- the principal's
+    explicit, session-scoped grant for Guthix to write confirmed/ during
+    bankstanding/alching (D-036). The marker IS the permission record; absent it,
+    the floor holds. Deletes are NOT covered (block-deletes.py stays braindead-only)."""
+    if not sid8:
+        return False
+    for d in _INTENT_DIRS:
+        try:
+            if (d / f"{sid8}.floor-unlock").read_text(encoding="utf-8").strip():
+                return True
+        except OSError:
+            continue
+    return False
+
 
 def is_in_brain(p: Path) -> bool:
     try:
@@ -61,12 +100,22 @@ def main() -> None:
         sys.exit(0)
 
     sid8 = (payload.get("session_id") or "")[:8]
-    if resolve_actor(sid8) == "braindead":
+    actor = resolve_actor(sid8)
+    if actor == "braindead":
         log_event("block-confirmed", "bypass-braindead", sid8=sid8, detail=str(p))
         sys.exit(0)  # construction crew: unrestricted (principal-authorized)
 
     parts_lower = [part.lower() for part in p.parts]
     if "confirmed" in parts_lower:
+        # D-036: Guthix floor-unlock. Three independent AND-gates -- the principal's
+        # explicit, session-scoped grant for closing drafts to confirmed/ during a
+        # bankstanding (or its Phase-0 alching). Drop any one and the floor holds.
+        # Deletes are NOT covered (block-deletes.py stays braindead-only).
+        if (actor == "guthix"
+                and read_mode(sid8) in ("bankstanding", "alching")
+                and floor_unlocked(sid8)):
+            log_event("block-confirmed", "bypass-guthix-authorized", sid8=sid8, detail=str(p))
+            sys.exit(0)
         log_event("block-confirmed", "block", sid8=(payload.get("session_id") or "")[:8], path_class="confirmed", detail=str(p))
         print(
             f"BLOCKED: writes to confirmed/ paths are user-only.\n"

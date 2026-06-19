@@ -110,8 +110,14 @@
 - file: lorebook/confirmed/D-034_guthix_executes_on_explicit_authorization.md
 - carried-by: cue (this index)
 - patterns: why can't you, why cant you, carry it out, carry this out, carry that out, you should be able
-- rule: Guthix's "proposes-only" rule governs UNILATERAL action; on explicit, specific principal authorization ("do it — this change, now") Guthix executes directly against the discipline-gated surfaces (globals, per-player layers, rulebook prose). The hook floor still binds him (no confirmed/ writes, no deletes — that routes through Braindead or the principal). Don't re-derive propose-only as a hard limit; that exact friction is why [[D-034_guthix_executes_on_explicit_authorization|D-034]] exists.
+- rule: Guthix's "proposes-only" rule governs UNILATERAL action; on explicit, specific principal authorization ("do it — this change, now") Guthix executes directly against the discipline-gated surfaces (globals, per-player layers, rulebook prose). The hook floor still binds him (no confirmed/ writes — except a bankstanding/alching floor-unlock per [[D-036_guthix-floor-unlock-in-bankstanding|D-036]] — and no deletes, which route through Braindead or the principal). Don't re-derive propose-only as a hard limit; that exact friction is why [[D-034_guthix_executes_on_explicit_authorization|D-034]] exists.
 
 ## [[D-035_retire-memory-lessons-on-graduation|D-035]] — Retire a warm MEMORY line when its lesson graduates to an always-on rule
 - file: lorebook/confirmed/D-035_retire-memory-lessons-on-graduation.md
 - carried-by: ritual (bankstanding step 8 + alching — retire-on-graduation) + detector (lesson-store-check.py CAP/DRIFT flags) — no topic cue (fires inside alching/bankstanding, which read the ritual at entry)
+
+## [[D-036_guthix-floor-unlock-in-bankstanding|D-036]] — Guthix floor-unlock: confirmed/ writes during bankstanding under a per-session grant
+- file: lorebook/confirmed/D-036_guthix-floor-unlock-in-bankstanding.md
+- carried-by: cue (this index) + hook (block-confirmed-writes.py second bypass) + ritual (bankstanding.md floor-unlock lifecycle)
+- patterns: close everything, floor unlock, promote to confirmed, write to confirmed, during bankstanding, why cant guthix, why can't guthix
+- rule: During bankstanding/alching, Guthix may write confirmed/ directly when the principal explicitly authorizes it — write a session-scoped .claude/intent/<sid8>.floor-unlock marker (the permission record; write ONLY on explicit grant, clear at close). The hook honors actor=guthix + mode∈{bankstanding,alching} + marker (logged bypass-guthix-authorized). confirmed/ WRITES only — deletes stay braindead-only. Outside bankstanding/alching the floor holds.

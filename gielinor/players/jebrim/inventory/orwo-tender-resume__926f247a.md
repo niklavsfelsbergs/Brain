@@ -1,11 +1,32 @@
 ---
 quest: S281_926f247a_orwo-carrier-engines-refactor-gls-maersk
 sid8: 926f247a
-ts: 2026-06-19 (session 926f247a: carrier_engines refactor DONE + re-gated to the cent; GLS + Maersk carrier-switch BUILT; 4-carrier set COMPLETE; NFE + brain committed)
-open_dep: none — tender modeling complete. ORWO offer set DONE at 4 carriers (UPS✓ DHL✓ GLS✓ Maersk✓). VERDICT (carrier_engines/COMPARISON.md): GLS = primary (≈−€509k/yr full-cost, wins DE-domestic bulk + most lanes); Maersk = GB/cross-border specialist; both incumbent UPS/DHL offers reprice flat (GRI-avoided only). Remaining = DEFERRED refinements (US/ROW-zone modeling; level Maersk Surcharges sheet for full-cost; seasonal annualization; confirm Maersk GB clearance) + present GLS-primary recommendation to stakeholders. Parent S275 stays in-progress (umbrella). Prior-session detail (UPS spine / DHL Phase-2 / DHL-offer-flat) retained in the body blocks below.
+ts: 2026-06-19 (session 926f247a, 2nd close: + dims-file analysis. Refactor DONE+re-gated; 4-carrier set COMPLETE; GLS wins ≈−€509k/yr; dims tail sized; NFE+brain committed)
+open_dep: none blocking — tender modeling COMPLETE + verdict stands. ORWO offer set DONE at 4 carriers (UPS✓ DHL✓ GLS✓ Maersk✓). VERDICT (carrier_engines/COMPARISON.md): GLS = primary (≈−€509k/yr full-cost, wins DE-domestic bulk + most lanes); Maersk = GB/cross-border specialist; both incumbent UPS/DHL offers reprice flat (GRI-avoided). DIMS now in hand (ORWO Packages Real Dimensions.xlsx) — bulky/oversize tail sized at DHL 5.2% of parcels / 12.5% of cost (€307k Sperrgut), UPS negligible; can't flip the verdict (refines ~9% of book). TOP deferred = reprice that bulky tail at volumetric weight + oversize for GLS/Maersk. See "MONDAY HANDOVER" block below.
 ---
 
 # ORWO Tender 2026 - resume
+
+## ★ MONDAY HANDOVER — "where do we stand" (read this first)
+
+**The ORWO carrier tender modeling is DONE. Verdict: switch to GLS as primary carrier — ≈ −€509k/yr vs the current UPS+DHL book.**
+
+**The one-paragraph answer.** We repriced ORWO's whole parcel book (606k parcels, ~€2.25M H1 freight) against all four 2026 offers. The two incumbents (UPS, DHL) came back **flat** — their offers just re-quote today's rates, so they only buy GRI-avoidance. The two competitors are where the money is: **GLS beats the current book by ≈€509k/yr** because it's cheaper on the DE-domestic bulk (548k parcels, −€238k/yr — its Business Parcel rates undercut DHL Kleinpaket/Paket) *and* most cross-border lanes; **Maersk** is a strong **GB + cross-border specialist** (wins GB and AT/FR/ES/IT) but *loses* DE domestic (it routes German parcels back through DHL at a worse rate), so it's the #2 single carrier. Pragmatic recommendation: **GLS primary + Maersk for GB.** GB confirmed on the IC18 clearance scheme.
+
+**The numbers (full-cost, annual, vs current):**
+- All-GLS: **≈ −€509k/yr** (−€413k non-GB + −€96k GB). ← the headline
+- All-Maersk: +€160k/yr (worse — loses the domestic bulk).
+- Per-lane best (GLS+Maersk split): ≈ −€741k/yr freight-only ceiling.
+
+**Dims question (resolved this session).** You gave me `ORWO Packages Real Dimensions.xlsx` (L×W×H per packaging type). It confirmed: ~30 of 46 types are flat/small (weight-based pricing correct); ~16 are bulky canvas/cartons (volumetric weight 2–27 kg, oversize-triggering). **Sized the realized tail: DHL bulky = 5.2% of parcels but 12.5% of cost (€307k Sperrgut); UPS oversize negligible.** This is ~9% of the book — it can refine the number by tens of k but **cannot flip the GLS-wins verdict** (the freight comparison is clean — both sides exclude oversize). The dims file lets us, if wanted, reprice that bulky tail at volumetric weight + each carrier's oversize tier.
+
+**What's done vs open.**
+- DONE: 4-carrier reprice engines (carrier_engines/{ups,dhl_paket,gls,maersk}/, both own-cost gates verified to the cent), COMPARISON.md, dims-tail sizing. NFE committed `1bf0eec`; brain `6ab41ca`. Nothing pushed.
+- OPEN (none blocking — all refinements): (1) reprice the bulky tail at volumetric weight + oversize for GLS/Maersk (needs parcel→packaging-type join, `usedpackaging`, ~27% captured for DHL2 — the top item); (2) US via the GLS/Maersk ROW zone sheets; (3) seasonal annualization (replace the rough H1×2); (4) confirm Maersk's GB clearance treatment; (5) present the GLS-primary recommendation to stakeholders.
+
+**Where the artifacts live.** `NFE/projects/7_ORWO_tender_2026/` — `repricing_base/carrier_engines/COMPARISON.md` (the verdict), per-carrier `README.md`, `ORWO Packages Real Dimensions.xlsx` (the new dims input). Re-run any carrier: `cd carrier_engines/<carrier> && python build_rate_tables.py && python {run_gate,switch_compare}.py`.
+
+---
 
 ## ▶▶▶ STATUS (session 2026-06-19, post-S281-cont) — REFACTOR + GLS DONE
 **1. REFACTOR DONE + RE-GATED (verify-the-thing passed).** Flat `repricing_base/engine/` → `repricing_base/carrier_engines/{ups,dhl_paket}/` (per-carrier folders mirroring EU-tender; `_dhl` filename suffix dropped — folder disambiguates; raw vendor cards stayed in `offers/<carrier>/`). git mv preserved history (parquets are gitignored → plain mv). Paths surgically bumped (NFE_ROOT/CONTRACTS parents[3]→[4]; calculate reads `rate_tables/`; offer scripts → `<carrier>/offer/`, re-anchored to raw cards). **BOTH gates reproduce to the cent: UPS base 0.971 / total 0.942; DHL freight 0.9992 / surcharge 0.9995 / sperrgut €307k excluded. Both offer compares unchanged: UPS H1 €16,973 (CH −€11.2k, DE −€5.7k); DHL flat (−€317), GB intl €50.6k lever intact.**

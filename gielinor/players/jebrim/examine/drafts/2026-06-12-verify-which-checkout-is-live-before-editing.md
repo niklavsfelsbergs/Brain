@@ -1,7 +1,0 @@
-# Verify which checkout is the live/built tree before editing
-
-**Observed:** [[S227_6f393689_scm-breakdown-cost-basis-fix|S227]] (sid8 6f393689), 2026-06-12. The SCM app exists in two local checkouts — `bi-analytics/` (branch `scm-alerts-entity-split`) and `bi-analytics-main/` (branch `main`). I made all four Breakdown-fix edits in `bi-analytics/` because a vocab note said the cutover worktree lived there. Niklavs ran `npm run build` and the bucket filter was still present / the toggle inert — because he builds and deploys from `bi-analytics-main/`. I had to re-port every edit to the other tree.
-
-**Lesson:** When a repo has multiple local checkouts/worktrees on different branches, the *live* one is not a guess — confirm it before editing. Cheap checks: which tree's `.next`/build artifact has today's mtime; which path the user runs/deploys; what the keepsake/memory setup note says. The note **"SCM dashboard local setup: run from bi-analytics-main"** (`reference_scm_dashboard_local_setup`) was already on file and was the tell — I picked the tree from a stale architecture note instead of the operational one.
-
-**How to apply:** Before the first edit in a repo I haven't written to this session, verify the target tree is the one the user builds from — branch + build-artifact freshness + the setup note. A correct edit in the wrong tree is invisible to the user's build and reads as "your change did nothing." Reinforces [[feedback_check_own_memory_before_working_repo]] and the verify-the-thing reflex.

@@ -1,7 +1,0 @@
-# Cite a scope/fact claim inline the first time, not on challenge
-
-**Anchor ([[S223_6ae2971e_guell-reply-review-doc-sync|S223]], 6ae2971e).** In the Güll handover prompt I wrote "Güll is AT/CH-only" as a flat assertion. Niklavs probed — "Gull is AT/ch only?" — and only then did I open `carriers/guell/constants.py` and ground it (`# Country scope (AT/CH lanes only; LI piggy-backs on CH`). The claim held, but I'd stated it before showing the source.
-
-**Pattern.** The claim was *derivable* from docs I'd already read this session (the offer title, the SESSION_HANDOFF, the constants), so it wasn't memory-guessing — but presenting it without the inline cite made it indistinguishable from a guess, which is exactly what invited the probe. A load-bearing scope/fact claim in a handover or recommendation should carry its one-token cite the first time (`per constants.py:14`), not wait for a challenge to earn it.
-
-**How to apply.** When a recommendation or handover rests on a specific scope/limit/identity claim, attach the file+line (or the offer/source) at the point of assertion. Cheap, and it pre-empts the "is that grounded?" round. Sibling of the always-on grounding reflex and [[check-the-record-before-defending-a-design-story]] — the difference here is the claim was *right*; the gap was showing the work. Jebrim's authority is repo-grounded (persona.md) — so the cite isn't decoration, it's the register.

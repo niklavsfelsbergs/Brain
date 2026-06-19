@@ -1,9 +1,0 @@
-# Verify disk state after a bulk file op — don't assume the move did what you intended
-
-**Observation ([[S225_9f716f1f_guell-2.0.0-build|S225]], 2026-06-12, sid8 9f716f1f).** Mid-build I wanted a clean v1-vs-v2 engine comparison, so I restored guell-1.0.0 from git with `git archive HEAD <path> | tar -x --strip-components=5 -C .` run from `carriers/`, then `mv guell guell_v1`. I assumed this would give me a sibling `guell_v1` package and leave my working `guell` (2.0.0) untouched. It did the opposite: the tar extracted *into* `carriers/guell/`, overwriting my 2.0.0 base files with HEAD's 1.0.0 (tar overwrites but can't delete, so only my 4 new-only modules survived), and the `mv` then renamed the clobbered hybrid away — wiping the live source. I only caught it when a later `from carriers.guell import` failed with ModuleNotFoundError.
-
-**The tell I ignored:** I ran a destructive bulk op (extract-over + rename) against a live working directory and proceeded straight to the next command *without checking what was actually on disk*. The recovery worked only because every 2.0.0 file's content was still in the conversation.
-
-**The pattern.** This is the [[2026-06-01-verify-the-thing-dont-trust-the-wiring]] reflex applied to file operations, not just data/enforcement. After any bulk `tar -x`, `mv`, `cp -r`, `rsync`, or `git mv` over an existing tree, the next action is a `ls`/`grep`/version-check of the live target — confirm the op produced the state I intended before building on it. Assuming the move "obviously" did X is the same trap as assuming a guard fires or a layer is empty.
-
-**Apply.** Restoring an old version for a comparison → extract to `/tmp` first, then `cp` to a fresh sibling name; never extract a git path into/over the live package dir. (Saved to cross-conversation memory as `restore-old-version-to-tmp-not-live-dir`.) More broadly: a bulk file op is an unverified hypothesis about disk state until I look.

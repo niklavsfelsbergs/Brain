@@ -9,6 +9,8 @@
 ## The bottom line
 Of ~21 carriers with raw invoice sources: **~10 carry real measured dimensions** (L×W×H or volumetric), **5 carry a dimension-DERIVED oversize/handling billing signal only** (no measurement), and **3 (the DHL feeds) give nothing usable.** "Provides dims" splits hard on **currency** (EUR vs GBP) and **recency** (several rich sources are stale/dead feeds).
 
+> **Independence correction (S173 — [[2026-06-09-carrier-measured-vs-passthrough-dims]]).** This map answers *"which carriers carry dim data."* The companion S173 note answers the harder *"is that data an independent carrier measurement, or a reprint of OUR declared dims"* — and **demotes three entries in the tables below**: **Maersk** reprints our declared L/W/H 100% verbatim (a passthrough, zero audit value — *not* "real measured"); **DB Schenker** and **Direct Link** carry volume scalars only (inconclusive — no axis to discriminate, not confirmed measurements); and **Yodel** is only **6.9% populated** (not "full coverage"). A populated column ≠ an independent measurement — read the Tier-1/Tier-2 rows through that lens.
+
 ## Two classes of signal
 - **(a) raw measured dimensions** — L/W/H or volume actually on the invoice line.
 - **(b) dimension-DERIVED billing signal** — oversize / large-package / additional-handling / over-maximum surcharge codes, or a billable-vs-actual weight gap. The carrier *assessed* size but didn't expose the measurement.

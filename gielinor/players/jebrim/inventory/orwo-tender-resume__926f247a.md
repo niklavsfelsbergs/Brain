@@ -1,0 +1,108 @@
+---
+quest: S281_926f247a_orwo-carrier-engines-refactor-gls-maersk
+sid8: 926f247a
+ts: 2026-06-19 (session 926f247a: carrier_engines refactor DONE + re-gated to the cent; GLS + Maersk carrier-switch BUILT; 4-carrier set COMPLETE; NFE + brain committed)
+open_dep: none — tender modeling complete. ORWO offer set DONE at 4 carriers (UPS✓ DHL✓ GLS✓ Maersk✓). VERDICT (carrier_engines/COMPARISON.md): GLS = primary (≈−€509k/yr full-cost, wins DE-domestic bulk + most lanes); Maersk = GB/cross-border specialist; both incumbent UPS/DHL offers reprice flat (GRI-avoided only). Remaining = DEFERRED refinements (US/ROW-zone modeling; level Maersk Surcharges sheet for full-cost; seasonal annualization; confirm Maersk GB clearance) + present GLS-primary recommendation to stakeholders. Parent S275 stays in-progress (umbrella). Prior-session detail (UPS spine / DHL Phase-2 / DHL-offer-flat) retained in the body blocks below.
+---
+
+# ORWO Tender 2026 - resume
+
+## ▶▶▶ STATUS (session 2026-06-19, post-S281-cont) — REFACTOR + GLS DONE
+**1. REFACTOR DONE + RE-GATED (verify-the-thing passed).** Flat `repricing_base/engine/` → `repricing_base/carrier_engines/{ups,dhl_paket}/` (per-carrier folders mirroring EU-tender; `_dhl` filename suffix dropped — folder disambiguates; raw vendor cards stayed in `offers/<carrier>/`). git mv preserved history (parquets are gitignored → plain mv). Paths surgically bumped (NFE_ROOT/CONTRACTS parents[3]→[4]; calculate reads `rate_tables/`; offer scripts → `<carrier>/offer/`, re-anchored to raw cards). **BOTH gates reproduce to the cent: UPS base 0.971 / total 0.942; DHL freight 0.9992 / surcharge 0.9995 / sperrgut €307k excluded. Both offer compares unchanged: UPS H1 €16,973 (CH −€11.2k, DE −€5.7k); DHL flat (−€317), GB intl €50.6k lever intact.**
+**2. GLS CARRIER-SWITCH DONE — BIG FINDING.** `carrier_engines/gls/` (constants/build_rate_tables/calculate/switch_compare + README). NO own-baseline (ORWO has no GLS invoices) — applied GLS card to existing UPS+DHL parcels. **GLS materially cheaper: full-cost non-GB −€206k H1 / −€413k/yr (−9.1%); dominant driver = DHL DE domestic 548k parcels −€238k/yr (GLS Business Parcel beats DHL Paket/Kleinpaket).** US (1,855) + >40kg not GLS-servable (stay incumbent). **GB lever CONFIRMED IC18 (Niklavs 2026-06-19): €3/parcel → GLS wins GB ≈−€96k/yr. COMBINED GLS VERDICT ≈ −€509k/yr** (−€413k non-GB + −€96k GB). [scenarios were: standard €25 → incumbent wins; bulk/€0 → −€191k/yr] Caveats: modeled (no GLS actuals to gate); euro toll modeled 0; 540k domestic switch is an OPS call separate from rate; H1×2 rough.
+**3. MAERSK DONE — 4-carrier set COMPLETE (UPS✓ DHL✓ GLS✓ Maersk✓).** `carrier_engines/maersk/` built (broker card, Home-Delivery method, cheapest local carrier per country/band; constants/build/calculate/switch_compare + README). Maersk SPLITS by lane: LOSES DE domestic (+€206k H1 — Maersk DE @1kg €3.45 > own DHL Kleinpaket €2.79) but WINS GB (−€96k H1, Evri/Yodel door €3.45 vs current €8-21) + most cross-border (AT/FR/ES/IT −20-45%). US (ROW sheet) + >30kg not modeled.
+**SYNTHESIS (`carrier_engines/COMPARISON.md`): current book €2.254M H1. All-GLS −€317k H1 freight-only / ≈−€509k/yr FULL-COST (the honest headline; −€413k non-GB + −€96k GB IC18). All-Maersk +€80k (worse — loses domestic). Per-lane BEST ≈−€370k H1 / −€741k/yr freight-only ceiling. VERDICT: GLS = clear primary (wins domestic bulk + most lanes); Maersk = GB/cross-border specialist. Pragmatic shape = GLS primary + Maersk for GB. Both incumbent UPS/DHL offers reprice FLAT (GRI-avoided only) — GLS/Maersk are the real money.**
+**4. NOW (task 7): docs/resume sync + COMMIT (ASK FIRST — not yet committed). Old narrative docs still point at `engine/`: roadmap.md, _scope.md, coverage_and_invoice_profile.md, contracts_review/ups.md, the moved offer_summary.md files. Update path refs engine/ → carrier_engines/<carrier>/. Then commit NFE (explicit pathspecs, standing NFE auth but ASK per principal rule; never push). Brain commit separate (resume + comms + S275 quest turn).**
+**5. DEFERRED refinements: US via Maersk/GLS ROW zone sheets; level Maersk Surcharges sheet (198 rows) for full-cost; seasonal annualization; confirm each competitor's GB customs-clearance treatment; bank-note harvest (orwo carrier offers) at next alching.**
+
+---
+
+## ▶▶ (superseded — kept for reference) NEXT SESSION — START HERE (decided S281-cont/43459bc4, 2026-06-19)
+**1. REFACTOR FIRST (decided, option 1): restructure the flat `repricing_base/engine/` into per-carrier folders mirroring EU-tender's `2_EU_tender_2026/2_analysis/carrier_engines/`.** The current `engine/` is a flat junk-drawer (UPS vs DHL distinguished only by a `_dhl` filename suffix: constants/constants_dhl, calculate/calculate_dhl, all rates_*.parquet piled together; offer scripts off in `offers/UPS,DHL/` reaching back in). Adding GLS+Maersk that way = 6 file-types × 4 carriers in one dir. Target:
+```
+repricing_base/carrier_engines/
+  ups/        constants.py calculate.py build_rate_tables.py run_gate.py rate_tables/*.parquet reprice_own.parquet offer/ README.md
+  dhl_paket/  (same shape)  reprice_dhl_own.parquet  offer/
+  gls/  maersk/   (new, built after the move)
+```
+Raw vendor cards STAY in `offers/<carrier>/` (document store, like EU-tender `1_offers/`); only CODE moves into the per-carrier folder. **Option 1 = per-carrier folders, NO forced `_base/`** (EU-tender has a shared `_base/` pipeline/surcharge/validate, but UPS zone-priced vs DHL weight-break are too dissimilar to factor early — add `_base/` only if real shared logic emerges). **CRITICAL: re-run BOTH gates after the move (UPS 0.971, DHL 0.9992) to prove numbers unchanged before building anything new** (verify-the-thing; don't assume the move was clean).
+**2. THEN build `gls/` + `maersk/`.** ⚠ These are NEW carriers — ORWO has NO GLS/Maersk invoice book (only UPS+DHL silver spines), so there's NO own-baseline to build/gate. It's a CARRIER-SWITCH reprice: apply the GLS/Maersk offer card to the EXISTING UPS+DHL parcels (`reprice_own.parquet` + `reprice_dhl_own.parquet`) and ask "would moving these shipments to GLS/Maersk beat current cost?" Point them at the **GB Non-EU stream first** (€50.6k/yr, 2,339 parcels @ €21.63 — the one fat lever; flat-DHL doesn't touch it).
+**3. ORWO offer set is COMPLETE at 4 carriers:** UPS ✓ (repriced), DHL ✓ (repriced, flat), **GLS + Maersk = the only two left.** AT-Post/Güll/DHL-Express/FedEx/Hermes/DPD-PL exist ONLY in `1_offers/picanova/` (the PCS tender, different entity) — NOT ORWO. Don't chase ORWO offers that were never received.
+
+
+## ▶ DHL PHASE 2 — STEP 1 PROFILING DONE (session this-one, 2026-06-19) — engine reshaped
+**`enterprise_silver.dhl_orwo_invoices`: 1.73M rows / 571,098 trks, Sep 2025–Jun 2026, 38 credit rows (negligible). 98% DE** (559k trks, €2.86M; AT 4.5k, GB 2.3k, FR 1.7k, NL 1.4k, CH 0.7k tails). DHL is the **domestic spine** — inverse of UPS's cross-border book. Charge-line grain, **3.0 lines/trk** (1=freight + 2 fee lines typical).
+**FREIGHT LINE IS IDENTIFIED BY `wgt>0` — exactly ONE per tracking** (570,893 wgt-lines ≈ 571,098 trks). That line carries `prod` (DHL product code), `wgt`, `total` (= gate target). The no-wgt lines are per-parcel fees (toll/CO2/peak/routing, €0.03–0.59).
+**⚠ SUPERSEDES the resume's "DHL Paket domestic has NO invoice weight → PTS backfill" worry.** That was the UPS-Phase-1 trap repeated in memory: the "0% weight" codes (2680/2509/2846) are the FEE lines, NOT the freight line. **The freight line is 100% weight-filled** (`100510050` 365k trks @1.58kg/€3.98 = 51% of DE euros; `275000002` 137k @0.68kg/€3.31; `100510100` 31k @6.9kg/€5.88). → **No PTS backfill needed for the bulk; DHL engine mirrors UPS directly** (pull wgt>0 freight line per tracking, weight + dest_country + product → card).
+**DE euro reconcile (€2.856M ✓):** freight (wgt>0) ≈ €2.25M + no-wgt lines ≈ €0.6M, of which **`1610` = €418k @ €14.16/line, 29.5k trks, NO weight — MATERIAL (15% of DE euros), prod code UNDECODED.** Must identify before gating (bulky? returns? a separate product).
+**PROD-CODE DECODE DONE (authoritative)** via `enterprise_silver.shipping_charge_bucket_mapping` (carrier_name='dhl', `prod`→`charge_description_english`+`charge_bucket` — the dim the MART uses; Niklavs pointed me to it). 4,845 DHL codes. The ORWO book:
+- **FREIGHT (base_rate, reprice these; weight-band-named → maps to card tiers):** `100510050` DHL PAKET bis 5kg (365k trks, 1.58kg, €3.98 — dominant, 51% DE €) · `100510100` PAKET bis 10kg (31k, 6.9kg, €5.88) · `100510315` PAKET bis 31,5kg (6.1k, 14.6kg, €12.54) · `275000002` DHL Kleinpaket (137k, 0.68kg, €3.31) · `112000001` PAKET International Premium (8.3k, 0.84kg, €12.20).
+- **COMPANION SURCHARGES (fixed per-parcel):** `2509` Maut/CO2 (fuel_surcharge) · `2680`/`2846` Energiezuschlag · `2675`/`2845`/`2884`/`2886` Peak / Peak-in-Peak (peak_demand).
+- **`1610` = `Sperrgut` (Bulky goods) → oversize_overweight, €418k/15% of DE €. NIKLAVS: DON'T PREDICT IT — unexpected by nature** (the €20 Sperrgut). Goes to the residual, parallel to UPS's unmodeled `surcharge_other`. NOT in the modeled base.
+- **RETURNS (separate):** `101510315` RETOURE bis 31,5kg · `185110316` RETOURE Online · `232000001` Rücksendeentgelt.
+**Note:** silver freight line is `wgt>0` and the prod is weight-band-named, so weight is on the line AND the band is in the product name (belt+braces). DHL Warenpost/POST = separate stream (~0.6% invoiced, rate-card modeled).
+**DHL ENGINE BUILT + TRUST-GATED (this session, 0.9992 portfolio — tighter than UPS's 0.971).** `repricing_base/engine/{constants_dhl,build_dhl_rate_tables,calculate_dhl,run_dhl_gate}.py` + `README_DHL.md`. 547,486 eligible freight trackings.
+- **KEY: the product code IS the weight band** — DHL bills domestic Paket per band-product, so net `charge_amount` reproduces the card TO THE CENT by construction (bis-5kg €3.35, bis-10kg €4.95, bis-31,5kg €10.55, Kleinpaket €2.79 — all exact). No zone/discount puzzle (the UPS Phase-1 headache absent here). `total = charge_amount × 1.19` (German VAT); non-freight net = `total − vat`.
+- **Cost layers (net, freight-bearing trks):** forward freight €1.907M (card-modeled, 0.9992) + companion surcharge €143k (**NOW MODELED, 0.9995** — option (a) done) + **Sperrgut/bulky €307k = UNPREDICTED per Niklavs** (residual, like UPS surcharge_other). **modeled COST_TOTAL €2.050M vs invoiced €2.052M = 0.9992.**
+- **Surcharge model (`SURCHARGE_EXP` in constants_dhl):** per freight product, (ongoing, seasonal) net €/parcel. ongoing = Maut/CO2 €0.19 (64% inc; NOT on Kleinpaket) + Energy €0.03-0.04; seasonal = Peak €0.19 + Peak-in-Peak €0.50 (Nov-Dec, recurs each peak for full-year basis). Per-parcel: PAKET bis5 €0.292 / bis10 €0.325 / bis31.5 €0.386 / Kleinpaket €0.173 / Intl €0. Calibrated to invoiced.
+- **Intl Premium (112000001, 8.3k trks):** deeply negotiated — published zone card (€13 base) is NOT what ORWO pays (AT €5.22). Country rates invoice-DERIVED (`rates_dhl_intl.parquet`, median net), ratio 0.986; domestic gate is the real validation, intl descriptive. Per-kg slope=0 (sub-1kg stream).
+**Status: ORWO baseline now covers UPS (0.971) + DHL (0.9992) = the two big carriers. Both engines validated, EU-tender pattern.**
+**Next concrete (deferred, pick one):** (a) model the DHL surcharge layer (€143k, predictable) for completeness; (b) reprice a NEW DHL offer / competitor when it lands (same machinery — point new rates_*.parquet at reprice_dhl_own.parquet); (c) POST/Warenpost stream (~0.6% invoiced, rate-card modeled, separate); (d) annualize via seasonal ratios; (e) the deferred UPS items (AT ask, do-nothing+GRI basis). Decode scripts: `profile_dhl_silver{,2}.py`.
+
+
+
+## ⚠ SPINE CORRECTION (session e5be6eb5, 2026-06-19) — supersedes the "DE 91.8%" facts below
+**ORWO = `production_site='Wolfen'`, NOT `source_system='ORWO'`.** The old filter caught only a DE-heavy 34k sub-slice (the entire reason Phase-1 read "92% DE"). ORWO production lives at the Wolfen plant; the mart splits it across two source_systems — `ORWO` (34k) + `Picturator` (93k), both `production_site='Wolfen'` = ~126k UPS trks. PCS-PL (432k) stays the separate Picanova tender. The real book is **cross-border-first**: AT 41.4k > DE 33.1k > UK 21.4k > FR 12.2k > CH 5.2k > US 3.1k.
+
+**Cost basis = silver invoices (INVOICES ONLY, S279), and silver is the COMPLETE spine for the invoiced population** — it carries trackingnumber + receivercountry + `zone` (UPS zone #) + billedweight + per-line cost. 93.5% (58,085) of the 62,107 silver freight trks match mart-Wolfen, but the mart adds nothing silver lacks. Mart-Wolfen reserved for the non-invoiced hole (model-only).
+
+**ORWO is a white-label op:** ships for ~20 photo brands under 2 UPS accounts, both with ORWO 2026 rate cards — `0R6D66` ORWO Photolab proper (~12k, intl) + `0R6D51` shared reseller (~50k: Hofer/Rossmann/Aldi/Monoeuvre/Sendmoments/Bestecanvas/MeinFoto/Lidl/MyPoster/…). Tender scope (principal-confirmed) = the whole Wolfen book / both accounts. **Same `production_site='Wolfen'` key applies to DHL (Phase 2).**
+
+**Validated cost shape (silver, freight>0, ex tax/duty) → `repricing_base/sql/02_ups_tracking_base_silver.sql`:** AT €6.08 (1.2kg, TB Standard) · GB €8.98 (Economy DDP) · DE €5.86 (8.6kg, Dom. Standard) · FR €5.81 · CH €13.80 (WW Standard) · US €14.03. Fuel ≈18% of freight throughout.
+
+---
+
+
+## Where we are
+Tender kickoff done (S275). **Session 6fbdcee1:** wrote `roadmap.md` (5-phase plan) + built **Phase 1 UPS tracking-grain repricing base** end-to-end, verified live. Standalone home `NFE/projects/7_ORWO_tender_2026/`; new `repricing_base/` (sql/01 + findings.md). Key reframe holds: **base = weight x zone (no dims); reprice at TRACKING grain.**
+
+## Phase 1 verified facts (live 2026-06-19)
+- **Grain:** 128,805 UPS shipment rows -> 34,001 trackings (3.79:1). 5 dest countries: DE 91.8%, AT 5%, UK 2.7%, FR 0.5%, NO trace.
+- **Cost source = MART** `SUM(real_shipping_cost_eur WHERE cost_source='invoice')`/tracking == silver netamount (€7.16 vs 7.27) -> equal-split, **SUM correct** (MAX undercounts). 74.8% cov, full order period. **Silver ups_orwo_invoices spans invoice dates Jan-Jun 2026** (275k ISO rows, ~9-15k trk/mo); lower bound ~Jan -> Oct-Dec 2025 ORDERS absent + recent lag (that's the 44% order-month match, NOT an Apr cutoff — earlier "Jan-Apr" was wrong). Silver = valid actual + billedweight + zone on its window; mart preferred for full-period coverage.
+- **Weight:** COALESCE(billedweight_kg, parcelfinish.weight_grams/1000). pf superset 83.4%; billed (kg) subset 44%. Gateable (cost+weight) = 21,511 trk (63%).
+- **Service code != contract product:** UPSWWE ships DE/UK/AT (not US/CA) -> zone off DESTINATION COUNTRY. UPSWWE/DE (3,798, no weight) = own stream, flagged.
+- **MCP limit:** read-only conn blocks temp-table materialization (WITH CTEs + cross-schema CTE joins fail "transaction is read-only") -> use FROM-subquery joins. trackingnumber PII-guarded out of SELECT output.
+
+## THE PHASE-1 FINDING (RESOLVED — card validated)
+First gate looked alarming (mart base bucket €5.41 vs modeled €2.92-3.61, +50-85%). Traced to **silver charge lines** = closed it: actual forward freight (`Dom. Standard` line) matches the card to the cent by band — 3-5kg €3.26 vs card €3.26; 10+kg €5.77 vs €5.79; 5-10kg €4.14 (blend). **The card is CORRECT.** The "gap" was the mart `base_rate_eur` bucket: it sums across ~3.8 consolidated rows/tracking + bundles `Rückholservice`/service lines + RTS redistribution (S251) -> NOT the contract forward base, wrong gate target. NOT weight (billed≈actual, no dim uplift); gross-tariff hypothesis disproven by per-band match.
+**Decision: INVOICES ONLY** (Niklavs — most reliable). Cost basis = silver `ups_orwo_invoices` charge lines; mart real cost DROPPED (bundled/consolidated/RTS-redistributed). No-invoice parcels = model-only (card x weight).
+**No cheap-mail stream (self-corrected).** Earlier "big sub-gram ~€0.97 stream" was a query ARTIFACT — line-level `actualweight<=1` filter dropped the freight line, kept fuel+VAT companions. At tracking grain, genuinely-cheap (≤€1.50) = 49 trk = 0.4%, ~0% cost. DE UPS ORWO = 99.6% normal parcels avg ~6.5kg (68.6% are 3kg+). One population, one validated card. LESSON: band on per-tracking MAX weight, never a line-level weight filter.
+
+## Next concrete step
+**Rebuild the actual-base column from silver per-line forward freight** (`Dom. Standard`/`TB Standard`/`WW` + zone equivalents), not the mart base bucket = the correct reconcile + reprice target; model the light sub-3kg `Rückholservice` stream (~€0.97) separately. Then: extend zones/rates to AT/UK/FR (full matrices from xlsm), resolve UPSWWE/DE stream, then template the validated pipeline onto DHL (Phase 2).
+
+## Load-bearing facts (verified live 2026-06-19)
+- **Weight:** mart `weight_kg` is per-ORDER packaging weight (~0.1-0.5kg), MIS-GRAINED. ORWO consolidated ~4.79 shipment_ids/tracking. True parcel weight = `parcelfinish.weight` (per tracking, ~100% all carriers) ~= invoice `billedweight` (UPS 0.5kg banding + 13% dim weight). Reprice at TRACKING grain.
+- **Dims:** DHL2 Paket = real capture gap (~73% no packaging row; unfixable in warehouse). Other streams have dims via usedpackaging (wireable). DHL2 OK on weight alone (weight-tier priced + 94% invoiced).
+- **POST gap CLOSED:** DHL Warenpost Intl = Deutsche Post (rate card in hand).
+- **Contracts:** current 2026 cards UPS/DHL/AT-Post/Guell; GLS lapsed; AT-Post Factsheet + 2026 Guell card missing.
+
+## Next concrete step
+Build **tracking-grain ORWO repricing base** as an NFE topic/folder under `7_ORWO_tender_2026/`:
+1. One row per physical parcel (tracking), ORWO, with: carrier, dest country, weight = COALESCE(invoice billedweight, parcelfinish raw rounded to carrier band), service.
+2. Apply weight-tier rate cards (UPS + DHL first - solid cards + weights). DHL2 on weight alone.
+3. Roll up to the tender comparison (current vs alternative carriers).
+
+## Chase list
+- AT-Post Factsheet (volumetric divisor, rural surcharge) - Jens Mertens.
+- 2026 Guell rate card (contract has 2025 only).
+- GLS fresh 2026 quote (old lapsed, dims-friendly).
+- UPS monthly fuel index (35%-off-floating; not reconstructable from contract).
+
+## Parked (separate scoped pieces)
+- **bi-etl weight fix** = a per-parcel-grain weight-semantic redesign (NOT the superseded COALESCE in `bi_etl_fixes/01`). Implement ourselves, with SCM-impact check. After dims.
+- **sendmoments** scope (ships under ORWO DHL acct; may be invoice+offer only, not PTS).
+- **`orwo-tender` domain** - create the digest at next Jebrim alching. Routes: project state -> orwo-tender; mart weight-grain/consolidation/dims-capture -> shipping-mart (+bi-etl lineage); ORWO rate cards -> carrier-contracts.
+
+## Anchors
+NFE `projects/7_ORWO_tender_2026/` (all deliverables). Bank drafts (this session): `2026-06-19-orwo-tender-scope-and-cost-basis`, `2026-06-19-orwo-mart-weight-grain-and-consolidation`, `2026-06-19-orwo-carrier-contracts-2026`. Quest [[S275_abfcf511_orwo-tender-contracts-coverage-weight-grain]]. Prior ORWO: [[S266_e455d12d_orwo-box-grain-quota-estimator]].

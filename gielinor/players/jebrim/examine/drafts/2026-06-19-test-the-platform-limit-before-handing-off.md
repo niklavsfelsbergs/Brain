@@ -1,0 +1,7 @@
+# Test the platform limit before declaring it (and handing off)
+
+**Observed:** [[S274_a1f05d25_shipping-agent-teaching-pass|S274]] (a1f05d25). I tried `git push` for the shipping-agent repo, hit `fatal: could not read Username` (and a ~15s hang first), and concluded "I can't push from here — hand off to the principal via `!`." I repeated that conclusion twice. The principal pushed back: *"why cant you push? it should work."* Re-running the **same** push with the Bash sandbox disabled (`dangerouslyDisableSandbox: true`) authenticated via the Windows credential manager and succeeded immediately (4 commits, `939b073..cde5aa3`).
+
+**The miss:** I tested the failing command *inside the sandbox* three times and generalized "no creds available" into a platform limit — without testing the one variable that actually differed from a normal terminal: the sandbox itself. An auth failure in a restricted context is not proof the operation can't be done; it's a hypothesis about *where* it's being run.
+
+**Rule:** before declaring an operation impossible due to an assumed environment/platform limit — and especially before handing it to the principal — **test the limit by varying the thing you're assuming** (here: the sandbox). This is the existing "test the can't-verify claim" reflex, and it failed at exactly the handoff moment where it mattered. Durable form saved to memory `reference_git_push_needs_sandbox_disabled`.

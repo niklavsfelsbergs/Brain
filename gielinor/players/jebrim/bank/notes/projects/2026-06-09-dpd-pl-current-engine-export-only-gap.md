@@ -2,6 +2,8 @@
 
 **Context.** EU-tender routing report (`routing_2026q1`), DPD-PL card shows three product buckets: Dpd Direct Home 80,583 · Dpd Mix Home 6,515 · **carrier-only 1,887** (of 88,985 total).
 
+> **Scenario lens — state it; these counts are scenario-specific.** The 1,887 is the **base routing** scenario (`2_analysis/routing/routing_assignment.parquet`, all candidate carriers in). The **no-Hermes** scenario (`routing/no_hermes/`) reports **1,943** for the same slice — see [[2026-06-12-dpd-pl-contract-export-only]]. *Not a contradiction*: the PL-domestic floor is scenario-invariant (1,806 here ~= 1,807 there); the gap is the `over_max_weight` **export** tail, which grows when Hermes is dropped and heavier parcels reroute onto DPD. Verified 2026-06-19 — both routing parquets share the 531,194-row population; null-`service` grows +690 base->no-Hermes while the PL-destination slice moves only +6.
+
 ## What "carrier-only" means here
 
 A routed parcel with **null `service`** — the modeled rate engine produced no *named* product for it, so it renders as "carrier-only" and is costed at **actuals** (`today_eur`, real Q1 invoice) rather than a modeled rate. It is **not** a physical misfit: all 1,887 have `cur_inc = dpd_pl` (verified) — they actually shipped via DPD-PL. The routing *keeps* them on DPD at actual cost (the "keep" path, `build_final.py:96-107`), because DPD was their dominant incumbent and holding at actuals beat any qualifying engine bid.

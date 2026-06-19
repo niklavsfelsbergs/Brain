@@ -12,4 +12,6 @@ The modelled **DPD-PL current contract** (`dpd_pl_current` engine — the offer 
 
 **So it's a rate-card coverage gap, not a model bug.** If a clean DPD-PL service split is wanted, the task is to obtain/extract the DPD-PL **domestic** rate card. Open follow-up ([[S221_eec4ee99_eu-tender-report-review-qa|S221]]).
 
+> **Reconciliation — this is the no-Hermes scenario.** The 1,943 is the **no-Hermes** routing scenario (`routing/no_hermes/`). The **base routing** scenario reports **1,887** for the same DPD-PL carrier-only slice (1,806 PL-domestic + 81 `over_max_weight`) — see [[2026-06-09-dpd-pl-current-engine-export-only-gap]]. The PL-domestic floor matches (~1,806); the difference is the over-max **export** tail, which grows when Hermes is dropped. Two scenarios, not a discrepancy (verified 2026-06-19).
+
 Relates to [[eu-tender]] domain digest and the carrier-contracts dimension-coverage work.

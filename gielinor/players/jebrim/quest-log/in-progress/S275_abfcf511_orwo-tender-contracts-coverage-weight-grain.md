@@ -37,3 +37,19 @@ None pending. (bi-etl 5ab0322c2 push is Niklavs' action, not a dangling pending;
 
 ## Cascade
 NFE repo `7_ORWO_tender_2026/` created + committed at close. bi-etl 5ab0322c2 committed local, unpushed (his push). No mart writes (all read-only). Brain: this quest + resume + 3 bank drafts + 1 examine draft + domains-index worklist line + 5 dwarf traces + comms OPEN/CLOSING.
+
+---
+
+## Increment — session 66b558bb (2026-06-19): DHL Phase 2 engine + offer transfer
+
+"hey jebrim lets continue orwo tender" → built the DHL reprice engine (the decided next engine), then transferred the ORWO offers in from the EU-tender and refreshed the docs.
+
+- **Profiled `enterprise_silver.dhl_orwo_invoices`** (1.73M rows / 571k trks, Sep25–Jun26, 98% DE / €2.86M = the domestic spine, inverse of UPS's cross-border book).
+- **Decoded all prod codes authoritatively** via `enterprise_silver.shipping_charge_bucket_mapping` (the mart's own charge-bucket dim — Niklavs pointed me to it). Freight = `100510050` PAKET bis5kg / `100510100` bis10 / `100510315` bis31,5 / `275000002` Kleinpaket / `112000001` PAKET Intl Premium; surcharges = Maut/CO2 + energy + peak; `1610` = Sperrgut/bulky.
+- **Overturned the resume's "DHL domestic has no invoice weight → PTS backfill" worry** (verify-the-thing paid again): the freight line is `wgt>0` 100% and the prod code IS the weight band; the "0% weight" codes were the FEE lines. Net `charge_amount` = `total`/1.19 (German VAT) reproduces the card to the cent (bis5 €3.35 / bis10 €4.95 / bis31,5 €10.55 / Kleinpaket €2.79).
+- **Built the engine** `repricing_base/engine/{constants_dhl, build_dhl_rate_tables, calculate_dhl, run_dhl_gate}.py` + `README_DHL.md`, mirroring UPS. **Trust gate 0.9992** (modeled freight €1.907M vs invoiced €1.909M). Intl Premium deeply negotiated (AT €5.22 not the €13 published) → country rates invoice-derived (0.986).
+- **Modeled the surcharge layer** (option a, Niklavs): `SURCHARGE_EXP` calibrated per freight product, split ongoing (Maut/CO2+energy, year-round) vs seasonal (peak+peak-in-peak, Nov–Dec). Gated 0.9995. **modeled cost_total €2.050M vs invoiced €2.052M = 0.9992.** Sperrgut/bulky €307k **UNPREDICTED by decision** (unexpected, residual, like UPS surcharge_other).
+- **Transferred the ORWO offer set** from `2_EU_tender_2026/1_offers/orwo_sendmoments/` (PARKED there for "the future ORWO review pass" = now) → `7_ORWO_tender_2026/offers/{DHL,GLS,Maersk}/` (copy; binaries gitignored, EU-tender parked copy left intact). The new DHL ORWO Paket card (202604) holds domestic FLAT at baseline = GRI-avoided; intl/Warenpost/returns reprice is next. Stub `offers/DHL/offer_summary.md`.
+- **Docs refreshed:** roadmap (Phase 2 DHL ✅, §4/§7 weight-risk RESOLVED, §8 deliverables), _scope (session-3 block), coverage_and_invoice_profile (DHL weight correction).
+
+**Open / next:** reprice the DHL offer (parse 3 .xlsb → rates_dhl_offer_*.parquet → vs reprice_dhl_own.parquet, per offers/DHL/offer_summary.md TODO), then GLS + Maersk same machinery. Deferred UPS items (AT ask, do-nothing+GRI). NFE 7_ORWO_tender_2026/ uncommitted (his call). Late comms OPEN posted (require-open gate caught the skip).

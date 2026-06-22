@@ -30,9 +30,21 @@ Delivered the end-to-end logic in chat, dense: the entity (Wolfen, not `source_s
 
 My Andrea-screenshot summary named only the *winning* carriers per lane ("keep DHL; GB→Maersk; AT+CH→GLS") and hid that the moved lanes are **UPS** lanes — i.e. the recommendation is a UPS-from-EU exit. Niklavs caught it with "wait we drop UPS completely?" → examine draft `2026-06-22-name-the-incumbent-a-switch-exits` + memory entry.
 
+## Turn 4 — the uninvoiced-carrier layer (mart-verified, READ-ONLY)
+
+Profiled the ~604k / 22% Wolfen 0%-invoice layer (sibling __cb17c25e). What/where: POST_DVF = Deutsche Post Warenpost DE-domestic mail **427,869** (71% of the layer); FKBRING/PARCEL = Bring → NO 78,971; CIRRO = consolidator → SE 69,967; PostNL → NL 11,421; POST/GÜLL/TD/POSTAT = DE + small cross-border tails. All mail-class / postal last-mile. Carry-mapping: DHL Warenpost can take POST_DVF (same product); Maersk can't (no DE-domestic mail); Bring(NO)/Cirro(SE)/PostNL(NL) are postal last-mile where parcel carriers are likely cost-negative.
+
+**POST_DVF cost check:** 100% `cost_source='expected'`, **€1.27M all-period / €2.98 avg, 0% invoiced** — never validated against a real bill (POST is a known structural 99%-estimate hole, [[S266_e455d12d_orwo-box-grain-quota-estimator|S266]]). Decided it **stays on DHL** (no cheaper alternative for sub-1kg DE mail), but the cost basis is unverified.
+
+## Turn 5 — handover swapped
+
+Principal redirected the handover: **annualization deferred**; next session **validates + costs the uninvoiced carriers**, first task = **Warenpost NEW vs OLD contract** reprice on POST_DVF vs the €2.98 expected. Resume NEXT block + handover prompt updated accordingly.
+
 ## Decisions
 
 - **DISREGARD US** (principal) — drops US (1,855 H1 / ~3.1k shipments) from tender scope; €0 optimum delta → **headline unchanged −€282k/yr**. US joins sendmoments as out-of-scope.
+- **POST_DVF stays on DHL/Deutsche Post** — Warenpost DE mail, no cheaper alternative; but its €1.27M/€2.98 cost is 100% modeled-expected, unvalidated → next-session check.
+- **Handover swapped** — uninvoiced-carrier validation (Warenpost new-vs-old first) is next; annualization deferred to after.
 
 ## Cascade
 
@@ -48,4 +60,4 @@ None pending this session. Carried-open (principal's, on the umbrella): SEND the
 
 ## Open (carried on umbrella [[S275_abfcf511_orwo-tender-contracts-coverage-weight-grain|S275]])
 
-NEXT SESSION = **annualize properly per the EU-tender method** (per-country seasonal re-weight + peak split, replacing H1×2; anchor `research/2026-06-10-eu-tender-annualization-method-and-assumptions.md`). See resume__60de5609 "NEXT SESSION — START HERE".
+NEXT SESSION = **validate + cost the uninvoiced carriers** (~604k / 22% Wolfen gap), first task = **Warenpost NEW vs OLD contract reprice on POST_DVF vs the €2.98 expected**. Annualization deferred to after. See resume__60de5609 "NEXT SESSION — START HERE".

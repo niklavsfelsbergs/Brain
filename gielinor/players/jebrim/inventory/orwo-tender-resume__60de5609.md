@@ -2,7 +2,7 @@
 quest: S283_60de5609_orwo-tender-assumptions-and-carrier-questions (continues S275/S281 ORWO arc; this increment worked under session ca27d9be)
 sid8: 60de5609   # canonical rolling ORWO resume; last touched by session 2bf7cf70 (S285) 2026-06-22
 ts: 2026-06-22 (S285 / 2bf7cf70)
-open_dep: tender MODELING + assumptions COMPLETE; logic walkthrough DELIVERED (S285); US DISREGARDED by principal (drops US 1,855 H1 from scope, €0 optimum delta — headline unchanged at -EUR282k/yr). NEXT = ANNUALIZE PROPERLY per the EU-tender method (replace H1x2 with per-country seasonal re-weight + peak split), see block below. Carried-open (principal's): SEND dispatch (now confirmation); get real GRI%.
+open_dep: tender MODELING + assumptions COMPLETE; logic walkthrough DELIVERED (S285); US DISREGARDED (out of scope, €0 delta — headline -EUR282k/yr). NEXT = VALIDATE + COST THE UNINVOICED CARRIERS (~604k / 22% Wolfen gap), starting with WARENPOST NEW-vs-OLD contracts on POST_DVF (428k). Annualization DEFERRED to later. Carried-open (principal's): SEND dispatch (now confirmation); get real GRI%.
 ---
 
 # ORWO Tender 2026 - resume
@@ -107,31 +107,46 @@ Logic walkthrough delivered **in chat** (assumed/decided/built/numbers/open, den
 **DECISION (principal): DISREGARD US.** Drops US (1,855 H1 / ~3.1k) from tender scope. €0 optimum delta
 (US was already incumbent-stays) → **headline unchanged −€282k/yr.** Like sendmoments, US is now out-of-scope.
 
-## >>> NEXT SESSION — START HERE: ANNUALIZE PROPERLY (per the EU-tender method)
+## >>> NEXT SESSION — START HERE: VALIDATE + COST THE UNINVOICED CARRIERS
 
-**Task (Niklavs, 2026-06-22):** replace the crude **H1×2** annualization with the proper per-country
-seasonal re-weight + peak split that the **EU tender** used. The −€282k/yr is H1×2 on provisional rates;
-the EU tender built a defensible full-year bridge — mirror it for ORWO.
+**Task (Niklavs, 2026-06-22):** close out the **uninvoiced postal/consolidator layer** — ~604k shipments /
+22% of the Wolfen book that ship via 0%-invoice carriers and were excluded from the tender's UPS+DHL spine
+(sibling resume `orwo-tender-resume__cb17c25e.md`). For each: confirm what it is, what it carries, whether
+GLS/Maersk/DHL can carry it, and **what it actually costs** (these are priced 100% on the mart `expected`
+basis — a modeled estimate, never validated against an invoice).
 
-**The EU-tender method to copy** (anchor: `players/jebrim/research/2026-06-10-eu-tender-annualization-method-and-assumptions.md`,
-"design locked with Niklavs"; built parallel to `2_EU_tender_2026/.../annual_2026/`):
-1. **Base = the actual repriced book** (here: ORWO H1 parcels), NOT a ×N replay — current mix baked in.
-2. **Volume → full-year per-country**: `FY ≈ H1_actual × (FY_2025_country / H1_2025_country)` — scale each
-   destination by its OWN 2025 seasonal ratio, not one global factor (ORWO is cross-border-first, AT/GB/CH-heavy
-   — their seasonal shapes differ). 2025 monthly FY-share in the EU tender: Q1 20.7/Q2 21.2/Q3 17.9/**Q4 40.2** (Dec 21.5).
-3. **Cost = peak-free base × annual volume + peak rate × peak-window volume.** Split each lane's volume into
-   peak (per carrier window) vs non-peak from the 2025 monthly shape. For ORWO that means deriving the GLS/Maersk
-   peak (Season/BlackWeek — currently folded as the blended 0.417% annual-proxy) + each incumbent's real Q4 premium.
-4. **Both sides identical 2026 basis**; `saving = FY_baseline − FY_portfolio`; peak fires both sides (largely cancels).
-5. **Present as a band** (surcharge-rate sensitivity), not a point — esp. since GLS/Maersk rates are provisional.
-6. Build the **Q1/H1→annual bridge waterfall** (the EU-tender centerpiece): anchor → volume scale → ±peak → ±band = annual.
+**▶ FIRST CONCRETE STEP — validate Warenpost NEW vs OLD contracts (POST_DVF, 71% of the layer).**
+POST_DVF = **Deutsche Post Warenpost, DE-domestic light mail**, 427,869 shipments, **100% `cost_source='expected'`,
+€1.27M total (all order-periods) / €2.98 avg, 0% invoiced.** Decided: it **STAYS on DHL/Deutsche Post** (no cheaper
+alternative — DHL Warenpost IS this product; GLS/Maersk parcel networks are pricier for sub-1kg mail; Maersk doesn't
+serve DE-domestic mail at all). But the cost is unverified (POST is a known structural 99%-estimate hole, S266).
+→ **Get the NEW vs OLD Deutsche Post / DHL Warenpost domestic contract cards, reprice the 428k POST_DVF stream on
+each, and compare both to the €2.98 expected.** Answers: (a) is the €2.98 expected trustworthy? (b) does the new
+Warenpost contract save vs the old? Contract anchor: `NFE/docs/shipping_contracts/.../ORWO` (DHL Warenpost = base +
+per-100g × zone, carrier-contracts digest); reprice off the mart Warenpost weight band.
 
-ORWO data anchors for the re-weight: live mart (`shipping_mart.fact_shipments`, Wolfen, order-month) for the
-2025 per-country monthly volume shape; the engines' peak-free unit cost is already in the matrices. Confirm whether
-to mirror the EU-tender `annual_2026/` report shell or keep it a calc + COMPARISON.md update.
+**Then the rest of the layer** (smaller, postal last-mile — likely STAY, displacement is cost-negative; confirm
+eligibility + cost only if a consolidator/postal card is in hand):
 
-Source: this resume + `repricing_base/carrier_engines/{COMPARISON.md, per_lane_optimum.py}` +
-the EU-tender annualization research file above + `2_EU_tender_2026/.../annual_2026/` as the template.
+| Carrier | What it is | Carries (dest, vol) | Can GLS/Maersk/DHL take it? |
+|---|---|---|---|
+| **POST_DVF** | Deutsche Post Warenpost | DE 427,869 | DHL Warenpost (= same product). NOT Maersk. ← the one that matters |
+| **FKBRING** (+PARCEL) | Bring (Norwegian Post) | NO 78,971 | DHL-Intl/Maersk reach NO but customs + Bring is national post → hard to beat |
+| **CIRRO** | cross-border consolidator | SE 69,967 | GLS/DHL-Intl *can*; consolidator economics likely cheaper → needs card |
+| **POSTNL** | PostNL | NL 11,421 | GLS (already wins NL) / Maersk *can*; PostNL cheap local |
+| POST / GUELL / TD / POSTAT | postal / Güll / tracked-del / Austrian Post | DE ~11.7k + AT/FR/GB tails | DHL/GLS absorb either way; tiny |
+
+**Cost-basis blocker (carry it):** none of these have an invoice → priced on mart `expected`; the parcel reprice
+engines can't price mail-class. To compare, need each carrier's **mail/Warenpost-equivalent card**, not the parcel
+cards already loaded. Mart facts above pulled live S285 (READ-ONLY, gold `shipping_mart`, `production_site='Wolfen'`).
+
+## >>> LATER (deferred this session) — ANNUALIZE PROPERLY per the EU-tender method
+
+Replace the crude **H1×2** with the per-country seasonal re-weight + peak split the EU tender used (anchor:
+`players/jebrim/research/2026-06-10-eu-tender-annualization-method-and-assumptions.md`): base = repriced book (no ×N
+replay); volume → FY per-country via each dest's own 2025 seasonal ratio (EU-tender FY-share Q1 20.7/Q2 21.2/Q3 17.9/
+**Q4 40.2**); cost = peak-free base × annual vol + peak rate × peak-window vol; both sides same 2026 basis; present as a
+band; build the H1→annual bridge waterfall. Mirror `2_EU_tender_2026/.../annual_2026/`. **Do this after the carrier layer.**
 
 ## >>> (prior next-step: EU-tender vs ORWO engine sanity check — DONE this session)
 

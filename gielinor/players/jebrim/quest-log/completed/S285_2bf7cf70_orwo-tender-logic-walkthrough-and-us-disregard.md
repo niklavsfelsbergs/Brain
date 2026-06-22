@@ -48,7 +48,7 @@ Principal redirected the handover: **annualization deferred**; next session **va
 
 ## Cascade
 
-Updated `inventory/orwo-tender-resume__60de5609.md` (canonical rolling resume — S285 DONE block + US-disregard + the per-lane UPS findings; NEXT reset to proper annualization per the EU-tender method). No NFE/bi-etl writes (read-only session). 1 examine draft.
+Updated `inventory/orwo-tender-resume__60de5609.md` (canonical rolling resume — S285 DONE block + US-disregard + per-lane UPS findings + the uninvoiced-carrier profile table + POST_DVF facts; NEXT = validate+cost the uninvoiced carriers, Warenpost new-vs-old first; annualization deferred to LATER). No NFE/bi-etl writes (read-only session). 1 examine draft + 1 memory entry. Two close commits this session: 6c99317 (walkthrough+US) + 150d9a2 (carrier layer + handover swap).
 
 ## Main-brain changes
 

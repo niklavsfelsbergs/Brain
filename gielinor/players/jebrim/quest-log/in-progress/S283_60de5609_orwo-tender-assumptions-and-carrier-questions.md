@@ -36,3 +36,33 @@ Where do we stand on ORWO. Then: explain point-1 (reprice bulky tail), interroga
 
 ## Open / next
 - See `inventory/orwo-tender-resume__60de5609.md`. Tender modeling is NOT meeting-ready: the GLS -EUR509k omits GLS's fuel. Next concrete step = lock the provisional assumptions + re-run GLS (and Maersk surcharges) for the corrected number; send the carrier-question dispatch (`carrier_questions/`). Then US/ROW, seasonal annualization, present the corrected GLS recommendation. Parent [[S275_abfcf511_orwo-tender-contracts-coverage-weight-grain|S275]] stays in-progress (umbrella).
+
+---
+
+## Turn 2 (2026-06-22, session ca27d9be) — surcharge re-run; the verdict REVERSED
+
+Picked up the S283-close next step: lock the provisional surcharges + re-run. Before building I verified the comparison basis — the reprice parquets carry incumbent surcharge SEPARATELY (`invoiced_fuel`/`invoiced_resi`, `invoiced_surcharge`), and `invoiced_freight` is genuinely freight-only. So the prior −€509k synthesis had leveled DHL's €143k into "current" by hand. **A fair re-run must fatten BOTH sides to full-cost** — fattening only GLS (the literal instruction) would invert the bias and report a false GLS loss. Sized it first: incumbent surcharges ~€198k H1 vs GLS stack ~€515k H1 → the swing flips GLS to worse. Niklavs confirmed full-cost-both-sides as the headline basis (multiple-choice).
+
+### Built
+- **GLS engine** (`carrier_engines/gls/{constants,calculate}.py`): Energy 20.5% + Klima 2.5% + Season(blended 0.417%) on base → Toll Intl 5.70% x-border / €0.38 national flat → Diesel 4.1% after toll → DE-private €0.15. Emits `gls_full_eur`.
+- **Maersk engine**: EU fuel 6.6% on base + country tolls (AT 0.29/DE 0.19/DK 0.05) + Overpack €0.40. Emits `maersk_full_eur`.
+- **Both `switch_compare.py`**: load_book carries incumbent surcharge (UPS fuel+resi; DHL surcharge ex Sperrgut) → `current_full`; both print freight-only AND full-cost.
+- **New `per_lane_optimum.py`**: whole-lane cheapest-carrier synthesis (corrected the per-parcel `min_horizontal` cherry-pick to whole-lane assignment — the operationally-bookable number).
+
+### Result — the −€509k saving is DEAD
+- All-GLS single switch **+€792k/yr WORSE**; all-Maersk **+€777k/yr WORSE** on full-cost.
+- DE-domestic core (548k) is the driver: GLS ~+43% (27% stack + ~€0.53/parcel flat toll+private) vs DHL's ACTUAL invoiced ~5.4%. **GLS loses DE-domestic even at 0% energy** (+€92k H1) — A1 sizes the loss but can't flip the core.
+- Real saving = lane-specific **~−€265k/yr** (per-lane whole-lane optimum): keep DHL domestic, GB→Maersk −€177k/yr, AT→GLS −€56k/yr, CH→GLS −€18k/yr, EU tails.
+
+### Cascade
+- **COMPARISON.md REWRITTEN** (restructured, not bolted-on — the finding moved the decision line): pending banner → CORRECTED note; new full-cost headline + lane table; "primary switch is dead" reading.
+- Dispatch `carrier_questions/{GLS,Maersk}.md` is send-ready and unchanged — the whole GLS stack (A1/A2/A3/A4/A7/A9) now decides viability, not just energy. **Sending is Niklavs' action** (outward, no channel wired).
+
+### Verification
+- 0%-energy break-even computed directly from the parquet (per-parcel, faithful to the surcharge order). GLS/DHL DE-domestic full-cost from the engine, not hand math. Incumbent surcharge magnitudes sized from the actual reprice parquets (UPS fuel 14% / DHL surcharge 7.5% of freight). Caveat carried: competitor side is MODELED-provisional, incumbent side is ACTUAL-invoiced — the reversal is conditional on the provisional %, which the dispatch confirms.
+
+### Failure modes
+- Late OPEN again (the recurring continuation-entry skip) — require-open gate caught it before the first brain write; posted as jebrim-ca27d9be.
+
+### Open / next
+- See `inventory/orwo-tender-resume__60de5609.md`. Tender is now meeting-ready as an HONEST story (primary switch dead; saving is GB-lever + select-EU ~−€265k/yr, pending carrier confirmation of the provisional surcharges). Next: Niklavs sends the dispatch; get incumbent GRI%; US/ROW + seasonal annualization. Parent [[S275_abfcf511_orwo-tender-contracts-coverage-weight-grain|S275]] stays in-progress.

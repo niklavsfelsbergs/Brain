@@ -1,8 +1,8 @@
 ---
 quest: S283_60de5609_orwo-tender-assumptions-and-carrier-questions (continues S275/S281 ORWO arc; this increment worked under session ca27d9be)
-sid8: 60de5609   # canonical rolling ORWO resume; last touched by session f1b5f17c (S284) 2026-06-22
-ts: 2026-06-22 (S284 / f1b5f17c)
-open_dep: tender MODELING + assumptions COMPLETE -> final verdict -EUR282k/yr lane-specific (keep DHL DE-domestic; GB->Maersk, AT+CH+NL->GLS). Engines validated vs Picanova; B3 GB-clearance confirmed €0; assumptions locked (Picanova rates adopted, GRI 5%, GLS clearance excluded). NEXT = walk Niklavs through the whole ORWO tender logic (assumed/decided/built, dense). Carried-open (principal's): SEND dispatch (now confirmation); get real GRI%.
+sid8: 60de5609   # canonical rolling ORWO resume; last touched by session 2bf7cf70 (S285) 2026-06-22
+ts: 2026-06-22 (S285 / 2bf7cf70)
+open_dep: tender MODELING + assumptions COMPLETE; logic walkthrough DELIVERED (S285); US DISREGARDED by principal (drops US 1,855 H1 from scope, €0 optimum delta — headline unchanged at -EUR282k/yr). NEXT = ANNUALIZE PROPERLY per the EU-tender method (replace H1x2 with per-country seasonal re-weight + peak split), see block below. Carried-open (principal's): SEND dispatch (now confirmation); get real GRI%.
 ---
 
 # ORWO Tender 2026 - resume
@@ -86,26 +86,52 @@ Cross-checked ORWO GLS + Maersk engines vs the EU-tender (Picanova) engines (gro
 **Outcome:** −€265k/yr verdict is reference-consistent → stronger to quote. No engine fix / re-run needed.
 COMPARISON.md stamped with a VALIDATED 2026-06-22 note.
 
-## >>> NEXT SESSION — START HERE: WALK NIKLAVS THROUGH THE WHOLE ORWO TENDER LOGIC
+## >>> S285 DONE (2026-06-22, session 2bf7cf70) — WALKTHROUGH DELIVERED + US DISREGARDED
 
-**Task (Niklavs, 2026-06-22):** produce an end-to-end walkthrough of the ORWO tender as implemented, so
-he can understand and follow it. **Information-dense, not verbose.** Cover, every step:
-- **What we ASSUMED** — the provisional/locked assumption set per carrier (`carrier_questions/_provisional_assumptions.md`):
-  Picanova rates adopted as correct; GRI 5%; GB/EFTA clearance €0 (Maersk confirmed, GLS excluded);
-  DHL Sperrgut/non-conveyable excluded; Maersk ungated (no own book); ROW/US deferred; full-cost-both-sides basis.
-- **What we DECIDED** — cost basis = invoices-only (not mart real cost); Wolfen spine (production_site,
-  NOT source_system='ORWO'); reprice at tracking grain; full-cost both sides; per-lane (not primary) switch.
-- **What we BUILT** — the pipeline shape: spine → silver invoice cost → per-tracking base → rate-card
-  extract + trust gate → `carrier_engines/{ups,dhl_paket,gls,maersk}/` (own-cost gated for UPS/DHL;
-  carrier-switch reprice for GLS/Maersk) → `switch_compare.py` (full-cost) → `per_lane_optimum.py` → COMPARISON.md.
-- **The numbers** — trust gates (UPS 0.971, DHL 0.9992), the −€509k→reversal→−€282k arc, the lane table.
-- **What's OPEN** — send dispatch; real GRI%; Wolfen uninvoiced-carrier coverage gap (~600k shipments,
-  sibling resume __cb17c25e); US/ROW + seasonal annualization refinements.
+Logic walkthrough delivered **in chat** (assumed/decided/built/numbers/open, dense). Did NOT build a
+`WALKTHROUGH.md` doc — he wanted the in-chat walk; the doc offer stands if he asks later.
 
-Source the walkthrough from: this resume (top blocks) + `7_ORWO_tender_2026/{roadmap.md,_scope.md}` +
-`repricing_base/carrier_engines/COMPARISON.md` + `carrier_questions/_provisional_assumptions.md` + the
-engine READMEs. Likely worth a single navigable doc (e.g. `7_ORWO_tender_2026/WALKTHROUGH.md`) — confirm
-form with him (md vs something else) before building.
+**Mart-verified this session (READ-ONLY, gold `shipping_mart`, `production_site='Wolfen'`):**
+- **US is UPS-captive — 99.3%** (UPSWWE 3,039 + UPSEXPRESS 68 + tail; only POST/USPS/DHL noise; ~3,135
+  shipments all-period / 1,855 H1 invoiced). No GLS/Maersk card serves US → optimum keeps it on incumbent.
+- **EU cross-border lanes ARE genuinely UPS today** (UPS share by dest): GB 87.7% (21.5k) · AT 65.2% (41.5k,
+  DHL 30% too) · CH 87.5% · FR 85% · IT 92% · ES 90% · BE 90% · IE 80% · NL 26.6% (rest postal) · NO ~0% (Bring).
+  DE 5.3% UPS (DHL+postal core). So **"drop UPS from EU" = the −€282k saving**, concentrated in
+  **GB(→Maersk −€177k) + AT(→GLS −€56k) + CH(→GLS −€35k)**; FR/IT/ES/BE/IE are near-ties (UPS competitive).
+- **`per_lane_optimum.py` compares {current incumbent, GLS, Maersk} — the UPS *new offer* is NOT a candidate.**
+  So "drop UPS" is measured vs UPS-*current*, not UPS-*best*. UPS could defend AT (its lever, S280). To make
+  the drop-UPS call against UPS's best rates, add the UPS 2026 offer as a 4th candidate in per_lane_optimum.
+- Caveats surfaced: pulling EU volume off UPS weakens leverage on the US lane (UPS-captive, no fallback) — now
+  moot since US disregarded; and 1→2 cross-border carriers (GLS+Maersk) is an ops cost the rate model ignores.
+
+**DECISION (principal): DISREGARD US.** Drops US (1,855 H1 / ~3.1k) from tender scope. €0 optimum delta
+(US was already incumbent-stays) → **headline unchanged −€282k/yr.** Like sendmoments, US is now out-of-scope.
+
+## >>> NEXT SESSION — START HERE: ANNUALIZE PROPERLY (per the EU-tender method)
+
+**Task (Niklavs, 2026-06-22):** replace the crude **H1×2** annualization with the proper per-country
+seasonal re-weight + peak split that the **EU tender** used. The −€282k/yr is H1×2 on provisional rates;
+the EU tender built a defensible full-year bridge — mirror it for ORWO.
+
+**The EU-tender method to copy** (anchor: `players/jebrim/research/2026-06-10-eu-tender-annualization-method-and-assumptions.md`,
+"design locked with Niklavs"; built parallel to `2_EU_tender_2026/.../annual_2026/`):
+1. **Base = the actual repriced book** (here: ORWO H1 parcels), NOT a ×N replay — current mix baked in.
+2. **Volume → full-year per-country**: `FY ≈ H1_actual × (FY_2025_country / H1_2025_country)` — scale each
+   destination by its OWN 2025 seasonal ratio, not one global factor (ORWO is cross-border-first, AT/GB/CH-heavy
+   — their seasonal shapes differ). 2025 monthly FY-share in the EU tender: Q1 20.7/Q2 21.2/Q3 17.9/**Q4 40.2** (Dec 21.5).
+3. **Cost = peak-free base × annual volume + peak rate × peak-window volume.** Split each lane's volume into
+   peak (per carrier window) vs non-peak from the 2025 monthly shape. For ORWO that means deriving the GLS/Maersk
+   peak (Season/BlackWeek — currently folded as the blended 0.417% annual-proxy) + each incumbent's real Q4 premium.
+4. **Both sides identical 2026 basis**; `saving = FY_baseline − FY_portfolio`; peak fires both sides (largely cancels).
+5. **Present as a band** (surcharge-rate sensitivity), not a point — esp. since GLS/Maersk rates are provisional.
+6. Build the **Q1/H1→annual bridge waterfall** (the EU-tender centerpiece): anchor → volume scale → ±peak → ±band = annual.
+
+ORWO data anchors for the re-weight: live mart (`shipping_mart.fact_shipments`, Wolfen, order-month) for the
+2025 per-country monthly volume shape; the engines' peak-free unit cost is already in the matrices. Confirm whether
+to mirror the EU-tender `annual_2026/` report shell or keep it a calc + COMPARISON.md update.
+
+Source: this resume + `repricing_base/carrier_engines/{COMPARISON.md, per_lane_optimum.py}` +
+the EU-tender annualization research file above + `2_EU_tender_2026/.../annual_2026/` as the template.
 
 ## >>> (prior next-step: EU-tender vs ORWO engine sanity check — DONE this session)
 

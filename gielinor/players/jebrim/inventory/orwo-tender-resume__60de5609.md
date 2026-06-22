@@ -1,8 +1,8 @@
 ---
 quest: S283_60de5609_orwo-tender-assumptions-and-carrier-questions (continues S275/S281 ORWO arc; this increment worked under session ca27d9be)
-sid8: 60de5609
-ts: 2026-06-22 16:10
-open_dep: surcharge re-run DONE -> GLS/Maersk verdict REVERSED (primary switch dead on full-cost; real saving ~-EUR265k/yr lane-specific). COMPARISON.md rewritten. Dispatch send-ready, awaiting Niklavs to SEND + carrier replies. Provisional surcharges still unconfirmed.
+sid8: 60de5609   # canonical rolling ORWO resume; last touched by session f1b5f17c (S284) 2026-06-22
+ts: 2026-06-22 (S284 / f1b5f17c)
+open_dep: tender MODELING + assumptions COMPLETE -> final verdict -EUR282k/yr lane-specific (keep DHL DE-domestic; GB->Maersk, AT+CH+NL->GLS). Engines validated vs Picanova; B3 GB-clearance confirmed €0; assumptions locked (Picanova rates adopted, GRI 5%, GLS clearance excluded). NEXT = walk Niklavs through the whole ORWO tender logic (assumed/decided/built, dense). Carried-open (principal's): SEND dispatch (now confirmation); get real GRI%.
 ---
 
 # ORWO Tender 2026 - resume
@@ -40,7 +40,109 @@ dispatch confirms them. But the 0%-energy check shows it'd take negotiating the 
 5. **COMPARISON.md REWRITTEN** to the corrected full-cost verdict (pending banner -> CORRECTED note;
    restructured headline + lane table; primary-switch-dead reading).
 
-## NEXT CONCRETE STEP
+## >>> ASSUMPTIONS LOCKED + HEADLINE FINAL (2026-06-22) — −€282k/yr
+
+Three open items closed by principal decision → tender is concludable:
+1. **Surcharge %s**: ADOPT Picanova rates as correct for ORWO (GLS energy/diesel/klima/toll, Maersk
+   fuel/tolls). Dispatch now *confirms*, no longer *blocks*. No number change (already in engine).
+2. **Incumbent GRI**: hold at 5% for the do-nothing comparison. No number change (already placeholder).
+3. **GLS GB/EFTA clearance**: EXCLUDE for GLS too (€0), mirroring Maersk's confirmed €0. CHANGED a number
+   — set `per_lane_optimum.py` GLS_IC18 3.0→0.0, RE-RAN.
+
+**NEW HEADLINE: −€282k/yr** (was −€265k). GB unchanged (Maersk −€177k/yr, still wins). The exclusion's
+real effect = **CH-GLS −€18k→−€35k/yr** (€3 off 2,828 parcels). Whole-lane split now: Maersk −€187k/yr
+(GB + FR/ES/IT/IE tails, 25.7k trks) + GLS −€94k/yr (AT −€56k + CH −€35k + NL/BE/NO, 30.7k trks).
+Per_lane_optimum run output: current €2,451,899 H1 / optimum €2,311,013 H1 / saving −€140,886 H1.
+COMPARISON.md fully updated (headline table + lane table + GB lever + caveats + ASSUMPTIONS LOCKED block).
+
+**Recommendation shape (final):** keep DHL on DE domestic; move GB→Maersk, AT+CH(+NL)→GLS; ~−€282k/yr.
+
+## >>> B3 GB-CLEARANCE CONFIRMED (2026-06-22, Andrea) — €0, headline de-risked
+
+Andrea confirmed Maersk GB customs clearance = **€0** (folded into the Evri/Yodel door rate). This was
+assumption **B3 (Low-Med)** — the single biggest lever in the −€265k/yr headline. The number does NOT
+move (the engine already assumed €0); its biggest risk is now gone. GB-Maersk −€177k/yr stands confirmed.
+Flipped to RESOLVED in `carrier_questions/Maersk.md` + `_provisional_assumptions.md`; COMPARISON.md GB
+lever note updated. Still open on GB: GLS-side clearance (assumed IC18 €3, GLS High but not Andrea-confirmed).
+
+## >>> SANITY CHECK DONE (2026-06-22, session f1b5f17c) — ENGINES AGREE
+
+Cross-checked ORWO GLS + Maersk engines vs the EU-tender (Picanova) engines (ground truth).
+**No mechanical contradictions.** Every copied value + every compounding rule matches:
+- **GLS**: Energy 0.205 / Klima 0.025 / Diesel 0.041 / Toll-Intl 0.057 / Toll-Nat 0.38 / DE-private 0.15
+  all match ref `constants.py`. Order matches (Energy+Klima+Season on base → Toll on full net x-border /
+  €0.38 flat domestic → Diesel after toll → €0.15 flat uncompounded). ORWO correctly copied the
+  ACTIVE Toll-Intl-on-net mechanic, NOT the retired base-only `gls/surcharges/toll_international.py`.
+- **Maersk**: EU fuel 6.6% base-only / AT 0.29 / DE 0.19 / DK 0.05 additive / Overpack 0.40 every parcel
+  all match ref. Fuel base excludes tolls+overpack both sides.
+- **Legit divergences (NOT contradictions, flagged):** GLS Season blended 0.417% (= 1%×5/12) vs ref
+  1% month-gated — annual-proxy placeholder; dim-dependent surcharges dormant in ORWO (no dims in engine
+  input — GLS BigParcel/Overlength, Maersk EU oversize/handling-reject); ROW deferred; GB on the ORWO
+  Maersk card (ref excludes GB from Picanova Maersk; GB lever leans on clearance B3, scenario'd).
+- **One thing to verify in population-prep:** ORWO consumes a pre-computed `billable_weight_kg`; confirm
+  the GLS Euro (EBP) dim-weight cap `max(gross, dim/6000)` cap 30kg was applied upstream so dim-heavy
+  x-border parcels aren't understated. Maersk EU is gross-only → no issue.
+
+**Outcome:** −€265k/yr verdict is reference-consistent → stronger to quote. No engine fix / re-run needed.
+COMPARISON.md stamped with a VALIDATED 2026-06-22 note.
+
+## >>> NEXT SESSION — START HERE: WALK NIKLAVS THROUGH THE WHOLE ORWO TENDER LOGIC
+
+**Task (Niklavs, 2026-06-22):** produce an end-to-end walkthrough of the ORWO tender as implemented, so
+he can understand and follow it. **Information-dense, not verbose.** Cover, every step:
+- **What we ASSUMED** — the provisional/locked assumption set per carrier (`carrier_questions/_provisional_assumptions.md`):
+  Picanova rates adopted as correct; GRI 5%; GB/EFTA clearance €0 (Maersk confirmed, GLS excluded);
+  DHL Sperrgut/non-conveyable excluded; Maersk ungated (no own book); ROW/US deferred; full-cost-both-sides basis.
+- **What we DECIDED** — cost basis = invoices-only (not mart real cost); Wolfen spine (production_site,
+  NOT source_system='ORWO'); reprice at tracking grain; full-cost both sides; per-lane (not primary) switch.
+- **What we BUILT** — the pipeline shape: spine → silver invoice cost → per-tracking base → rate-card
+  extract + trust gate → `carrier_engines/{ups,dhl_paket,gls,maersk}/` (own-cost gated for UPS/DHL;
+  carrier-switch reprice for GLS/Maersk) → `switch_compare.py` (full-cost) → `per_lane_optimum.py` → COMPARISON.md.
+- **The numbers** — trust gates (UPS 0.971, DHL 0.9992), the −€509k→reversal→−€282k arc, the lane table.
+- **What's OPEN** — send dispatch; real GRI%; Wolfen uninvoiced-carrier coverage gap (~600k shipments,
+  sibling resume __cb17c25e); US/ROW + seasonal annualization refinements.
+
+Source the walkthrough from: this resume (top blocks) + `7_ORWO_tender_2026/{roadmap.md,_scope.md}` +
+`repricing_base/carrier_engines/COMPARISON.md` + `carrier_questions/_provisional_assumptions.md` + the
+engine READMEs. Likely worth a single navigable doc (e.g. `7_ORWO_tender_2026/WALKTHROUGH.md`) — confirm
+form with him (md vs something else) before building.
+
+## >>> (prior next-step: EU-tender vs ORWO engine sanity check — DONE this session)
+
+**Task (Niklavs, 2026-06-22):** cross-check the ORWO GLS + Maersk engines against the EU-tender
+(Picanova) GLS + Maersk engines. **Treat the EU-tender engines as CORRECT (ground truth).** The
+ORWO surcharge stacks were *lifted* from them (the provisionals say so) — so the question is: does
+the ORWO implementation **contradict** the reference anywhere? If the reference is right and ORWO
+diverges, ORWO is wrong.
+
+- **Reference (assume correct):** `NFE/projects/2_EU_tender_2026/2_analysis/carrier_engines/{gls,maersk}/`
+  — `constants.py` + `calculate.py` + the **`surcharges/`** subdir (ORWO has no such subdir — the
+  stack is inline in `calculate._apply_surcharges`) + `tests/` + `CLAUDE.md`.
+- **Under test:** `NFE/projects/7_ORWO_tender_2026/repricing_base/carrier_engines/{gls,maersk}/`
+  — `constants.py` + `calculate.py` (`_apply_surcharges`).
+- **What to check for contradictions (not just value drift — mechanics):**
+  1. **Surcharge %s**: GLS Energy 20.5% / Diesel 4.1% / Klima 2.5% / Toll Intl 5.70% / DE-private
+     0.15 / Season 1%; Maersk EU fuel 6.6% / country tolls (AT 0.29/DE 0.19/DK 0.05) / Overpack 0.40.
+     Do these match the EU-tender constants, or did I transcribe a wrong number?
+  2. **Application ORDER + base**: ORWO applies Energy+Klima+Season on base → Toll → Diesel (A5).
+     Does the EU-tender engine compound the same way (e.g. is Toll Intl really on the full net incl.
+     Energy/Klima, is Diesel really after toll, is Season on base)? A wrong compounding order is the
+     subtle contradiction to hunt.
+  3. **Domestic vs x-border split**: ORWO uses national flat €0.38 domestic / 5.70% x-border. Same
+     split logic in EU-tender?
+  4. **Per-parcel vs %**: confirm the €0.38 toll + €0.15 private are per-parcel flat in BOTH (they
+     dominate the DE-domestic verdict — if EU-tender treats them differently, the reversal moves).
+  5. **Maersk**: EU fuel on base-only (not full)? country tolls additive per-parcel? Overpack on
+     every parcel? ROW fuel handling (ORWO defers it).
+  6. **Weight-band / as-of-join + oversize thresholds** if time.
+- **Output:** a contradiction list (file:line both sides) — for each, EU-tender value/mechanic vs
+  ORWO, and which is right. If ORWO contradicts the reference, fix ORWO + re-run + note the headline
+  delta. If they agree, the −€265k/yr corrected verdict is reference-consistent (stronger to quote).
+- **Caveat to hold:** EU-tender is Picanova (different contract/volume); some divergence is
+  *legitimately ORWO-specific* (the dispatch confirms those). A contradiction is where the
+  *mechanic* differs or a value ORWO claims to copy from Picanova doesn't actually match Picanova.
+
+## NEXT CONCRETE STEP (after the sanity check)
 1. **Niklavs to SEND the dispatch** - `carrier_questions/{GLS,Maersk}.md` (send-ready, unchanged this
    session; outward action, no channel wired here). The whole GLS stack now decides viability, not
    just A1/A2. Flip rows to RESOLVED as replies land; swap real % into the engine constants + re-run.

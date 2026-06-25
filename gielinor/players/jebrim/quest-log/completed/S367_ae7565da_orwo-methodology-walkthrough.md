@@ -52,3 +52,15 @@ None pending this session. Carried-open on the umbrella (principal's, unchanged)
 ## Open (carried on umbrella [[S275_abfcf511_orwo-tender-contracts-coverage-weight-grain|S275]])
 
 Umbrella ORWO threads unchanged: uninvoiced-carrier validation (`__cb17c25e`, but FKBRING/CIRRO now excluded per [[S366_422d59ed_orwo-fkbring-cirro-exclusion|S366]]), returns-cost dig (`__0888690d`). This session's deliverable (the methodology doc) is shipped → S367 graduated to completed/.
+
+## Post-close addendum (same session, ae7565da) — GRI / savings-baseline check
+
+Two follow-up questions after the first wrap, both verified live (READ-ONLY silver invoices — the INVOICES-ONLY cost basis; mart drops the per-band/per-month detail):
+
+1. **What baseline is the −€343k against?** Verified in `annual_orwo.py`: the do-nothing side = current per-parcel cost × volume, **no ×1.05**. So the saving is **vs current (flat 2026) costs, GRI-EXCLUDED.** The 5% GRI is a forward-hypothetical placeholder used only to size the *incumbents' own 2026 offers* (GRI-avoided), NOT baked into the headline. Implication: the −€343k is conservative vs a realistic "incumbents raise ~5%" do-nothing (switching the cross-border lanes also dodges UPS's GRI on that ~€1M/yr spend ≈ order of +€50k/yr, uncounted).
+2. **Has a GRI already hit in 2026?** **No, for both** — confirmed from invoices:
+   - **DHL: flat Sep 2025 → Jun 2026.** Base bands €3.35/4.95/10.55/2.79 every month, min=max; Maut €0.19 + energy €0.04 flat. Pushed past base to **all-in net per parcel** (freight + all surcharges): bis-5kg 4.89 (Jan) → 3.73 (Mar) → 3.66 (Apr) — March is a **post-peak LOW** (Q4 Peak/PiP unwinding), not a step up. New March prod codes (2511/2681/101510315) = a separate ~4.4k/mo stream, not a surcharge on the existing book.
+   - **UPS: no mid-2026 GRI.** Dom. Standard band floors 3.26/3.82/5.79 + TB Standard 4.15/4.77/5.40 flat Mar–Jun. UPS silver doesn't reach 2025, so the Jan-1 annual step isn't invoice-visible (use the OLD-vs-NEW UPS rate cards for that).
+   - The "March cost rise" intuition most likely = the **DHL returns surge from ~March 2026** (separate thread `__0888690d`), which is returns *volume*, not an outbound rate hike.
+
+**Net:** current-cost baseline is genuinely flat 2026 rates; no GRI absorbed; the 5% is forward-only. Read-only — no NFE/brain content writes beyond this addendum + resume note + 1 examine draft.

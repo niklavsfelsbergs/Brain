@@ -12,12 +12,12 @@ The floor is a **PreToolUse hook** — a binary actor check (`resolve_actor(sid8
 
 ## What was built
 
-A **second bypass** in `block-confirmed-writes.py`, gated on three independent ANDs: `actor==guthix` × `.mode ∈ {bankstanding,alching}` × a non-empty `.claude/intent/<sid8>.floor-unlock` marker (the machine-readable authorization signal [[D-034_close_ritual_enforcement|D-034]] said a hook couldn't read). Logged `bypass-guthix-authorized`. Two helpers added: `read_mode` (freshest `.mode` across both intent dirs, mirroring `_actor.py`) + `floor_unlocked`. **`confirmed/` writes only — `block-deletes.py` untouched** (bankstanding archives, never deletes; the principal chose confirmed-only scope).
+A **second bypass** in `block-confirmed-writes.py`, gated on three independent ANDs: `actor==guthix` × `.mode ∈ {bankstanding,alching}` × a non-empty `.claude/intent/<sid8>.floor-unlock` marker (the machine-readable authorization signal [[D-034_guthix_executes_on_explicit_authorization|D-034]] said a hook couldn't read). Logged `bypass-guthix-authorized`. Two helpers added: `read_mode` (freshest `.mode` across both intent dirs, mirroring `_actor.py`) + `floor_unlocked`. **`confirmed/` writes only — `block-deletes.py` untouched** (bankstanding archives, never deletes; the principal chose confirmed-only scope).
 
 - Hook: `gielinor/.claude/hooks/block-confirmed-writes.py`
 - Test: `developer-braindead/verification/test_block_confirmed_unlock.py` — 9 cases, **verified live from the real stdin entry point** (every gate-drop blocks; a player can't enter with a marker; draft path always allowed). Auto-discovered by `run_tests.py` → full suite **21/21**.
 - Ritual: `gielinor/spellbook/rituals/bankstanding.md` — floor-unlock lifecycle (write-on-explicit-grant, clear-at-close, the gnome-recommends/Guthix-executes note).
-- Docs: `gielinor/meta/write-rules.md` + `gielinor/meta/guthix.md` floor statements carved out; gielinor `lorebook/confirmed/D-036` + `_index.md` cue row; [[D-034_close_ritual_enforcement|D-034]] amendment pointer.
+- Docs: `gielinor/meta/write-rules.md` + `gielinor/meta/guthix.md` floor statements carved out; gielinor `lorebook/confirmed/D-036` + `_index.md` cue row; [[D-034_guthix_executes_on_explicit_authorization|D-034]] amendment pointer.
 
 ## Design choices (the fork the principal picked)
 

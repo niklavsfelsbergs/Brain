@@ -1,11 +1,13 @@
 ---
 quest: S283_60de5609_orwo-tender-assumptions-and-carrier-questions (continues S275/S281 ORWO arc; this increment worked under session ca27d9be)
 sid8: 60de5609   # canonical rolling ORWO resume; last touched by session 2bf7cf70 (S285) 2026-06-22
-ts: 2026-06-22 (S285 / 2bf7cf70)
-open_dep: tender MODELING + assumptions COMPLETE; logic walkthrough DELIVERED (S285); US DISREGARDED (out of scope, €0 delta — headline -EUR282k/yr). NEXT = VALIDATE + COST THE UNINVOICED CARRIERS (~604k / 22% Wolfen gap), starting with WARENPOST NEW-vs-OLD contracts on POST_DVF (428k). Annualization DEFERRED to later. Carried-open (principal's): SEND dispatch (now confirmation); get real GRI%.
+ts: 2026-06-22 (S286 / 614ffdf6)
+open_dep: tender MODELING + assumptions COMPLETE; US DISREGARDED. **ANNUALIZATION DONE this session → headline -EUR343k/yr (-3.2%), band -325k..-362k** (supersedes crude H1×2 -EUR282k; full report `repricing_base/annual_2026/`). POST_DVF characterized: it's Deutsche Post **DV-Freimachung** letter/Dialogpost mail (NOT Warenpost), expected = hardcoded **DHL Kleinpaket 2.79×1.0125 + peak** (bi-etl `update_fact_shipments_cost.sql`); no DE-domestic Warenpost card exists. Rest of layer (Bring 73k/Cirro 70k/PostNL 11k/tails ~14k = ~165k) is **100% UNCOSTED (cost_source NULL)**, not expected. Carried-open (principal's): ask Bring/Cirro/Deutsche-Post re cost; SEND dispatch; get real GRI%.
 ---
 
 # ORWO Tender 2026 - resume
+
+> **2026-06-25 (S367/ae7565da) — methodology explainer built + method stress-tested.** NEW `NFE/projects/7_ORWO_tender_2026/methodology_walkthrough.html` (sections 00-08) for Niklavs to present — the "how it was calculated" companion to `annual_report.html`. Eight methodology challenges verified + folded in. Two settled for good: (a) **candidate set = {incumbent, GLS, Maersk}** — probed UPS/DHL as cross-challengers, both LOSE every contested lane (DHL-Intl GB €276k vs €53k), not worth implementing; (b) **dim/volumetric weight** — base rides on the incumbent's billed weight (UPS /5000, dim-inclusive), competitors inherit it = conservative (UPS /5000 ≥ GLS /6000); recomputing GLS on its own /6000 moves the saving <€650/yr (band quantization on light parcels). Headline UNCHANGED −€343k/yr. NEXT-SESSION block below is still the live next step (uninvoiced layer — but FKBRING/CIRRO now excluded per S366).
 
 ## >>> WHERE WE STAND (2026-06-22, 16:10) - read this first
 
@@ -140,8 +142,25 @@ eligibility + cost only if a consolidator/postal card is in hand):
 engines can't price mail-class. To compare, need each carrier's **mail/Warenpost-equivalent card**, not the parcel
 cards already loaded. Mart facts above pulled live S285 (READ-ONLY, gold `shipping_mart`, `production_site='Wolfen'`).
 
-## >>> LATER (deferred this session) — ANNUALIZE PROPERLY per the EU-tender method
+## >>> ✅ DONE 2026-06-22 (S286) — ANNUALIZED PROPERLY per the EU-tender method
 
+**Headline = −€343k/yr (−3.2%), band −€325k…−€362k**, on €10.6M annual carrier-comparable spend.
+Built `repricing_base/annual_2026/annual_orwo.py` (self-contained build+render, mirrors EU-tender
+`2_EU_tender_2026/.../annual_2026/`) → `annual_stats.json` + `annual_report.html` (8 sections: KPIs,
+H1→annual bridge waterfall, carrier portfolio, volume/cost curve, peak exposure, by-dest, do-nothing-vs-tender,
+methodology + ledger). **Method:** per-lane saving-per-parcel (engine, validated, population-invariant)
+× **actual** per-lane annual volume from ORWO's own **order-created-date** curve (real Q4 2025 peak +
+mature Feb–Apr non-peak run-rate; May/Jun immature, Jul–Sep estimated → DE-only, €0 saving). Bridge:
+H1 −€140,886 → +€201,277 volume scale → +€1,309 peak differential → **−€343,472**. Beats crude ×2 by
++€61k (Q4 ~40% of volume > flat double); **robust** — saving rides on mature Q4 cross-border volume.
+GB(→Maersk)+AT/CH(→GLS) = ~95% of saving. COMPARISON.md + per_lane_optimum.py ANNUALIZE note updated.
+
+**Cost basis caveat:** the €10.6M annual is the engine's carrier-comparable FULL-COST (same basis as
+the headline), NOT the mart accounting total — don't reconcile to GL. Provisional: GLS/Maersk surcharge
+stacks Picanova-adopted (locked); Jul–Sep est. (DE-only, €0 saving). Refinements deferred: quantify the
+UPS Q4 peak-differential upside; nail Jul–Sep + May/Jun maturity with a cleaner volume model.
+
+### (original deferred spec, for reference)
 Replace the crude **H1×2** with the per-country seasonal re-weight + peak split the EU tender used (anchor:
 `players/jebrim/research/2026-06-10-eu-tender-annualization-method-and-assumptions.md`): base = repriced book (no ×N
 replay); volume → FY per-country via each dest's own 2025 seasonal ratio (EU-tender FY-share Q1 20.7/Q2 21.2/Q3 17.9/

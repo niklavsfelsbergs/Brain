@@ -27,8 +27,6 @@ Files:
 - Marker clear-at-close is ritual discipline (no auto-clear hook; stale marker is sid-scoped → acceptable).
 - Carried from B-021 (not this session's): jebrim quest backlog ~36 + the examine/domain-digest promotions still pending the principal/an unlocked bankstand.
 
-## Main-brain changes.
-Yes. gielinor edits: `.claude/hooks/block-confirmed-writes.py` (the bypass), `spellbook/rituals/bankstanding.md` (marker lifecycle), `meta/write-rules.md` + `meta/guthix.md` (floor carve-outs), `lorebook/confirmed/D-036` (new) + `D-034` (amendment) + `lorebook/_index.md` (cue row).
+**Main-brain changes.** Yes. gielinor edits: `.claude/hooks/block-confirmed-writes.py` (the bypass), `spellbook/rituals/bankstanding.md` (marker lifecycle), `meta/write-rules.md` + `meta/guthix.md` (floor carve-outs), `lorebook/confirmed/D-036` (new) + `D-034` (amendment) + `lorebook/_index.md` (cue row).
 
-## Cascade.
-None pending. The rule docs (write-rules / guthix.md / bankstanding.md / lorebook + _index) were all updated in the same pass as the hook, so no downstream doc is left to sync. `AGENTS.md` mirror (`tools/sync_agents_md.py`) covers commit policy only — unaffected. Forward: first live exercise of the unlock by a real guthix-actor bankstanding.
+**Cascade.** None pending. The rule docs (write-rules / guthix.md / bankstanding.md / lorebook + _index) were all updated in the same pass as the hook, so no downstream doc is left to sync. `AGENTS.md` mirror (`tools/sync_agents_md.py`) covers commit policy only — unaffected. Forward: first live exercise of the unlock by a real guthix-actor bankstanding.

@@ -6,5 +6,5 @@
 - **Verified:** `py_compile` clean; [[test_backend.py|cockpit/test_backend.py]] **84/84** (+5 new checks — one-match resolve, deep-file identity, segment-boundary, ambiguity, pruned-dir exclusion); full dev batch `run_tests.py` **21/21 suites**. **Live smoke test** against the real workspace with the exact screenshot path → **exactly one match**, the real `bi-analytics-main/.../2_analysis/ups_retention_levers.md`. The walk took **~2.3s** (not "sub-second" as first claimed — workspace tree is large even pruned), but it fires only on the otherwise-dead-click fallback path, so a 2s wait that ends in an open beats an instant dead-click.
 - **RUNTIME-UNVERIFIED:** the running cockpit backend holds stale `backend.py` — needs a cockpit **relaunch** before the live click works end-to-end.
 
-**Cascade.** [[S279_cockpit_open_path_agent_relative_resolution]] (this entry); `respawn.md`, `comms/active.md`, `bank/build-lessons.md` at close.
+**Cascade.** [[S279_a9f409cb_cockpit_open_path_agent_relative_resolution]] (this entry); `respawn.md`, `comms/active.md`, `bank/build-lessons.md` at close.
 **Main-brain changes.** none — the fix is entirely in `cockpit/` (not part of either vault); no `gielinor/` content touched.

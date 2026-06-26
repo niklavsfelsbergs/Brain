@@ -1,9 +1,0 @@
-# Name the gate a contingent slice rides — don't report it as a standalone attribute
-
-**Observation ([[S215_12aa2f0f_rateproof-study-guide|S215]], 2026-06-11).** Decomposing the "pure UPS-offer saving" (€465,925/yr), I reported ~€320k of it as "contingent" — correct on the number — but framed it as if it were an independent property of the UPS offer. Niklavs caught it: *"isn't the final report excluding Hermes without routing anything to DB Schenker? Wouldn't that 320k be irrelevant?"* He was right. The €320k isn't independent UPS upside — it's the **UPS share of the gated oversize module**, the same decision as adding Hermes + rerouting DB Schenker. In a base-only world (module not executed), it doesn't materialize at all.
-
-**The lesson.** When a saving decomposes into firm + contingent, "contingent" is not enough — **name the specific gated decision each contingent slice rides on.** A slice attributed to thing A (the UPS offer) may actually be conditional on gated decision B (the oversize module / Hermes slot). Reporting it under A's banner makes it read as more realizable and more A-specific than it is. The honest unit is "the UPS *share of* the module," not "UPS saving."
-
-**How to apply.** For any firm/contingent split: for each contingent euro, state *contingent on what* — which gate, which other carrier/decision it's bundled with, and whether it survives if that gate stays shut. Then check the inverse (Niklavs' move): if we *don't* do the gated thing, does this slice go to zero? If yes, it belongs to the gate, not to the headline subject.
-
-This sharpens, not replaces, the logged lessons [[decompose-before-attributing-a-cost-gap]] and [[reconcile-definition-before-numbers]]: those are about getting the *number* right; this is about attributing the number to the right *decision*. Anchor: the [[S215_12aa2f0f_rateproof-study-guide|S215]] EU-tender UPS-saving consult.

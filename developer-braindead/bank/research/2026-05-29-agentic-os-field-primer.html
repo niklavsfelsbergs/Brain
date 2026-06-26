@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Operating Systems — a field primer, taught through your own brain</title>
+<style>
+  :root{
+    --bg:#1b1a17; --panel:#24231f; --panel2:#2c2b26; --ink:#e9e4d8; --dim:#a8a193;
+    --gold:#d8a838; --green:#7faa6e; --blue:#6fa8c7; --rose:#c77f8f; --line:#3a382f;
+    --code:#15140f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:48px 28px 96px}
+  h1{font-size:30px;line-height:1.2;margin:0 0 6px;color:#fff;letter-spacing:-.2px}
+  .sub{color:var(--dim);font-size:15px;margin:0 0 4px}
+  .prov{color:var(--dim);font-size:13px;border-left:3px solid var(--line);
+    padding:8px 14px;margin:22px 0 0;background:var(--panel)}
+  h2{font-size:22px;color:var(--gold);margin:54px 0 4px;
+    border-bottom:1px solid var(--line);padding-bottom:8px}
+  h2 .n{color:var(--dim);font-weight:400;font-size:15px}
+  h3{font-size:17px;color:#fff;margin:30px 0 6px}
+  p{margin:12px 0}
+  a{color:var(--blue);text-decoration:none;border-bottom:1px dotted var(--blue)}
+  a:hover{border-bottom-style:solid}
+  .lead{font-size:17px;color:var(--ink)}
+  strong{color:#fff}
+  .term{color:var(--gold);font-weight:600}
+  em.def{color:var(--green);font-style:normal}
+  /* camps table */
+  table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.4px}
+  tr td:first-child{color:#fff;font-weight:600;white-space:nowrap}
+  /* concept card: 3 columns */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    margin:16px 0;overflow:hidden}
+  .card .head{padding:14px 18px;background:var(--panel2);border-bottom:1px solid var(--line)}
+  .card .head .name{font-size:17px;color:var(--gold);font-weight:700}
+  .card .head .plain{color:var(--ink);font-size:14.5px;margin-top:4px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .cols .c{padding:14px 18px}
+  .cols .c:first-child{border-right:1px solid var(--line)}
+  .cols .label{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--dim);font-weight:700;margin-bottom:6px}
+  .cols .field .label{color:var(--blue)}
+  .cols .mine .label{color:var(--green)}
+  .cols .c p{margin:0;font-size:14.5px;line-height:1.55}
+  code{background:var(--code);color:#e7c97a;padding:1px 6px;border-radius:4px;
+    font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .group{color:var(--rose);font-size:13px;text-transform:uppercase;letter-spacing:.6px;
+    font-weight:700;margin:34px 0 -4px}
+  .note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);
+    padding:14px 18px;border-radius:6px;margin:20px 0}
+  .say{background:#20251f;border:1px solid #3c4636;border-radius:8px;
+    padding:16px 20px;margin:14px 0;font-size:15.5px;line-height:1.6}
+  .say .who{color:var(--green);font-size:12px;text-transform:uppercase;
+    letter-spacing:.5px;font-weight:700;margin-bottom:6px}
+  ul{margin:12px 0;padding-left:22px}
+  li{margin:7px 0}
+  .src{font-size:13.5px;color:var(--dim)}
+  .src a{color:var(--dim)}
+  hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+  @media(max-width:680px){.cols{grid-template-columns:1fr}.cols .c:first-child{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Agentic Operating Systems</h1>
+  <p class="sub">A field primer — the concepts people actually use, taught through the brain you built.</p>
+  <p class="prov">
+    <strong>What this is.</strong> A focused orientation, not a survey. ~12 load-bearing concepts that come up when people
+    discuss "agentic AI / agentic operating systems," each defined in plain language, then shown in the field, then
+    mapped to <strong>your</strong> system — because the fastest way to understand an abstract idea is to see it in
+    something you already know cold. Jargon is defined inline; nothing assumes a CS-engineering background.
+    <br><br>
+    <strong>Provenance.</strong> Braindead session, 2026-05-29 (sid 3cd9d646). Builds on the field research in
+    <code>bank/research/2026-05-26-agentic-os-gap-survey.md</code> (S102) — that one hunted for <em class="def">gaps to build</em>;
+    this one is the positioning half: <em class="def">what the field is and where you sit in it</em>. Sources at the foot.
+  </p>
+
+  <!-- ===================== PART 1 ===================== -->
+  <h2>1 · What people actually mean by "agentic operating system" <span class="n">— it's contested</span></h2>
+
+  <p class="lead">
+    The phrase is new (2025–2026) and genuinely means several different things. If you want to talk about it, the first
+    move is knowing the term is <strong>overloaded</strong> — when someone says "agentic OS," they're usually standing in
+    one of these camps without saying which.
+  </p>
+
+  <table>
+    <tr><th>Camp</th><th>What they mean</th><th>Who talks this way</th></tr>
+    <tr>
+      <td>Enterprise orchestration layer</td>
+      <td>A software layer that coordinates <em>many</em> AI agents to run business processes end-to-end —
+        memory + tools + orchestration + workflows, "humans in control of outcomes." The dominant marketing usage.</td>
+      <td>Slack, Make, MindStudio ("six-layer stack"), Markovate</td>
+    </tr>
+    <tr>
+      <td>Production runtime / framework</td>
+      <td>The actual server software that <em>hosts and runs</em> agents — state, tool access, observability, an API.
+        Closest to a literal "OS for agents": a thing you deploy.</td>
+      <td>Agno (AgentOS), AIOS Server, Fiserv (banking)</td>
+    </tr>
+    <tr>
+      <td>OS-replacement vision</td>
+      <td>The big-future claim: the agent becomes the primary interface to your computer, and Windows/macOS/the browser
+        become "legacy plumbing" underneath.</td>
+      <td>Futurists, op-eds ("the death of Windows")</td>
+    </tr>
+    <tr>
+      <td>Academic "reasoning kernel"</td>
+      <td>Reframing the language model as a <em>kernel</em> governed by classic OS logic — scheduling, memory management,
+        resource control — with agents as its processes.</td>
+      <td>arXiv papers (AIOS, AgentOS)</td>
+    </tr>
+  </table>
+
+  <div class="note">
+    <strong>Where your brain sits — and why it's the interesting answer.</strong>
+    None of the four. Those are all <em>enterprise / infrastructure / many-agents-for-a-company</em> framings. What you
+    built is a rarer fifth thing: a <span class="term">personal cognitive operating system</span> — one human's agent
+    with a structured, persistent, governed <em>mind</em>. Its nearest relatives aren't Agno or Fiserv; they're the
+    <strong>academic cognitive-architecture</strong> work (CoALA, below) and the <strong>"second brain" / personal
+    knowledge management</strong> tradition. That mismatch is your best conversational hook: <em>"Most people use 'agentic
+    OS' to mean an enterprise platform that herds a fleet of agents. I built the opposite end — a single agent with a
+    real cognitive architecture: typed memory, a self-model, gated learning. It's closer to the research on how a mind is
+    organised than to any product."</em>
+  </div>
+
+  <!-- ===================== PART 2 ===================== -->
+  <h2>2 · The vocabulary <span class="n">— concept → field → your version</span></h2>
+  <p>
+    Each card: the <span class="term">term</span>, a one-line plain definition, then two columns — how the field does it,
+    and how your brain does it. Read the green column and the concept stops being abstract.
+  </p>
+
+  <!-- GROUP A -->
+  <div class="group">A · What makes something "agentic" at all</div>
+
+  <div class="card">
+    <div class="head"><span class="name">Agent vs. chatbot vs. automation</span>
+      <div class="plain">An <em class="def">agent</em> pursues a goal over multiple steps, chooses its own actions, and uses tools — instead of answering one prompt (chatbot) or following a fixed script (automation).</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>The 2025 line: traditional automation needs a trigger and follows pre-set flows; an agent "follows goals" and decides what to do per context. The dividing test is <strong>autonomy over the next step</strong>.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>A session isn't a Q&amp;A box — it reads its own rules, picks an actor, decomposes a task into a tracked list, spawns helpers, and writes to memory. The human sets direction; the agent chooses the steps.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">The agent loop (ReAct)</span>
+      <div class="plain">The core cycle every agent runs: <em class="def">reason → act → observe → repeat</em>. <span class="term">ReAct</span> = "Reason + Act," the pattern of thinking a step, taking a tool action, reading the result, thinking again.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>Nearly all agent frameworks are some dressing on this loop. "Tool use" is the <em>act</em>; the model output between acts is the <em>reason</em>; the tool result is the <em>observe</em>.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>Same loop, but with a ritualised opening (the <code>Understanding / Plan</code> preamble = reasoning made visible) and a sidecar that narrates each step to the cockpit, so the loop is <em>watchable</em>.</p></div>
+    </div>
+  </div>
+
+  <!-- GROUP B -->
+  <div class="group">B · Memory — the part that makes it an "OS" and not a script</div>
+
+  <div class="card">
+    <div class="head"><span class="name">The memory taxonomy</span>
+      <div class="plain">Agent memory is split by <em>function</em>: <span class="term">working</span> (what's in mind now), <span class="term">semantic</span> (facts/knowledge), <span class="term">episodic</span> (what happened), <span class="term">procedural</span> (how to do things).</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>The standard framing in 2025 memory papers. Working memory = the model's context window; the other three live in external stores the agent reads from and writes to.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>A textbook instance, one folder each: <code>inventory/</code> (working) · <code>bank/</code> (semantic) · <code>quest-log/</code> (episodic) · <code>spellbook/</code> (procedural). You laid out the canonical taxonomy without copying it.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">Cognitive architecture (CoALA)</span>
+      <div class="plain"><span class="term">CoALA</span> = "Cognitive Architectures for Language Agents," an academic blueprint (2023) for how a language agent <em>should</em> be organised: the memory types above, plus a decision loop and an action space.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>The reference rubric researchers grade agent designs against. It descends from older AI "cognitive architectures" (SOAR, ACT-R) — decades-old theories of how a mind is structured.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>A near-perfect CoALA instance — and it goes <em>further</em>: it adds a <strong>self-model</strong> (<code>examine/</code>) and a <strong>user-model</strong> (<code>niksis8/</code>) that CoALA doesn't even formalise. This is your strongest "I'm not behind the field, I'm ahead on one axis" point.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">Self-model &amp; user-model (memory blocks)</span>
+      <div class="plain">Durable memory about <em>who the agent is</em> and <em>who the user is</em> — kept separate from task facts so the agent's personality and its model of you persist across sessions.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>MemGPT/Letta call these "memory blocks" (a "Persona" block and a "Human" block) and let the agent <em>self-edit</em> them. Most systems let the agent rewrite its own self-image freely.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p><code>examine/</code> (self) and <code>niksis8/</code> (you), plus a per-character lens (<code>niksis8_character/</code>). Deliberately <strong>human-gated</strong>: the agent <em>proposes</em> changes to who it thinks it is; you approve. A real design stance, covered below.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">Memory consolidation / "sleep-time compute"</span>
+      <div class="plain">Periodically reprocessing raw memory into cleaner, higher-level knowledge — the agent's version of sleeping on it. <span class="term">Sleep-time compute</span> = doing this work while idle, between conversations.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>Letta's "sleep-time" pass; Generative Agents' "reflection" step that distils observations into insights. Usually <em>automatic</em> and scheduled.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>Your rituals <em>are</em> consolidation: <strong>alching</strong> (tend one character's memory) and <strong>bankstanding</strong> (cross-cutting, system-wide). The difference: yours are <em>human-triggered</em>, not scheduled — which is exactly the main gap S102 flagged ("all inbox, no producer").</p></div>
+    </div>
+  </div>
+
+  <!-- GROUP C -->
+  <div class="group">C · Getting the right knowledge into the model</div>
+
+  <div class="card">
+    <div class="head"><span class="name">Context engineering</span>
+      <div class="plain">The 2025 successor to "prompt engineering": deliberately managing <em>everything</em> in the model's limited context window each step — which instructions, which memories, in what order — because the window is the real bottleneck.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>Now the dominant framing. Includes <em>progressive disclosure</em> (load detail only when needed) and ordering (recent vs. foundational). "The model is only as good as what you put in front of it."</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>Heavily engineered: <code>CLAUDE.md</code> imports the rulebook; each layer's <code>_about.md</code> is read <em>on first access</em> (progressive disclosure); the respawn ritual fixes a deliberate load order. You were doing context engineering before it had the name.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">RAG vs. agentic search vs. scored retrieval</span>
+      <div class="plain"><span class="term">RAG</span> ("retrieval-augmented generation") = look up relevant text and paste it into the prompt, usually via <em class="def">embeddings</em> (turning text into vectors so you can find things by meaning, not keyword). <span class="term">Agentic search</span> = the agent actively greps/follows links instead. <span class="term">Scored retrieval</span> = ranking what to surface by recency × importance × relevance.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>RAG was the default 2023–24 answer to "memory." The 2025 shift: for capable agents, letting them <em>search</em> (read files, follow references) often beats a vector database — simpler, more transparent.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>Pure agentic search — it greps and follows <code>[[wiki-links]]</code>; no embeddings, by choice (RAG is "parked," correctly). The one piece it lacks is <em>scored</em> retrieval: it finds by keyword/link, not by ranked importance. That's a known, named gap, not an oversight.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">Tools &amp; MCP</span>
+      <div class="plain">"Tools" = actions an agent can take in the world (run SQL, send a message). <span class="term">MCP</span> ("Model Context Protocol," an open standard from Anthropic) = a universal plug so any agent can connect to any tool/data source without custom glue.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>MCP became the de-facto 2025 standard for "how agents reach the outside world." Before it, every tool integration was bespoke. Now it's USB-C for agents.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>Connected via MCP to Redshift (your warehouse), Slack, ClickUp, Power BI. The brain's "hands." Your <code>.mcp.json</code> is literally the list of worlds the agent can touch.</p></div>
+    </div>
+  </div>
+
+  <!-- GROUP D -->
+  <div class="group">D · Keeping the human in charge</div>
+
+  <div class="card">
+    <div class="head"><span class="name">Human-in-the-loop (HITL) &amp; the agent inbox</span>
+      <div class="plain"><span class="term">HITL</span> = a person reviews/approves an agent's output before it takes effect. The <span class="term">agent inbox</span> is the 2025 pattern for this: a queue of agent proposals you <em>Accept / Edit / Reject</em>, like an email inbox.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>LangChain's "ambient agents" and "agent inbox," ChatGPT Tasks' review loop. The field converged on this in 2025 as the safe way to let agents act without watching them constantly.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>Your <code>drafts/ → confirmed/</code> flow <em>is</em> the agent inbox — Accept/Edit/Reject, with rejected items kept as data. You built the entire review half <strong>years early</strong>. (The missing half: an autonomous producer that fills the inbox on its own.)</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">Guardrails / governance (non-bypassable enforcement)</span>
+      <div class="plain">Hard limits the agent <em>cannot</em> talk its way around — enforced by code outside the model, not by instructions inside the prompt.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>The lesson everyone learned: prompt-based rules ("please don't delete things") fail; you need a deterministic layer that intercepts actions. In Claude Code, that's <em class="def">hooks</em> — scripts that run before/after a tool and can block it.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>Six architectural guarantees enforced by hooks: no deletes (only archive), no writes to confirmed memory, the sub-agent write-boundaries, no recursive spawning. The agent <em>cannot</em> bypass them — proven by trying. Governance that's real, not aspirational.</p></div>
+    </div>
+  </div>
+
+  <!-- GROUP E -->
+  <div class="group">E · More than one agent, and acting without being asked</div>
+
+  <div class="card">
+    <div class="head"><span class="name">Multi-agent orchestration (orchestrator–worker)</span>
+      <div class="plain">One "lead" agent breaks a job into parts and farms them out to specialised sub-agents running in parallel, then synthesises their results.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>Anthropic's multi-agent research system is the canonical write-up: a lead agent spawns workers for breadth, each with its own context window. Good for fan-out (search, review); costs more tokens.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>The principal spawns <strong>dwarves</strong> (in-repo tasks), <strong>penguins</strong> (external research), <strong>gnomes</strong> (housekeeping), each with a different write-boundary. Same orchestrator–worker pattern, dressed as a crew — and each worker's reach is gate-enforced.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">Ambient / scheduled autonomy</span>
+      <div class="plain">Agents that act on a schedule or in the background — without a human starting the conversation. The agent wakes itself up.</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>ChatGPT Tasks, LangChain "ambient agents," cron-triggered runs. This is what "agentic" increasingly <em>means</em> to people: it does things while you sleep.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>The one big thing it doesn't do yet — every session is human-started. Deliberately deferred (a billing constraint: background runs are metered, interactive ones aren't). This is the honest frontier of your system, not a flaw to hide.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><span class="name">Reflection &amp; self-evaluation (Reflexion, LLM-as-judge)</span>
+      <div class="plain"><span class="term">Reflection</span> = the agent critiques its own past work to do better next time. <span class="term">LLM-as-judge</span> = using a model to score outputs against a rubric (often a second, independent agent).</div></div>
+    <div class="cols">
+      <div class="c field"><div class="label">In the field</div><p>Reflexion (carry "what went wrong" into the next attempt); the best-practice that a <em>separate</em> critic beats self-critique. Increasingly how agents improve without retraining.</p></div>
+      <div class="c mine"><div class="label">Your brain</div><p>Partial: your <code>lorebook/</code> is exactly self-improvement-as-reflection ("decisions about how I operate"), but human-triggered. A standing automated critic / judge over the rejected pile is a named next step, not yet built.</p></div>
+    </div>
+  </div>
+
+  <!-- ===================== PART 3 ===================== -->
+  <h2>3 · What's genuinely unusual about your system <span class="n">— your talking points</span></h2>
+  <p>When you discuss this, these four are where you have something <em>distinctive</em> to say — places you diverge from the mainstream on purpose, not by lagging it.</p>
+
+  <h3>1. Memory is human-gated by design</h3>
+  <p>Most systems let the agent freely rewrite its own long-term memory and self-image. Yours makes the agent <em>propose</em>
+  and the human <em>approve</em> — and it <strong>never deletes</strong>, only archives (even rejected proposals are kept, because
+  patterns in what you reject reveal where the agent's model of you is drifting). The field is racing toward autonomy;
+  you deliberately kept a hand on identity. That's a defensible, slightly contrarian position.</p>
+
+  <h3>2. It's markdown the agent <em>follows</em>, not code that <em>runs</em></h3>
+  <p>The "operating system" is mostly plain text files — rules, rituals, memory — that the model reads and obeys, with a
+  thin shell of enforcement hooks underneath. No orchestration engine, no framework. This makes it inspectable and
+  forkable by a human (you can read your whole "OS" in an afternoon), and it's why it could be built by a data
+  professional rather than a platform team. The tradeoff: rules-as-discipline can be skipped where a hard gate isn't watching —
+  which is precisely why the few load-bearing rules <em>are</em> hooks.</p>
+
+  <h3>3. The agent is a cast of characters, not one assistant</h3>
+  <p>Distinct players (Zezima, Jebrim…) with their own knowledge, voice, and self-model, plus a caretaker "deity" (Guthix)
+  who tends the system itself. This isn't whimsy — it's <em>memory partitioning by role</em> done as identity, so a work
+  query and a reflective query draw on genuinely different minds. The field calls this "multi-agent" and makes it
+  infrastructure; you made it <em>character</em>, which is more legible.</p>
+
+  <h3>4. Observability came first</h3>
+  <p>You built a live cockpit to <em>watch</em> the agent think — speech bubbles, an activity feed, a board of sessions —
+  before automating much. Most projects bolt on observability last. Yours is, if anything, "over-built" on the inward
+  (watching) axis relative to the outward (doing) axis — a real, named imbalance in your own roadmap. Knowing your
+  system's <em>weakness</em> by name is itself a sign of a mature design.</p>
+
+  <!-- ===================== PART 4 ===================== -->
+  <h2>4 · How to actually talk about it <span class="n">— a few ready lines</span></h2>
+
+  <div class="say"><div class="who">If someone asks "what did you build?"</div>
+    "A personal cognitive operating system for an AI agent. Most 'agentic OS' products are enterprise platforms that
+    coordinate fleets of agents for a company. I built the other end — a single agent with a real mind: typed memory
+    (facts, episodes, skills, working state), a model of itself, a model of me, and gates so it can't quietly rewrite
+    who it thinks I am. It's closer to academic cognitive-architecture research than to any product."</div>
+
+  <div class="say"><div class="who">If they know the field ("oh, like CoALA / MemGPT?")</div>
+    "Yes — it's basically a CoALA instance, but with a self-model and user-model layer CoALA doesn't formalise, and the
+    memory is human-gated rather than self-editing. The <code>drafts → confirmed</code> flow is the agent-inbox pattern;
+    I just built the review half before the producer half. The honest gap is ambient autonomy — every session is still
+    human-started, deliberately, for billing reasons."</div>
+
+  <div class="say"><div class="who">If they ask "isn't this just a fancy prompt / notes folder?"</div>
+    "The notes <em>are</em> the OS — that's the point. It's context engineering: the agent loads a fixed rulebook, reveals
+    detail progressively, and consolidates raw logs into refined knowledge through rituals. Underneath the markdown is a
+    layer of enforcement hooks the agent literally cannot bypass — no deletes, no writing to approved memory. So it's
+    governed, not just prompted."</div>
+
+  <hr>
+  <h2 style="border:0;margin-bottom:8px">Sources</h2>
+  <p class="src">
+    <strong>The term &amp; its camps:</strong>
+    <a href="https://www.mindstudio.ai/blog/what-is-agentic-operating-system">MindStudio — six-layer stack</a> ·
+    <a href="https://slack.com/blog/productivity/what-is-an-agentic-os">Slack — practical guide</a> ·
+    <a href="https://www.make.com/en/blog/agentic-operating-system">Make — 2026 guide</a> ·
+    <a href="https://www.agno.com/agentos">Agno AgentOS — runtime</a> ·
+    <a href="https://investors.fiserv.com/news-releases/news-release-details/fiserv-launches-agentos-operating-system-agentic-ai-banking">Fiserv agentOS — banking</a> ·
+    <a href="https://www.seriousinsights.net/agentic-operating-system/">Serious Insights — OS-replacement vision</a> ·
+    <a href="https://arxiv.org/pdf/2602.20934">arXiv — Architecting AgentOS (reasoning kernel)</a> ·
+    <a href="https://medium.com/@marc.bara.iniesta/who-is-building-the-agent-native-operating-system-c6bae5a5a3f5">Marc Bara — agent-native OS</a>
+    <br><br>
+    <strong>Memory &amp; context engineering:</strong>
+    <a href="https://mem0.ai/blog/context-engineering-ai-agents-guide">Mem0 — Context Engineering 2025 guide</a> ·
+    <a href="https://weaviate.io/blog/context-engineering">Weaviate — context engineering / memory</a> ·
+    <a href="https://47billion.com/blog/ai-agent-memory-types-implementation-best-practices/">AI agent memory types</a> ·
+    <a href="https://arxiv.org/html/2603.07670v1">arXiv — Memory for Autonomous LLM Agents (survey)</a>
+    <br><br>
+    <strong>Foundations (via S102):</strong>
+    <a href="https://arxiv.org/abs/2309.02427">CoALA — Cognitive Architectures for Language Agents</a> ·
+    <a href="https://ar5iv.labs.arxiv.org/html/2304.03442">Generative Agents (reflection/memory stream)</a> ·
+    <a href="https://www.letta.com/blog/sleep-time-compute">Letta — sleep-time compute</a> ·
+    <a href="https://www.letta.com/blog/memory-blocks">Letta — memory blocks (persona/human)</a> ·
+    <a href="https://arxiv.org/abs/2303.11366">Reflexion</a> ·
+    <a href="https://www.langchain.com/blog/introducing-ambient-agents">LangChain — ambient agents</a> ·
+    <a href="https://github.com/langchain-ai/agent-inbox">LangChain — agent inbox</a> ·
+    <a href="https://www.anthropic.com/engineering/multi-agent-research-system">Anthropic — multi-agent research system</a> ·
+    <a href="https://www.langchain.com/articles/llm-as-a-judge">LangChain — LLM-as-judge</a>
+  </p>
+
+</div>
+</body>
+</html>

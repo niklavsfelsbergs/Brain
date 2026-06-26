@@ -1,4 +1,3 @@
-# S069 — shipping-costs pipeline: make a full refresh finish (OOM hardening)
 
 **Session:** 006248ef · **Player:** Jebrim · **Opened:** 2026-05-25
 

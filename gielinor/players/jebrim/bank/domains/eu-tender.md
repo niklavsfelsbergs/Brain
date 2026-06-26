@@ -50,6 +50,13 @@ synthesized: 2026-06-17 (corpus +1: [[S239_dc163efd_eu-tender-architecture-refac
 
 Pick **4–6 parcel + 1 freight** carrier partners for TCG-Picanova, optimising **cost only** (qualitative goes in prose, not weights). Repo: `bi-analytics-main/NFE/projects/2_EU_tender_2026/`. **Decision basis = full-year cost**: 2026-Q1 is the per-shipment unit-cost reference, annualized via per-country seasonal ratios + peak-window volumes (Q1 never exercises peak/demand surcharges). Locks (2026-05-12): hard cap 6, cost-only, lane diagnostic informs + portfolio scenarios decide. Scope = PCS-PL print site, invoiced-only, 18 countries (€2,955,020 Q1 — a backfilling snapshot, quote with as-of date); not comparable to all-sites SCM views → [[2026-06-09-tender-2.96M-vs-scm-3.3M-scope-reconciliation]]. Maersk-UK (A0) is a separate deal, out of tender scope.
 
+> **WARNING (2026-06-26, jebrim-a2b6bb7c) -- KNOWN UPS-ENGINE BUG, FIX IN PROGRESS.** The UPS engine
+> prices CH (Switzerland) on the non-World-Ease Standard column (EUR12.01) when we actually ship CH on
+> UPS World Ease (EUR7.64 ~= invoiced base EUR7.48). This overstates CH ~EUR4.5/pc and likely mis-routed
+> CH off UPS. Any "CH operative-tier overprice / CH +56% / CH-lost-to-DHL-on-rate" claim below (and in
+> the linked UPS notes) is an artifact. extract_rates.py WE fix + full cascade re-run underway; the
+> EUR595k/EUR976k headlines + CH routing may move. Resume: inventory/ups-worldease-fix-resume__a2b6bb7c.
+
 ## Architecture (Phase 2, `2_analysis/`)
 Capability matrix (pure `(carrier,service,country,weight,dim,packagetype)→eligible?+reject_reason`) → **per-carrier rate engines** (`carriers/<slug>/`, polars `Surcharge` ABC, two-phase BASE→DEPENDENT, version-stamped) → **cost matrix** (one row per shipment×carrier×service) → lane diagnostic + portfolio scorer. 9+ engines incl. `dpd_pl_current` (**export-only — PL-domestic unmodeled**, the "carrier-only" slice → [[2026-06-09-dpd-pl-current-engine-export-only-gap]]). `docs/` is live state; **DECISIONS must match engine state, not target state** → [[eu_tender_2026_S034_update]]. **Refactored end-to-end [[S239_dc163efd_eu-tender-architecture-refactor-execution|S239]] (2026-06-13):** the `*_2026q1` suffix trap removed (de-suffixed/62 files), the superseded 2025-full-year cluster archived to `_archive/full_year_v1/`, the 5 report folders consolidated under `reports/`, a `regen_all.py` orchestrator added (regen gate holds `base_ann==976023.94`, presented lineage byte-identical), and `carriers/`→`carrier_engines/` renamed. Pre-refactor canonical-vs-superseded module map → [[2026-06-13-eu-tender-pipeline-architecture-fork]].
 

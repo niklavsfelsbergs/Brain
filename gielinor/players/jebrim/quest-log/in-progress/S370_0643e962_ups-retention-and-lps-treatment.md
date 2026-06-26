@@ -25,5 +25,12 @@ Explained exactly how the tender treats UPS LPS/oversize, then validated against
 - UPS truck cost UNCHANGED (Andrea's €374 was ORWO).
 - LPS 300-vs-325 dispute = the live refund lever → handed to a next Jebrim session (prompt + numbers in the resume).
 
+## Post-close continuation (same session, after first wrap)
+Principal reopened to scope the next-session base-rate work.
+- **Outflow finding (the headline):** from `final_stats.json` `flows` (do-nothing basis), **61% of the €976k plan saving = €595,363/yr comes from moving ~376k parcels/yr (80k Q1) OFF UPS** — Maersk €298,072 (30.5%) · DHL €176,972 (18.1%) · DPD €83,315 (8.5%) · Hermes €38,984 · DBS −€1,978. Plus UPS kept-on-UPS offer saving €158,936 (16%) → UPS-related ≈ 77% of the whole plan. De-UPS-ing IS the tender.
+- **Per-country "how far off" preview** (Q1/matrix, shed parcels, avg UPS vs avg plan): CH 48% off (15.62 vs 8.08) · ES 30% · IT 15% · DE 9% · AT 30% · PT 49%. DE+IT cheap to keep, CH the outlier.
+- **Next-session scope locked:** UPS base-rate retention, **RETAIN ONLY**; lever = base rates only (fuel/LPS/OML/line-haul out). First output = the per-country table (do-nothing basis, annualized, w/ avg UPS vs avg plan + gap), **then stop and discuss** — not a solo report. Full brief in the resume.
+- **LPS 300-vs-325 dispute thread DROPPED** (principal). LPS engine-treatment knowledge stays as reference (bank draft + above); no dispute follow-up.
+
 ## Pending external actions
 None pending. (NFE deliverable written but uncommitted in its repo — flagged to principal.)

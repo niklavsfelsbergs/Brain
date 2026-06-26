@@ -531,6 +531,50 @@ async def api_open_vscode(request):
     return web.json_response({"ok": True}, headers=NO_STORE)
 
 
+# Directories never worth walking for a click-to-open suffix search — VCS, package
+# caches, build output. Pruning them keeps the fallback walk sub-second on a tree
+# the size of the GitHub workspace (the heavy weight is .git + node_modules).
+_SEARCH_PRUNE = {
+    ".git", "node_modules", ".next", "__pycache__", ".venv", "venv", "env",
+    ".turbo", "dist", "build", ".cache", ".mypy_cache", ".pytest_cache",
+    ".idea", ".vscode", "target", ".tox", ".parcel-cache", ".gradle",
+}
+# Cap matches collected — we only need 1-vs-many for the ambiguity verdict, so
+# stopping a couple past 1 avoids walking the whole tree once a dupe is seen.
+_SEARCH_MATCH_CAP = 4
+
+
+def _workspace_suffix_search(rel: str):
+    """Find files under WORKSPACE_ROOT whose path ends with `rel` (segment-aligned).
+
+    For an agent-relative path the cockpit can't root directly (printed relative
+    to a player session's Bash cwd in some sibling repo). `rel` is forward-slash,
+    no drive, no `:line` tail. Matches require a `/`-boundary so `levers.md` never
+    matches `..xlevers.md`; `..` segments never match a resolved real path. Bounded
+    by _SEARCH_PRUNE + _SEARCH_MATCH_CAP. Returns a list of resolved Paths.
+    """
+    rel = rel.lstrip("./").strip("/")
+    if not rel:
+        return []
+    needle = "/" + rel  # segment-aligned suffix: a real path ends with `/<rel>`
+    matches = []
+    try:
+        for dirpath, dirnames, filenames in os.walk(WORKSPACE_ROOT):
+            dirnames[:] = [d for d in dirnames if d not in _SEARCH_PRUNE]
+            for fn in filenames:
+                full = os.path.join(dirpath, fn).replace("\\", "/")
+                if full.endswith(needle):
+                    try:
+                        matches.append(Path(dirpath, fn).resolve())
+                    except OSError:
+                        continue
+                    if len(matches) >= _SEARCH_MATCH_CAP:
+                        return matches
+    except OSError:
+        pass
+    return matches
+
+
 async def api_open_path(request):
     """Open a brain-repo file/folder on the host from a cockpit click (S160).
 
@@ -544,9 +588,12 @@ async def api_open_path(request):
     Path-safe: the requested path is resolved and required to sit under
     WORKSPACE_ROOT (the GitHub workspace = brain + its sibling repos), so a report
     path in a sibling repo (e.g. bi-analytics-main/NFE/…) opens too. A relative
-    path is tried against the brain repo first, then the workspace; resolve()+
-    relative_to rejects traversal/symlink escape outside the workspace. A trailing
-    :line[:col] (the file_path:line shape) is stripped. The backend is
+    path is tried against the brain repo first, then the workspace; if both miss
+    (an AGENT-RELATIVE path rooted in some player session's Bash cwd) it falls back
+    to a bounded suffix-search of the workspace (_workspace_suffix_search) — one
+    hit opens, several stay ambiguous. resolve()+relative_to rejects traversal/
+    symlink escape outside the workspace. A trailing :line[:col] (the
+    file_path:line shape) is stripped. The backend is
     127.0.0.1-bound by default, so this opens only what the local user could
     already open. Windows-only (os.startfile / explorer); a clean no-op elsewhere.
     """
@@ -570,6 +617,22 @@ async def api_open_path(request):
         if r.exists():
             target = r
             break
+    # Fallback for an AGENT-RELATIVE path: a player session prints paths relative
+    # to its Bash CWD deep inside a sibling repo (e.g. `2_analysis/report.md`,
+    # cwd `bi-analytics-main/NFE/projects/2_EU_tender_2026/`), which roots under
+    # neither BRAIN_ROOT nor WORKSPACE_ROOT, and no per-session cwd is captured.
+    # When the direct candidates miss, suffix-search the workspace for a file whose
+    # path ends with the (segment-aligned) relative path. One match opens; several
+    # stay ambiguous rather than guess. Bounded by a prune of heavy dirs.
+    if target is None and not p.is_absolute() and "/" in cleaned:
+        matches = _workspace_suffix_search(cleaned)
+        if len(matches) == 1:
+            target = matches[0]
+        elif len(matches) > 1:
+            return web.json_response(
+                {"ok": False, "error": f"ambiguous ({len(matches)} matches)"},
+                status=409, headers=NO_STORE,
+            )
     if target is None:
         try:
             target = candidates[0].resolve()

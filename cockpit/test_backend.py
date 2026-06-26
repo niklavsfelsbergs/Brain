@@ -497,7 +497,44 @@ def test_name_carry():
     check("no source label -> no carry, no crash", "eeeeeeee" not in after3)
 
 
+def test_open_path_suffix_search():
+    """The agent-relative click-to-open fallback (_workspace_suffix_search): a path
+    printed relative to a player session's Bash cwd in a sibling repo resolves by a
+    bounded, segment-aligned suffix search of the workspace. Guards the S160/S270
+    resolution gap — a real file 404'd because BRAIN_ROOT/<rel> + WORKSPACE_ROOT/<rel>
+    both missed when the path was rooted in the agent cwd."""
+    tmp = Path(tempfile.mkdtemp(prefix="cockpit-open-"))
+    saved = backend.WORKSPACE_ROOT
+    backend.WORKSPACE_ROOT = tmp
+    try:
+        deep = tmp / "bi-analytics-main" / "NFE" / "projects" / "2_EU_tender_2026" / "2_analysis"
+        deep.mkdir(parents=True)
+        (deep / "ups_retention_levers.md").write_text("x", encoding="utf-8")
+        # The exact symptom: rel path rooted in the agent cwd, one hit, opens.
+        m = backend._workspace_suffix_search("2_analysis/ups_retention_levers.md")
+        check("agent-relative path resolves to its one workspace match", len(m) == 1)
+        check("matched the deep real file", m and m[0].name == "ups_retention_levers.md")
+        # Segment-aligned: a partial last-segment suffix must NOT match.
+        check("partial-segment suffix doesn't match (segment boundary enforced)",
+              backend._workspace_suffix_search("analysis/etention_levers.md") == [])
+        # Ambiguity: the same rel under two roots → multiple matches, caller flags it.
+        deep2 = tmp / "other-repo" / "2_analysis"
+        deep2.mkdir(parents=True)
+        (deep2 / "ups_retention_levers.md").write_text("x", encoding="utf-8")
+        check("duplicate rel path under two roots is ambiguous (>1 match)",
+              len(backend._workspace_suffix_search("2_analysis/ups_retention_levers.md")) > 1)
+        # Pruned dirs are never walked.
+        pruned = tmp / "node_modules" / "pkg" / "lib"
+        pruned.mkdir(parents=True)
+        (pruned / "secret_only_here.md").write_text("x", encoding="utf-8")
+        check("files inside pruned dirs (node_modules) are not searched",
+              backend._workspace_suffix_search("lib/secret_only_here.md") == [])
+    finally:
+        backend.WORKSPACE_ROOT = saved
+
+
 def main():
+    test_open_path_suffix_search()
     test_name_carry()
     test_pending_subagents_crashguard()
     test_stale_greying_and_attention()

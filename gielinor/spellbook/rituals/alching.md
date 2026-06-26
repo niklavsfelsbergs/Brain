@@ -165,7 +165,7 @@ For each candidate observation, propose a draft to `players/<active>/examine/dra
 
 ### 4. Enforce size budgets on the player's `current.md` files
 
-For each of the player's `current.md` (examine, niksis8_character, keepsake): check token count against budget. If over, propose rotations to the corresponding `archive/`. The principal approves.
+For each of the player's `current.md` (examine, niksis8_character, keepsake): check **token count** against budget (~3k tokens for identity layers, ~2k for keepsake). **Measure tokens (≈ bytes ÷ 4 for English prose), not raw bytes** — a byte count misreads a ~6.5 KB file (~1.7k tokens) as "2× over a 3k budget" when it is well under. (This was the recurring Jebrim-`examine` false flag: flagged "over" for 6 consecutive alch passes on a bytes-vs-tokens units error; corrected 2026-06-26 / S372.) If genuinely over, propose rotations to the corresponding `archive/`. The principal approves.
 
 ### 5. Review patterns in the player's `rejected/` folders
 
